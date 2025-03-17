@@ -1,0 +1,35 @@
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    root /var/www/html;
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass ${SITE_NAME}-php:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|otf|ttc|mp4|webm|ogv|webp|pdf|zip|tar|gz|bz2|rar|7z|xml|rss|atom|txt|json|map)$ {
+        expires max;
+        log_not_found off;
+    }
+
+    # Bật Gzip
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    # Bảo mật
+    add_header X-Frame-Options DENY;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+
+    error_log  /var/log/nginx/error.log;
+    access_log /var/log/nginx/access.log;
+}

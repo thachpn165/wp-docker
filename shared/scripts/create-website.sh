@@ -35,6 +35,22 @@ fi
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
 mkdir -p "$SITES_DIR/$site_name"/{nginx/{conf.d,ssl},php,mariadb/conf.d,wordpress,logs}
 
+#Copy cấu hình NGINX Backend từ template
+echo -e "${YELLOW}📄 Sao chép cấu hình NGINX Backend...${NC}"
+NGINX_CONF_TEMPLATE="$TEMPLATES_DIR/nginx-backend.conf.template"
+NGINX_CONF_TARGET="$SITES_DIR/$site_name/nginx/conf.d/default.conf"
+
+if [ -f "$NGINX_CONF_TEMPLATE" ]; then
+    sed -e "s|\${SITE_NAME}|$site_name|g" \
+        -e "s|\${DOMAIN}|$domain|g" \
+        "$NGINX_CONF_TEMPLATE" > "$NGINX_CONF_TARGET"
+
+    echo -e "${GREEN}✅ Cấu hình NGINX Backend đã được tạo tại: $NGINX_CONF_TARGET${NC}"
+else
+    echo -e "${RED}❌ Lỗi: Không tìm thấy template NGINX Backend: $NGINX_CONF_TEMPLATE${NC}"
+    exit 1
+fi
+
 # Copy cấu hình PHP-FPM
 echo -e "${YELLOW}📄 Sao chép cấu hình PHP-FPM...${NC}"
 cp "$TEMPLATES_DIR/php.ini.template" "$SITES_DIR/$site_name/php/php.ini"
@@ -113,7 +129,7 @@ else
 fi
 
 # **Tạo file cấu hình NGINX Proxy**
-echo -e "${YELLOW}📌 Đang tạo file cấu hình NGINX cho website '$domain'...${NC}"
+echo -e "${YELLOW}📌 Đang tạo file cấu hình NGINX Proxy cho website '$domain'...${NC}"
 cat > "$SITE_CONF_FILE" <<EOF
 server {
     listen 80;

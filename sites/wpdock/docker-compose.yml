@@ -13,12 +13,12 @@ services:
       - proxy_network
       - site_network
     environment:
-      ALLOW_EMPTY_PASSWORD: "yes"
-      PHP_MEMORY_LIMIT: "256M"
-      PHP_POST_MAX_SIZE: "64M"
-      PHP_UPLOAD_MAX_FILESIZE: "64M"
-      PHP_MAX_EXECUTION_TIME: "300"
-      PHP_OPCACHE_ENABLE: "1"
+      - ALLOW_EMPTY_PASSWORD=yes
+      - PHP_MEMORY_LIMIT=256M
+      - PHP_POST_MAX_SIZE=64M
+      - PHP_UPLOAD_MAX_FILESIZE=64M
+      - PHP_MAX_EXECUTION_TIME=300
+      - PHP_OPCACHE_ENABLE=1
 
   mariadb:
     image: mariadb:10.11
@@ -27,12 +27,12 @@ services:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: "BkXz5CriGZE1Lnob"
-      MYSQL_DATABASE: "wordpress"
-      MYSQL_USER: "wpuser"
-      MYSQL_PASSWORD: "SQYDEi1urwN4g8r9"
-      MARIADB_CHARACTER_SET: "utf8mb4"
-      MARIADB_COLLATE: "utf8mb4_unicode_ci"
+      - MYSQL_ROOT_PASSWORD=41YG7JSxiYZeCpan
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wpuser
+      - MYSQL_PASSWORD=j0lKbVoODQ4lNOTo
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
       - site_network
 
@@ -46,6 +46,9 @@ services:
     networks:
       - proxy_network
       - site_network
+    ports:
+      - "80"
+      - "443"
 
 networks:
   proxy_network:
