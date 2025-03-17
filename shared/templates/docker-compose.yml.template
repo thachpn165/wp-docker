@@ -2,22 +2,36 @@ version: '3.8'
 
 services:
   php:
-    image: php:${PHP_VERSION}-fpm
+    image: bitnami/php-fpm:${PHP_VERSION}
     container_name: ${SITE_NAME}-php
     volumes:
-      - ./wordpress:/var/www/html
+      - ./wordpress:/bitnami/wordpress
+      - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
+      - ./php/php-fpm.conf:/opt/bitnami/php/etc/php-fpm.conf:ro
     networks:
       - proxy_network
       - site_network
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - PHP_MEMORY_LIMIT=256M
+      - PHP_POST_MAX_SIZE=64M
+      - PHP_UPLOAD_MAX_FILESIZE=64M
+      - PHP_MAX_EXECUTION_TIME=300
+      - PHP_OPCACHE_ENABLE=1
 
   mariadb:
     image: mariadb:10.11
     container_name: ${SITE_NAME}-mariadb
+    volumes:
+      - ./mariadb/conf.d:/etc/mysql/conf.d:ro
+      - mariadb_data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wpuser
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
       - site_network
 
@@ -25,8 +39,8 @@ services:
     image: nginx:stable-alpine
     container_name: ${SITE_NAME}-nginx
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./wordpress:/var/www/html
     networks:
       - proxy_network
@@ -37,3 +51,7 @@ networks:
     external: true
   site_network:
     driver: bridge
+
+volumes:
+  mariadb_data:
+    driver: local

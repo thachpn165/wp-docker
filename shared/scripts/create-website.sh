@@ -20,6 +20,8 @@ TEMPLATES_DIR="$PROJECT_ROOT/shared/templates"
 PROXY_SCRIPT="$PROJECT_ROOT/nginx-proxy/restart-nginx-proxy.sh"
 PROXY_CONF_DIR="$PROJECT_ROOT/nginx-proxy/conf.d"
 SITE_CONF_FILE="$PROXY_CONF_DIR/$site_name.conf"
+CONTAINER_PHP="${site_name}-php"
+SETUP_WORDPRESS_SCRIPT="$PROJECT_ROOT/shared/scripts/setup-wordpress.sh"
 
 echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
 
@@ -67,9 +69,9 @@ cd "$SITES_DIR/$site_name"
 docker-compose up -d
 
 # Chờ container PHP khởi động
-echo -e "${YELLOW}⏳ Chờ container PHP '$site_name-php' khởi động...${NC}"
-sleep 5
-if ! docker ps --format "{{.Names}}" | grep -q "$site_name-php"; then
+echo -e "${YELLOW}⏳ Chờ container PHP '$CONTAINER_PHP' khởi động...${NC}"
+sleep 10
+if ! docker ps --format "{{.Names}}" | grep -q "$CONTAINER_PHP"; then
     echo -e "${RED}❌ Lỗi: Container PHP của '$site_name' chưa khởi động. Kiểm tra lại docker-compose.${NC}"
     exit 1
 fi
@@ -102,7 +104,6 @@ if [ "$(docker ps -q -f name=$NGINX_PROXY_CONTAINER)" ]; then
 else
     echo -e "${RED}⚠️ Nginx Proxy is not running, cannot copy SSL certificates.${NC}"
 fi
-
 
 # Tạo file cấu hình NGINX Proxy
 echo -e "${YELLOW}📌 Đang tạo file cấu hình NGINX cho website '$domain'...${NC}"
@@ -143,6 +144,16 @@ server {
 EOF
 
 echo -e "${GREEN}✅ Cấu hình NGINX cho '$domain' đã được tạo tại: $SITE_CONF_FILE${NC}"
+
+# **Gọi setup-wordpress.sh để cài đặt WordPress**
+if [ -f "$SETUP_WORDPRESS_SCRIPT" ]; then
+    echo -e "${YELLOW}🚀 Đang chạy script cài đặt WordPress...${NC}"
+    bash "$SETUP_WORDPRESS_SCRIPT" "$site_name"
+    echo -e "${GREEN}✅ Cài đặt WordPress hoàn tất.${NC}"
+else
+    echo -e "${RED}❌ Lỗi: Không tìm thấy script $SETUP_WORDPRESS_SCRIPT${NC}"
+    exit 1
+fi
 
 # Reload NGINX Proxy để áp dụng cấu hình mới
 if [ -f "$PROXY_SCRIPT" ]; then
