@@ -31,9 +31,7 @@ elif [[ "$NGINX_PROXY_STATUS" == "exited" || "$NGINX_PROXY_STATUS" == "created" 
     echo -e "${GREEN}✅ NGINX Proxy đã khởi động lại.${NC}"
 else
     echo -e "${YELLOW}🚀 Khởi động NGINX Reverse Proxy...${NC}"
-    cd "$PROXY_DIR"
-    docker-compose up -d
-    cd "$PROJECT_ROOT"
+    bash "$PROXY_DIR/setup-nginx-proxy.sh"
 fi
 
 echo -e "${GREEN}🎉 Hệ thống đã sẵn sàng!${NC}"

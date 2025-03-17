@@ -10,6 +10,7 @@ NC='\033[0m' # No Color
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
 SITES_DIR="$PROJECT_ROOT/sites"
 TEMPLATES_DIR="$PROJECT_ROOT/shared/templates"
+PROXY_SCRIPT="$PROJECT_ROOT/nginx-proxy/restart-nginx-proxy.sh"
 
 echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
 
@@ -73,3 +74,10 @@ cd "$SITES_DIR/$site_name"
 docker-compose up -d
 
 echo -e "${GREEN}🎉 Website $domain đã được tạo thành công!${NC}"
+
+# Reload NGINX Proxy để áp dụng cấu hình mới
+if [ -f "$PROXY_SCRIPT" ]; then
+    bash "$PROXY_SCRIPT"
+else
+    echo -e "${RED}⚠️ Không tìm thấy tập tin $PROXY_SCRIPT. Hãy kiểm tra lại.${NC}"
+fi

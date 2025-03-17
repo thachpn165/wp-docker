@@ -4,16 +4,17 @@ services:
   nginx-proxy:
     image: nginx:stable-alpine
     container_name: nginx-proxy
-    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./conf.d:/etc/nginx/conf.d
-      - ./ssl:/etc/nginx/ssl
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
       - proxy_network
+    restart: unless-stopped
 
 networks:
   proxy_network:
-    driver: bridge
+    name: proxy_network
