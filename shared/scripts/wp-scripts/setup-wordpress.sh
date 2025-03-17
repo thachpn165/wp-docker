@@ -17,7 +17,9 @@ fi
 site_name="$1"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
 SITES_DIR="$PROJECT_ROOT/sites"
-WP_DIR="$SITES_DIR/$site_name/wordpress"
+SITE_DIR="$SITES_DIR/$site_name"
+WP_DIR="$SITE_DIR/wordpress"
+ENV_FILE="$SITE_DIR/.env"
 CONTAINER_PHP="${site_name}-php"
 CONTAINER_DB="${site_name}-mariadb"
 SITE_URL="http://$site_name.local"
@@ -30,24 +32,44 @@ ADMIN_EMAIL="admin@$site_name.local"
 
 echo -e "${BLUE}🔹 Bắt đầu cài đặt WordPress cho '$site_name'...${NC}"
 
-# **Kiểm tra tập tin .env**
-if [ ! -f "$SITES_DIR/$site_name/.env" ]; then
-    echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin .env!${NC}"
+# **Kiểm tra xem container PHP đã khởi động chưa**
+echo -e "${YELLOW}⏳ Chờ container PHP '$CONTAINER_PHP' khởi động...${NC}"
+sleep 10
+
+if ! docker ps --format '{{.Names}}' | grep -q "$CONTAINER_PHP"; then
+    echo -e "${RED}❌ Lỗi: Container PHP '$CONTAINER_PHP' chưa chạy. Hãy kiểm tra lại!${NC}"
     exit 1
+fi
+
+# **Tải WordPress nếu chưa có**
+echo -e "${YELLOW}📥 Đang kiểm tra mã nguồn WordPress...${NC}"
+if [ ! -f "$WP_DIR/index.php" ]; then
+    echo -e "${YELLOW}📥 Đang tải WordPress...${NC}"
+    mkdir -p "$WP_DIR"
+    docker exec -i "$CONTAINER_PHP" sh -c "curl -o wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && tar -xzf wordpress.tar.gz --strip-components=1 -C /var/www/html && rm wordpress.tar.gz"
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ WordPress đã được tải xuống thành công.${NC}"
+    else
+        echo -e "${RED}❌ Lỗi khi tải mã nguồn WordPress.${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}✅ Mã nguồn WordPress đã có sẵn, bỏ qua bước tải xuống.${NC}"
 fi
 
 # **Lấy thông tin database từ .env**
-DB_NAME=$(grep "MYSQL_DATABASE=" "$SITES_DIR/$site_name/.env" | cut -d'=' -f2 | tr -d '\r')
-DB_USER=$(grep "MYSQL_USER=" "$SITES_DIR/$site_name/.env" | cut -d'=' -f2 | tr -d '\r')
-DB_PASS=$(grep "MYSQL_PASSWORD=" "$SITES_DIR/$site_name/.env" | cut -d'=' -f2 | tr -d '\r')
+DB_NAME=$(grep "MYSQL_DATABASE=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
+DB_USER=$(grep "MYSQL_USER=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
+DB_PASS=$(grep "MYSQL_PASSWORD=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
 
 # **Kiểm tra nếu biến rỗng**
 if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-    echo -e "${RED}❌ Lỗi: Thông tin database chưa được thiết lập đúng!${NC}"
+    echo -e "${RED}❌ Lỗi: Biến môi trường MySQL không hợp lệ trong .env!${NC}"
     exit 1
 fi
 
-# **Kiểm tra MySQL đã khởi động chưa**
+# **Chờ MySQL khởi động trước khi tiến hành cài đặt**
 echo -e "${YELLOW}⏳ Chờ MySQL khởi động...${NC}"
 for i in {1..10}; do
     if docker exec "$CONTAINER_DB" sh -c 'mysqladmin ping -h localhost --silent'; then
@@ -91,17 +113,6 @@ else
     echo -e "${RED}❌ Lỗi khi cài đặt WordPress.${NC}"
     exit 1
 fi
-
-# **Cấu hình Permalink**
-echo -e "${YELLOW}🔄 Cấu hình Permalink...${NC}"
-docker exec -i "$CONTAINER_PHP" sh -c "wp option update permalink_structure '/%postname%/' --allow-root --path=/var/www/html"
-
-# **Tăng cường bảo mật**
-echo -e "${YELLOW}🔐 Cấu hình bảo mật cho WordPress...${NC}"
-docker exec -i "$CONTAINER_PHP" sh -c "
-    wp option update blog_public 0 --allow-root --path=/var/www/html && \
-    wp option update timezone_string 'Asia/Ho_Chi_Minh' --allow-root --path=/var/www/html
-"
 
 # **Hiển thị thông tin đăng nhập**
 echo -e "\n\033[1;32m🚀 WordPress đã được cài đặt thành công! 🎉\033[0m"

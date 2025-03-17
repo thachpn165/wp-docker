@@ -25,7 +25,7 @@ services:
     container_name: ${SITE_NAME}-mariadb
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
-      - ${SITE_NAME}_mariadb_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -61,5 +61,5 @@ networks:
     driver: bridge
 
 volumes:
-  ${SITE_NAME}_mariadb_data:
+  mariadb_data:
     driver: local

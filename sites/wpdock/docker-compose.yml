@@ -25,12 +25,12 @@ services:
     container_name: wpdock-mariadb
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
-      - wpdock_mariadb_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=qodRV37EAbxOcOP3
+      - MYSQL_ROOT_PASSWORD=HvhDiqEgGeIfIcsi
       - MYSQL_DATABASE=wordpress
       - MYSQL_USER=wpuser
-      - MYSQL_PASSWORD=7Ph3P12P7DLnbNcx
+      - MYSQL_PASSWORD=yYEGyp3lrm1XTtzr
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
@@ -61,5 +61,5 @@ networks:
     driver: bridge
 
 volumes:
-  wpdock_mariadb_data:
+  mariadb_data:
     driver: local
