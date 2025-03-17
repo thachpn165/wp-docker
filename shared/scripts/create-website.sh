@@ -50,10 +50,10 @@ cat > "$SITES_DIR/$site_name/.env" <<EOF
 SITE_NAME=$site_name
 DOMAIN=$domain
 PHP_VERSION=$php_version
-MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16)
+MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
 MYSQL_DATABASE=wordpress
 MYSQL_USER=wpuser
-MYSQL_PASSWORD=$(openssl rand -base64 16)
+MYSQL_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
 EOF
 
 # Tạo file docker-compose.yml từ template
