@@ -33,7 +33,16 @@ fi
 
 # Tạo thư mục website
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
-mkdir -p "$SITES_DIR/$site_name"/{nginx/{conf.d,ssl},php/{tmp},mariadb,wordpress,logs}
+mkdir -p "$SITES_DIR/$site_name"/{nginx/{conf.d,ssl},php,mariadb/conf.d,wordpress,logs}
+
+# **Copy cấu hình PHP-FPM**
+echo -e "${YELLOW}📄 Sao chép cấu hình PHP-FPM...${NC}"
+cp "$TEMPLATES_DIR/php.ini.template" "$SITES_DIR/$site_name/php/php.ini"
+cp "$TEMPLATES_DIR/php-fpm.conf.template" "$SITES_DIR/$site_name/php/php-fpm.conf"
+
+# **Copy cấu hình MariaDB**
+echo -e "${YELLOW}📄 Sao chép cấu hình MariaDB...${NC}"
+cp "$TEMPLATES_DIR/mariadb-custom.cnf.template" "$SITES_DIR/$site_name/mariadb/conf.d/custom.cnf"
 
 # Tạo file .env
 echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
@@ -48,7 +57,7 @@ EOF
 
 # Tạo file docker-compose.yml từ template
 echo -e "${YELLOW}📄 Đang tạo file docker-compose.yml từ template...${NC}"
-TEMPLATE_FILE="$PROJECT_ROOT/shared/templates/docker-compose.yml.template"
+TEMPLATE_FILE="$TEMPLATES_DIR/docker-compose.yml.template"
 TARGET_FILE="$SITES_DIR/$site_name/docker-compose.yml"
 
 if [ -f "$TEMPLATE_FILE" ]; then
@@ -78,11 +87,10 @@ fi
 
 echo -e "${GREEN}🎉 Website $domain đã được tạo thành công!${NC}"
 
-# Tạo thư mục SSL
+# **Tạo chứng chỉ SSL tự ký**
 SSL_DIR="$SITES_DIR/$site_name/nginx/ssl"
 mkdir -p "$SSL_DIR"
 
-# Tạo chứng chỉ SSL tự ký
 echo -e "${YELLOW}🔒 Đang tạo chứng chỉ SSL tự ký cho $domain...${NC}"
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout "$SSL_DIR/$domain.key" \
@@ -91,24 +99,21 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 
 echo -e "${GREEN}✅ Chứng chỉ SSL tự ký đã được tạo cho $domain${NC}"
 
-# Copy chứng chỉ SSL vào Nginx Proxy
+# **Copy chứng chỉ SSL vào Nginx Proxy**
 NGINX_PROXY_CONTAINER="nginx-proxy"
-SSL_SOURCE_DIR="$SITES_DIR/$site_name/nginx/ssl"
 SSL_DEST_DIR="/etc/nginx/ssl"
 
 if [ "$(docker ps -q -f name=$NGINX_PROXY_CONTAINER)" ]; then
     echo -e "${YELLOW}🔄 Copying SSL certificates to Nginx Proxy...${NC}"
-    docker cp "$SSL_SOURCE_DIR/$domain.crt" $NGINX_PROXY_CONTAINER:$SSL_DEST_DIR/
-    docker cp "$SSL_SOURCE_DIR/$domain.key" $NGINX_PROXY_CONTAINER:$SSL_DEST_DIR/
+    docker cp "$SSL_DIR/$domain.crt" $NGINX_PROXY_CONTAINER:$SSL_DEST_DIR/
+    docker cp "$SSL_DIR/$domain.key" $NGINX_PROXY_CONTAINER:$SSL_DEST_DIR/
     echo -e "${GREEN}✅ SSL certificates copied to Nginx Proxy.${NC}"
 else
     echo -e "${RED}⚠️ Nginx Proxy is not running, cannot copy SSL certificates.${NC}"
 fi
 
-# Tạo file cấu hình NGINX Proxy
+# **Tạo file cấu hình NGINX Proxy**
 echo -e "${YELLOW}📌 Đang tạo file cấu hình NGINX cho website '$domain'...${NC}"
-
-# Tạo file cấu hình NGINX cho Reverse Proxy
 cat > "$SITE_CONF_FILE" <<EOF
 server {
     listen 80;
@@ -145,7 +150,7 @@ EOF
 
 echo -e "${GREEN}✅ Cấu hình NGINX cho '$domain' đã được tạo tại: $SITE_CONF_FILE${NC}"
 
-# **Gọi setup-wordpress.sh để cài đặt WordPress**
+# **Chạy script setup-wordpress.sh để cài đặt WordPress**
 if [ -f "$SETUP_WORDPRESS_SCRIPT" ]; then
     echo -e "${YELLOW}🚀 Đang chạy script cài đặt WordPress...${NC}"
     bash "$SETUP_WORDPRESS_SCRIPT" "$site_name"
@@ -155,8 +160,8 @@ else
     exit 1
 fi
 
-# Reload NGINX Proxy để áp dụng cấu hình mới
+# **Reload NGINX Proxy để áp dụng cấu hình mới**
 if [ -f "$PROXY_SCRIPT" ]; then
     bash "$PROXY_SCRIPT"
-    echo -e "${GREEN}✅ Đã reload NGINX Proxy. ${NC}"
+    echo -e "${GREEN}✅ Đã reload NGINX Proxy.${NC}"
 fi

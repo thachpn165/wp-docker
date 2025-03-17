@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   php:
-    image: bitnami/php-fpm:${PHP_VERSION}
-    container_name: ${SITE_NAME}-php
+    image: bitnami/php-fpm:8.3
+    container_name: wpdock-php
     volumes:
       - ./wordpress:/bitnami/wordpress
       - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
@@ -22,7 +22,7 @@ services:
 
   mariadb:
     image: mariadb:10.11
-    container_name: ${SITE_NAME}-mariadb
+    container_name: wpdock-mariadb
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql
@@ -30,7 +30,7 @@ services:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PASSWORD=lM5yebdzgPtwUZn3
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
@@ -38,7 +38,7 @@ services:
 
   nginx:
     image: nginx:stable-alpine
-    container_name: ${SITE_NAME}-nginx
+    container_name: wpdock-nginx
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
