@@ -7,18 +7,21 @@ YELLOW='\033[1;33m'
 BLUE='\033[1;34m'
 NC='\033[0m' # No Color
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
-SITES_DIR="$PROJECT_ROOT/sites"
-TEMPLATES_DIR="$PROJECT_ROOT/shared/templates"
-PROXY_SCRIPT="$PROJECT_ROOT/nginx-proxy/restart-nginx-proxy.sh"
-
-echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
-
 # Nhập thông tin cần thiết
 read -p "Tên miền (ví dụ: example.com): " domain
 read -p "Tên site (viết thường, không dấu, dùng dấu - nếu cần): " site_name
 read -p "Chọn phiên bản PHP (7.4, 8.1, 8.3) [mặc định: 8.3]: " php_version
 php_version=${php_version:-8.3}
+
+# Thiết lập biến
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
+SITES_DIR="$PROJECT_ROOT/sites"
+TEMPLATES_DIR="$PROJECT_ROOT/shared/templates"
+PROXY_SCRIPT="$PROJECT_ROOT/nginx-proxy/restart-nginx-proxy.sh"
+PROXY_CONF_DIR="$PROJECT_ROOT/nginx-proxy/conf.d"
+SITE_CONF_FILE="$PROXY_CONF_DIR/$site_name.conf"
+
+echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
 
 # Kiểm tra site đã tồn tại chưa
 if [ -d "$SITES_DIR/$site_name" ]; then
@@ -74,6 +77,27 @@ cd "$SITES_DIR/$site_name"
 docker-compose up -d
 
 echo -e "${GREEN}🎉 Website $domain đã được tạo thành công!${NC}"
+
+# Tạo file cấu hình NGINX Proxy
+echo -e "${YELLOW}📌 Đang tạo file cấu hình NGINX cho website '$domain'...${NC}"
+
+# Tạo file cấu hình NGINX cho Reverse Proxy
+cat > "$SITE_CONF_FILE" <<EOF
+server {
+    listen 80;
+    server_name $domain;
+
+    location / {
+        proxy_pass http://$site_name-php:80;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+
+echo -e "${GREEN}✅ Cấu hình NGINX cho '$domain' đã được tạo tại: $SITE_CONF_FILE${NC}"
 
 # Reload NGINX Proxy để áp dụng cấu hình mới
 if [ -f "$PROXY_SCRIPT" ]; then
