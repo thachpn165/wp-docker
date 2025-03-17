@@ -1,0 +1,56 @@
+# 🛑 ẨN CÁC FILE NHẠY CẢM 🛑
+.env
+.env.* 
+!*.env.example # Giữ lại file env mẫu
+secrets/
+keys/
+config/secrets.yml
+
+# 🚀 BỎ QUA DỮ LIỆU CỦA WORDPRESS 🚀
+sites/*/wordpress/*
+!sites/**/wordpress/wp-content/uploads/ # Giữ lại thư mục uploads (nếu cần)
+
+# ⚡️ BỎ QUA FILE BACKUP ⚡️
+backups/
+*.sql
+*.sql.gz
+*.tar.gz
+*.zip
+
+# 🔐 CHỨNG CHỈ SSL 🔐
+nginx-proxy/ssl/*
+sites/*/nginx/ssl/*
+!nginx-proxy/ssl/.gitkeep
+!sites/**/nginx/ssl/.gitkeep
+
+# 🛠️ DOCKER & COMPOSE 🛠️
+**/docker-compose.override.yml
+**/docker-compose.yml.bak
+**/docker-compose.override.yml.bak
+
+# 🔍 LOG & CACHE 🔍
+logs/
+logs/*/*
+*.log
+*.log.*
+debug.log
+php-errors.log
+nginx-proxy/access.log
+nginx-proxy/error.log
+sites/*/logs/*
+
+# ⚙️ MAC & LINUX SYSTEM FILES ⚙️
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ⛔ NODE & DEPENDENCIES ⛔
+node_modules/
+npm-debug.log
+yarn.lock
+
+# 💾 GIT TRACKING FILES 💾
+#.gitignore
