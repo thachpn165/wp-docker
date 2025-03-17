@@ -11,7 +11,7 @@ services:
       - ./wordpress:/var/www/html
     networks:
       - proxy_network
-      - site_network
+      - ${SITE_NAME}_site_network
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - PHP_MEMORY_LIMIT=256M
@@ -25,7 +25,7 @@ services:
     container_name: ${SITE_NAME}-mariadb
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
-      - mariadb_data:/var/lib/mysql
+      - ${SITE_NAME}_mariadb_data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -34,7 +34,7 @@ services:
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
-      - site_network
+      - ${SITE_NAME}_site_network
 
   nginx:
     image: nginx:stable-alpine
@@ -45,7 +45,7 @@ services:
       - ./wordpress:/var/www/html
     networks:
       - proxy_network
-      - site_network
+      - ${SITE_NAME}_site_network
     ports:
       - "80"
       - "443"
@@ -53,9 +53,9 @@ services:
 networks:
   proxy_network:
     external: true
-  site_network:
+  ${SITE_NAME}_site_network:
     driver: bridge
 
 volumes:
-  mariadb_data:
+  ${SITE_NAME}_mariadb_data:
     driver: local

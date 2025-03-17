@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   php:
-    image: bitnami/php-fpm:8.3
+    image: bitnami/php-fpm:8.1
     container_name: wpdock-php
     volumes:
       - ./wordpress:/bitnami/wordpress
@@ -11,7 +11,7 @@ services:
       - ./wordpress:/var/www/html
     networks:
       - proxy_network
-      - site_network
+      - wpdock_site_network
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - PHP_MEMORY_LIMIT=256M
@@ -25,16 +25,16 @@ services:
     container_name: wpdock-mariadb
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
-      - mariadb_data:/var/lib/mysql
+      - wpdock_mariadb_data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=41YG7JSxiYZeCpan
+      - MYSQL_ROOT_PASSWORD=x4SULzZmCIApZ1vK
       - MYSQL_DATABASE=wordpress
       - MYSQL_USER=wpuser
-      - MYSQL_PASSWORD=j0lKbVoODQ4lNOTo
+      - MYSQL_PASSWORD=CnedfOl6AOA82sy0
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
-      - site_network
+      - wpdock_site_network
 
   nginx:
     image: nginx:stable-alpine
@@ -45,7 +45,7 @@ services:
       - ./wordpress:/var/www/html
     networks:
       - proxy_network
-      - site_network
+      - wpdock_site_network
     ports:
       - "80"
       - "443"
@@ -53,9 +53,9 @@ services:
 networks:
   proxy_network:
     external: true
-  site_network:
+  wpdock_site_network:
     driver: bridge
 
 volumes:
-  mariadb_data:
+  wpdock_mariadb_data:
     driver: local
