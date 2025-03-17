@@ -27,14 +27,15 @@ services:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - wpdock_mariadb_data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=CME0e5qnMe3u1Lke
+      - MYSQL_ROOT_PASSWORD=qodRV37EAbxOcOP3
       - MYSQL_DATABASE=wordpress
       - MYSQL_USER=wpuser
-      - MYSQL_PASSWORD=zVpUqqZd0XahkQpA
+      - MYSQL_PASSWORD=7Ph3P12P7DLnbNcx
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
       - wpdock_site_network
+    restart: unless-stopped  # Đảm bảo MariaDB luôn khởi động lại nếu lỗi
 
   nginx:
     image: nginx:stable-alpine
@@ -49,6 +50,9 @@ services:
     ports:
       - "80"
       - "443"
+    depends_on:
+      - php
+      - mariadb
 
 networks:
   proxy_network:
