@@ -35,12 +35,12 @@ fi
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
 mkdir -p "$SITES_DIR/$site_name"/{nginx/{conf.d,ssl},php,mariadb/conf.d,wordpress,logs}
 
-# **Copy cấu hình PHP-FPM**
+# Copy cấu hình PHP-FPM
 echo -e "${YELLOW}📄 Sao chép cấu hình PHP-FPM...${NC}"
 cp "$TEMPLATES_DIR/php.ini.template" "$SITES_DIR/$site_name/php/php.ini"
 cp "$TEMPLATES_DIR/php-fpm.conf.template" "$SITES_DIR/$site_name/php/php-fpm.conf"
 
-# **Copy cấu hình MariaDB**
+# Copy cấu hình MariaDB
 echo -e "${YELLOW}📄 Sao chép cấu hình MariaDB...${NC}"
 cp "$TEMPLATES_DIR/mariadb-custom.cnf.template" "$SITES_DIR/$site_name/mariadb/conf.d/custom.cnf"
 
@@ -50,9 +50,10 @@ cat > "$SITES_DIR/$site_name/.env" <<EOF
 SITE_NAME=$site_name
 DOMAIN=$domain
 PHP_VERSION=$php_version
+MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16)
 MYSQL_DATABASE=wordpress
 MYSQL_USER=wpuser
-MYSQL_PASSWORD=$(openssl rand -base64 12)
+MYSQL_PASSWORD=$(openssl rand -base64 16)
 EOF
 
 # Tạo file docker-compose.yml từ template
@@ -61,11 +62,10 @@ TEMPLATE_FILE="$TEMPLATES_DIR/docker-compose.yml.template"
 TARGET_FILE="$SITES_DIR/$site_name/docker-compose.yml"
 
 if [ -f "$TEMPLATE_FILE" ]; then
-    sed -e "s|\${SITE_NAME}|$site_name|g" \
-        -e "s|\${PHP_VERSION}|$php_version|g" \
-        -e "s|\${MYSQL_PASSWORD}|$(grep 'MYSQL_PASSWORD' "$SITES_DIR/$site_name/.env" | cut -d'=' -f2)|g" \
-        "$TEMPLATE_FILE" > "$TARGET_FILE"
-
+    set -o allexport
+    source "$SITES_DIR/$site_name/.env"
+    set +o allexport
+    envsubst < "$TEMPLATE_FILE" > "$TARGET_FILE"
     echo -e "${GREEN}✅ File docker-compose.yml đã được tạo tại: $TARGET_FILE${NC}"
 else
     echo -e "${RED}❌ Lỗi: Template file không tồn tại: $TEMPLATE_FILE${NC}"
