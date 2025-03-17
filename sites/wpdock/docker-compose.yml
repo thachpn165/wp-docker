@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  php:
+    image: php:8.3-fpm
+    volumes:
+      - ./wordpress:/var/www/html
+  mariadb:
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: oE8dTvwMxXlSfssr
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80"
+      - "443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./wordpress:/var/www/html
