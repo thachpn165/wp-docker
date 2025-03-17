@@ -19,7 +19,10 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
 SITES_DIR="$PROJECT_ROOT/sites"
 WP_DIR="$SITES_DIR/$site_name/wordpress"
 CONTAINER_PHP="${site_name}-php"
-
+SITE_URL="http://$SITE_DOMAIN"
+ADMIN_USER="$(openssl rand -base64 8)"  # Random username
+ADMIN_PASSWORD=$(openssl rand -base64 12)  # Random password
+ADMIN_EMAIL="admin@$SITE_DOMAIN"
 echo -e "${BLUE}🔹 Bắt đầu cài đặt WordPress cho '$site_name'...${NC}"
 
 # **Kiểm tra xem container PHP đã khởi động chưa**
@@ -81,10 +84,7 @@ docker exec -i "$CONTAINER_PHP" sh -c "
 # **Cài đặt WordPress với WP-CLI**
 echo -e "${YELLOW}🚀 Đang cài đặt WordPress với WP-CLI...${NC}"
 docker exec -i "$CONTAINER_PHP" sh -c "
-    wp core install --url='https://$site_name.dev' --title='$site_name' \
-    --admin_user='admin' --admin_password='admin123' --admin_email='admin@$site_name.dev' \
-    --skip-email --allow-root --path=/var/www/html
-"
+    wp core install --url="$SITE_URL" --title="$SITE_NAME" --admin_user="$ADMIN_USER" --admin_password="$ADMIN_PASSWORD" --admin_email="$ADMIN_EMAIL" --path="/var/www/html" --allow-root"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ WordPress đã được cài đặt thành công.${NC}"
@@ -118,3 +118,11 @@ if grep -q "WP_REDIS_HOST" "$WP_DIR/wp-config.php"; then
     docker exec -i "$CONTAINER_PHP" sh -c "wp redis enable --allow-root --path=/var/www/html"
     echo -e "${GREEN}✅ Redis Cache đã được kích hoạt.${NC}"
 fi
+
+# Hoàn tất
+echo -e "\n\033[1;32m🚀 WordPress đã được cài đặt thành công! 🎉\033[0m"
+echo -e "🔹 Truy cập website: \033[1;34m$SITE_URL\033[0m"
+echo -e "🔹 Đăng nhập tại: \033[1;34m$SITE_URL/wp-admin\033[0m"
+echo -e "🔹 Tài khoản admin: \033[1;33m$ADMIN_USER\033[0m"
+echo -e "🔹 Mật khẩu admin: \033[1;31m$ADMIN_PASSWORD\033[0m"
+echo -e "\n\033[1;32mLưu ý: Vui lòng lưu lại thông tin đăng nhập này!\033[0m\n"

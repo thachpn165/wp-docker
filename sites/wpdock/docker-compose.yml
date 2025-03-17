@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   php:
-    image: bitnami/php-fpm:8.1
+    image: bitnami/php-fpm:8.3
     container_name: wpdock-php
     volumes:
       - ./wordpress:/bitnami/wordpress
@@ -27,10 +27,10 @@ services:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - wpdock_mariadb_data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=x4SULzZmCIApZ1vK
+      - MYSQL_ROOT_PASSWORD=NBInMY93GyIImVml
       - MYSQL_DATABASE=wordpress
       - MYSQL_USER=wpuser
-      - MYSQL_PASSWORD=CnedfOl6AOA82sy0
+      - MYSQL_PASSWORD=17NAkpVcbdtajlJB
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
