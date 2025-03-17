@@ -50,7 +50,7 @@ Thumbs.db
 # ⛔ NODE & DEPENDENCIES ⛔
 node_modules/
 npm-debug.log
-yarn.lock
+
 
 # 💾 GIT TRACKING FILES 💾
 #.gitignore
