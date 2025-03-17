@@ -21,7 +21,7 @@ PROXY_SCRIPT="$PROJECT_ROOT/nginx-proxy/restart-nginx-proxy.sh"
 PROXY_CONF_DIR="$PROJECT_ROOT/nginx-proxy/conf.d"
 SITE_CONF_FILE="$PROXY_CONF_DIR/$site_name.conf"
 CONTAINER_PHP="${site_name}-php"
-SETUP_WORDPRESS_SCRIPT="$PROJECT_ROOT/shared/scripts/setup-wordpress.sh"
+SETUP_WORDPRESS_SCRIPT="$PROJECT_ROOT/shared/scripts/wp-scripts/setup-wordpress.sh"
 
 echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
 
