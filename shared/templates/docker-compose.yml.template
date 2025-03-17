@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  php:
+    image: php:${PHP_VERSION}-fpm
+    container_name: ${SITE_NAME}-php
+    volumes:
+      - ./wordpress:/var/www/html
+    networks:
+      - proxy_network
+      - site_network
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: ${SITE_NAME}-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - site_network
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: ${SITE_NAME}-nginx
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./wordpress:/var/www/html
+    networks:
+      - proxy_network
+      - site_network
+
+networks:
+  proxy_network:
+    external: true
+  site_network:
+    driver: bridge

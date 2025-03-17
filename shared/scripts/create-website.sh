@@ -44,39 +44,65 @@ MYSQL_USER=wpuser
 MYSQL_PASSWORD=$(openssl rand -base64 12)
 EOF
 
-# Tạo file docker-compose.yml
-echo -e "${YELLOW}📄 Đang tạo file docker-compose.yml...${NC}"
-cat > "$SITES_DIR/$site_name/docker-compose.yml" <<EOF
-version: '3.8'
-services:
-  php:
-    image: php:$php_version-fpm
-    volumes:
-      - ./wordpress:/var/www/html
-  mariadb:
-    image: mariadb:10.11
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wpuser
-      MYSQL_PASSWORD: $(grep "MYSQL_PASSWORD" "$SITES_DIR/$site_name/.env" | cut -d'=' -f2)
-  nginx:
-    image: nginx:stable-alpine
-    ports:
-      - "80"
-      - "443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
-      - ./wordpress:/var/www/html
-EOF
+# Tạo file docker-compose.yml từ template
+echo -e "${YELLOW}📄 Đang tạo file docker-compose.yml từ template...${NC}"
+TEMPLATE_FILE="$PROJECT_ROOT/shared/templates/docker-compose.yml.template"
+TARGET_FILE="$SITES_DIR/$site_name/docker-compose.yml"
+
+if [ -f "$TEMPLATE_FILE" ]; then
+    sed -e "s|\${SITE_NAME}|$site_name|g" \
+        -e "s|\${PHP_VERSION}|$php_version|g" \
+        -e "s|\${MYSQL_PASSWORD}|$(grep 'MYSQL_PASSWORD' "$SITES_DIR/$site_name/.env" | cut -d'=' -f2)|g" \
+        "$TEMPLATE_FILE" > "$TARGET_FILE"
+
+    echo -e "${GREEN}✅ File docker-compose.yml đã được tạo tại: $TARGET_FILE${NC}"
+else
+    echo -e "${RED}❌ Lỗi: Template file không tồn tại: $TEMPLATE_FILE${NC}"
+    exit 1
+fi
 
 # Khởi động website
 echo -e "${GREEN}🚀 Đang khởi động website $domain...${NC}"
 cd "$SITES_DIR/$site_name"
 docker-compose up -d
 
+# Chờ container PHP khởi động
+echo -e "${YELLOW}⏳ Chờ container PHP '$site_name-php' khởi động...${NC}"
+sleep 5
+if ! docker ps --format "{{.Names}}" | grep -q "$site_name-php"; then
+    echo -e "${RED}❌ Lỗi: Container PHP của '$site_name' chưa khởi động. Kiểm tra lại docker-compose.${NC}"
+    exit 1
+fi
+
 echo -e "${GREEN}🎉 Website $domain đã được tạo thành công!${NC}"
+
+# Tạo thư mục SSL
+SSL_DIR="$SITES_DIR/$site_name/nginx/ssl"
+mkdir -p "$SSL_DIR"
+
+# Tạo chứng chỉ SSL tự ký
+echo -e "${YELLOW}🔒 Đang tạo chứng chỉ SSL tự ký cho $domain...${NC}"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "$SSL_DIR/$domain.key" \
+    -out "$SSL_DIR/$domain.crt" \
+    -subj "/C=US/ST=State/L=City/O=Organization/CN=$domain"
+
+echo -e "${GREEN}✅ Chứng chỉ SSL tự ký đã được tạo cho $domain${NC}"
+
+# Copy chứng chỉ SSL vào Nginx Proxy
+NGINX_PROXY_CONTAINER="nginx-proxy"
+SSL_SOURCE_DIR="$SITES_DIR/$site_name/nginx/ssl"
+SSL_DEST_DIR="/etc/nginx/ssl"
+
+if [ "$(docker ps -q -f name=$NGINX_PROXY_CONTAINER)" ]; then
+    echo -e "${YELLOW}🔄 Copying SSL certificates to Nginx Proxy...${NC}"
+    docker cp "$SSL_SOURCE_DIR/$domain.crt" $NGINX_PROXY_CONTAINER:$SSL_DEST_DIR/
+    docker cp "$SSL_SOURCE_DIR/$domain.key" $NGINX_PROXY_CONTAINER:$SSL_DEST_DIR/
+    echo -e "${GREEN}✅ SSL certificates copied to Nginx Proxy.${NC}"
+else
+    echo -e "${RED}⚠️ Nginx Proxy is not running, cannot copy SSL certificates.${NC}"
+fi
+
 
 # Tạo file cấu hình NGINX Proxy
 echo -e "${YELLOW}📌 Đang tạo file cấu hình NGINX cho website '$domain'...${NC}"
@@ -86,6 +112,21 @@ cat > "$SITE_CONF_FILE" <<EOF
 server {
     listen 80;
     server_name $domain;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $domain;
+
+    ssl_certificate /etc/nginx/ssl/$domain.crt;
+    ssl_certificate_key /etc/nginx/ssl/$domain.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    # Bật HSTS để tăng cường bảo mật HTTPS
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
     location / {
         proxy_pass http://$site_name-php:80;
@@ -93,6 +134,10 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800";
+        add_header Pragma public;
     }
 }
 EOF
@@ -102,6 +147,5 @@ echo -e "${GREEN}✅ Cấu hình NGINX cho '$domain' đã được tạo tại: 
 # Reload NGINX Proxy để áp dụng cấu hình mới
 if [ -f "$PROXY_SCRIPT" ]; then
     bash "$PROXY_SCRIPT"
-else
-    echo -e "${RED}⚠️ Không tìm thấy tập tin $PROXY_SCRIPT. Hãy kiểm tra lại.${NC}"
+    echo -e "${GREEN}✅ Đã reload NGINX Proxy. ${NC}"
 fi
