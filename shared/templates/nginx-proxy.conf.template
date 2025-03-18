@@ -11,6 +11,7 @@ server {
     server_name ${DOMAIN};
     root /var/www/${SITE_NAME};
     index index.php index.html index.htm;
+
     # 🔐 Chứng chỉ SSL
     ssl_certificate /etc/nginx/ssl/${DOMAIN}.crt;
     ssl_certificate_key /etc/nginx/ssl/${DOMAIN}.key;
@@ -25,7 +26,7 @@ server {
 
     # 🚀 Chuyển tiếp toàn bộ request đến PHP-FPM
     location / {
-        fastcgi_pass ${PHP_CONTAINER}:9000;
+        fastcgi_pass ${SITE_NAME}-php:9000;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;
         include fastcgi_params;
@@ -36,7 +37,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # permalinks WordPress  
+        # ✅ Hỗ trợ Permalinks WordPress
         try_files $uri $uri/ /index.php?$args;
     }
 

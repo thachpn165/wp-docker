@@ -112,9 +112,15 @@ fi
 
 
 
-# ⚙️ **3. Sao chép cấu hình PHP-FPM và MariaDB**
+# ⚙️ **3. Sao chép cấu hình php.ini mặc định**
 copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
-copy_file "$TEMPLATES_DIR/mariadb-custom.cnf.template" "$SITE_DIR/mariadb/conf.d/custom.cnf"
+
+# ⚙️ **3. Tạo cấu hình tối ưu MariaDB**
+echo -e "${YELLOW}⚙️ Đang tạo cấu hình MariaDB tối ưu...${NC}"
+apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf"
+echo -e "${GREEN}✅ Cấu hình MariaDB tối ưu đã được tạo.${NC}"
+
+# ⚙️ **4. Tạo cấu hình PHP-FPM tối ưu**
 echo -e "${YELLOW}⚙️ Đang tạo cấu hình PHP-FPM tối ưu...${NC}"
 create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf"
 echo -e "${GREEN}✅ Cấu hình PHP-FPM tối ưu đã được tạo.${NC}"
@@ -158,15 +164,6 @@ echo -e "${GREEN}🎉 Website $domain đã được tạo thành công!${NC}"
 # 🔐 **7. Tạo chứng chỉ SSL tự ký**
 SSL_PATH="$SSL_DIR/$domain"
 generate_ssl_cert "$domain" "$SSL_DIR"
-
-# 🔄 **8. Kiểm tra và reload NGINX Proxy**
-if is_container_running "$NGINX_PROXY_CONTAINER"; then
-    echo -e "${YELLOW}🔄 Reloading Nginx Proxy...${NC}"
-    docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload
-    echo -e "${GREEN}✅ Nginx Proxy đã được reload.${NC}"
-else
-    echo -e "${RED}⚠️ Nginx Proxy không chạy. Vui lòng kiểm tra lại!${NC}"
-fi
 
 # 📌 **9. Cài đặt WordPress**
 if is_file_exist "$SETUP_WORDPRESS_SCRIPT"; then

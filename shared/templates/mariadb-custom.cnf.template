@@ -1,8 +1,0 @@
-[mysqld]
-character-set-server = utf8mb4
-collation-server = utf8mb4_unicode_ci
-max_connections = 200
-query_cache_size = 16M
-innodb_buffer_pool_size = 256M
-innodb_flush_log_at_trx_commit = 1
-innodb_lock_wait_timeout = 50
