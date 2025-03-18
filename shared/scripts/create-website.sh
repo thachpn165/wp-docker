@@ -14,10 +14,8 @@ done
 source "$CONFIG_FILE"
 
 # 🛠 Kiểm tra biến quan trọng
-required_vars=("PROJECT_ROOT" "SITES_DIR" "TEMPLATES_DIR" "CONFIG_DIR" "SCRIPTS_DIR"
-               "FUNCTIONS_DIR" "WP_SCRIPTS_DIR" "WEBSITE_MGMT_DIR" "NGINX_PROXY_DIR"
-               "NGINX_SCRIPTS_DIR" "SSL_DIR" "DOCKER_NETWORK" "NGINX_PROXY_CONTAINER"
-               "SETUP_WORDPRESS_SCRIPT" "PROXY_SCRIPT")
+required_vars=("PROJECT_ROOT" "SITES_DIR" "TEMPLATES_DIR" "NGINX_PROXY_DIR"
+               "SSL_DIR" "DOCKER_NETWORK" "NGINX_PROXY_CONTAINER")
 
 for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
@@ -35,6 +33,7 @@ read -p "Chọn phiên bản PHP (7.4, 8.1, 8.3) [mặc định: 8.3]: " php_ver
 php_version=${php_version:-8.3}
 
 SITE_DIR="$SITES_DIR/$site_name"
+NGINX_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$site_name.conf"
 
 # 🚫 Kiểm tra nếu site đã tồn tại
 if is_dir_exist "$SITE_DIR"; then
@@ -45,37 +44,33 @@ fi
 # 📂 **1. Tạo thư mục cần thiết**
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
 mkdir -p "$SITE_DIR/mariadb/conf.d" "$SITE_DIR/wordpress" "$SITE_DIR/logs"
-echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
-mkdir -p "$SITE_DIR"
 
+# 📜 **2. Tạo cấu hình NGINX mặc định**
+NGINX_TEMPLATE="$TEMPLATES_DIR/nginx-default.conf.template"
 
-# 📜 **2. Sao chép cấu hình NGINX Proxy**
-NGINX_PROXY_CONF_TEMPLATE="$TEMPLATES_DIR/nginx-proxy.conf.template"
-NGINX_PROXY_CONF_TARGET="$NGINX_PROXY_DIR/conf.d/$site_name.conf"
+if is_file_exist "$NGINX_TEMPLATE"; then
+    cp "$NGINX_TEMPLATE" "$NGINX_CONF_FILE"
+    
+    # Thay thế biến trong tập tin cấu hình
+    sed -i -e "s|\${SITE_NAME}|$site_name|g" \
+           -e "s|\${DOMAIN}|$domain|g" "$NGINX_CONF_FILE"
 
-if is_file_exist "$NGINX_PROXY_CONF_TEMPLATE"; then
-    cp "$NGINX_PROXY_CONF_TEMPLATE" "$NGINX_PROXY_CONF_TARGET"
-    if is_file_exist "$NGINX_PROXY_CONF_TARGET"; then
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' -e "s|\${SITE_NAME}|$site_name|g" -e "s|\${DOMAIN}|$domain|g" "$NGINX_PROXY_CONF_TARGET"
-        else
-            sed -i -e "s|\${SITE_NAME}|$site_name|g" -e "s|\${DOMAIN}|$domain|g" "$NGINX_PROXY_CONF_TARGET"
-        fi
-        echo -e "${GREEN}✅ Cấu hình Nginx Proxy đã được tạo: $NGINX_PROXY_CONF_TARGET${NC}"
-    else
-        echo -e "${RED}❌ Lỗi: Tệp tin cấu hình Nginx Proxy không tồn tại: $NGINX_PROXY_CONF_TARGET${NC}"
-        exit 1
-    fi
+    echo -e "${GREEN}✅ Cấu hình NGINX mặc định đã được tạo: $NGINX_CONF_FILE${NC}"
 else
-    echo -e "${RED}❌ Lỗi: Không tìm thấy template Nginx Proxy.${NC}"
+    echo -e "${RED}❌ Lỗi: Không tìm thấy template nginx-default.conf.template.${NC}"
     exit 1
 fi
+
+# 🌀 **Restart lại NGINX Proxy để nhận diện cấu hình cache**
+restart_nginx_proxy
 
 # ⚙️ **3. Tạo cấu hình tối ưu PHP-FPM**
 echo -e "${YELLOW}⚙️ Đang tạo cấu hình PHP-FPM tối ưu...${NC}"
 create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf"
 echo -e "${GREEN}✅ Cấu hình PHP-FPM tối ưu đã được tạo.${NC}"
 
+# 📄 **4. Tạo file .env**
+echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
 MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
 MYSQL_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
 
@@ -83,6 +78,7 @@ cat > "$SITE_DIR/.env" <<EOF
 SITE_NAME=$site_name
 DOMAIN=$domain
 PHP_VERSION=$php_version
+CACHE_TYPE=no-cache
 MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
 MYSQL_DATABASE=wordpress
 MYSQL_USER=wpuser
@@ -117,13 +113,7 @@ SSL_PATH="$SSL_DIR/$domain"
 generate_ssl_cert "$domain" "$SSL_DIR"
 
 # 🔄 **8. Kiểm tra và reload NGINX Proxy**
-if is_container_running "$NGINX_PROXY_CONTAINER"; then
-    echo -e "${YELLOW}🔄 Reloading Nginx Proxy...${NC}"
-    docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload
-    echo -e "${GREEN}✅ Nginx Proxy đã được reload.${NC}"
-else
-    echo -e "${RED}⚠️ Nginx Proxy không chạy. Vui lòng kiểm tra lại!${NC}"
-fi
+restart_nginx_proxy
 
 # 📌 **9. Cài đặt WordPress**
 if is_file_exist "$SETUP_WORDPRESS_SCRIPT"; then

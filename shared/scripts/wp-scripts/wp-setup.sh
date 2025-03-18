@@ -13,16 +13,6 @@ done
 
 source "$CONFIG_FILE"
 
-# 🛠️ Kiểm tra biến quan trọng có tồn tại không
-required_vars=("PROJECT_ROOT" "SITES_DIR" "WP_SCRIPTS_DIR" "DOCKER_NETWORK" "NGINX_PROXY_CONTAINER" "SSL_DIR")
-
-for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        echo -e "${RED}❌ Lỗi: Biến '$var' chưa được định nghĩa trong config.sh${NC}"
-        exit 1
-    fi
-done
-
 # 📌 Nhận tham số đầu vào (tên website)
 if [ -z "$1" ]; then
     echo -e "${RED}❌ Lỗi: Chưa nhập tên website.${NC}"
@@ -32,27 +22,26 @@ fi
 # 🏗️ Định nghĩa các biến hệ thống
 site_name="$1"
 SITE_DIR="$SITES_DIR/$site_name"
-WP_DIR="$SITE_DIR/wordpress"
 ENV_FILE="$SITE_DIR/.env"
 CONTAINER_PHP="${site_name}-php"
 CONTAINER_DB="${site_name}-mariadb"
 
-# 📌 Kiểm tra và tải biến từ .env
+# 📋 Lấy thông tin từ .env
 if is_file_exist "$ENV_FILE"; then
     DOMAIN=$(fetch_env_variable "$ENV_FILE" "DOMAIN")
 fi
 
-# 🌐 Xác định URL website
+# 🌍 Xác định URL website
 if [ -z "$DOMAIN" ]; then
-    echo -e "${YELLOW}⚠️ Không tìm thấy biến DOMAIN trong .env, sử dụng mặc định http://$site_name.local${NC}"
-    SITE_URL="http://$site_name.local"
+    echo -e "${YELLOW}⚠️ Không tìm thấy biến DOMAIN trong .env, sử dụng mặc định https://$site_name.local${NC}"
+    SITE_URL="https://$site_name.local"
 else
     SITE_URL="https://$DOMAIN"
 fi
 
 # 🔑 Tạo tài khoản admin ngẫu nhiên
-ADMIN_USER="admin_$(openssl rand -hex 6)"
-ADMIN_PASSWORD=$(openssl rand -base64 16)
+ADMIN_USER="admin"
+ADMIN_PASSWORD=$(openssl rand -base64 12)
 ADMIN_EMAIL="admin@$site_name.local"
 
 echo -e "${BLUE}🔹 Bắt đầu cài đặt WordPress cho '$site_name'...${NC}"
@@ -70,9 +59,8 @@ fi
 check_and_install_wp_cli "$CONTAINER_PHP"
 
 # 📂 Kiểm tra và tải mã nguồn WordPress
-if [ ! -f "$WP_DIR/index.php" ]; then
+if [ ! -f "$SITE_DIR/wordpress/index.php" ]; then
     echo -e "${YELLOW}📥 Đang tải WordPress...${NC}"
-    mkdir -p "$WP_DIR"
     docker exec -i "$CONTAINER_PHP" sh -c "
         curl -o wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
         tar -xzf wordpress.tar.gz --strip-components=1 -C /var/www/html && \
@@ -99,26 +87,26 @@ if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
     exit 1
 fi
 
-# ⏳ Chờ MySQL khởi động
-echo -e "${YELLOW}⏳ Chờ MySQL khởi động...${NC}"
-for i in {1..10}; do
-    if is_container_running "$CONTAINER_DB" && docker exec "$CONTAINER_DB" sh -c 'mysqladmin ping -h localhost --silent'; then
-        echo -e "${GREEN}✅ MySQL đã sẵn sàng.${NC}"
-        break
-    fi
-    sleep 2
-done
-
 # 🛠️ Cấu hình wp-config.php
 setup_wp_config "$CONTAINER_PHP" "$DB_NAME" "$DB_USER" "$DB_PASS" "$CONTAINER_DB"
 
 # 🚀 Cài đặt WordPress
 install_wordpress "$CONTAINER_PHP" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+
 # 🛠️ **Thiết lập permalinks**
 set_wordpress_permalinks "$CONTAINER_PHP" "$SITE_URL"
 
-# 🔒 **Cài đặt plugin bảo mật**
-install_security_plugin "$CONTAINER_PHP"
-
-echo -e "${GREEN}🎉 Hoàn tất quá trình cài đặt WordPress tại $SITE_URL.${NC}"
-echo -e "${YELLOW}🔐 Tài khoản admin: $ADMIN_USER / $ADMIN_PASSWORD${NC}"
+# 🎉 **Hiển thị thông tin đăng nhập đẹp mắt**
+echo -e "${GREEN}"
+echo -e "==================================================="
+echo -e "🎉 WordPress đã được cài đặt thành công! 🎉"
+echo -e "==================================================="
+echo -e "🌍 Website URL:   ${CYAN}$SITE_URL${GREEN}"
+echo -e "🔑 Admin URL:     ${CYAN}$SITE_URL/wp-admin${GREEN}"
+echo -e "👤 Admin User:    ${YELLOW}$ADMIN_USER${GREEN}"
+echo -e "🔒 Admin Pass:    ${YELLOW}$ADMIN_PASSWORD${GREEN}"
+echo -e "📧 Admin Email:   ${YELLOW}$ADMIN_EMAIL${GREEN}"
+echo -e "==================================================="
+echo -e "🚀 Hãy truy cập website của bạn ngay bây giờ!"
+echo -e "==================================================="
+echo -e "${NC}"

@@ -58,4 +58,3 @@ yarn.lock
 *.crt
 *.key
 *.pem
-*.conf

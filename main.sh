@@ -63,7 +63,8 @@ while true; do
     echo -e "  ${GREEN}[1]${NC} 🌍 Quản lý Website WordPress"
     echo -e "  ${GREEN}[2]${NC} 🔐 Quản lý Chứng Chỉ SSL"
     echo -e "  ${GREEN}[3]${NC} ⚙️ Công Cụ Hệ Thống"
-    echo -e "  ${GREEN}[4]${NC} ❌ Thoát"
+    echo -e "  ${GREEN}[4]${NC} ⚡ Quản lý Cache WordPress"
+    echo -e "  ${GREEN}[5]${NC} ❌ Thoát"
     echo ""
 
     read -p "🔹 Chọn một chức năng (1-4): " choice
@@ -71,7 +72,8 @@ while true; do
         1) manage_website_menu ;;
         2) manage_ssl_menu ;;
         3) system_tools_menu ;;
-        4) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
+        4) bash "$SCRIPTS_DIR/setup-cache.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
+        5) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
         *) 
             echo -e "${RED}⚠️ Lựa chọn không hợp lệ! Vui lòng chọn từ [1-4].${NC}"
             sleep 2 

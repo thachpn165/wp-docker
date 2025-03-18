@@ -63,14 +63,12 @@ EOF
     "
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ wp-config.php đã được cập nhật với HTTPS.${NC}"
+        echo -e "${GREEN}✅ wp-config.php đã được cấu hình thành công.${NC}"
     else
         echo -e "${RED}❌ Lỗi khi cấu hình wp-config.php.${NC}"
         exit 1
     fi
 }
-
-
 
 # 🚀 Cài đặt WordPress
 install_wordpress() {

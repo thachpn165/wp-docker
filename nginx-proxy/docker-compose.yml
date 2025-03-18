@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nginx-proxy:
     image: nginx:stable-alpine
@@ -10,7 +8,8 @@ services:
     volumes:
       - ./conf.d:/etc/nginx/conf.d
       - ./ssl:/etc/nginx/ssl
-      - ./wordpress:/var/www/html 
+      - ./wordpress:/var/www/html
+      - ./cache:/etc/nginx/conf.d/cache/ 
     networks:
       - proxy_network 
 
