@@ -60,3 +60,4 @@ yarn.lock
 *.key
 *.pem
 *.conf
+sites/*
