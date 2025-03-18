@@ -14,14 +14,8 @@ read -p "Chọn phiên bản PHP (7.4, 8.1, 8.3) [mặc định: 8.3]: " php_ver
 php_version=${php_version:-8.3}
 
 # Thiết lập biến
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
-SITES_DIR="$PROJECT_ROOT/sites"
-TEMPLATES_DIR="$PROJECT_ROOT/shared/templates"
-PROXY_SCRIPT="$PROJECT_ROOT/nginx-proxy/restart-nginx-proxy.sh"
-PROXY_CONF_DIR="$PROJECT_ROOT/nginx-proxy/conf.d"
-SITE_CONF_FILE="$PROXY_CONF_DIR/$site_name.conf"
-CONTAINER_PHP="${site_name}-php"
-SETUP_WORDPRESS_SCRIPT="$PROJECT_ROOT/shared/scripts/wp-scripts/setup-wordpress.sh"
+source "$(cd "$(dirname "$0")" && pwd)/config.sh"
+
 
 echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
 
@@ -33,7 +27,8 @@ fi
 
 # Tạo thư mục website
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
-mkdir -p "$SITES_DIR/$site_name"/{nginx/{conf.d,ssl},php,mariadb/conf.d,wordpress,logs}
+
+mkdir -p "$SITES_DIR/$site_name"/{nginx/conf.d,php,mariadb/conf.d,wordpress,logs}
 
 #Copy cấu hình NGINX Backend từ template
 echo -e "${YELLOW}📄 Sao chép cấu hình NGINX Backend...${NC}"
@@ -60,17 +55,29 @@ cp "$TEMPLATES_DIR/php-fpm.conf.template" "$SITES_DIR/$site_name/php/php-fpm.con
 echo -e "${YELLOW}📄 Sao chép cấu hình MariaDB...${NC}"
 cp "$TEMPLATES_DIR/mariadb-custom.cnf.template" "$SITES_DIR/$site_name/mariadb/conf.d/custom.cnf"
 
+
+#
 # Tạo file .env
+#
+
+#Tạo mật khẩu Root MySQL và MySQL Database ngẫu nhiên
+MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
+MYSQL_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
+
+#Ghi thông tin database và các thông tin liên quan vào .env
 echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
+mkdir -p "$SITES_DIR/$site_name"
 cat > "$SITES_DIR/$site_name/.env" <<EOF
 SITE_NAME=$site_name
 DOMAIN=$domain
 PHP_VERSION=$php_version
-MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
+MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
 MYSQL_DATABASE=wordpress
 MYSQL_USER=wpuser
-MYSQL_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
+MYSQL_PASSWORD=$MYSQL_PASSWORD
 EOF
+
+
 
 # Tạo file docker-compose.yml từ template
 echo -e "${YELLOW}📄 Đang tạo file docker-compose.yml từ template...${NC}"
@@ -93,19 +100,11 @@ echo -e "${GREEN}🚀 Đang khởi động website $domain...${NC}"
 cd "$SITES_DIR/$site_name"
 docker-compose up -d
 
-# Chờ container PHP khởi động
-echo -e "${YELLOW}⏳ Chờ container PHP '$CONTAINER_PHP' khởi động...${NC}"
-sleep 10
-if ! docker ps --format "{{.Names}}" | grep -q "$CONTAINER_PHP"; then
-    echo -e "${RED}❌ Lỗi: Container PHP của '$site_name' chưa khởi động. Kiểm tra lại docker-compose.${NC}"
-    exit 1
-fi
-
 echo -e "${GREEN}🎉 Website $domain đã được tạo thành công!${NC}"
 
 # **Tạo chứng chỉ SSL tự ký**
-SSL_DIR="$SITES_DIR/$site_name/nginx/ssl"
-mkdir -p "$SSL_DIR"
+
+##echo "DEBUG SSL_DIR: $SSL_DIR"
 
 echo -e "${YELLOW}🔒 Đang tạo chứng chỉ SSL tự ký cho $domain...${NC}"
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
@@ -114,19 +113,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -subj "/C=US/ST=State/L=City/O=Organization/CN=$domain"
 
 echo -e "${GREEN}✅ Chứng chỉ SSL tự ký đã được tạo cho $domain${NC}"
-
-# **Copy chứng chỉ SSL vào Nginx Proxy**
-NGINX_PROXY_CONTAINER="nginx-proxy"
-SSL_DEST_DIR="/etc/nginx/ssl"
-
-if [ "$(docker ps -q -f name=$NGINX_PROXY_CONTAINER)" ]; then
-    echo -e "${YELLOW}🔄 Copying SSL certificates to Nginx Proxy...${NC}"
-    docker cp "$SSL_DIR/$domain.crt" $NGINX_PROXY_CONTAINER:$SSL_DEST_DIR/
-    docker cp "$SSL_DIR/$domain.key" $NGINX_PROXY_CONTAINER:$SSL_DEST_DIR/
-    echo -e "${GREEN}✅ SSL certificates copied to Nginx Proxy.${NC}"
-else
-    echo -e "${RED}⚠️ Nginx Proxy is not running, cannot copy SSL certificates.${NC}"
-fi
 
 # **Tạo file cấu hình NGINX Proxy**
 echo -e "${YELLOW}📌 Đang tạo file cấu hình NGINX Proxy cho website '$domain'...${NC}"

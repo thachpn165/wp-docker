@@ -15,15 +15,16 @@ fi
 
 # Biến hệ thống
 site_name="$1"
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
+# Import config.sh từ thư mục cha (shared/scripts/)
+source "$(cd "$(dirname "$0")" && cd .. && pwd)/config.sh"
 SITES_DIR="$PROJECT_ROOT/sites"
 SITE_DIR="$SITES_DIR/$site_name"
 WP_DIR="$SITE_DIR/wordpress"
 ENV_FILE="$SITE_DIR/.env"
 CONTAINER_PHP="${site_name}-php"
 CONTAINER_DB="${site_name}-mariadb"
-SITE_URL="http://$site_name.local"
-LOG_FILE="/var/log/wp-install.log"
+SITE_URL="https://$DOMAIN"
+
 
 # Tạo tài khoản admin ngẫu nhiên
 ADMIN_USER="admin_$(openssl rand -hex 6)"
@@ -40,6 +41,8 @@ if ! docker ps --format '{{.Names}}' | grep -q "$CONTAINER_PHP"; then
     echo -e "${RED}❌ Lỗi: Container PHP '$CONTAINER_PHP' chưa chạy. Hãy kiểm tra lại!${NC}"
     exit 1
 fi
+
+
 
 # **Tải WordPress nếu chưa có**
 echo -e "${YELLOW}📥 Đang kiểm tra mã nguồn WordPress...${NC}"
@@ -58,10 +61,11 @@ else
     echo -e "${GREEN}✅ Mã nguồn WordPress đã có sẵn, bỏ qua bước tải xuống.${NC}"
 fi
 
+
 # **Lấy thông tin database từ .env**
-DB_NAME=$(grep "MYSQL_DATABASE=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
-DB_USER=$(grep "MYSQL_USER=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
-DB_PASS=$(grep "MYSQL_PASSWORD=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
+DB_NAME=$(grep -E "^MYSQL_DATABASE=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
+DB_USER=$(grep -E "^MYSQL_USER=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
+DB_PASS=$(grep -E "^MYSQL_PASSWORD=" "$ENV_FILE" | cut -d'=' -f2 | tr -d '\r')
 
 # **Kiểm tra nếu biến rỗng**
 if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
@@ -78,6 +82,7 @@ for i in {1..10}; do
     fi
     sleep 2
 done
+
 
 # **Escape ký tự đặc biệt trong `sed`**
 DB_NAME_ESCAPED=$(printf '%s\n' "$DB_NAME" | sed 's/[\/&]/\\&/g')
@@ -101,6 +106,15 @@ else
     exit 1
 fi
 
+# **Kiểm tra và cài đặt WP-CLI trong container PHP**
+echo -e "${YELLOW}🔄 Kiểm tra và cài đặt WP-CLI nếu chưa có...${NC}"
+docker exec -i "$CONTAINER_PHP" sh -c "
+    if ! command -v wp > /dev/null; then
+        curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+        chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
+    fi
+"
+
 # **Cài đặt WordPress**
 echo -e "${YELLOW}🚀 Đang cài đặt WordPress với WP-CLI...${NC}"
 docker exec -i "$CONTAINER_PHP" sh -c "
@@ -122,5 +136,4 @@ echo -e "🔹 Tài khoản admin: \033[1;33m$ADMIN_USER\033[0m"
 echo -e "🔹 Mật khẩu admin: \033[1;31m$ADMIN_PASSWORD\033[0m"
 echo -e "\n\033[1;32mLưu ý: Vui lòng lưu lại thông tin đăng nhập này!\033[0m\n"
 
-# **Lưu thông tin vào log**
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] WordPress installed - URL: $SITE_URL - Admin: $ADMIN_USER - Password: $ADMIN_PASSWORD" >> "$LOG_FILE"
+

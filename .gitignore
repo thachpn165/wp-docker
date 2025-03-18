@@ -54,3 +54,8 @@ yarn.lock
 
 # 💾 GIT TRACKING FILES 💾
 #.gitignore
+
+# Misc
+*.crt
+*.key
+*.pem

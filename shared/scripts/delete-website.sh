@@ -37,7 +37,7 @@ else
 fi
 
 SITE_CONF_FILE="$PROXY_CONF_DIR/$site_name.conf"
-SSL_DIR="$SITES_DIR/$site_name/nginx/ssl"
+SSL_DIR="$PROJECT_ROOT/nginx-proxy/ssl"
 
 # 🚨 **Hiển thị cảnh báo thật nổi bật**
 clear
@@ -105,15 +105,6 @@ if [ -f "$SITE_CONF_FILE" ]; then
     echo -e "${GREEN}✅ Cấu hình NGINX của '$domain' đã được xóa.${NC}"
 else
     echo -e "${RED}⚠️ Không tìm thấy file cấu hình $SITE_CONF_FILE. Bỏ qua.${NC}"
-fi
-
-# Xóa chứng chỉ SSL nếu tồn tại
-if [ -d "$SSL_DIR" ]; then
-    echo -e "${YELLOW}🗑️ Đang xóa chứng chỉ SSL của '$site_name'...${NC}"
-    rm -rf "$SSL_DIR"
-    echo -e "${GREEN}✅ Chứng chỉ SSL của '$site_name' đã bị xóa.${NC}"
-else
-    echo -e "${RED}⚠️ Không tìm thấy chứng chỉ SSL của '$site_name'. Bỏ qua.${NC}"
 fi
 
 # Xóa mạng site_network nếu không còn container nào đang sử dụng
