@@ -27,10 +27,10 @@ services:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=IErbiOYPw6lWNCtM
+      - MYSQL_ROOT_PASSWORD=rq8KvekbuBJiBcNc
       - MYSQL_DATABASE=wordpress
       - MYSQL_USER=wpuser
-      - MYSQL_PASSWORD=9kVXrsYINHhB847E
+      - MYSQL_PASSWORD=e7wj6eLBbm42naUp
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
