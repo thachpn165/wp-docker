@@ -45,6 +45,8 @@ fi
 # 📂 **1. Tạo thư mục cần thiết**
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
 mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs}
+echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
+mkdir -p "$SITE_DIR"
 
 # 🛠 **2. Cập nhật `docker-compose.override.yml`**
 OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
@@ -112,12 +114,10 @@ fi
 
 # ⚙️ **3. Sao chép cấu hình PHP-FPM và MariaDB**
 copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
-copy_file "$TEMPLATES_DIR/php-fpm.conf.template" "$SITE_DIR/php/php-fpm.conf"
 copy_file "$TEMPLATES_DIR/mariadb-custom.cnf.template" "$SITE_DIR/mariadb/conf.d/custom.cnf"
-
-# 📄 **4. Tạo file .env**
-echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
-mkdir -p "$SITE_DIR"
+echo -e "${YELLOW}⚙️ Đang tạo cấu hình PHP-FPM tối ưu...${NC}"
+create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf"
+echo -e "${GREEN}✅ Cấu hình PHP-FPM tối ưu đã được tạo.${NC}"
 
 MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
 MYSQL_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)

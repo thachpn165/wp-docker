@@ -44,7 +44,10 @@ fi
 
 # 📂 **1. Tạo thư mục cần thiết**
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
-mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs}
+mkdir -p "$SITE_DIR/mariadb/conf.d" "$SITE_DIR/wordpress" "$SITE_DIR/logs"
+echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
+mkdir -p "$SITE_DIR"
+
 
 # 📜 **2. Sao chép cấu hình NGINX Proxy**
 NGINX_PROXY_CONF_TEMPLATE="$TEMPLATES_DIR/nginx-proxy.conf.template"
@@ -52,7 +55,6 @@ NGINX_PROXY_CONF_TARGET="$NGINX_PROXY_DIR/conf.d/$site_name.conf"
 
 if is_file_exist "$NGINX_PROXY_CONF_TEMPLATE"; then
     cp "$NGINX_PROXY_CONF_TEMPLATE" "$NGINX_PROXY_CONF_TARGET"
-    
     if is_file_exist "$NGINX_PROXY_CONF_TARGET"; then
         if [[ "$OSTYPE" == "darwin"* ]]; then
             sed -i '' -e "s|\${SITE_NAME}|$site_name|g" -e "s|\${DOMAIN}|$domain|g" "$NGINX_PROXY_CONF_TARGET"
@@ -69,14 +71,10 @@ else
     exit 1
 fi
 
-# ⚙️ **3. Sao chép cấu hình PHP-FPM và MariaDB**
-copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
-copy_file "$TEMPLATES_DIR/php-fpm.conf.template" "$SITE_DIR/php/php-fpm.conf"
-copy_file "$TEMPLATES_DIR/mariadb-custom.cnf.template" "$SITE_DIR/mariadb/conf.d/custom.cnf"
-
-# 📄 **4. Tạo file .env**
-echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
-mkdir -p "$SITE_DIR"
+# ⚙️ **3. Tạo cấu hình tối ưu PHP-FPM**
+echo -e "${YELLOW}⚙️ Đang tạo cấu hình PHP-FPM tối ưu...${NC}"
+create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf"
+echo -e "${GREEN}✅ Cấu hình PHP-FPM tối ưu đã được tạo.${NC}"
 
 MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
 MYSQL_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)

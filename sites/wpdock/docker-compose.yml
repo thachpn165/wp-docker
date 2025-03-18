@@ -3,7 +3,7 @@ version: '3.8'
 services:
   php:
     image: bitnami/php-fpm:8.3
-    container_name: wpdock2-php
+    container_name: wpdock-php
     volumes:
       - ./wordpress:/bitnami/wordpress
       - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
@@ -11,36 +11,36 @@ services:
       - ./wordpress:/var/www/html
     networks:
       - proxy_network
-      - wpdock2_site_network
+      - wpdock_site_network
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
-      - PHP_MEMORY_LIMIT=256M
-      - PHP_POST_MAX_SIZE=64M
-      - PHP_UPLOAD_MAX_FILESIZE=64M
+      - PHP_MEMORY_LIMIT=512M
+      - PHP_POST_MAX_SIZE=128M
+      - PHP_UPLOAD_MAX_FILESIZE=128M
       - PHP_MAX_EXECUTION_TIME=300
       - PHP_OPCACHE_ENABLE=1
 
   mariadb:
     image: mariadb:10.11
-    container_name: wpdock2-mariadb
+    container_name: wpdock-mariadb
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=rq8KvekbuBJiBcNc
+      - MYSQL_ROOT_PASSWORD=DRWKRkuzF3pt3DHZ
       - MYSQL_DATABASE=wordpress
       - MYSQL_USER=wpuser
-      - MYSQL_PASSWORD=e7wj6eLBbm42naUp
+      - MYSQL_PASSWORD=E8pJQEDaXDzKOxC1
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
-      - wpdock2_site_network
+      - wpdock_site_network
     restart: unless-stopped
 
 networks:
   proxy_network:
     external: true
-  wpdock2_site_network:
+  wpdock_site_network:
     driver: bridge
 
 volumes:

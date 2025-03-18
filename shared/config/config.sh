@@ -31,8 +31,10 @@ CONTAINER_DB="${site_name}-mariadb"
 SITE_URL="https://$DOMAIN"
 
 # **Import các function utilities**
+source "$FUNCTIONS_DIR/system_utils.sh"
 source "$FUNCTIONS_DIR/docker_utils.sh"
 source "$FUNCTIONS_DIR/file_utils.sh"
 source "$FUNCTIONS_DIR/network_utils.sh"
 source "$FUNCTIONS_DIR/ssl_utils.sh"
 source "$FUNCTIONS_DIR/wp_utils.sh"
+source "$FUNCTIONS_DIR/php_utils.sh"
