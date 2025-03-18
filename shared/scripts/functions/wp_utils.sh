@@ -52,16 +52,25 @@ setup_wp_config() {
         sed -i 's/database_name_here/$db_name/' /var/www/html/wp-config.php && \
         sed -i 's/username_here/$db_user/' /var/www/html/wp-config.php && \
         sed -i 's/password_here/$db_pass/' /var/www/html/wp-config.php && \
-        sed -i 's/localhost/$container_db/' /var/www/html/wp-config.php
+        sed -i 's/localhost/$container_db/' /var/www/html/wp-config.php && \
+        cat <<'EOF' | tee -a /var/www/html/wp-config.php
+
+// 🚀 Tăng cường bảo mật SSL cho WordPress
+if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos(\$_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+    \$_SERVER['HTTPS'] = 'on';
+}
+EOF
     "
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ wp-config.php đã được cấu hình thành công.${NC}"
+        echo -e "${GREEN}✅ wp-config.php đã được cập nhật với HTTPS.${NC}"
     else
         echo -e "${RED}❌ Lỗi khi cấu hình wp-config.php.${NC}"
         exit 1
     fi
 }
+
+
 
 # 🚀 Cài đặt WordPress
 install_wordpress() {

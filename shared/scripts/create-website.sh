@@ -46,57 +46,18 @@ fi
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
 mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs}
 
-# 🛠 **2. Cập nhật `docker-compose.override.yml`**
-OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
-MOUNT_ENTRY="      - ../sites/$site_name/wordpress:/var/www/$site_name"
-
-# Nếu file chưa tồn tại, tạo mới
-if [ ! -f "$OVERRIDE_FILE" ]; then
-    echo -e "${YELLOW}📄 Tạo mới docker-compose.override.yml...${NC}"
-    cat > "$OVERRIDE_FILE" <<EOF
-version: '3.8'
-services:
-  nginx-proxy:
-    volumes:
-$MOUNT_ENTRY
-EOF
-    echo -e "${GREEN}✅ Tạo mới và cập nhật docker-compose.override.yml thành công.${NC}"
-else
-    # Kiểm tra nếu website đã được mount chưa
-    if ! grep -q "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
-        echo "$MOUNT_ENTRY" >> "$OVERRIDE_FILE"
-        echo -e "${GREEN}✅ Website '$site_name' đã được thêm vào docker-compose.override.yml.${NC}"
-    else
-        echo -e "${YELLOW}⚠️ Website '$site_name' đã tồn tại trong docker-compose.override.yml.${NC}"
-    fi
-fi
-
 # 📜 **2. Sao chép cấu hình NGINX Proxy**
 NGINX_PROXY_CONF_TEMPLATE="$TEMPLATES_DIR/nginx-proxy.conf.template"
 NGINX_PROXY_CONF_TARGET="$NGINX_PROXY_DIR/conf.d/$site_name.conf"
 
-# Xóa tập tin cấu hình cũ nếu tồn tại
-if is_file_exist "$NGINX_PROXY_CONF_TARGET"; then
-    echo -e "${YELLOW}🗑️ Đang xóa cấu hình cũ của NGINX Proxy: $NGINX_PROXY_CONF_TARGET${NC}"
-    rm -f "$NGINX_PROXY_CONF_TARGET"
-fi
-
-# Sao chép lại cấu hình từ template
 if is_file_exist "$NGINX_PROXY_CONF_TEMPLATE"; then
     cp "$NGINX_PROXY_CONF_TEMPLATE" "$NGINX_PROXY_CONF_TARGET"
-
+    
     if is_file_exist "$NGINX_PROXY_CONF_TARGET"; then
-        # Kiểm tra hệ điều hành để sử dụng `sed` đúng cách
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' -e "s|\${SITE_NAME}|$site_name|g" \
-                      -e "s|\${DOMAIN}|$domain|g" \
-                      -e "s|\${PHP_CONTAINER}|$site_name-php|g" \
-                      "$NGINX_PROXY_CONF_TARGET"
+            sed -i '' -e "s|\${SITE_NAME}|$site_name|g" -e "s|\${DOMAIN}|$domain|g" "$NGINX_PROXY_CONF_TARGET"
         else
-            sed -i -e "s|\${SITE_NAME}|$site_name|g" \
-                   -e "s|\${DOMAIN}|$domain|g" \
-                   -e "s|\${PHP_CONTAINER}|$site_name-php|g" \
-                   "$NGINX_PROXY_CONF_TARGET"
+            sed -i -e "s|\${SITE_NAME}|$site_name|g" -e "s|\${DOMAIN}|$domain|g" "$NGINX_PROXY_CONF_TARGET"
         fi
         echo -e "${GREEN}✅ Cấu hình Nginx Proxy đã được tạo: $NGINX_PROXY_CONF_TARGET${NC}"
     else
@@ -107,8 +68,6 @@ else
     echo -e "${RED}❌ Lỗi: Không tìm thấy template Nginx Proxy.${NC}"
     exit 1
 fi
-
-
 
 # ⚙️ **3. Sao chép cấu hình PHP-FPM và MariaDB**
 copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
@@ -179,5 +138,3 @@ else
 fi
 
 echo -e "${GREEN}🎉 Hoàn tất quá trình tạo website $domain.${NC}"
-
-restart_nginx_proxy

@@ -13,8 +13,8 @@ done
 
 source "$CONFIG_FILE"
 
-# Kiểm tra biến quan trọng có tồn tại không
-required_vars=("PROJECT_ROOT" "SITES_DIR" "PROXY_SCRIPT" "PROXY_CONF_DIR" "SSL_DIR")
+# 🛠 **Kiểm tra biến quan trọng**
+required_vars=("PROJECT_ROOT" "SITES_DIR" "PROXY_SCRIPT" "PROXY_CONF_DIR" "SSL_DIR" "NGINX_PROXY_CONTAINER")
 
 for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
@@ -107,6 +107,25 @@ if is_file_exist "$SITE_CONF_FILE"; then
 else
     echo -e "${RED}⚠️ Không tìm thấy file cấu hình $SITE_CONF_FILE. Bỏ qua.${NC}"
 fi
+
+# 🛠 **Xóa website khỏi `docker-compose.override.yml`**
+OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
+MOUNT_ENTRY="      - ../sites/$site_name/wordpress:/var/www/$site_name"
+
+if [ -f "$OVERRIDE_FILE" ]; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # Nếu chạy trên macOS (BSD sed), cần dùng `-i ''`
+        sed -i '' "/$(echo "$MOUNT_ENTRY" | sed 's/[\/&]/\\&/g')/d" "$OVERRIDE_FILE"
+    else
+        # Nếu chạy trên Linux (GNU sed)
+        sed -i "/$(echo "$MOUNT_ENTRY" | sed 's/[\/&]/\\&/g')/d" "$OVERRIDE_FILE"
+    fi
+    
+    echo -e "${GREEN}✅ Đã xóa website '$site_name' khỏi docker-compose.override.yml.${NC}"
+else
+    echo -e "${YELLOW}⚠️ Không tìm thấy docker-compose.override.yml, bỏ qua.${NC}"
+fi
+
 
 # **Reload NGINX Proxy để cập nhật lại cấu hình**
 restart_nginx_proxy

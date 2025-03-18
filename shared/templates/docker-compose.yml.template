@@ -35,24 +35,7 @@ services:
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
       - ${SITE_NAME}_site_network
-    restart: unless-stopped  # Đảm bảo MariaDB luôn khởi động lại nếu lỗi
-
-  nginx:
-    image: nginx:stable-alpine
-    container_name: ${SITE_NAME}-nginx
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./wordpress:/var/www/html
-    networks:
-      - proxy_network
-      - ${SITE_NAME}_site_network
-    ports:
-      - "80"
-      - "443"
-    depends_on:
-      - php
-      - mariadb
+    restart: unless-stopped
 
 networks:
   proxy_network:

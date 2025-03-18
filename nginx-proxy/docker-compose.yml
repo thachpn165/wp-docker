@@ -10,6 +10,7 @@ services:
     volumes:
       - ./conf.d:/etc/nginx/conf.d
       - ./ssl:/etc/nginx/ssl
+      - ./wordpress:/var/www/html 
     networks:
       - proxy_network 
 

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   php:
     image: bitnami/php-fpm:8.3
-    container_name: wpdock-php
+    container_name: wpdock2-php
     volumes:
       - ./wordpress:/bitnami/wordpress
       - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
@@ -11,7 +11,7 @@ services:
       - ./wordpress:/var/www/html
     networks:
       - proxy_network
-      - wpdock_site_network
+      - wpdock2_site_network
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - PHP_MEMORY_LIMIT=256M
@@ -22,42 +22,25 @@ services:
 
   mariadb:
     image: mariadb:10.11
-    container_name: wpdock-mariadb
+    container_name: wpdock2-mariadb
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=ldQkxV0Jj2hnvcuP
+      - MYSQL_ROOT_PASSWORD=IErbiOYPw6lWNCtM
       - MYSQL_DATABASE=wordpress
       - MYSQL_USER=wpuser
-      - MYSQL_PASSWORD=vZGoiGCzZz8iWHod
+      - MYSQL_PASSWORD=9kVXrsYINHhB847E
       - MARIADB_CHARACTER_SET=utf8mb4
       - MARIADB_COLLATE=utf8mb4_unicode_ci
     networks:
-      - wpdock_site_network
-    restart: unless-stopped  # Đảm bảo MariaDB luôn khởi động lại nếu lỗi
-
-  nginx:
-    image: nginx:stable-alpine
-    container_name: wpdock-nginx
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./wordpress:/var/www/html
-    networks:
-      - proxy_network
-      - wpdock_site_network
-    ports:
-      - "80"
-      - "443"
-    depends_on:
-      - php
-      - mariadb
+      - wpdock2_site_network
+    restart: unless-stopped
 
 networks:
   proxy_network:
     external: true
-  wpdock_site_network:
+  wpdock2_site_network:
     driver: bridge
 
 volumes:
