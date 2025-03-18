@@ -114,6 +114,11 @@ setup_wp_config "$CONTAINER_PHP" "$DB_NAME" "$DB_USER" "$DB_PASS" "$CONTAINER_DB
 
 # 🚀 Cài đặt WordPress
 install_wordpress "$CONTAINER_PHP" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+# 🛠️ **Thiết lập permalinks**
+set_wordpress_permalinks "$CONTAINER_PHP" "$SITE_URL"
+
+# 🔒 **Cài đặt plugin bảo mật**
+install_security_plugin "$CONTAINER_PHP"
 
 echo -e "${GREEN}🎉 Hoàn tất quá trình cài đặt WordPress tại $SITE_URL.${NC}"
 echo -e "${YELLOW}🔐 Tài khoản admin: $ADMIN_USER / $ADMIN_PASSWORD${NC}"

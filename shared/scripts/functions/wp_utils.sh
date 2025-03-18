@@ -91,3 +91,34 @@ fetch_env_variable() {
         return 1
     fi
 }
+
+# 📌 **Thiết lập Permalinks**
+set_wordpress_permalinks() {
+    local container="$1"
+    local site_url="$2"
+
+    echo -e "${YELLOW}🔗 Đang thiết lập permalinks cho WordPress...${NC}"
+    docker exec -i "$container" sh -c "wp option update permalink_structure '/%postname%/' --path=/var/www/html --allow-root"
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Permalinks đã được thiết lập thành công.${NC}"
+    else
+        echo -e "${RED}❌ Lỗi khi thiết lập permalinks.${NC}"
+        exit 1
+    fi
+}
+
+# 📌 **Cài đặt và kích hoạt plugin bảo mật**
+install_security_plugin() {
+    local container="$1"
+
+    echo -e "${YELLOW}🔒 Đang cài đặt plugin bảo mật WordPress...${NC}"
+    docker exec -i "$container" sh -c "wp plugin install limit-login-attempts-reloaded --activate --path=/var/www/html --allow-root"
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Plugin bảo mật đã được cài đặt và kích hoạt.${NC}"
+    else
+        echo -e "${RED}❌ Lỗi khi cài đặt plugin bảo mật.${NC}"
+        exit 1
+    fi
+}
