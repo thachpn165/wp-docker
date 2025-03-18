@@ -7,8 +7,7 @@ keys/
 config/secrets.yml
 
 # 🚀 BỎ QUA DỮ LIỆU CỦA WORDPRESS 🚀
-sites/*/wordpress/*
-!sites/**/wordpress/wp-content/uploads/ # Giữ lại thư mục uploads (nếu cần)
+sites/*
 
 # ⚡️ BỎ QUA FILE BACKUP ⚡️
 backups/
@@ -60,4 +59,3 @@ yarn.lock
 *.key
 *.pem
 *.conf
-sites/*

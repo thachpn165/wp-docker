@@ -42,7 +42,6 @@ is_docker_running() {
         echo -e "${RED}⚠️ Docker chưa chạy! Vui lòng khởi động Docker trước khi sử dụng.${NC}"
         return 1
     else
-        echo -e "${GREEN}✅ Docker đang chạy.${NC}"
         return 0
     fi
 }
