@@ -33,8 +33,8 @@ print_header() {
     echo -e "${MAGENTA}        🚀 ${CYAN}WordPress Docker LEMP Stack 🚀        ${NC}"
     echo -e "${MAGENTA}==============================================${NC}"
     echo ""
-    echo -e "${BLUE}🔍 Trạng thái hệ thống:${NC}"
-    echo -e "  🐳 Docker: $(check_docker_status)"
+    echo -e "${BLUE}🐳 Trạng thái Docker:${NC}"
+    #echo -e "  🐳 Docker: $(check_docker_status)"
     echo -e "  🌐 Docker Network: $(check_docker_network)"
     echo -e "  🚀 NGINX Proxy: $(check_nginx_status)"
 

@@ -52,8 +52,8 @@ check_docker_status() {
     
     if is_docker_running; then
         echo -e "${GREEN}✅ Docker đang hoạt động bình thường.${NC}"
-        echo -e "${YELLOW}📊 Thống kê tổng quan Docker:${NC}"
-        docker system df
+        #echo -e "${YELLOW}📊 Thống kê tổng quan Docker:${NC}"
+        #docker system df
     else
         echo -e "${RED}❌ Docker không hoạt động. Hãy kiểm tra lại!${NC}"
     fi
