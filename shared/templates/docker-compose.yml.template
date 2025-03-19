@@ -3,7 +3,6 @@ services:
     image: bitnami/php-fpm:${PHP_VERSION}
     container_name: ${SITE_NAME}-php
     volumes:
-      - ./wordpress:/bitnami/wordpress
       - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
       - ./php/php-fpm.conf:/opt/bitnami/php/etc/php-fpm.conf:ro
       - ./wordpress:/var/www/html
@@ -24,6 +23,7 @@ services:
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql
+      - ./mariadb/data:/site-db
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}

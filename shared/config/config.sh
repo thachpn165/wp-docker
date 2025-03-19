@@ -39,7 +39,7 @@ source "$FUNCTIONS_DIR/network_utils.sh"
 source "$FUNCTIONS_DIR/ssl_utils.sh"
 source "$FUNCTIONS_DIR/wp_utils.sh"
 source "$FUNCTIONS_DIR/php_utils.sh"
-source "$FUNCTIONS_DIR/mariadb_utils.sh"
+source "$FUNCTIONS_DIR/db_utils.sh"
 
 # 🎨 **Màu sắc terminal**
 RED='\033[1;31m'

@@ -6,11 +6,8 @@ wordpress_tools_menu() {
     echo -e "  ${GREEN}[3]${NC} Bật/tắt tự cập nhật toàn bộ Plugins"
     echo -e "  ${GREEN}[4]${NC} Bảo vệ wp-login.php"
     echo -e "  ${GREEN}[5]${NC} Reset WordPress Database (Nguy hiểm)"
-    echo -e "  ${GREEN}[6]${NC} Import / Export database"
-    echo -e "      ${CYAN}[6.1]${NC} Import"
-    echo -e "      ${CYAN}[6.2]${NC} Export"
-    echo -e "  ${GREEN}[7]${NC} Xoá toàn bộ comment Spam"
-    echo -e "  ${GREEN}[8]${NC} Update/Downgrade WordPress core"
+    echo -e "  ${GREEN}[6]${NC} Xoá toàn bộ comment Spam"
+    echo -e "  ${GREEN}[7]${NC} Update/Downgrade WordPress core"
     echo ""
     read -p "Chọn chức năng (hoặc nhấn Enter để thoát): " wp_tool_choice
 
@@ -28,18 +25,12 @@ wordpress_tools_menu() {
             source "$WORDPRESS_TOOLS_DIR/protect-wp-login.sh"
             ;;
         5)
-            echo -e "${YELLOW}🚀 Chức năng Reset WordPress Database chưa được triển khai.${NC}"
+            source "$WORDPRESS_TOOLS_DIR/reset-wp-database.sh"
             ;;
-        6.1)
-            echo -e "${YELLOW}🚀 Chức năng Import database chưa được triển khai.${NC}"
-            ;;
-        6.2)
-            echo -e "${YELLOW}🚀 Chức năng Export database chưa được triển khai.${NC}"
-            ;;
-        7)
+        6)
             echo -e "${YELLOW}🚀 Chức năng Xoá toàn bộ comment Spam chưa được triển khai.${NC}"
             ;;
-        8)
+        7)
             echo -e "${YELLOW}🚀 Chức năng Update/Downgrade WordPress core chưa được triển khai.${NC}"
             ;;
         *)

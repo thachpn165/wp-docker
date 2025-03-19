@@ -1,3 +1,4 @@
+#!/bin/bash
 calculate_mariadb_config() {
     local total_ram=$(get_total_ram)
     local total_cpu=$(get_total_cpu)
@@ -52,4 +53,69 @@ innodb_io_capacity = $innodb_io_capacity
 EOF
 
     echo "✅ Đã tạo cấu hình MariaDB tối ưu tại $mariadb_conf_path"
+}
+
+
+# Hàm kiểm tra xem container database có đang chạy không
+is_mariadb_running() {
+    local container_name="$1-mariadb"
+    docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
+}
+
+# Hàm reset (xóa toàn bộ bảng) trong database
+db_reset_database() {
+    local site_name="$1"
+    local db_user="$2"
+    local db_password="$3"
+    local db_name="$4"
+    
+    if ! is_mariadb_running "$site_name"; then
+        echo "❌ Container MariaDB cho site '$site_name' không chạy. Kiểm tra lại!"
+        return 1
+    fi
+    
+    echo "🚨 Đang reset database: $db_name cho site: $site_name..."
+    docker exec -i ${site_name}-mariadb mysql -u$db_user -p$db_password -e "DROP DATABASE $db_name; CREATE DATABASE $db_name;"
+    echo "✅ Database đã được reset thành công!"
+}
+
+# Hàm export database (backup)
+db_export_database() {
+    local site_name="$1"
+    local db_user="$2"
+    local db_password="$3"
+    local db_name="$4"
+    local backup_file="./sites/mariadb/data/${site_name}-backup-$(date +%F).sql"
+    
+    if ! is_mariadb_running "$site_name"; then
+        echo "❌ Container MariaDB cho site '$site_name' không chạy. Kiểm tra lại!"
+        return 1
+    fi
+    
+    echo "💾 Đang backup database: $db_name cho site: $site_name..."
+    docker exec ${site_name}-mariadb mysqldump -u$db_user -p$db_password $db_name > "$backup_file"
+    echo "✅ Backup hoàn tất: $backup_file"
+}
+
+# Hàm import database (khôi phục từ backup)
+db_import_database() {
+    local site_name="$1"
+    local db_user="$2"
+    local db_password="$3"
+    local db_name="$4"
+    local backup_file="$5"
+    
+    if ! is_mariadb_running "$site_name"; then
+        echo "❌ Container MariaDB cho site '$site_name' không chạy. Kiểm tra lại!"
+        return 1
+    fi
+    
+    if [ ! -f "$backup_file" ]; then
+        echo "❌ File backup không tồn tại: $backup_file"
+        return 1
+    fi
+    
+    echo "📥 Đang khôi phục database: $db_name cho site: $site_name từ file: $backup_file..."
+    docker exec -i ${site_name}-mariadb mysql -u$db_user -p$db_password $db_name < "$backup_file"
+    echo "✅ Import database hoàn tất!"
 }
