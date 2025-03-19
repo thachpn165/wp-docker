@@ -17,6 +17,7 @@ source "$CONFIG_FILE"
 source "$(dirname "$0")/shared/scripts/functions/menu/menu_utils.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/manage_website_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/wordpress_tools_menu.sh"
+source "$(dirname "$0")/shared/scripts/functions/menu/system_tools_menu.sh"
 
 # **Chạy setup hệ thống trước khi hiển thị menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
