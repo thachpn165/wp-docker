@@ -24,6 +24,14 @@ server {
     # 🔒 Bật HSTS
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
 
+    # 🚀 Include một số tập tin tối ưu Nginx
+    include /etc/nginx/globals/security.conf;
+    include /etc/nginx/globals/gzip.conf;
+    include /etc/nginx/globals/cache-control.conf;
+
+    # Hỗ trợ CloudFlare
+    include /etc/nginx/globals/cloudflare.conf;
+
     # 📥 **Include cache configuration (mặc định là no-cache)**
     include /etc/nginx/cache/no-cache.conf;
 
@@ -50,13 +58,6 @@ server {
         fastcgi_read_timeout 300;
         fastcgi_intercept_errors on;
     }
-
-    # ✅ Bảo mật HTTP Headers
-    add_header X-Frame-Options SAMEORIGIN;
-    add_header X-Content-Type-Options nosniff;
-    add_header X-XSS-Protection "1; mode=block";
-    add_header Referrer-Policy "strict-origin-when-cross-origin";
-    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()";
 
     error_log  /var/log/nginx/error.log;
     access_log /var/log/nginx/access.log;

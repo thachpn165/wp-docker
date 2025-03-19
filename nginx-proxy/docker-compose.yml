@@ -1,6 +1,8 @@
 services:
   nginx-proxy:
-    image: nginx:stable-alpine
+    build:
+      context: ./
+      dockerfile: Dockerfile
     container_name: nginx-proxy
     ports:
       - "80:80"
@@ -10,6 +12,7 @@ services:
       - ./ssl:/etc/nginx/ssl
       - ./wordpress:/var/www/html
       - ./cache:/etc/nginx/cache/
+      - ./globals:/etc/nginx/globals/
     networks:
       - proxy_network 
 
