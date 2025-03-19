@@ -32,7 +32,7 @@ fi
 # ✅ Hiển thị menu cache
 echo -e "${YELLOW}🔧 Chọn loại cache mới cho website:${NC}"
 echo -e "  ${GREEN}[1]${NC} WP Super Cache"
-echo -e "  ${GREEN}[2]${NC} FastCGI Cache"
+echo -e "  ${GREEN}[2]${NC} FastCGI Cache & Redis Object Cache"
 echo -e "  ${GREEN}[3]${NC} W3 Total Cache"
 echo -e "  ${GREEN}[4]${NC} WP Fastest Cache"
 echo -e "  ${GREEN}[5]${NC} Không có cache (Tắt tất cả)"
@@ -95,6 +95,76 @@ fi
 if [[ "$cache_type" != "no-cache" ]]; then
     docker exec -u root "$PHP_CONTAINER" wp plugin install $plugin_slug --activate --path=/var/www/html --allow-root
     echo -e "${GREEN}✅ Plugin cache đã được cài đặt và kích hoạt: $plugin_slug${NC}"
+fi
+
+# ✅ **Kiểm tra `<?php` trong `wp-config.php` trước khi chèn**
+if ! grep -q "<?php" "$WP_CONFIG_FILE"; then
+    echo -e "${RED}❌ Lỗi: Không tìm thấy `<?php` trong wp-config.php!${NC}"
+    exit 1
+fi
+
+# ✅ Cấu hình FastCGI Cache
+if [[ "$cache_choice" == "2" || "$cache_choice" == "3" ]]; then
+    echo -e "${YELLOW}⚡ Cấu hình FastCGI Cache...${NC}"
+
+    # Kiểm tra nếu fastcgi_cache_path đã tồn tại, nếu có thì bỏ qua
+    if ! docker exec nginx-proxy grep -q "fastcgi_cache_path" "$NGINX_MAIN_CONF"; then
+        if docker exec nginx-proxy grep -q "http {" "$NGINX_MAIN_CONF"; then
+            echo -e "${YELLOW}➕ Chèn fastcgi_cache_path vào http {}...${NC}"
+            docker exec nginx-proxy sed -i "/http {/a\\
+            fastcgi_cache_path /var/cache/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS:100m inactive=60m use_temp_path=off;
+            " "$NGINX_MAIN_CONF"
+        else
+            echo -e "${RED}❌ Không tìm thấy block http {} trong nginx.conf! Hãy kiểm tra lại cấu hình.${NC}"
+            exit 1
+        fi
+    fi
+    echo -e "${GREEN}✅ FastCGI Cache đã được cấu hình.${NC}"
+fi
+
+# Cấu hình Redis Object Cache (chỉ nếu chọn FastCGI Cache + Redis)
+if [[ "$cache_choice" == "2" ]]; then
+    echo -e "${YELLOW}⚡ Cấu hình Redis Object Cache...${NC}"
+
+    # 🛠️ Kiểm tra và chèn `WP_REDIS_HOST` vào ngay sau `<?php`
+    if ! grep -q "WP_REDIS_HOST" "$WP_CONFIG_FILE"; then
+        echo -e "${YELLOW}🔧 Chèn cấu hình Redis vào wp-config.php...${NC}"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "/<?php/a\\
+            define('WP_REDIS_HOST', 'redis-cache');\\
+            define('WP_REDIS_PORT', 6379);\\
+            define('WP_REDIS_DATABASE', 0);
+            " "$WP_CONFIG_FILE"
+        else
+            sed -i "/<?php/a\\
+            define('WP_REDIS_HOST', 'redis-cache');\\
+            define('WP_REDIS_PORT', 6379);\\
+            define('WP_REDIS_DATABASE', 0);
+            " "$WP_CONFIG_FILE"
+        fi
+        echo -e "${GREEN}✅ Cấu hình Redis đã được thêm vào wp-config.php.${NC}"
+    fi
+
+    # 🛠️ Kiểm tra và chèn `WP_CACHE` ngay sau `<?php`
+    if grep -q "define('WP_CACHE', false);" "$WP_CONFIG_FILE"; then
+        echo -e "${YELLOW}🔄 Cập nhật WP_CACHE thành true...${NC}"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s|define('WP_CACHE', false);|define('WP_CACHE', true);|" "$WP_CONFIG_FILE"
+        else
+            sed -i "s|define('WP_CACHE', false);|define('WP_CACHE', true);|" "$WP_CONFIG_FILE"
+        fi
+    elif ! grep -q "define('WP_CACHE'" "$WP_CONFIG_FILE"; then
+        echo -e "${YELLOW}➕ Chèn WP_CACHE vào wp-config.php...${NC}"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "/<?php/a\\
+            define('WP_CACHE', true);
+            " "$WP_CONFIG_FILE"
+        else
+            sed -i "/<?php/a\\
+            define('WP_CACHE', true);
+            " "$WP_CONFIG_FILE"
+        fi
+    fi
 fi
 
 # ✅ Hướng dẫn kích hoạt WP Super Cache nếu cần
