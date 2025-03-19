@@ -1,5 +1,3 @@
-source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/utils.sh"
-
 backup_database() {
     local site_name="$1"
     local db_name="$2"

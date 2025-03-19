@@ -42,7 +42,7 @@ php_version=${php_version:-8.3}
 SITE_DIR="$SITES_DIR/$site_name"
 
 # 🚫 Kiểm tra nếu site đã tồn tại
-if is_dir_exist "$SITE_DIR"; then
+if is_directory_exist "$SITE_DIR"; then
     echo -e "${RED}⚠️ Site '$site_name' đã tồn tại. Hãy chọn tên khác.${NC}"
     exit 1
 fi

@@ -7,8 +7,7 @@ backup_files() {
     local backup_file="${backup_dir}/files-${site_name}-$(date +%Y%m%d-%H%M%S).tar.gz"
 
     # Đảm bảo thư mục backup tồn tại
-    source shared/scripts/functions/backup-manager/utils.sh
-    ensure_directory_exists "$backup_dir"
+    is_directory_exist "$backup_dir" || return 1
 
     echo "🔹 Đang sao lưu file của ${site_name}..."
 

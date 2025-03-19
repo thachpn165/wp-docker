@@ -6,11 +6,6 @@ is_file_exist() {
     [[ -f "$file_path" ]]
 }
 
-# Kiểm tra xem một thư mục có tồn tại không
-is_dir_exist() {
-    local dir_path="$1"
-    [[ -d "$dir_path" ]]
-}
 
 # Xóa tệp tin nếu nó tồn tại
 remove_file() {
@@ -24,7 +19,7 @@ remove_file() {
 # Xóa thư mục nếu nó tồn tại
 remove_directory() {
     local dir_path="$1"
-    if is_dir_exist "$dir_path"; then
+    if is_directory_exist "$dir_path"; then
         echo "🗑️ Đang xóa thư mục: $dir_path"
         rm -rf "$dir_path"
     fi

@@ -14,19 +14,20 @@ done
 source "$CONFIG_FILE"
 
 # Import các hàm từ backup-utils
-source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/utils.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_actions.sh"
 
-# Hàm hiển thị menu quản lý backup
+
 backup_menu() {
     while true; do
-        echo "============================"
-        echo "   🛠️ QUẢN LÝ BACKUP WEBSITE   "
-        echo "============================"
-        echo "1️⃣ Sao lưu website ngay"
-        echo "2️⃣ Xóa backup cũ"
-        echo "3️⃣ Xem danh sách backup"
-        echo "4️⃣ Thoát"
-        echo "============================"
+        echo -e "${BLUE}============================${NC}"
+        echo -e "${BLUE}   🛠️ QUẢN LÝ BACKUP WEBSITE   ${NC}"
+        echo -e "${BLUE}============================${NC}"
+        echo -e "  ${GREEN}[1]${NC} 🔄 Sao lưu website ngay"
+        echo -e "  ${GREEN}[2]${NC} 🗑️ Xóa backup cũ"
+        echo -e "  ${GREEN}[3]${NC} 📂 Xem danh sách backup"
+        echo -e "  ${GREEN}[4]${NC} ❌ Thoát"
+        echo -e "${BLUE}============================${NC}"
+        
         read -p "🔹 Chọn chức năng: " choice
 
         case "$choice" in
@@ -34,12 +35,13 @@ backup_menu() {
             2) cleanup_old_backups ;;
             3) list_backup_files ;;
             4) 
-                echo "👋 Thoát khỏi menu Backup!"
+                echo -e "${GREEN}👋 Thoát khỏi menu Backup!${NC}"
                 break
                 ;;
             *)
-                echo "❌ Lựa chọn không hợp lệ, vui lòng nhập lại!"
+                echo -e "${RED}❌ Lựa chọn không hợp lệ, vui lòng nhập lại!${NC}"
                 ;;
         esac
     done
 }
+
