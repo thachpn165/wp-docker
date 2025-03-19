@@ -16,6 +16,7 @@ source "$CONFIG_FILE"
 # Import menu functions
 source "$(dirname "$0")/shared/scripts/functions/menu/menu_utils.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/manage_website_menu.sh"
+source "$(dirname "$0")/shared/scripts/functions/menu/wordpress_tools_menu.sh"
 
 # **Chạy setup hệ thống trước khi hiển thị menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
@@ -54,7 +55,8 @@ while true; do
     echo -e "  ${GREEN}[2]${NC} 🔐 Quản lý Chứng Chỉ SSL"
     echo -e "  ${GREEN}[3]${NC} ⚙️ Công Cụ Hệ Thống"
     echo -e "  ${GREEN}[4]${NC} ⚡ Quản lý Cache WordPress"
-    echo -e "  ${GREEN}[5]${NC} ❌ Thoát"
+    echo -e "  ${GREEN}[5]${NC} 🔨 Tiện ích WordPress"
+    echo -e "  ${GREEN}[6]${NC} ❌ Thoát"
     echo ""
 
     read -p "🔹 Chọn một chức năng (1-4): " choice
@@ -63,7 +65,8 @@ while true; do
         2) manage_ssl_menu ;;
         3) system_tools_menu ;;
         4) bash "$SCRIPTS_DIR/setup-cache.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
-        5) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
+        5) wordpress_tools_menu ;;
+        6) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
         *) 
             echo -e "${RED}⚠️ Lựa chọn không hợp lệ! Vui lòng chọn từ [1-4].${NC}"
             sleep 2 
