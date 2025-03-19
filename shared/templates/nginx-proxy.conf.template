@@ -27,6 +27,12 @@ server {
     # 📥 **Include cache configuration (mặc định là no-cache)**
     include /etc/nginx/cache/no-cache.conf;
 
+    # 🔧 Thiết lập biến `$php_upstream` cho container PHP riêng của mỗi website
+    # Resolver 127.0.0.11 là DNS resolver của Docker, giúp giảm thời gian resolve domain và để resolve domain trong network Docker
+    # Không nên xoá nếu không muốn gặp lỗi "host not found in upstream" khi restart Nginx
+    resolver 127.0.0.11 valid=10s;
+    set $php_upstream "${SITE_NAME}-php:9000";
+
     # 📌 Xử lý file tĩnh (các file hình ảnh, JS, CSS, fonts...)
     location ~* \.(ico|css|js|gif|jpg|jpeg|png|woff2?|ttf|eot|svg|mp4|webm|ogv|webp|pdf|zip|tar|gz|bz2|rar|7z|xml|rss|atom|txt|json|map)$ {
         expires max;
@@ -36,7 +42,7 @@ server {
     # 🛠️ **Xử lý PHP với PHP-FPM**
     location ~ \.php$ {
         include fastcgi_params;
-        fastcgi_pass ${SITE_NAME}-php:9000;
+        fastcgi_pass $php_upstream;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;
         fastcgi_buffers 16 16k;
