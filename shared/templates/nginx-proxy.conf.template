@@ -59,6 +59,6 @@ server {
         fastcgi_intercept_errors on;
     }
 
-    error_log  /var/log/nginx/error.log;
-    access_log /var/log/nginx/access.log;
+    error_log  /var/www/logs/${SITE_NAME}/error.log;
+    access_log /var/www/logs/${SITE_NAME}/access.log;
 }

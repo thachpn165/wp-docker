@@ -30,7 +30,12 @@ echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
 
 # 📌 Nhập thông tin cần thiết
 read -p "Tên miền (ví dụ: example.com): " domain
-read -p "Tên site (viết thường, không dấu, dùng dấu - nếu cần): " site_name
+
+# Tạo gợi ý tên site từ tên miền (bỏ phần đuôi)
+suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
+read -p "Tên site (dùng để quản lý, không ký tự đặc biệt, có thể dùng dấu gạch ngang (-). Mặc định: $suggested_site_name): " site_name
+
+site_name=${site_name:-$suggested_site_name}
 read -p "Chọn phiên bản PHP (7.4, 8.1, 8.3) [mặc định: 8.3]: " php_version
 php_version=${php_version:-8.3}
 
@@ -45,12 +50,15 @@ fi
 # 📂 **1. Tạo thư mục cần thiết**
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
 mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs}
+touch "$SITE_DIR/logs/access.log" "$SITE_DIR/logs/error.log"
+chmod 666 "$SITE_DIR/logs/"*.log
 echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"
 mkdir -p "$SITE_DIR"
 
 # 🛠 **2. Cập nhật `docker-compose.override.yml`**
 OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
 MOUNT_ENTRY="      - ../sites/$site_name/wordpress:/var/www/$site_name"
+MOUNT_LOGS="      - ../sites/$site_name/logs:/var/www/logs/$site_name"
 
 # Nếu file chưa tồn tại, tạo mới
 if [ ! -f "$OVERRIDE_FILE" ]; then
@@ -61,6 +69,7 @@ services:
   nginx-proxy:
     volumes:
 $MOUNT_ENTRY
+$MOUNT_LOGS
 EOF
     echo -e "${GREEN}✅ Tạo mới và cập nhật docker-compose.override.yml thành công.${NC}"
 else
