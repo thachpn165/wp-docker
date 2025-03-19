@@ -42,7 +42,7 @@ site_name="${site_list[$site_index]}"
 
 SITE_DIR="$SITES_DIR/$site_name"
 NGINX_CONF_FILE="$NGINX_PROXY_DIR/conf.d/${site_name}.conf"
-AUTH_FILE="$NGINX_PROXY_DIR/globals/wp-login-auth-$site_name"
+AUTH_FILE="$NGINX_PROXY_DIR/globals/.wp-login-auth-$site_name"
 INCLUDE_FILE="$NGINX_PROXY_DIR/globals/wp-login-$site_name.conf"
 TEMPLATE_FILE="$TEMPLATES_DIR/wp-login-template.conf"
 
