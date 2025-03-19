@@ -9,9 +9,17 @@ services:
       - ./conf.d:/etc/nginx/conf.d
       - ./ssl:/etc/nginx/ssl
       - ./wordpress:/var/www/html
-      - ./cache:/etc/nginx/conf.d/cache/ 
+      - ./cache:/etc/nginx/cache/
     networks:
       - proxy_network 
+
+  redis:
+    image: redis:alpine
+    container_name: redis-cache
+    restart: unless-stopped
+    networks:
+      - proxy_network
+    command: redis-server --appendonly yes
 
 networks:
   proxy_network:
