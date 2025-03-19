@@ -40,7 +40,7 @@ else
 fi
 
 # 🔑 Tạo tài khoản admin ngẫu nhiên
-ADMIN_USER="admin"
+ADMIN_USER="admin-$(openssl rand -base64 12)"
 ADMIN_PASSWORD=$(openssl rand -base64 12)
 ADMIN_EMAIL="admin@$site_name.local"
 
@@ -88,13 +88,20 @@ if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
 fi
 
 # 🛠️ Cấu hình wp-config.php
-setup_wp_config "$CONTAINER_PHP" "$DB_NAME" "$DB_USER" "$DB_PASS" "$CONTAINER_DB"
+wp_set_wpconfig "$CONTAINER_PHP" "$DB_NAME" "$DB_USER" "$DB_PASS" "$CONTAINER_DB"
 
 # 🚀 Cài đặt WordPress
-install_wordpress "$CONTAINER_PHP" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+wp_install "$CONTAINER_PHP" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
 
 # 🛠️ **Thiết lập permalinks**
-set_wordpress_permalinks "$CONTAINER_PHP" "$SITE_URL"
+wp_set_permalinks "$CONTAINER_PHP" "$SITE_URL"
+
+# Cài đặt plugin PerformanceLab và bật tính năng WebP
+wp_plugin_install_performance_lab "$CONTAINER_PHP"
+
+# Cài đặt plugin bảo mật
+wp_plugin_install_security_plugin "$CONTAINER_PHP"
+
 
 # 🎉 **Hiển thị thông tin đăng nhập đẹp mắt**
 echo -e "${GREEN}"

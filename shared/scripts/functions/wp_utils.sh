@@ -38,7 +38,7 @@ is_wordpress_installed() {
 }
 
 # 🛠️ Cấu hình wp-config.php
-setup_wp_config() {
+wp_set_wpconfig() {
     local container_php="$1"
     local db_name="$2"
     local db_user="$3"
@@ -71,7 +71,7 @@ EOF
 }
 
 # 🚀 Cài đặt WordPress
-install_wordpress() {
+wp_install() {
     local container="$1"
     local site_url="$2"
     local title="$3"
@@ -100,7 +100,7 @@ fetch_env_variable() {
 }
 
 # 📌 **Thiết lập Permalinks**
-set_wordpress_permalinks() {
+wp_set_permalinks() {
     local container="$1"
     local site_url="$2"
 
@@ -116,7 +116,7 @@ set_wordpress_permalinks() {
 }
 
 # 📌 **Cài đặt và kích hoạt plugin bảo mật**
-install_security_plugin() {
+wp_plugin_install_security_plugin() {
     local container="$1"
 
     echo -e "${YELLOW}🔒 Đang cài đặt plugin bảo mật WordPress...${NC}"
@@ -128,4 +128,18 @@ install_security_plugin() {
         echo -e "${RED}❌ Lỗi khi cài đặt plugin bảo mật.${NC}"
         exit 1
     fi
+}
+
+# 📌 **Cài đặt và kích hoạt plugin Performance Lab**
+wp_plugin_install_performance_lab() {
+    local container="$1"
+    
+    echo -e "${YELLOW}🔧 Đang cài đặt và kích hoạt plugin Performance Lab...${NC}"
+     docker exec -i "$container" sh -c " wp plugin install performance-lab --activate --path=/var/www/html --allow-root"
+    
+    echo -e "${YELLOW}⚙️ Đang bật module WebP Uploads...${NC}"
+     docker exec -i "$container" sh -c " wp option update performance_lab_modules --add='{"webp_uploads":true}' --path=/var/www/html --allow-root"
+
+    
+    echo -e "${GREEN}✅ Plugin Performance Lab đã được cài đặt và module WebP Uploads đã được kích hoạt.${NC}"
 }

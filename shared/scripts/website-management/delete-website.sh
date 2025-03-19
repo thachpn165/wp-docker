@@ -23,11 +23,22 @@ for var in "${required_vars[@]}"; do
     fi
 done
 
+# 📋 **Hiển thị danh sách website để chọn**
 echo -e "${YELLOW}📋 Danh sách các website có thể xóa:${NC}"
-ls "$SITES_DIR"
-echo ""
+site_list=($(ls -1 "$SITES_DIR"))
 
-read -p "Nhập tên website cần xóa: " site_name
+if [ ${#site_list[@]} -eq 0 ]; then
+    echo -e "${RED}❌ Không có website nào để xóa.${NC}"
+    exit 1
+fi
+
+for i in "${!site_list[@]}"; do
+    echo -e "  ${GREEN}[$i]${NC} ${site_list[$i]}"
+done
+
+echo ""
+read -p "Nhập số tương ứng với website cần xóa: " site_index
+site_name="${site_list[$site_index]}"
 
 SITE_DIR="$SITES_DIR/$site_name"
 ENV_FILE="$SITE_DIR/.env"
@@ -85,10 +96,27 @@ cd "$PROJECT_ROOT"
 
 # **Xóa mã nguồn nếu người dùng chọn**
 if [ "$delete_source_flag" = true ]; then
+    echo -e "${YELLOW}🗑️ Đang xóa thư mục logs của '$site_name'...${NC}"
+    remove_directory "$SITE_DIR/logs"
+    echo -e "${GREEN}✅ Thư mục logs của '$site_name' đã bị xóa!${NC}"
+    
+    echo -e "${YELLOW}🗑️ Đang xóa mã nguồn WordPress của '$site_name'...${NC}"
     remove_directory "$SITE_DIR"
     echo -e "${GREEN}✅ Mã nguồn WordPress của '$site_name' đã bị xóa!${NC}"
 else
     echo -e "${YELLOW}⚠️ Giữ lại mã nguồn WordPress của '$site_name'.${NC}"
+fi
+
+# **Xóa chứng chỉ SSL của website**
+SSL_CRT_FILE="$SSL_DIR/$DOMAIN.crt"
+SSL_KEY_FILE="$SSL_DIR/$DOMAIN.key"
+if is_file_exist "$SSL_CRT_FILE" || is_file_exist "$SSL_KEY_FILE"; then
+    echo -e "${YELLOW}🗑️ Đang xóa chứng chỉ SSL của '$DOMAIN'...${NC}"
+    remove_file "$SSL_CRT_FILE"
+    remove_file "$SSL_KEY_FILE"
+    echo -e "${GREEN}✅ Chứng chỉ SSL của '$DOMAIN' đã bị xóa.${NC}"
+else
+    echo -e "${RED}⚠️ Không tìm thấy tập tin chứng chỉ SSL ($DOMAIN.crt hoặc $DOMAIN.key). Bỏ qua.${NC}"
 fi
 
 # **Xóa volume MariaDB nếu người dùng chọn**
@@ -111,17 +139,18 @@ fi
 # 🛠 **Xóa website khỏi `docker-compose.override.yml`**
 OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
 MOUNT_ENTRY="      - ../sites/$site_name/wordpress:/var/www/$site_name"
+MOUNT_LOGS="      - ../sites/$site_name/logs:/var/www/logs/$site_name"
 
 if [ -f "$OVERRIDE_FILE" ]; then
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        # Nếu chạy trên macOS (BSD sed), cần dùng `-i ''`
         sed -i '' "/$(echo "$MOUNT_ENTRY" | sed 's/[\/&]/\\&/g')/d" "$OVERRIDE_FILE"
+        sed -i '' "/$(echo "$MOUNT_LOGS" | sed 's/[\/&]/\\&/g')/d" "$OVERRIDE_FILE"
     else
-        # Nếu chạy trên Linux (GNU sed)
         sed -i "/$(echo "$MOUNT_ENTRY" | sed 's/[\/&]/\\&/g')/d" "$OVERRIDE_FILE"
+        sed -i "/$(echo "$MOUNT_LOGS" | sed 's/[\/&]/\\&/g')/d" "$OVERRIDE_FILE"
     fi
     
-    echo -e "${GREEN}✅ Đã xóa website '$site_name' khỏi docker-compose.override.yml.${NC}"
+    echo -e "${GREEN}✅ Đã xóa website '$site_name' và logs khỏi docker-compose.override.yml.${NC}"
 else
     echo -e "${YELLOW}⚠️ Không tìm thấy docker-compose.override.yml, bỏ qua.${NC}"
 fi

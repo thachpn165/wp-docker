@@ -16,14 +16,6 @@ server {
     ssl_certificate /etc/nginx/ssl/${DOMAIN}.crt;
     ssl_certificate_key /etc/nginx/ssl/${DOMAIN}.key;
 
-    # ✅ Bảo mật SSL
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
-
-    # 🔒 Bật HSTS
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
-
     # 🚀 Include một số tập tin tối ưu Nginx
     include /etc/nginx/globals/security.conf;
     include /etc/nginx/globals/gzip.conf;

@@ -80,6 +80,14 @@ else
     else
         echo -e "${YELLOW}⚠️ Website '$site_name' đã tồn tại trong docker-compose.override.yml.${NC}"
     fi
+    
+    # Kiểm tra nếu logs đã được mount chưa
+    if ! grep -q "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
+        echo "$MOUNT_LOGS" >> "$OVERRIDE_FILE"
+        echo -e "${GREEN}✅ Logs của website '$site_name' đã được thêm vào docker-compose.override.yml.${NC}"
+    else
+        echo -e "${YELLOW}⚠️ Logs của website '$site_name' đã tồn tại trong docker-compose.override.yml.${NC}"
+    fi
 fi
 
 # 📜 **2. Sao chép cấu hình NGINX Proxy**
