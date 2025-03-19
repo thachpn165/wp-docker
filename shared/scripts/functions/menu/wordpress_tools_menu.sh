@@ -22,10 +22,10 @@ wordpress_tools_menu() {
             source "$WORDPRESS_TOOLS_DIR/reset-user-role.sh"
             ;;
         3)
-            echo -e "${YELLOW}🚀 Chức năng Bật/tắt tự cập nhật toàn bộ Plugins chưa được triển khai.${NC}"
+            source "$WORDPRESS_TOOLS_DIR/plugin-auto-update.sh"
             ;;
         4)
-            echo -e "${YELLOW}🚀 Chức năng Bảo vệ wp-login.php chưa được triển khai.${NC}"
+            source "$WORDPRESS_TOOLS_DIR/protect-wp-login.sh"
             ;;
         5)
             echo -e "${YELLOW}🚀 Chức năng Reset WordPress Database chưa được triển khai.${NC}"
