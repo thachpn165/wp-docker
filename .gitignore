@@ -58,3 +58,6 @@ yarn.lock
 *.crt
 *.key
 *.pem
+
+# Cấu hình của website trong nginx-proxy/globals
+nginx-proxy/globals/wp-login*.conf
