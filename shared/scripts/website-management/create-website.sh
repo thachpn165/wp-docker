@@ -49,7 +49,7 @@ fi
 
 # 📂 **1. Tạo thư mục cần thiết**
 echo -e "${YELLOW}📂 Đang tạo cấu trúc thư mục cho site $domain...${NC}"
-mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs}
+mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs,backups}
 touch "$SITE_DIR/logs/access.log" "$SITE_DIR/logs/error.log"
 chmod 666 "$SITE_DIR/logs/"*.log
 echo -e "${YELLOW}📄 Đang tạo file .env...${NC}"

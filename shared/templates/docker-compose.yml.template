@@ -6,6 +6,7 @@ services:
       - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
       - ./php/php-fpm.conf:/opt/bitnami/php/etc/php-fpm.conf:ro
       - ./wordpress:/var/www/html
+      - ./backups:/backups
     networks:
       - proxy_network
       - ${SITE_NAME}_site_network
@@ -24,6 +25,7 @@ services:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql
       - ./mariadb/data:/site-db
+      - ./backups:/backups
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
