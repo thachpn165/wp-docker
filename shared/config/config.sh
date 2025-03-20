@@ -52,3 +52,8 @@ MAGENTA='\033[1;35m'
 CYAN='\033[1;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
+
+# Rclone
+
+RCLONE_CONFIG_DIR="shared/config/rclone"
+RCLONE_CONFIG_FILE="$RCLONE_CONFIG_DIR/rclone.conf"

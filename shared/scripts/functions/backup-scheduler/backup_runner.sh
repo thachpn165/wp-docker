@@ -1,7 +1,6 @@
 #!/bin/bash
 
 CONFIG_FILE="shared/config/config.sh"
-
 # Xác định đường dẫn tuyệt đối của `config.sh`
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
@@ -12,46 +11,100 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 
 source "$CONFIG_FILE"
-source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_actions.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_files.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_database.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/cleanup_backups.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/rclone/manage_rclone.sh"
 
-# Nhận tham số từ crontab (tên website)
-SITE_NAME="$1"
+backup_runner() {
+    local site_name="$1"
+    local storage_option="$2"
 
-if [[ -z "$SITE_NAME" ]]; then
-    echo "❌ Lỗi: Thiếu tham số SITE_NAME!" >&2
-    exit 1
+    if [[ -z "$site_name" ]]; then
+        log_with_time "${RED}❌ Lỗi: Không tìm thấy tên website để backup!${NC}"
+        exit 1
+    fi
+
+    # Nếu storage_option rỗng, mặc định là local
+    if [[ -z "$storage_option" ]]; then
+        storage_option="local"
+    fi
+
+    local env_file="$SITES_DIR/$site_name/.env"
+    local web_root="$SITES_DIR/$site_name/wordpress"
+    local backup_dir="$(realpath "$SITES_DIR/$site_name/backups")"
+    local log_dir="$(realpath "$SITES_DIR/$site_name/logs")"
+    local log_file="$log_dir/wp-backup.log"
+
+    is_directory_exist "$backup_dir"
+    is_directory_exist "$log_dir"
+
+    if [[ ! -f "$env_file" ]]; then
+        log_with_time "${RED}❌ Không tìm thấy tập tin .env trong $SITES_DIR/$site_name!${NC}"
+        exit 1
+    fi
+
+    # Lấy thông tin database từ .env
+    DB_NAME=$(grep "^MYSQL_DATABASE=" "$env_file" | cut -d '=' -f2)
+    DB_USER=$(grep "^MYSQL_USER=" "$env_file" | cut -d '=' -f2)
+    DB_PASS=$(grep "^MYSQL_PASSWORD=" "$env_file" | cut -d '=' -f2)
+
+    if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
+        log_with_time "${RED}❌ Lỗi: Không thể lấy thông tin database từ .env!${NC}"
+        exit 1
+    fi
+
+    log_with_time "${GREEN}✅ Bắt đầu tiến trình backup tự động cho: $site_name${NC}"
+    
+    # Tiến hành backup
+    log_with_time "🔄 Đang sao lưu database..."
+    db_backup_file=$(backup_database "$site_name" "$DB_NAME" "$DB_USER" "$DB_PASS" | tail -n 1)
+    log_with_time "🔄 Đang sao lưu mã nguồn..."
+    files_backup_file=$(backup_files "$site_name" "$web_root" | tail -n 1)
+
+    # Kiểm tra nếu file backup đã tồn tại
+    if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then
+        log_with_time "${RED}❌ Lỗi: Không thể tìm thấy tập tin backup!${NC}"
+        exit 1
+    fi
+
+    if [[ "$storage_option" == "local" ]]; then
+        log_with_time "${GREEN}💾 Backup hoàn tất và lưu tại: $backup_dir${NC}"
+    else
+        log_with_time "${GREEN}☁️  Đang lưu backup lên Storage: '$storage_option'${NC}"
+
+        # Kiểm tra storage có tồn tại trong rclone.conf không
+        if ! grep -q "^\[$storage_option\]" "$RCLONE_CONFIG_FILE"; then
+            log_with_time "${RED}❌ Lỗi: Storage '$storage_option' không tồn tại trong rclone.conf!${NC}"
+            exit 1
+        fi
+
+        # Gọi upload backup
+        log_with_time "📤 Bắt đầu upload backup lên Storage..."
+        bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" "$storage_option" "$db_backup_file" "$files_backup_file" > /dev/null 2>>"$log_file"
+
+        if [[ $? -eq 0 ]]; then
+            log_with_time "${GREEN}✅ Backup và upload lên Storage hoàn tất!${NC}"
+            
+            # Xóa tập tin backup sau khi upload thành công
+            log_with_time "🗑️ Đang xóa tập tin backup sau khi upload thành công..."
+            rm -f "$db_backup_file" "$files_backup_file"
+
+            # Kiểm tra nếu file đã bị xóa
+            if [[ ! -f "$db_backup_file" && ! -f "$files_backup_file" ]]; then
+                log_with_time "${GREEN}✅ Tập tin backup đã được xóa khỏi thư mục backups.${NC}"
+            else
+                log_with_time "${RED}❌ Lỗi: Không thể xóa tập tin backup!${NC}"
+            fi
+        else
+            log_with_time "${RED}❌ Lỗi khi upload backup lên Storage!${NC}"
+        fi
+    fi
+
+    log_with_time "${GREEN}✅ Hoàn thành backup tự động cho: $site_name${NC}"
+}
+
+# Thực thi nếu script được gọi từ cronjob
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    backup_runner "$@"
 fi
-
-LOG_DIR="$SITES_DIR/$SITE_NAME/logs"
-LOG_FILE="$LOG_DIR/wp-backup.log"
-
-is_directory_exist "$LOG_DIR"
-
-echo "------------------------------------" >> "$LOG_FILE"
-echo "📅 $(date '+%Y-%m-%d %H:%M:%S') - BẮT ĐẦU BACKUP $SITE_NAME" >> "$LOG_FILE"
-
-# Tìm file .env để lấy thông tin database
-ENV_FILE="$SITES_DIR/$SITE_NAME/.env"
-if [[ ! -f "$ENV_FILE" ]]; then
-    echo "❌ $(date '+%Y-%m-%d %H:%M:%S') - Không tìm thấy .env trong $SITES_DIR/$SITE_NAME!" >> "$LOG_FILE"
-    exit 1
-fi
-
-DB_NAME=$(grep "^MYSQL_DATABASE=" "$ENV_FILE" | cut -d '=' -f2)
-DB_USER=$(grep "^MYSQL_USER=" "$ENV_FILE" | cut -d '=' -f2)
-DB_PASS=$(grep "^MYSQL_PASSWORD=" "$ENV_FILE" | cut -d '=' -f2)
-
-if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-    echo "❌ $(date '+%Y-%m-%d %H:%M:%S') - Lỗi: Không thể lấy thông tin database từ .env!" >> "$LOG_FILE"
-    exit 1
-fi
-
-WEB_ROOT="$SITES_DIR/$SITE_NAME/wordpress"
-
-echo "🔄 $(date '+%Y-%m-%d %H:%M:%S') - Đang backup database..." >> "$LOG_FILE"
-backup_database "$SITE_NAME" "$DB_NAME" "$DB_USER" "$DB_PASS" >> "$LOG_FILE" 2>&1
-
-echo "🔄 $(date '+%Y-%m-%d %H:%M:%S') - Đang backup mã nguồn..." >> "$LOG_FILE"
-backup_files "$SITE_NAME" "$WEB_ROOT" >> "$LOG_FILE" 2>&1
-
-echo "✅ $(date '+%Y-%m-%d %H:%M:%S') - Hoàn thành backup $SITE_NAME!" >> "$LOG_FILE"
