@@ -102,6 +102,19 @@ wp_plugin_install_performance_lab "$CONTAINER_PHP"
 # Cài đặt plugin bảo mật
 wp_plugin_install_security_plugin "$CONTAINER_PHP"
 
+# Kiểm tra user có trong nhóm www-data chưa
+if ! groups $USER | grep -q "\bwww-data\b"; then
+    echo -e "${YELLOW}🔹 Thêm user hiện tại vào nhóm www-data...${NC}"
+    sudo usermod -aG www-data $USER
+    echo -e "${GREEN}✅ Vui lòng đăng xuất và đăng nhập lại để áp dụng quyền.${NC}"
+fi
+
+# Thiết lập quyền cho thư mục WordPress
+echo -e "${YELLOW}🔄 Đang thiết lập quyền truy cập...${NC}"
+chown -R www-data:www-data /var/www/$site_name
+chmod -R 775 /var/www/$site_name
+find /var/www/$site_name -type d -exec chmod 775 {} \;
+find /var/www/$site_name -type f -exec chmod 664 {} \;
 
 # 🎉 **Hiển thị thông tin đăng nhập đẹp mắt**
 echo -e "${GREEN}"
