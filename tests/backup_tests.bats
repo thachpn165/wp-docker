@@ -2,8 +2,8 @@
 
 # Định nghĩa biến môi trường cho test
 setup() {
-    export TEST_SITE_NAME="wpdock"
-    export TEST_STORAGE="thachdrive"
+    export TEST_SITE_NAME="testsite"
+    export TEST_STORAGE="teststorage"
     export BACKUP_SCRIPT="shared/scripts/functions/backup-scheduler/backup_runner.sh"
     export BACKUP_DIR="sites/$TEST_SITE_NAME/backups"
     export LOG_FILE="sites/$TEST_SITE_NAME/logs/wp-backup.log"
@@ -12,9 +12,17 @@ setup() {
     # Tạo thư mục giả lập môi trường test
     mkdir -p "$BACKUP_DIR"
     mkdir -p "sites/$TEST_SITE_NAME/logs"
+    mkdir -p "shared/config/rclone"
 
     # Xóa log cũ trước khi chạy test
     rm -f "$LOG_FILE"
+
+    # Tạo tập tin `rclone.conf` giả lập
+    cat <<EOL > "$RCLONE_CONFIG_FILE"
+[$TEST_STORAGE]
+type = drive
+token = {"access_token":"fake-token","token_type":"Bearer","refresh_token":"fake-refresh-token","expiry":"2025-03-20T18:56:00.340403+07:00"}
+EOL
 }
 
 # Kiểm tra backup có tạo thành công không
