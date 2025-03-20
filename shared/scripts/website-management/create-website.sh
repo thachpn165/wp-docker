@@ -195,3 +195,16 @@ fi
 echo -e "${GREEN}🎉 Hoàn tất quá trình tạo website $domain.${NC}"
 
 restart_nginx_proxy
+
+# Chạy lệnh chown bên trong container nginx-proxy
+echo -e "${YELLOW}🔄 Thiết lập quyền bên trong container nginx-proxy...${NC}"
+docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R www-data:www-data "/var/www/$site_name"
+
+# Xác nhận lại quyền sở hữu
+CURRENT_OWNER=$(docker exec "$NGINX_PROXY_CONTAINER" stat -c "%U:%G" "/var/www/$site_name")
+if [[ "$CURRENT_OWNER" == "www-data:www-data" ]]; then
+    echo -e "${GREEN}✅ Quyền đã được thiết lập chính xác: www-data:www-data${NC}"
+else
+    echo -e "${RED}⚠️ Lỗi khi thiết lập quyền. Vui lòng kiểm tra lại!${NC}"
+    exit 1
+fi
