@@ -165,9 +165,3 @@ upload_backup() {
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     upload_backup "$@"
 fi
-
-
-# Nếu script được gọi trực tiếp, thực hiện upload
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    upload_backup "$@"
-fi

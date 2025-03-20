@@ -36,7 +36,12 @@ rclone_menu() {
         case "$choice" in
             1) setup_rclone ;;
             2) bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" ;;
-            3) rclone_storage_list ;;
+            3) echo ""
+                echo "Danh sách storage khả dụng"
+                echo ""
+                rclone_storage_list 
+                echo "";;
+                
             4) rclone_storage_delete ;;
             5) echo -e "${GREEN}👋 Thoát khỏi menu Rclone!${NC}"; break ;;
             *) echo -e "${RED}❌ Lựa chọn không hợp lệ, vui lòng nhập lại!${NC}" ;;

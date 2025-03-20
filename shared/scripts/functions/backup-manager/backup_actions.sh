@@ -111,11 +111,23 @@ backup_website() {
 
         if [[ $? -eq 0 ]]; then
             echo -e "${GREEN}✅ Backup và upload lên Storage hoàn tất!${NC}"
+            
+            # Xóa tập tin backup sau khi upload thành công
+            echo -e "${YELLOW}🗑️ Đang xóa tập tin backup sau khi upload thành công...${NC}"
+            rm -f "$db_backup_file" "$files_backup_file"
+
+            # Kiểm tra nếu file đã bị xóa
+            if [[ ! -f "$db_backup_file" && ! -f "$files_backup_file" ]]; then
+                echo -e "${GREEN}✅ Tập tin backup đã được xóa khỏi thư mục backups.${NC}"
+            else
+                echo -e "${RED}❌ Lỗi: Không thể xóa tập tin backup!${NC}"
+            fi
         else
             echo -e "${RED}❌ Lỗi khi upload backup lên Storage!${NC}"
         fi
     fi
 }
+
 
 
 # Chức năng xóa backup cũ
