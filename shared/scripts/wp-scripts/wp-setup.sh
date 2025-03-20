@@ -111,7 +111,7 @@ fi
 
 # Thiết lập quyền cho thư mục WordPress
 echo -e "${YELLOW}🔄 Đang thiết lập quyền truy cập...${NC}"
-chown -R www-data:www-data /var/www/$site_name
+chown -R www-data:www-data /var/www/$site_name/wordpress/
 chmod -R 775 /var/www/$site_name
 find /var/www/$site_name -type d -exec chmod 775 {} \;
 find /var/www/$site_name -type f -exec chmod 664 {} \;
