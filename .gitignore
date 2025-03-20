@@ -61,5 +61,7 @@ yarn.lock
 .wp-login-auth-*
 # Cấu hình Rclone
 rclone.conf
+
 # Cấu hình của website trong nginx-proxy/globals
 nginx-proxy/globals/wp-login*
+nginx-proxy/conf.d/*.conf
