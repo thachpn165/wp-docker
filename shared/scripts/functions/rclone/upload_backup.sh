@@ -15,27 +15,6 @@ source "$CONFIG_FILE"
 
 RCLONE_CONFIG_FILE="shared/config/rclone/rclone.conf"
 
-is_file_exist "$RCLONE_CONFIG_FILE" || { echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin cấu hình Rclone!${NC}"; exit 1; }
-
-#!/bin/bash
-
-CONFIG_FILE="shared/config/config.sh"
-
-# Xác định đường dẫn tuyệt đối của `config.sh`
-while [ ! -f "$CONFIG_FILE" ]; do
-    CONFIG_FILE="../$CONFIG_FILE"
-    if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
-        exit 1
-    fi
-done
-
-source "$CONFIG_FILE"
-
-RCLONE_CONFIG_FILE="shared/config/rclone/rclone.conf"
-
-is_file_exist "$RCLONE_CONFIG_FILE" || { echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin cấu hình Rclone!${NC}"; exit 1; }
-
 # Hàm hiển thị danh sách tập tin backup và cho phép chọn nhiều tập tin
 select_backup_files() {
     local backup_dir="$1"
@@ -49,7 +28,7 @@ select_backup_files() {
     fi
 
     # Lấy danh sách các tập tin backup
-    local backup_files=($(ls -1 "$backup_dir"))
+    local backup_files=($(ls -1 "$backup_dir" 2>/dev/null))
 
     if [[ ${#backup_files[@]} -eq 0 ]]; then
         echo -e "${RED}❌ Không tìm thấy tập tin backup trong $backup_dir${NC}"
@@ -76,25 +55,6 @@ select_backup_files() {
 }
 
 # Hàm upload backup
-#!/bin/bash
-
-CONFIG_FILE="shared/config/config.sh"
-
-# Xác định đường dẫn tuyệt đối của `config.sh`
-while [ ! -f "$CONFIG_FILE" ]; do
-    CONFIG_FILE="../$CONFIG_FILE"
-    if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
-        exit 1
-    fi
-done
-
-source "$CONFIG_FILE"
-
-RCLONE_CONFIG_FILE="shared/config/rclone/rclone.conf"
-
-is_file_exist "$RCLONE_CONFIG_FILE" || { echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin cấu hình Rclone!${NC}"; exit 1; }
-
 upload_backup() {
     echo -e "${BLUE}📤 Bắt đầu upload backup...${NC}"
 
@@ -122,7 +82,8 @@ upload_backup() {
     local log_dir="$SITES_DIR/$site_name/logs"
     local log_file="$log_dir/rclone-upload.log"
 
-    is_directory_exist "$log_dir"
+    # Đảm bảo thư mục log tồn tại
+    mkdir -p "$log_dir"
 
     # Nếu không có tham số file backup, hỏi chọn file
     local selected_files=()
@@ -136,6 +97,12 @@ upload_backup() {
     # Kiểm tra danh sách file trước khi upload
     if [[ ${#selected_files[@]} -eq 0 ]]; then
         echo -e "${RED}❌ Không có tập tin hợp lệ để upload.${NC}" | tee -a "$log_file"
+        return 1
+    fi
+
+    # Kiểm tra nếu tập tin rclone.conf tồn tại trước khi chạy upload
+    if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
+        echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin cấu hình Rclone!${NC}" | tee -a "$log_file"
         return 1
     fi
 
