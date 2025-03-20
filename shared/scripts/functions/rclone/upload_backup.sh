@@ -115,5 +115,3 @@ upload_backup() {
 
     echo -e "${GREEN}📤 Hoàn tất quá trình upload backup lên storage!${NC}" | tee -a "$log_file"
 }
-
-upload_backup "$@"
