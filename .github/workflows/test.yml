@@ -34,3 +34,7 @@ jobs:
       - name: Chạy Bats Test
         if: runner.os == 'Linux'
         run: bats tests/
+        
+      - name: Install Rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
