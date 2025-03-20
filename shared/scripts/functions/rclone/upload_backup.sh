@@ -15,25 +15,26 @@ source "$CONFIG_FILE"
 
 RCLONE_CONFIG_FILE="shared/config/rclone/rclone.conf"
 
-is_file_exist "$RCLONE_CONFIG_FILE" || { echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin cấu hình Rclone! Hãy thực hiện cấu hình Rclone trước.${NC}"; exit 1; }
+is_file_exist "$RCLONE_CONFIG_FILE" || { echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin cấu hình Rclone!${NC}"; exit 1; }
 
-# Kiểm tra nếu `dialog` chưa được cài đặt, tự động cài đặt
-if ! command -v dialog &> /dev/null; then
-    echo -e "${YELLOW}⚠️ Dialog chưa được cài đặt. Tiến hành cài đặt...${NC}"
-    
-    if [[ "$(uname)" == "Darwin" ]]; then
-        brew install dialog || { echo -e "${RED}❌ Lỗi: Cài đặt dialog thất bại!${NC}"; exit 1; }
-    elif [[ -f /etc/debian_version ]]; then
-        sudo apt update && sudo apt install dialog -y || { echo -e "${RED}❌ Lỗi: Cài đặt dialog thất bại!${NC}"; exit 1; }
-    elif [[ -f /etc/redhat-release ]]; then
-        sudo yum install dialog -y || { echo -e "${RED}❌ Lỗi: Cài đặt dialog thất bại!${NC}"; exit 1; }
-    else
-        echo -e "${RED}❌ Hệ điều hành không được hỗ trợ tự động cài đặt dialog. Vui lòng cài đặt thủ công.${NC}"
+#!/bin/bash
+
+CONFIG_FILE="shared/config/config.sh"
+
+# Xác định đường dẫn tuyệt đối của `config.sh`
+while [ ! -f "$CONFIG_FILE" ]; do
+    CONFIG_FILE="../$CONFIG_FILE"
+    if [ "$(pwd)" = "/" ]; then
+        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
         exit 1
     fi
+done
 
-    echo -e "${GREEN}✅ Cài đặt dialog thành công!${NC}"
-fi
+source "$CONFIG_FILE"
+
+RCLONE_CONFIG_FILE="shared/config/rclone/rclone.conf"
+
+is_file_exist "$RCLONE_CONFIG_FILE" || { echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin cấu hình Rclone!${NC}"; exit 1; }
 
 # Hàm hiển thị danh sách tập tin backup và cho phép chọn nhiều tập tin
 select_backup_files() {
@@ -75,35 +76,79 @@ select_backup_files() {
 }
 
 # Hàm upload backup
-upload_backup() {
-    select_website || return
+#!/bin/bash
 
-    local storage="${1:-default}"  # Nếu không có tham số, dùng storage mặc định
-    local backup_dir="$SITES_DIR/$SITE_NAME/backups"
-    local log_dir="$SITES_DIR/$SITE_NAME/logs"
+CONFIG_FILE="shared/config/config.sh"
+
+# Xác định đường dẫn tuyệt đối của `config.sh`
+while [ ! -f "$CONFIG_FILE" ]; do
+    CONFIG_FILE="../$CONFIG_FILE"
+    if [ "$(pwd)" = "/" ]; then
+        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
+        exit 1
+    fi
+done
+
+source "$CONFIG_FILE"
+
+RCLONE_CONFIG_FILE="shared/config/rclone/rclone.conf"
+
+is_file_exist "$RCLONE_CONFIG_FILE" || { echo -e "${RED}❌ Lỗi: Không tìm thấy tập tin cấu hình Rclone!${NC}"; exit 1; }
+
+upload_backup() {
+    echo -e "${BLUE}📤 Bắt đầu upload backup...${NC}"
+
+    if [[ $# -lt 1 ]]; then
+        echo -e "${RED}❌ Lỗi: Thiếu tham số storage!${NC}"
+        echo -e "📌 Cách sử dụng: $0 <storage> [file1] [file2] ..."
+        return 1
+    fi
+
+    local storage="$1"
+    shift
+    local first_file="${1:-}"
+    
+    # Lấy site_name từ đường dẫn file backup (dự đoán từ thư mục chứa file)
+    local site_name=""
+    if [[ -n "$first_file" ]]; then
+        site_name=$(basename "$(dirname "$(dirname "$first_file")")")
+    fi
+
+    if [[ -z "$site_name" ]]; then
+        echo -e "${RED}❌ Lỗi: Không thể xác định site_name từ đường dẫn file backup!${NC}"
+        return 1
+    fi
+
+    local log_dir="$SITES_DIR/$site_name/logs"
     local log_file="$log_dir/rclone-upload.log"
 
     is_directory_exist "$log_dir"
 
-    # Nếu có tham số file backup, dùng ngay
-    if [[ $# -gt 1 ]]; then
-        local selected_files=("${@:2}")  # Lấy danh sách file từ tham số truyền vào
+    # Nếu không có tham số file backup, hỏi chọn file
+    local selected_files=()
+    if [[ $# -eq 0 ]]; then
+        echo -e "${BLUE}📂 Không có tập tin backup nào được truyền vào. Hiển thị hộp thoại chọn file...${NC}"
+        selected_files=($(select_backup_files "$SITES_DIR/$site_name/backups"))
     else
-        # Hiển thị danh sách tập tin backup và cho phép chọn
-        local selected_files=($(select_backup_files "$backup_dir"))
+        selected_files=("$@")
     fi
 
+    # Kiểm tra danh sách file trước khi upload
     if [[ ${#selected_files[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ Không có tập tin backup nào được chọn để upload.${NC}" | tee -a "$log_file"
+        echo -e "${RED}❌ Không có tập tin hợp lệ để upload.${NC}" | tee -a "$log_file"
         return 1
     fi
 
-    echo -e "${BLUE}📤 Đang upload các tập tin backup lên storage ($storage)...${NC}" | tee -a "$log_file"
+    echo -e "${BLUE}📂 Danh sách file sẽ upload:${NC}" | tee -a "$log_file"
+    for file in "${selected_files[@]}"; do
+        echo "   ➜ $file" | tee -a "$log_file"
+    done
 
     # Upload từng tập tin đã chọn
     for file in "${selected_files[@]}"; do
         echo -e "${YELLOW}🚀 Uploading: $file${NC}" | tee -a "$log_file"
-        rclone --config "$RCLONE_CONFIG_FILE" copy "$backup_dir/$file" "$storage:backup-folder" \
+
+        rclone --config "$RCLONE_CONFIG_FILE" copy "$file" "$storage:backup-folder" \
             --progress --log-file "$log_file"
 
         if [[ $? -eq 0 ]]; then
@@ -115,3 +160,14 @@ upload_backup() {
 
     echo -e "${GREEN}📤 Hoàn tất quá trình upload backup lên storage!${NC}" | tee -a "$log_file"
 }
+
+# Nếu script được gọi trực tiếp, thực hiện upload
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    upload_backup "$@"
+fi
+
+
+# Nếu script được gọi trực tiếp, thực hiện upload
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    upload_backup "$@"
+fi

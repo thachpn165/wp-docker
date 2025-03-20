@@ -7,9 +7,11 @@ rclone_storage_list() {
         return 1
     fi
 
-    echo -e "${BLUE}📂 Danh sách storage đã thiết lập:${NC}"
-    grep '^\[' "$rclone_config" | tr -d '[]' | nl
+    # Lấy danh sách storage từ `rclone.conf` (hoạt động trên cả macOS & Linux)
+    sed -n 's/^\[\(.*\)\]$/\1/p' "$rclone_config"
 }
+
+
 
 # Hàm xóa storage đã thiết lập
 rclone_storage_delete() {
