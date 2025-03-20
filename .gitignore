@@ -58,8 +58,7 @@ yarn.lock
 *.crt
 *.key
 *.pem
-.*
-
+.wp-login-auth-*
 # Cấu hình Rclone
 rclone.conf
 # Cấu hình của website trong nginx-proxy/globals
