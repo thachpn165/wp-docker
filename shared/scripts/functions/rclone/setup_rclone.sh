@@ -13,8 +13,7 @@ done
 
 source "$CONFIG_FILE"
 
-RCLONE_CONFIG_DIR="shared/config/rclone"
-RCLONE_CONFIG_FILE="$RCLONE_CONFIG_DIR/rclone.conf"
+
 
 # Hàm thiết lập Rclone
 rclone_setup() {

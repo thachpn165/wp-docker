@@ -1,0 +1,40 @@
+name: Test Bash Scripts
+
+on:
+  push:
+    branches:
+      - main  # Kiểm tra code mỗi khi có push vào nhánh `main`
+  pull_request:
+    branches:
+      - main  # Kiểm tra code khi có Pull Request vào `main`
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v3
+
+      - name: Cài đặt ShellCheck (chỉ trên Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y shellcheck
+
+      - name: Kiểm tra lỗi Bash Script
+        run: |
+          find . -name "*.sh" | xargs shellcheck || true
+
+      - name: Cài đặt Bats (chỉ trên Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y bats
+
+      - name: Chạy Bats Test
+        if: runner.os == 'Linux'
+        run: bats tests/
+        
+      - name: Install Rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash

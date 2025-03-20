@@ -61,3 +61,13 @@ confirm_action() {
         esac
     done
 }
+
+# Hàm hỗ trợ ghi log với timestamp, tránh trùng lặp log
+log_with_time() {
+    local message="$1"
+    local formatted_time
+    formatted_time="$(date '+%Y-%m-%d %H:%M:%S') - $message"
+
+    # In ra terminal và ghi log, nhưng chỉ ghi log một lần
+    echo -e "$formatted_time" | tee -a "$log_file" > /dev/null
+}
