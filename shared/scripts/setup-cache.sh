@@ -150,7 +150,9 @@ if [[ "$cache_choice" == "2" ]]; then
     # 🛠️ Cài đặt và kích hoạt Redis Cache
     echo -e "${YELLOW}⚡ Đang cài đặt và kích hoạt Redis Object Cache...${NC}"
     docker exec -u root "$PHP_CONTAINER" wp plugin install redis-cache --activate --allow-root --path=/var/www/html
+    docker exec -u root "$PHP_CONTAINER" wp redis update-dropin --allow-root --path=/var/www/html
     docker exec -u root "$PHP_CONTAINER" wp redis enable --allow-root --path=/var/www/html
+
     echo -e "${GREEN}✅ Redis Object Cache đã được cài đặt và kích hoạt.${NC}"
 
     # 🛠️ Kiểm tra và chèn `WP_CACHE` ngay sau `<?php`

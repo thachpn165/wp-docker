@@ -13,6 +13,7 @@ services:
       - ./wordpress:/var/www/html
       - ./cache:/etc/nginx/cache/
       - ./globals:/etc/nginx/globals/
+      - ./globals/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - proxy_network 
 
