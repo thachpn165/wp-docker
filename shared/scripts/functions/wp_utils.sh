@@ -34,7 +34,7 @@ check_and_install_wp_cli() {
 # 🏗️ Kiểm tra xem WordPress đã được cài đặt chưa
 is_wordpress_installed() {
     local container="$1"
-    docker exec -i "$container" sh -c "wp core is-installed --path=/var/www/html --allow-root" &> /dev/null
+    docker exec -u "$PHP_USER" -i "$container" sh -c "wp core is-installed --path=/var/www/html" &> /dev/null
 }
 
 # 🛠️ Cấu hình wp-config.php
@@ -105,7 +105,7 @@ wp_set_permalinks() {
     local site_url="$2"
 
     echo -e "${YELLOW}🔗 Đang thiết lập permalinks cho WordPress...${NC}"
-    docker exec -i "$container" sh -c "wp option update permalink_structure '/%postname%/' --path=/var/www/html --allow-root"
+    docker exec -u "$PHP_USER" -i "$container" sh -c "wp option update permalink_structure '/%postname%/' --path=/var/www/html"
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Permalinks đã được thiết lập thành công.${NC}"
@@ -120,7 +120,7 @@ wp_plugin_install_security_plugin() {
     local container="$1"
 
     echo -e "${YELLOW}🔒 Đang cài đặt plugin bảo mật WordPress...${NC}"
-    docker exec -i "$container" sh -c "wp plugin install limit-login-attempts-reloaded --activate --path=/var/www/html --allow-root"
+    docker exec -u "$PHP_USER" -i "$container" sh -c "wp plugin install limit-login-attempts-reloaded --activate --path=/var/www/html" &> /dev/null
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Plugin bảo mật đã được cài đặt và kích hoạt.${NC}"
@@ -135,10 +135,7 @@ wp_plugin_install_performance_lab() {
     local container="$1"
     
     echo -e "${YELLOW}🔧 Đang cài đặt và kích hoạt plugin Performance Lab...${NC}"
-     docker exec -i "$container" sh -c " wp plugin install performance-lab --activate --path=/var/www/html --allow-root"
-    
-    echo -e "${YELLOW}⚙️ Đang bật module WebP Uploads...${NC}"
-     docker exec -i "$container" sh -c " wp option update performance_lab_modules --add='{"webp_uploads":true}' --path=/var/www/html --allow-root"
+     docker exec -u "$PHP_USER" -i "$container" sh -c "wp plugin install performance-lab --activate --path=/var/www/html" &> /dev/null
 
     
     echo -e "${GREEN}✅ Plugin Performance Lab đã được cài đặt và module WebP Uploads đã được kích hoạt.${NC}"

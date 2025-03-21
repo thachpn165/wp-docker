@@ -19,6 +19,8 @@ SSL_DIR="$NGINX_PROXY_DIR/ssl"
 # **Biến Script**
 SETUP_WORDPRESS_SCRIPT="$WP_SCRIPTS_DIR/wp-setup.sh"
 PROXY_SCRIPT="$NGINX_SCRIPTS_DIR/manage-nginx.sh"
+PHP_USER="www-data"
+
 
 # **Biến mạng**
 DOCKER_NETWORK="proxy_network"
@@ -54,6 +56,5 @@ WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
 # Rclone
-
 RCLONE_CONFIG_DIR="shared/config/rclone"
 RCLONE_CONFIG_FILE="$RCLONE_CONFIG_DIR/rclone.conf"
