@@ -38,13 +38,54 @@ remove_volume() {
 
 # 🐳 **Hàm kiểm tra Docker có đang chạy không**
 is_docker_running() {
-    if ! docker info >/dev/null 2>&1; then
-        echo -e "${RED}⚠️ Docker chưa chạy! Vui lòng khởi động Docker trước khi sử dụng.${NC}"
-        return 1
+    if ! docker info &> /dev/null; then
+        echo -e "${YELLOW}⚠️ Docker chưa chạy. Đang cố gắng khởi động Docker...${NC}"
+
+        OS_TYPE=$(uname -s)
+        if [[ "$OS_TYPE" == "Linux" ]]; then
+            if [ -f /etc/os-release ]; then
+                OS_ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
+                OS_ID_LIKE=$(grep ^ID_LIKE= /etc/os-release | cut -d= -f2 | tr -d '"')
+
+                if [[ "$OS_ID" =~ (ubuntu|debian) || "$OS_ID_LIKE" =~ (debian) ]]; then
+                    sudo systemctl start docker || sudo service docker start
+
+                elif [[ "$OS_ID" =~ (centos|rhel|alma) || "$OS_ID_LIKE" =~ (rhel|fedora) ]]; then
+                    sudo service docker start
+
+                else
+                    echo -e "${RED}⚠️ Không xác định được bản phân phối Linux. Vui lòng khởi động Docker thủ công.${NC}"
+                    return 1
+                fi
+            else
+                echo -e "${RED}⚠️ Không tìm thấy /etc/os-release. Không thể xác định hệ điều hành.${NC}"
+                return 1
+            fi
+
+        elif [[ "$OS_TYPE" == "Darwin" ]]; then
+            echo -e "${YELLOW}🖥️ Vui lòng mở Docker Desktop để khởi động Docker trên macOS.${NC}"
+            return 1
+
+        else
+            echo -e "${RED}⚠️ Không xác định được hệ điều hành. Vui lòng khởi động Docker thủ công.${NC}"
+            return 1
+        fi
+
+        # Kiểm tra lại sau khi đã cố khởi động
+        sleep 3
+        if ! docker info &> /dev/null; then
+            echo -e "${RED}❌ Docker vẫn chưa chạy sau khi thử khởi động.${NC}"
+            return 1
+        else
+            echo -e "${GREEN}✅ Docker đã được khởi động thành công.${NC}"
+            return 0
+        fi
+
     else
         return 0
     fi
 }
+
 
 # 🛠️ **Hàm kiểm tra trạng thái Docker và hiển thị thông tin**
 check_docker_status() {
