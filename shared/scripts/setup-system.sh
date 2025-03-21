@@ -11,40 +11,82 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 source "$CONFIG_FILE"
 
-# Kiểm tra Docker đã cài đặt chưa
+# ✅ Hàm tự động cài đặt Docker mới nhất
+install_docker() {
+    OS_ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
+    OS_ID_LIKE=$(grep ^ID_LIKE= /etc/os-release | cut -d= -f2 | tr -d '"')
+
+    echo -e "${YELLOW}🔄 Đang tiến hành cài đặt Docker...${NC}"
+
+    if [[ "$OS_ID" =~ (ubuntu|debian) || "$OS_ID_LIKE" =~ (debian) ]]; then
+        sudo apt-get update
+        sudo apt-get install -y \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release
+
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/${OS_ID}/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+        echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${OS_ID} \
+        $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+        sudo apt-get update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    elif [[ "$OS_ID" =~ (centos|rhel|alma) || "$OS_ID_LIKE" =~ (rhel|fedora) ]]; then
+        sudo dnf -y install dnf-plugins-core
+        sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        sudo dnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        sudo systemctl enable --now docker
+
+    else
+        echo -e "${RED}⚠️ Không hỗ trợ tự động cài Docker trên hệ điều hành này.${NC}"
+        return 1
+    fi
+
+    echo -e "${GREEN}✅ Docker đã được cài đặt thành công.${NC}"
+    return 0
+}
+
+# ✅ Kiểm tra Docker đã cài đặt chưa
 if ! command -v docker &> /dev/null; then
     echo -e "${RED}❌ Docker chưa được cài đặt trên hệ thống.${NC}"
-    echo -e "${YELLOW}🔹 Hướng dẫn cài đặt Docker:${NC}"
-    
+
     OS_TYPE=$(uname -s)
     case "$OS_TYPE" in
         Linux*)
-            echo -e "${YELLOW}- Ubuntu/Debian: sudo apt-get install -y docker.io${NC}"
-            echo -e "${YELLOW}- CentOS: sudo yum install -y docker${NC}"
-            echo -e "${YELLOW}- RHEL: sudo dnf install -y docker${NC}"
-            echo -e "${YELLOW}- Arch Linux: sudo pacman -S docker${NC}"
+            install_docker
+            if [ $? -ne 0 ]; then
+                echo -e "${RED}❌ Cài đặt Docker thất bại. Vui lòng cài đặt thủ công.${NC}"
+                exit 1
+            fi
             ;;
         Darwin*)
-            echo -e "${YELLOW}- macOS: Tải Docker Desktop từ https://www.docker.com/get-started${NC}"
+            echo -e "${YELLOW}🔹 Hệ điều hành macOS được phát hiện.${NC}"
+            echo -e "${YELLOW}📦 Vui lòng tải Docker Desktop từ: https://www.docker.com/get-started${NC}"
+            exit 1
             ;;
         *)
             echo -e "${RED}⚠️ Không xác định được hệ điều hành. Vui lòng tự cài đặt Docker.${NC}"
+            exit 1
             ;;
     esac
-    exit 1
 fi
 
-# Kiểm tra Docker có đang chạy không
+# ✅ Kiểm tra Docker đã chạy chưa
 is_docker_running
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Docker không chạy. Hãy khởi động Docker trước!${NC}"
     exit 1
 fi
 
-# Tạo mạng Docker nếu chưa có
+# ✅ Tạo mạng Docker nếu chưa có
 create_docker_network "$DOCKER_NETWORK"
 
-# Kiểm tra trạng thái của NGINX Proxy
+# ✅ Kiểm tra NGINX Proxy container
 NGINX_STATUS=$(docker inspect -f '{{.State.Status}}' "$NGINX_PROXY_CONTAINER" 2>/dev/null)
 
 if [[ "$NGINX_STATUS" == "running" ]]; then
@@ -52,8 +94,7 @@ if [[ "$NGINX_STATUS" == "running" ]]; then
 elif [[ "$NGINX_STATUS" == "exited" || "$NGINX_STATUS" == "created" ]]; then
     echo -e "${YELLOW}🔄 Đang khởi động lại NGINX Proxy...${NC}"
     docker start "$NGINX_PROXY_CONTAINER"
-    
-    # Kiểm tra lại sau khi khởi động
+
     sleep 2
     NGINX_STATUS=$(docker inspect -f '{{.State.Status}}' "$NGINX_PROXY_CONTAINER" 2>/dev/null)
     if [[ "$NGINX_STATUS" == "running" ]]; then
@@ -66,7 +107,6 @@ else
     echo -e "${YELLOW}🚀 Khởi động NGINX Reverse Proxy...${NC}"
     bash "$NGINX_SCRIPTS_DIR/setup-nginx.sh"
 
-    # Kiểm tra lại sau khi cài đặt
     sleep 3
     NGINX_STATUS=$(docker inspect -f '{{.State.Status}}' "$NGINX_PROXY_CONTAINER" 2>/dev/null)
     if [[ "$NGINX_STATUS" != "running" ]]; then
