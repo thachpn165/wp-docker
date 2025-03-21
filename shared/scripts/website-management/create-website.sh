@@ -13,6 +13,9 @@ done
 
 source "$CONFIG_FILE"
 
+# Kiểm tra UID hiện tại của user thực thi script
+HOST_UID=$(id -u)
+
 # 🛠 Kiểm tra biến quan trọng
 required_vars=("PROJECT_ROOT" "SITES_DIR" "TEMPLATES_DIR" "CONFIG_DIR" "SCRIPTS_DIR"
                "FUNCTIONS_DIR" "WP_SCRIPTS_DIR" "WEBSITE_MGMT_DIR" "NGINX_PROXY_DIR"
