@@ -1,23 +1,31 @@
 # 📌 Tính toán giá trị tối ưu dựa trên RAM và CPU
 calculate_php_fpm_values() {
-    local total_ram=$1
-    local total_cpu=$2
+    local total_ram=$1     # tính theo MB
+    local total_cpu=$2     # số core CPU
 
-    # Tính toán tối ưu dựa trên tổng RAM
-    local max_children=$((total_ram / 20))
+    # 👉 Ước lượng số process theo RAM: mỗi PHP process ~30MB
+    local ram_based_max=$((total_ram / 30))
+
+    # 👉 Giới hạn theo CPU: gợi ý an toàn là CPU x 4
+    local cpu_based_max=$((total_cpu * 4))
+
+    # 👉 Chọn giá trị thấp hơn giữa RAM và CPU
+    local max_children=$((ram_based_max < cpu_based_max ? ram_based_max : cpu_based_max))
+
+    # 👉 Thiết lập mặc định tối thiểu
+    max_children=$((max_children > 4 ? max_children : 4))
     local start_servers=$((max_children / 2))
     local min_spare_servers=$((start_servers / 2))
     local max_spare_servers=$((start_servers * 2))
 
-    # Giới hạn giá trị hợp lý
-    max_children=$((max_children > 10 ? max_children : 10))
-    start_servers=$((start_servers > 5 ? start_servers : 5))
-    min_spare_servers=$((min_spare_servers > 2 ? min_spare_servers : 2))
-    max_spare_servers=$((max_spare_servers > 10 ? max_spare_servers : 10))
+    # Tránh giá trị quá thấp
+    start_servers=$((start_servers > 2 ? start_servers : 2))
+    min_spare_servers=$((min_spare_servers > 1 ? min_spare_servers : 1))
+    max_spare_servers=$((max_spare_servers > 4 ? max_spare_servers : 4))
 
-    # Xuất kết quả
     echo "$max_children $start_servers $min_spare_servers $max_spare_servers"
 }
+
 
 create_optimized_php_fpm_config() {
     local php_fpm_conf_path="$1"
