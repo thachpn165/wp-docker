@@ -3,38 +3,68 @@ name: Test Bash Scripts
 on:
   push:
     branches:
-      - main  # Kiểm tra code mỗi khi có push vào nhánh `main`
+      - main
   pull_request:
     branches:
-      - main  # Kiểm tra code khi có Pull Request vào `main`
+      - main
 
 jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+
     steps:
       - name: Lấy mã nguồn
         uses: actions/checkout@v3
 
-      - name: Cài đặt ShellCheck (chỉ trên Linux)
-        if: runner.os == 'Linux'
-        run: sudo apt-get install -y shellcheck
+      - name: Cài đặt ShellCheck
+        run: |
+          if command -v apt-get &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y shellcheck
+          elif command -v brew &> /dev/null; then
+            brew install shellcheck
+          fi
 
       - name: Kiểm tra lỗi Bash Script
         run: |
-          find . -name "*.sh" | xargs shellcheck || true
+          find . -name "*.sh" | xargs -n 1 shellcheck || true
 
-      - name: Cài đặt Bats (chỉ trên Linux)
-        if: runner.os == 'Linux'
-        run: sudo apt-get install -y bats
+      - name: Cài đặt Bats + Thư viện hỗ trợ
+        run: |
+          git clone https://github.com/bats-core/bats-core.git
+          sudo ./bats-core/install.sh /usr/local
 
-      - name: Chạy Bats Test
-        if: runner.os == 'Linux'
-        run: bats tests/
-        
-      - name: Install Rclone
+          mkdir -p tests/test_helper
+          git clone https://github.com/bats-core/bats-support tests/test_helper/bats-support
+          git clone https://github.com/bats-core/bats-assert tests/test_helper/bats-assert
+
+      - name: Cài đặt Rclone
         run: |
           curl https://rclone.org/install.sh | sudo bash
+
+      - name: Kiểm tra quyền thực thi script
+        run: |
+          find shared/scripts -name "*.sh" -exec chmod +x {} \;
+          chmod +x main.sh
+
+      - name: Kiểm tra cấu hình docker-compose (chỉ Linux)
+        if: runner.os == 'Linux'
+        run: docker compose -f nginx-proxy/docker-compose.yml config
+        
+
+      - name: Kiểm tra định dạng file .env
+        run: |
+          find sites -name ".env" -exec grep -E '^MYSQL_(DATABASE|USER|PASSWORD)=' {} \; || echo "Không có file .env nào để kiểm tra"
+
+      - name: Kiểm tra biến bắt buộc trong config.sh
+        run: |
+          required_vars=(SITES_DIR RCLONE_CONFIG_FILE PHP_USER)
+          for var in "${required_vars[@]}"; do
+            grep -q "$var=" shared/config/config.sh || (echo "❌ Thiếu biến: $var trong config.sh" && exit 1)
+          done
+
+      - name: Chạy Bats Test
+        run: bats tests/

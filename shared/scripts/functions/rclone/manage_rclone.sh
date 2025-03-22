@@ -1,6 +1,7 @@
 # Hàm hiển thị danh sách storage đã thiết lập
 rclone_storage_list() {
-    local rclone_config="shared/config/rclone/rclone.conf"
+    local rclone_config="${RCLONE_CONFIG_FILE:-shared/config/rclone/rclone.conf}"
+
 
     if ! is_file_exist "$rclone_config"; then
         echo -e "${RED}❌ Không tìm thấy tập tin cấu hình Rclone.${NC}"
@@ -15,7 +16,8 @@ rclone_storage_list() {
 
 # Hàm xóa storage đã thiết lập
 rclone_storage_delete() {
-    local rclone_config="shared/config/rclone/rclone.conf"
+    local rclone_config="${RCLONE_CONFIG_FILE:-shared/config/rclone/rclone.conf}"
+
 
     if ! is_file_exist "$rclone_config"; then
         echo -e "${RED}❌ Không tìm thấy tập tin cấu hình Rclone.${NC}"
