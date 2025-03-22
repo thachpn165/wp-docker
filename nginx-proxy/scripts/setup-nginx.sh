@@ -16,7 +16,7 @@ else
 fi
 
 echo -e "${YELLOW}🚀 Khởi động NGINX Proxy...${NC}"
-docker-compose -f nginx-proxy/docker-compose.yml up -d
+docker compose -f nginx-proxy/docker-compose.yml up -d
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ NGINX Proxy đã được khởi động thành công!${NC}"

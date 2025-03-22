@@ -49,14 +49,14 @@ restart_nginx_proxy() {
 
     # Dừng tất cả container trong docker-compose.yml và override
     echo -e "${BLUE}🛑 Đang dừng tất cả container...${NC}"
-    docker-compose down
+    docker compose down
 
     # Chờ 2 giây để đảm bảo container dừng hoàn toàn (tránh lỗi mount)
     sleep 2
 
     # Khởi động lại Docker Compose mà không chỉ định -f, để nó tự động load override
     echo -e "${GREEN}🚀 Đang khởi động lại container NGINX Proxy...${NC}"
-    docker-compose up -d
+    docker compose up -d
 
     # Kiểm tra xem container có khởi động thành công không
     if docker ps --format '{{.Names}}' | grep -q "^$NGINX_PROXY_CONTAINER$"; then
