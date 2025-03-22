@@ -91,7 +91,7 @@ echo -e "${BLUE}🔄 Đang xóa website '$site_name'...${NC}"
 
 # **Dừng & xóa container**
 cd "$SITE_DIR"
-docker-compose down
+docker compose down
 cd "$PROJECT_ROOT"
 
 # **Xóa mã nguồn nếu người dùng chọn**

@@ -86,9 +86,9 @@ install_docker_compose() {
     fi
 
     # Tạo alias `docker-compose` nếu người dùng vẫn sử dụng dạng cũ
-    if ! command -v docker-compose &> /dev/null; then
+    if ! command -v docker compose &> /dev/null; then
         sudo ln -sf "$DEST_DIR/docker-compose" /usr/local/bin/docker-compose
-        echo -e "${BLUE}ℹ️ Tạo liên kết docker-compose → docker compose để tương thích với các script cũ.${NC}"
+        echo -e "${BLUE}ℹ️ Tạo liên kết docker compose → docker compose để tương thích với các script cũ.${NC}"
     fi
 
     return 0

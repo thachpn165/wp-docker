@@ -52,7 +52,7 @@ echo -e "${BLUE}🔄 Đang restart website '$site_name'...${NC}"
 
 # **Restart Docker Compose cho website**
 cd "$SITE_DIR"
-docker-compose down && docker-compose up -d
+docker compose down && docker compose up -d
 cd "$PROJECT_ROOT"
 
 echo -e "${GREEN}✅ Website '$site_name' đã được restart thành công!${NC}"

@@ -178,7 +178,7 @@ fi
 # 🚀 **6. Khởi động website**
 echo -e "${GREEN}🚀 Đang khởi động website $domain...${NC}"
 cd "$SITE_DIR"
-docker-compose up -d
+docker compose up -d
 
 echo -e "${GREEN}🎉 Website $domain đã được tạo thành công!${NC}"
 
