@@ -13,7 +13,7 @@ source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/ssl/ssl_generate_self_signed.sh"
 source "$FUNCTIONS_DIR/ssl/ssl_install_manual.sh"
 source "$FUNCTIONS_DIR/ssl/ssl_edit_cert.sh"
-
+source "$FUNCTIONS_DIR/ssl/ssl_install_letsencrypt.sh"
 # Header menu
 print_ssl_menu_header() {
     echo -e "\n${MAGENTA}===========================================${NC}"
@@ -49,7 +49,7 @@ ssl_menu() {
                 read -p "Nhấn Enter để tiếp tục..."
                 ;;
             4)
-                echo -e "\n🛠️ [ĐANG PHÁT TRIỂN] Cài Let's Encrypt"
+                ssl_install_lets_encrypt
                 read -p "Nhấn Enter để tiếp tục..."
                 ;;
             5)
