@@ -51,7 +51,7 @@ jobs:
           chmod +x main.sh
 
       - name: Kiểm tra cấu hình docker-compose
-        run: docker compose config
+        run: docker compose -f nginx-proxy/docker-compose.yml config
 
       - name: Kiểm tra định dạng file .env
         run: |
