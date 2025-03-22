@@ -213,3 +213,21 @@ else
     echo -e "${RED}⚠️ Lỗi khi thiết lập quyền. Vui lòng kiểm tra lại!${NC}"
     exit 1
 fi
+
+# 📋 Hiển thị thông tin WordPress sau cùng (từ .wp-info)
+WP_INFO_FILE="$SITE_DIR/.wp-info"
+
+if [ -f "$WP_INFO_FILE" ]; then
+    echo -e "${GREEN}"
+    echo -e "==================================================="
+    echo -e "🎉 WordPress đã được cài đặt thành công! 🎉"
+    echo -e "==================================================="
+    cat "$WP_INFO_FILE" | while read line; do
+        echo -e "${YELLOW}$line${GREEN}"
+    done
+    echo -e "==================================================="
+    echo -e "🚀 Hãy truy cập website của bạn ngay bây giờ!"
+    echo -e "==================================================="
+    echo -e "${NC}"
+    rm -f "$WP_INFO_FILE"
+fi
