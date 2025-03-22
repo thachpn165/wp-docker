@@ -80,15 +80,15 @@ fi
 
 # Kiểm tra và cài đặt Docker-compose
 install_docker_compose() {
-    if command -v docker compose &> /dev/null; then
+    if docker compose version &> /dev/null; then
         echo -e "${GREEN}✅ Docker Compose đã được cài đặt sẵn.${NC}"
         return 0
     fi
 
-    echo -e "${YELLOW}🔄 Đang cài đặt Docker Compose...${NC}"
+    echo -e "${YELLOW}🔄 Đang cài đặt Docker Compose Plugin (V2)...${NC}"
 
     COMPOSE_VERSION="2.24.5"
-    OS_TYPE=$(uname -s)
+    OS_TYPE=$(uname -s | tr '[:upper:]' '[:lower:]')
     ARCH_TYPE=$(uname -m)
 
     case "$ARCH_TYPE" in
@@ -97,24 +97,29 @@ install_docker_compose() {
         *) echo -e "${RED}❌ Không hỗ trợ kiến trúc CPU: $ARCH_TYPE${NC}"; return 1 ;;
     esac
 
-    COMPOSE_BIN_URL="https://github.com/docker/compose/releases/download/v$COMPOSE_VERSION/docker-compose-$OS_TYPE-$ARCH_TYPE"
+    DEST_DIR="/usr/local/lib/docker/cli-plugins"
+    sudo mkdir -p "$DEST_DIR"
+    sudo curl -SL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-${OS_TYPE}-${ARCH_TYPE}" \
+        -o "$DEST_DIR/docker-compose"
+    sudo chmod +x "$DEST_DIR/docker-compose"
 
-    sudo curl -SL "$COMPOSE_BIN_URL" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-
-    # Tạo alias `docker compose` nếu cần
-    if ! docker compose version &> /dev/null; then
-        sudo ln -s /usr/local/bin/docker-compose /usr/local/bin/docker-compose-plugin 2>/dev/null || true
-    fi
-
-    if docker compose version &> /dev/null || docker-compose version &> /dev/null; then
-        echo -e "${GREEN}✅ Cài đặt Docker Compose thành công.${NC}"
-        return 0
+    # Kiểm tra lại
+    if docker compose version &> /dev/null; then
+        echo -e "${GREEN}✅ Cài đặt Docker Compose Plugin thành công.${NC}"
     else
-        echo -e "${RED}❌ Cài đặt Docker Compose thất bại.${NC}"
+        echo -e "${RED}❌ Cài đặt Docker Compose Plugin thất bại.${NC}"
         return 1
     fi
+
+    # Tạo alias `docker-compose` nếu người dùng vẫn sử dụng dạng cũ
+    if ! command -v docker-compose &> /dev/null; then
+        sudo ln -sf "$DEST_DIR/docker-compose" /usr/local/bin/docker-compose
+        echo -e "${BLUE}ℹ️ Tạo liên kết docker-compose → docker compose để tương thích với các script cũ.${NC}"
+    fi
+
+    return 0
 }
+
 
 
 # ✅ Kiểm tra Docker đã chạy chưa
