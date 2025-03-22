@@ -100,14 +100,7 @@ wp_set_permalinks "$CONTAINER_PHP" "$SITE_URL"
 wp_plugin_install_performance_lab "$CONTAINER_PHP"
 
 # Cài đặt plugin bảo mật
-wp_plugin_install_security_plugin "$CONTAINER_PHP"
-
-# Kiểm tra user có trong nhóm www-data chưa
-if ! groups $USER | grep -q "\bwww-data\b"; then
-    echo -e "${YELLOW}🔹 Thêm user hiện tại vào nhóm www-data...${NC}"
-    sudo usermod -aG www-data $USER
-    echo -e "${GREEN}✅ Vui lòng đăng xuất và đăng nhập lại để áp dụng quyền.${NC}"
-fi
+#wp_plugin_install_security_plugin "$CONTAINER_PHP"
 
 # 🎉 **Hiển thị thông tin đăng nhập đẹp mắt**
 echo -e "${GREEN}"
