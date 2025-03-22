@@ -14,6 +14,8 @@ source "$FUNCTIONS_DIR/ssl/ssl_generate_self_signed.sh"
 source "$FUNCTIONS_DIR/ssl/ssl_install_manual.sh"
 source "$FUNCTIONS_DIR/ssl/ssl_edit_cert.sh"
 source "$FUNCTIONS_DIR/ssl/ssl_install_letsencrypt.sh"
+source "$FUNCTIONS_DIR/ssl/ssl_check_cert_status.sh"
+
 # Header menu
 print_ssl_menu_header() {
     echo -e "\n${MAGENTA}===========================================${NC}"
@@ -53,7 +55,7 @@ ssl_menu() {
                 read -p "Nhấn Enter để tiếp tục..."
                 ;;
             5)
-                echo -e "\n🛠️ [ĐANG PHÁT TRIỂN] Kiểm tra trạng thái SSL"
+                ssl_check_certificate_status
                 read -p "Nhấn Enter để tiếp tục..."
                 ;;
             6)
