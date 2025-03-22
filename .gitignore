@@ -65,3 +65,7 @@ rclone.conf
 # Cấu hình của website trong nginx-proxy/globals
 nginx-proxy/globals/wp-login*
 nginx-proxy/conf.d/*.conf
+
+# Bỏ qua file shared/bin/wp để luôn tải về phiên bản mới nhất
+shared/bin/wp
+shared/bin/wp-cli.phar
