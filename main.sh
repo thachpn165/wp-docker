@@ -20,7 +20,7 @@ source "$(dirname "$0")/shared/scripts/functions/menu/wordpress_tools_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/system_tools_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/backup_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/rclone_menu.sh"
-
+source "$(dirname "$0")/shared/scripts/functions/menu/ssl_menu.sh"
 # **Chạy setup hệ thống trước khi hiển thị menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
 
@@ -62,7 +62,7 @@ while true; do
     read -p "🔹 Chọn một tùy chọn (1-9): " choice
     case "$choice" in
         1) manage_website_menu ;;
-        2) manage_ssl_menu ;;
+        2) ssl_menu ;;
         3) system_tools_menu ;;
         4) rclone_menu ;;
         5) wordpress_tools_menu ;;
