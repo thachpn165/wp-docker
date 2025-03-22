@@ -99,6 +99,7 @@ fi
 if [[ "$cache_type" != "no-cache" ]]; then
     #docker exec -u root "$PHP_CONTAINER" wp plugin install $plugin_slug --activate --path=/var/www/html --allow-root
     docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin install $plugin_slug --activate --path=/var/www/html"
+    docker exec -u root -i "$PHP_CONTAINER" sh -c "chown -R www-data:www-data /var/www/html/wp-content"
     echo -e "${GREEN}✅ Plugin cache đã được cài đặt và kích hoạt: $plugin_slug${NC}"
 fi
 
