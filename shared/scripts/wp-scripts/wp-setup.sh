@@ -56,7 +56,7 @@ if ! is_container_running "$CONTAINER_PHP"; then
 fi
 
 # 📥 Kiểm tra và tải WP-CLI nếu chưa có
-check_and_install_wp_cli "$CONTAINER_PHP"
+#check_and_install_wp_cli "$CONTAINER_PHP"
 
 # 📂 Kiểm tra và tải mã nguồn WordPress
 if [ ! -f "$SITE_DIR/wordpress/index.php" ]; then

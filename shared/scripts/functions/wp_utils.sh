@@ -1,36 +1,5 @@
 #!/bin/bash
 
-# 📌 Kiểm tra xem WP-CLI đã được cài đặt trong container hay chưa
-is_wp_cli_installed() {
-    local container="$1"
-    docker exec -i "$container" sh -c "command -v wp" &> /dev/null
-}
-
-# 📥 Cài đặt WP-CLI nếu chưa có
-install_wp_cli() {
-    local container="$1"
-    echo -e "${YELLOW}📥 Kiểm tra WP-CLI trong container: $container...${NC}"
-    
-    if ! is_wp_cli_installed "$container"; then
-        echo -e "${YELLOW}🚀 Đang cài đặt WP-CLI trong container: $container...${NC}"
-        docker exec -i "$container" sh -c "
-            curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-            chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
-        "
-        echo -e "${GREEN}✅ WP-CLI đã được cài đặt thành công.${NC}"
-    else
-        echo -e "${GREEN}✅ WP-CLI đã được cài đặt trước đó.${NC}"
-    fi
-}
-
-# 🔄 Kiểm tra và cài đặt WP-CLI nếu cần
-check_and_install_wp_cli() {
-    local container="$1"
-    if ! is_wp_cli_installed "$container"; then
-        install_wp_cli "$container"
-    fi
-}
-
 # 🏗️ Kiểm tra xem WordPress đã được cài đặt chưa
 is_wordpress_installed() {
     local container="$1"
@@ -139,4 +108,26 @@ wp_plugin_install_performance_lab() {
 
     
     echo -e "${GREEN}✅ Plugin Performance Lab đã được cài đặt và module WebP Uploads đã được kích hoạt.${NC}"
+}
+
+# Kiểm tra và cập nhật WP-CLI
+check_and_update_wp_cli() {
+    local wp_cli_path="shared/bin/wp"
+    local current_version
+
+    mkdir -p "$(dirname "$wp_cli_path")"
+
+    if [ -f "$wp_cli_path" ]; then
+        current_version=$("$wp_cli_path" --version 2>/dev/null | awk '{print $2}')
+        echo -e "${GREEN}🔍 WP-CLI hiện tại: v$current_version${NC}"
+        echo -e "${YELLOW}🔄 Kiểm tra & cập nhật WP-CLI...${NC}"
+    else
+        echo -e "${YELLOW}⚠️ WP-CLI chưa tồn tại. Đang tải bản mới nhất...${NC}"
+    fi
+
+    curl -sSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o "$wp_cli_path"
+    chmod +x "$wp_cli_path"
+
+    new_version=$("$wp_cli_path" --version 2>/dev/null | awk '{print $2}')
+    echo -e "${GREEN}✅ WP-CLI hiện đang là phiên bản: v$new_version${NC}"
 }

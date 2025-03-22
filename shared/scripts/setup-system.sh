@@ -10,6 +10,7 @@ while [ ! -f "$CONFIG_FILE" ]; do
     fi
 done
 source "$CONFIG_FILE"
+source "$FUNCTIONS_DIR/wp_utils.sh"
 
 # ✅ Hàm tự động cài đặt Docker mới nhất
 install_docker() {
@@ -155,3 +156,6 @@ else
     fi
     echo -e "${GREEN}✅ NGINX Proxy đã khởi động thành công.${NC}"
 fi
+
+# ✅ Kiểm tra và cài đặt WP-CLI nếu chưa có
+check_and_update_wp_cli
