@@ -61,11 +61,11 @@ ssl_install_lets_encrypt() {
     local SSL_DIR="nginx-proxy/ssl"
     mkdir -p "$SSL_DIR"
 
-    sudo cp "$CERT_PATH" "$SSL_DIR/$SITE_NAME.crt"
-    sudo cp "$KEY_PATH" "$SSL_DIR/$SITE_NAME.key"
+    sudo cp "$CERT_PATH" "$SSL_DIR/$DOMAIN.crt"
+    sudo cp "$KEY_PATH" "$SSL_DIR/$DOMAIN.key"
 
     echo -e "${YELLOW}🔄 Reload NGINX Proxy để áp dụng chứng chỉ mới...${NC}"
     docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload
 
-    echo -e "${GREEN}✅ Let's Encrypt đã được cài đặt thành công cho site ${CYAN}$SITE_NAME${NC}"
+    echo -e "${GREEN}✅ Let's Encrypt đã được cài đặt thành công cho site ${CYAN}$DOMAIN${NC}"
 }
