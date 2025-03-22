@@ -40,13 +40,13 @@ copy_file() {
 
 # Hàm kiểm tra thư mục có tồn tại không
 is_directory_exist() {
-    local directory="$1"
-    if [ -d "$directory" ]; then
-        return 0  # Thư mục tồn tại
-    else
-        return 1  # Thư mục không tồn tại
+    local dir="$1"
+    if [ ! -d "$dir" ]; then
+        echo "📁 [DEBUG] Tạo thư mục: $dir"
+        mkdir -p "$dir"
     fi
 }
+
 
 # Hỏi người dùng xác nhận hành động
 confirm_action() {

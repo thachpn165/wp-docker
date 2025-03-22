@@ -16,6 +16,8 @@ source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_database.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/cleanup_backups.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/rclone/manage_rclone.sh"
 
+
+
 backup_runner() {
     local site_name="$1"
     local storage_option="$2"
@@ -30,9 +32,14 @@ backup_runner() {
         storage_option="local"
     fi
 
+    # Đảm bảo thư mục backup và logs tồn tại
+    is_directory_exist "$SITES_DIR/$site_name/backups"
+    is_directory_exist "$SITES_DIR/$site_name/logs"
+
+
     local env_file="$SITES_DIR/$site_name/.env"
     local web_root="$SITES_DIR/$site_name/wordpress"
-    local backup_dir="$(realpath "$SITES_DIR/$site_name/backups")"
+    local backup_dir="$SITES_DIR/$site_name/backups"
     local log_dir="$(realpath "$SITES_DIR/$site_name/logs")"
     local log_file="$log_dir/wp-backup.log"
 
