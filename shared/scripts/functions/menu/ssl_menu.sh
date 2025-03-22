@@ -11,6 +11,8 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/ssl/ssl_generate_self_signed.sh"
+source "$FUNCTIONS_DIR/ssl/ssl_install_manual.sh"
+source "$FUNCTIONS_DIR/ssl/ssl_edit_cert.sh"
 
 # Header menu
 print_ssl_menu_header() {
@@ -39,11 +41,11 @@ ssl_menu() {
                 read -p "Nhấn Enter để tiếp tục..."
                 ;;
             2)
-                echo -e "\n🛠️ [ĐANG PHÁT TRIỂN] Cài chứng chỉ thủ công"
+                ssl_install_manual_cert
                 read -p "Nhấn Enter để tiếp tục..."
                 ;;
             3)
-                echo -e "\n🛠️ [ĐANG PHÁT TRIỂN] Sửa chứng chỉ SSL"
+                ssl_edit_certificate
                 read -p "Nhấn Enter để tiếp tục..."
                 ;;
             4)
