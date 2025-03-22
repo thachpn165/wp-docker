@@ -50,8 +50,10 @@ jobs:
           find shared/scripts -name "*.sh" -exec chmod +x {} \;
           chmod +x main.sh
 
-      - name: Kiểm tra cấu hình docker-compose
+      - name: Kiểm tra cấu hình docker-compose (chỉ Linux)
+        if: runner.os == 'Linux'
         run: docker compose -f nginx-proxy/docker-compose.yml config
+        
 
       - name: Kiểm tra định dạng file .env
         run: |
