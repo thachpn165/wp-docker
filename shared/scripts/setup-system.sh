@@ -52,32 +52,6 @@ install_docker() {
     return 0
 }
 
-# ✅ Kiểm tra Docker đã cài đặt chưa
-if ! command -v docker &> /dev/null; then
-    echo -e "${RED}❌ Docker chưa được cài đặt trên hệ thống.${NC}"
-
-    OS_TYPE=$(uname -s)
-    case "$OS_TYPE" in
-        Linux*)
-            install_docker
-            install_docker_compose
-            if [ $? -ne 0 ]; then
-                echo -e "${RED}❌ Cài đặt Docker thất bại. Vui lòng cài đặt thủ công.${NC}"
-                exit 1
-            fi
-            ;;
-        Darwin*)
-            echo -e "${YELLOW}🔹 Hệ điều hành macOS được phát hiện.${NC}"
-            echo -e "${YELLOW}📦 Vui lòng tải Docker Desktop từ: https://www.docker.com/get-started${NC}"
-            exit 1
-            ;;
-        *)
-            echo -e "${RED}⚠️ Không xác định được hệ điều hành. Vui lòng tự cài đặt Docker.${NC}"
-            exit 1
-            ;;
-    esac
-fi
-
 # Kiểm tra và cài đặt Docker-compose
 install_docker_compose() {
     if command -v docker compose &> /dev/null; then
@@ -115,6 +89,32 @@ install_docker_compose() {
         return 1
     fi
 }
+
+# ✅ Kiểm tra Docker đã cài đặt chưa
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}❌ Docker chưa được cài đặt trên hệ thống.${NC}"
+
+    OS_TYPE=$(uname -s)
+    case "$OS_TYPE" in
+        Linux*)
+            install_docker
+            install_docker_compose
+            if [ $? -ne 0 ]; then
+                echo -e "${RED}❌ Cài đặt Docker thất bại. Vui lòng cài đặt thủ công.${NC}"
+                exit 1
+            fi
+            ;;
+        Darwin*)
+            echo -e "${YELLOW}🔹 Hệ điều hành macOS được phát hiện.${NC}"
+            echo -e "${YELLOW}📦 Vui lòng tải Docker Desktop từ: https://www.docker.com/get-started${NC}"
+            exit 1
+            ;;
+        *)
+            echo -e "${RED}⚠️ Không xác định được hệ điều hành. Vui lòng tự cài đặt Docker.${NC}"
+            exit 1
+            ;;
+    esac
+fi
 
 
 # ✅ Kiểm tra Docker đã chạy chưa
