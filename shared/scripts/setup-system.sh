@@ -159,3 +159,27 @@ fi
 
 # ✅ Kiểm tra và cài đặt WP-CLI nếu chưa có
 check_and_update_wp_cli
+
+# ✅ Kiểm tra và thiết lập múi giờ (chỉ áp dụng với Linux)
+if [[ "$(uname -s)" == "Linux" ]]; then
+    CURRENT_TIMEZONE=$(cat /etc/timezone 2>/dev/null || timedatectl | grep "Time zone" | awk '{print $3}')
+    TARGET_TIMEZONE="Asia/Ho_Chi_Minh"
+
+    if [[ "$CURRENT_TIMEZONE" != "$TARGET_TIMEZONE" ]]; then
+        echo -e "${YELLOW}🌐 Múi giờ hiện tại là: $CURRENT_TIMEZONE${NC}"
+        echo -e "${YELLOW}🛠️ Đang cập nhật múi giờ hệ thống về: $TARGET_TIMEZONE...${NC}"
+
+        if command -v timedatectl &> /dev/null; then
+            sudo timedatectl set-timezone "$TARGET_TIMEZONE"
+        else
+            echo "$TARGET_TIMEZONE" | sudo tee /etc/timezone
+            sudo ln -sf /usr/share/zoneinfo/$TARGET_TIMEZONE /etc/localtime
+        fi
+
+        echo -e "${GREEN}✅ Múi giờ đã được cập nhật thành công.${NC}"
+    else
+        echo -e "${GREEN}🕒 Múi giờ hệ thống đã đúng: $CURRENT_TIMEZONE${NC}"
+    fi
+else
+    echo -e "${BLUE}💡 Bỏ qua kiểm tra múi giờ vì không phải hệ điều hành Linux.${NC}"
+fi

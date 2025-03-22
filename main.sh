@@ -30,7 +30,7 @@ CROSSMARK="${RED}❌${NC}"
 
 # 🏆 **Hiển thị tiêu đề**
 print_header() {
-    clear
+    echo -e "\n\n\n"
     get_system_info
     echo -e "${MAGENTA}==============================================${NC}"
     echo -e "${MAGENTA}        🚀 ${CYAN}WordPress Docker LEMP Stack 🚀        ${NC}"
