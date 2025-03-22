@@ -103,16 +103,10 @@ wp_plugin_install_performance_lab "$CONTAINER_PHP"
 #wp_plugin_install_security_plugin "$CONTAINER_PHP"
 
 # 🎉 **Hiển thị thông tin đăng nhập đẹp mắt**
-echo -e "${GREEN}"
-echo -e "==================================================="
-echo -e "🎉 WordPress đã được cài đặt thành công! 🎉"
-echo -e "==================================================="
-echo -e "🌍 Website URL:   ${CYAN}$SITE_URL${GREEN}"
-echo -e "🔑 Admin URL:     ${CYAN}$SITE_URL/wp-admin${GREEN}"
-echo -e "👤 Admin User:    ${YELLOW}$ADMIN_USER${GREEN}"
-echo -e "🔒 Admin Pass:    ${YELLOW}$ADMIN_PASSWORD${GREEN}"
-echo -e "📧 Admin Email:   ${YELLOW}$ADMIN_EMAIL${GREEN}"
-echo -e "==================================================="
-echo -e "🚀 Hãy truy cập website của bạn ngay bây giờ!"
-echo -e "==================================================="
-echo -e "${NC}"
+cat > "$SITE_DIR/.wp-info" <<EOF
+🌍 Website URL:   $SITE_URL
+🔑 Admin URL:     $SITE_URL/wp-admin
+👤 Admin User:    $ADMIN_USER
+🔒 Admin Pass:    $ADMIN_PASSWORD
+📧 Admin Email:   $ADMIN_EMAIL
+EOF
