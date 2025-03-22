@@ -14,7 +14,12 @@ is_internet_connected() {
 # Kiểm tra xem một domain có thể truy cập không
 is_domain_resolvable() {
     local domain="$1"
-    nslookup "$domain" &> /dev/null
+    if command -v timeout &>/dev/null; then
+    timeout 3 nslookup "$domain" &> /dev/null
+    else
+    nslookup "$domain" | grep -q "Name:"
+    fi
+
 }
 # Thiết lập proxy NGINX
 setup_nginx_proxy() {
