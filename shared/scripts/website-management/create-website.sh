@@ -43,6 +43,7 @@ read -p "Chọn phiên bản PHP (7.4, 8.1, 8.3) [mặc định: 8.3]: " php_ver
 php_version=${php_version:-8.3}
 
 SITE_DIR="$SITES_DIR/$site_name"
+CONTAINER_PHP="${site_name}-php"
 
 # 🚫 Kiểm tra nếu site đã tồn tại
 if is_directory_exist "$SITE_DIR"; then
@@ -200,8 +201,9 @@ echo -e "${GREEN}🎉 Hoàn tất quá trình tạo website $domain.${NC}"
 restart_nginx_proxy
 
 # Chạy lệnh chown bên trong container nginx-proxy
-echo -e "${YELLOW}🔄 Thiết lập quyền bên trong container nginx-proxy...${NC}"
+echo -e "${YELLOW}🔄 Thiết lập quyền bên trong container${NC}"
 docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R www-data:www-data "/var/www/$site_name"
+docker exec -u root "$CONTAINER_PHP" chown -R www-data:www-data "/var/www/"
 
 # Xác nhận lại quyền sở hữu
 CURRENT_OWNER=$(docker exec "$NGINX_PROXY_CONTAINER" stat -c "%U:%G" "/var/www/$site_name")

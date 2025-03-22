@@ -50,12 +50,14 @@ esac
 
 # ✅ Kiểm tra các plugin cache hiện tại và tắt nếu cần
 cache_plugins=("wp-super-cache" "nginx-helper" "w3-total-cache" "redis-cache" "wp-fastest-cache")
-active_plugins=$(docker exec -u root "$PHP_CONTAINER" wp plugin list --status=active --field=name --allow-root --path=/var/www/html)
+#active_plugins=$(docker exec -u root "$PHP_CONTAINER" wp plugin list --status=active --field=name --allow-root --path=/var/www/html)
+active_plugins=$(docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin list --status=active --field=name --path=/var/www/html" &> /dev/null)
 
 for plugin in "${cache_plugins[@]}"; do
     if echo "$active_plugins" | grep -q "$plugin"; then
         echo -e "${YELLOW}⚠️ Plugin $plugin đang hoạt động, sẽ bị vô hiệu hoá trước khi kích hoạt plugin mới.${NC}"
-        docker exec -u root "$PHP_CONTAINER" wp plugin deactivate "$plugin" --allow-root --path=/var/www/html
+        #docker exec -u root "$PHP_CONTAINER" wp plugin deactivate "$plugin" --allow-root --path=/var/www/html
+        docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin deactivate "$plugin" --path=/var/www/html"
     fi
 done
 
@@ -63,8 +65,10 @@ done
 if [[ "$cache_type" == "no-cache" ]]; then
     echo -e "${YELLOW}🛑 Tắt toàn bộ plugin cache...${NC}"
     for plugin in "${cache_plugins[@]}"; do
-        docker exec -u root "$PHP_CONTAINER" wp plugin deactivate "$plugin" --allow-root --path=/var/www/html
-        docker exec -u root "$PHP_CONTAINER" wp plugin delete "$plugin" --allow-root --path=/var/www/html
+        #docker exec -u root "$PHP_CONTAINER" wp plugin deactivate "$plugin" --allow-root --path=/var/www/html
+        docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin deactivate "$plugin" --path=/var/www/html"
+        #docker exec -u root "$PHP_CONTAINER" wp plugin delete "$plugin" --allow-root --path=/var/www/html
+        docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin delete "$plugin" --path=/var/www/html"
     done
 
     echo -e "${YELLOW}🧹 Xoá \`WP_CACHE\` trong wp-config.php...${NC}"
@@ -93,7 +97,8 @@ fi
 
 # ✅ Cài đặt plugin cache mới
 if [[ "$cache_type" != "no-cache" ]]; then
-    docker exec -u root "$PHP_CONTAINER" wp plugin install $plugin_slug --activate --path=/var/www/html --allow-root
+    #docker exec -u root "$PHP_CONTAINER" wp plugin install $plugin_slug --activate --path=/var/www/html --allow-root
+    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin install $plugin_slug --activate --path=/var/www/html"
     echo -e "${GREEN}✅ Plugin cache đã được cài đặt và kích hoạt: $plugin_slug${NC}"
 fi
 
@@ -122,7 +127,8 @@ if [[ "$cache_choice" == "2" || "$cache_choice" == "3" ]]; then
 
     # 🛠️ Kích hoạt tính năng purge cache cho nginx-helper
     echo -e "${YELLOW}⚡ Đang bật tính năng purge cache cho nginx-helper...${NC}"
-    docker exec -u root "$PHP_CONTAINER" wp option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json --allow-root --path=/var/www/html
+    #docker exec -u root "$PHP_CONTAINER" wp option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json --allow-root --path=/var/www/html
+    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json --path=/var/www/html"
     echo -e "${GREEN}✅ Tính năng purge cache đã được bật.${NC}"
 fi
 
@@ -149,9 +155,13 @@ if [[ "$cache_choice" == "2" ]]; then
 
     # 🛠️ Cài đặt và kích hoạt Redis Cache
     echo -e "${YELLOW}⚡ Đang cài đặt và kích hoạt Redis Object Cache...${NC}"
-    docker exec -u root "$PHP_CONTAINER" wp plugin install redis-cache --activate --allow-root --path=/var/www/html
-    docker exec -u root "$PHP_CONTAINER" wp redis update-dropin --allow-root --path=/var/www/html
-    docker exec -u root "$PHP_CONTAINER" wp redis enable --allow-root --path=/var/www/html
+    #docker exec -u root "$PHP_CONTAINER" wp plugin install redis-cache --activate --allow-root --path=/var/www/html
+    #docker exec -u root "$PHP_CONTAINER" wp redis update-dropin --allow-root --path=/var/www/html
+    #docker exec -u root "$PHP_CONTAINER" wp redis enable --allow-root --path=/var/www/html
+
+    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin install redis-cache --activate --path=/var/www/html"
+    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp redis update-dropin --path=/var/www/html"
+    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp redis enable --path=/var/www/html"
 
     echo -e "${GREEN}✅ Redis Object Cache đã được cài đặt và kích hoạt.${NC}"
 
