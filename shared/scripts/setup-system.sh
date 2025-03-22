@@ -59,6 +59,7 @@ if ! command -v docker &> /dev/null; then
     case "$OS_TYPE" in
         Linux*)
             install_docker
+            install_docker_compose
             if [ $? -ne 0 ]; then
                 echo -e "${RED}❌ Cài đặt Docker thất bại. Vui lòng cài đặt thủ công.${NC}"
                 exit 1
@@ -75,6 +76,45 @@ if ! command -v docker &> /dev/null; then
             ;;
     esac
 fi
+
+# Kiểm tra và cài đặt Docker-compose
+install_docker_compose() {
+    if command -v docker compose &> /dev/null; then
+        echo -e "${GREEN}✅ Docker Compose đã được cài đặt sẵn.${NC}"
+        return 0
+    fi
+
+    echo -e "${YELLOW}🔄 Đang cài đặt Docker Compose...${NC}"
+
+    COMPOSE_VERSION="2.24.5"
+    OS_TYPE=$(uname -s)
+    ARCH_TYPE=$(uname -m)
+
+    case "$ARCH_TYPE" in
+        x86_64) ARCH_TYPE="x86_64" ;;
+        aarch64 | arm64) ARCH_TYPE="aarch64" ;;
+        *) echo -e "${RED}❌ Không hỗ trợ kiến trúc CPU: $ARCH_TYPE${NC}"; return 1 ;;
+    esac
+
+    COMPOSE_BIN_URL="https://github.com/docker/compose/releases/download/v$COMPOSE_VERSION/docker-compose-$OS_TYPE-$ARCH_TYPE"
+
+    sudo curl -SL "$COMPOSE_BIN_URL" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+
+    # Tạo alias `docker compose` nếu cần
+    if ! docker compose version &> /dev/null; then
+        sudo ln -s /usr/local/bin/docker-compose /usr/local/bin/docker-compose-plugin 2>/dev/null || true
+    fi
+
+    if docker compose version &> /dev/null || docker-compose version &> /dev/null; then
+        echo -e "${GREEN}✅ Cài đặt Docker Compose thành công.${NC}"
+        return 0
+    else
+        echo -e "${RED}❌ Cài đặt Docker Compose thất bại.${NC}"
+        return 1
+    fi
+}
+
 
 # ✅ Kiểm tra Docker đã chạy chưa
 is_docker_running
