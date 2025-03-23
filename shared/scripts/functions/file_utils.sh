@@ -38,14 +38,21 @@ copy_file() {
     fi
 }
 
-# Hàm kiểm tra thư mục có tồn tại không
+# Hàm kiểm tra thư mục có tồn tại không, nếu không thì tự tạo thư mục
 is_directory_exist() {
     local dir="$1"
+    local create_if_missing="$2" # Nếu là "false" thì không tạo
+
     if [ ! -d "$dir" ]; then
-        echo "📁 [DEBUG] Tạo thư mục: $dir"
-        mkdir -p "$dir"
+        if [ "$create_if_missing" != "false" ]; then
+            echo "📁 [DEBUG] Tạo thư mục: $dir"
+            mkdir -p "$dir"
+        else
+            return 1
+        fi
     fi
 }
+
 
 
 # Hỏi người dùng xác nhận hành động
