@@ -1,9 +1,7 @@
 services:
   nginx-proxy:
-    build:
-      context: ./
-      dockerfile: Dockerfile
     container_name: nginx-proxy
+    image: openresty/openresty:1.21.4.1-alpine
     ports:
       - "80:80"
       - "443:443"
