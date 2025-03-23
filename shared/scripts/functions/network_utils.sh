@@ -21,21 +21,7 @@ is_domain_resolvable() {
     fi
 
 }
-# Thiết lập proxy NGINX
-setup_nginx_proxy() {
-    local nginx_status=$(docker inspect -f '{{.State.Status}}' "$NGINX_PROXY_CONTAINER" 2>/dev/null)
 
-    if [[ "$nginx_status" == "running" ]]; then
-        echo -e "${GREEN}✅ NGINX Reverse Proxy đang chạy.${NC}"
-    elif [[ "$nginx_status" == "exited" || "$nginx_status" == "created" ]]; then
-        echo -e "${YELLOW}🔄 Đang khởi động lại NGINX Proxy...${NC}"
-        docker start "$NGINX_PROXY_CONTAINER"
-        echo -e "${GREEN}✅ NGINX Proxy đã khởi động lại.${NC}"
-    else
-        echo -e "${YELLOW}🚀 Khởi động NGINX Reverse Proxy...${NC}"
-        bash "$NGINX_SCRIPTS_DIR/setup-nginx.sh"
-    fi
-}
 
 # Restart NGINX Proxy
 restart_nginx_proxy() {
