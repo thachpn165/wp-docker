@@ -51,8 +51,8 @@ create_optimized_php_fpm_config() {
     # Ghi cấu hình tối ưu vào file
     cat > "$php_fpm_conf_path" <<EOF
 [www]
-user = www-data
-group = www-data
+user = nobody
+group = nogroup
 listen = 9000
 pm = dynamic
 pm.max_children = $max_children

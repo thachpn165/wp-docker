@@ -21,7 +21,7 @@ CACHE_CONF_DIR="$NGINX_PROXY_DIR/cache"
 NGINX_CONF_FILE="$NGINX_PROXY_DIR/conf.d/${site_name}.conf"
 WP_CONFIG_FILE="$SITE_DIR/wordpress/wp-config.php"
 PHP_CONTAINER="$site_name-php"
-NGINX_MAIN_CONF="/etc/nginx/nginx.conf"
+NGINX_MAIN_CONF="/usr/local/openresty/nginx/conf/nginx.conf"
 
 # ✅ Kiểm tra website có tồn tại không
 if [ ! -d "$SITE_DIR" ]; then
@@ -56,8 +56,7 @@ active_plugins=$(docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin
 for plugin in "${cache_plugins[@]}"; do
     if echo "$active_plugins" | grep -q "$plugin"; then
         echo -e "${YELLOW}⚠️ Plugin $plugin đang hoạt động, sẽ bị vô hiệu hoá trước khi kích hoạt plugin mới.${NC}"
-        #docker exec -u root "$PHP_CONTAINER" wp plugin deactivate "$plugin" --allow-root --path=/var/www/html
-        docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin deactivate "$plugin" --path=/var/www/html"
+        docker exec -u "$PHP_USER" "$PHP_CONTAINER" wp plugin deactivate "$plugin" --path=/var/www/html
     fi
 done
 
@@ -99,7 +98,7 @@ fi
 if [[ "$cache_type" != "no-cache" ]]; then
     #docker exec -u root "$PHP_CONTAINER" wp plugin install $plugin_slug --activate --path=/var/www/html --allow-root
     docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "wp plugin install $plugin_slug --activate --path=/var/www/html"
-    docker exec -u root -i "$PHP_CONTAINER" sh -c "chown -R www-data:www-data /var/www/html/wp-content"
+    docker exec -u root -i "$PHP_CONTAINER" sh -c "chown -R nobody:nogroup /var/www/html/wp-content"
     echo -e "${GREEN}✅ Plugin cache đã được cài đặt và kích hoạt: $plugin_slug${NC}"
 fi
 
