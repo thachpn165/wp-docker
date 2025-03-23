@@ -6,12 +6,6 @@ is_container_running() {
     docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
 }
 
-# Kiểm tra xem một network Docker có tồn tại không
-is_network_exist() {
-    local network_name="$1"
-    docker network ls --format '{{.Name}}' | grep -q "^${network_name}$"
-}
-
 # Kiểm tra xem một volume Docker có tồn tại không
 is_volume_exist() {
     local volume_name="$1"

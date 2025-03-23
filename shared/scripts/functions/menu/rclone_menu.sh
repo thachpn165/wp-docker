@@ -34,7 +34,7 @@ rclone_menu() {
         read -p "🔹 Chọn một tùy chọn (1-5): " choice
 
         case "$choice" in
-            1) setup_rclone ;;
+            1) rclone_setup ;;
             2) bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" ;;
             3) echo ""
                 echo "Danh sách storage khả dụng"
