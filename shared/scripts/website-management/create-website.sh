@@ -17,17 +17,15 @@ source "$CONFIG_FILE"
 HOST_UID=$(id -u)
 
 # 🛠 Kiểm tra biến quan trọng
-required_vars=("PROJECT_ROOT" "SITES_DIR" "TEMPLATES_DIR" "CONFIG_DIR" "SCRIPTS_DIR"
-               "FUNCTIONS_DIR" "WP_SCRIPTS_DIR" "WEBSITE_MGMT_DIR" "NGINX_PROXY_DIR"
-               "NGINX_SCRIPTS_DIR" "SSL_DIR" "DOCKER_NETWORK" "NGINX_PROXY_CONTAINER"
-               "SETUP_WORDPRESS_SCRIPT" "PROXY_SCRIPT")
+# ✅ Biến bắt buộc
+required_vars=(
+  "PROJECT_ROOT" "SITES_DIR" "TEMPLATES_DIR" "CONFIG_DIR" "SCRIPTS_DIR"
+  "FUNCTIONS_DIR" "WP_SCRIPTS_DIR" "WEBSITE_MGMT_DIR" "NGINX_PROXY_DIR"
+  "NGINX_SCRIPTS_DIR" "SSL_DIR" "DOCKER_NETWORK" "NGINX_PROXY_CONTAINER"
+  "SETUP_WORDPRESS_SCRIPT" "PROXY_SCRIPT"
+)
 
-for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        echo -e "${RED}❌ Lỗi: Biến '$var' chưa được định nghĩa trong config.sh${NC}"
-        exit 1
-    fi
-done
+check_required_envs "${required_vars[@]}"
 
 echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
 
