@@ -34,7 +34,7 @@ ssl_install_lets_encrypt() {
             if [ -f /etc/debian_version ]; then
                 sudo apt update && sudo apt install -y certbot
             elif [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]; then
-                sudo yum install -y certbot
+                sudo yum install epel-release -y && sudo yum install -y certbot
             else
                 echo -e "${RED}❌ Không hỗ trợ hệ điều hành này để cài certbot.${NC}"
                 return 1
