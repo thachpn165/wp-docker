@@ -18,7 +18,6 @@ SSL_DIR="$NGINX_PROXY_DIR/ssl"
 
 # **Biến Script**
 SETUP_WORDPRESS_SCRIPT="$WP_SCRIPTS_DIR/wp-setup.sh"
-PROXY_SCRIPT="$NGINX_SCRIPTS_DIR/manage-nginx.sh"
 PHP_USER="nobody"
 
 

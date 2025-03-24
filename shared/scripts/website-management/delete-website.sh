@@ -14,7 +14,7 @@ done
 source "$CONFIG_FILE"
 
 # 🛠 **Kiểm tra biến quan trọng**
-required_vars=("PROJECT_ROOT" "SITES_DIR" "PROXY_SCRIPT" "PROXY_CONF_DIR" "SSL_DIR" "NGINX_PROXY_CONTAINER")
+required_vars=("PROJECT_ROOT" "SITES_DIR" "PROXY_CONF_DIR" "SSL_DIR" "NGINX_PROXY_CONTAINER")
 
 for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
