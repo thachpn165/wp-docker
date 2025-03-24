@@ -24,6 +24,9 @@ server {
     # Hỗ trợ CloudFlare
     include /etc/nginx/globals/cloudflare.conf;
 
+    # Tích hợp WAF, nếu không dùng thì thêm dấu `#` vào đoạn include bên dưới
+    include /etc/nginx/globals/waf.conf;
+
     # 📥 **Include cache configuration (mặc định là no-cache)**
     include /etc/nginx/cache/no-cache.conf;
 
