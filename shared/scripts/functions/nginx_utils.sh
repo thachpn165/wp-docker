@@ -8,7 +8,6 @@ update_nginx_override_mounts() {
     if [ ! -f "$OVERRIDE_FILE" ]; then
         echo -e "${YELLOW}📄 Tạo mới docker-compose.override.yml...${NC}"
         cat > "$OVERRIDE_FILE" <<EOF
-version: '3.8'
 services:
   nginx-proxy:
     volumes:

@@ -163,12 +163,12 @@ shopt -u dotglob
 rm -rf "$TMP_SITE_DIR"
 echo -e "${GREEN}✅ Website đã được di chuyển từ tmp/ vào: $SITE_DIR${NC}"
 
-# 🔄 Reload nginx và thiết lập quyền
+# 🔄 Reload nginx và thiết lập quyền sau khi di chuyển
 restart_nginx_proxy
-docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R nobody:nogroup "/var/www/$site_name" > /dev/null 2>&1
+docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R nobody:nogroup "/var/www/$site_name"
 docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup "/var/www/"
 
-# restart lại container
+# 🔁 Khởi động lại container website
 cd "$SITE_DIR"
 docker compose restart
 

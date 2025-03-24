@@ -108,7 +108,7 @@ wp_set_wpconfig "$PHP_CONTAINER" "$DB_NAME" "$DB_USER" "$DB_PASS" "$DB_CONTAINER
 wp_install "$PHP_CONTAINER" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
 
 # Phân quyền thư mục trước khi cài plugin
-docker exec -u root "$PHP_CONTAINER" chown -R nobody:nogroup /var/www/html/wp-content
+docker exec -u root "$PHP_CONTAINER" chown -R nobody:nogroup /var/www/
 
 # ♻️ Thiết lập permalinks
 wp_set_permalinks "$PHP_CONTAINER" "$SITE_URL"
