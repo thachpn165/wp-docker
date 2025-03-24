@@ -13,11 +13,11 @@ jobs:
     steps:
       - name: 📥 Checkout source code
         uses: actions/checkout@v3
-
       - name: 🧼 Dọn dẹp các thư mục không cần thiết
         run: |
           echo "Loại trừ: .git/, .github/, .vscode/, logs/, tmp/"
           mkdir dist
+          echo "${{ github.ref_name }}" > .version
           zip -r dist/wp-docker-lemp.zip . \
             -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" \
             -x "*.DS_Store" "__MACOSX"
