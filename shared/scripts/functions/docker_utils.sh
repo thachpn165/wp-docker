@@ -85,10 +85,17 @@ start_docker_if_needed() {
 
 # ✅ Hàm kiểm tra & thêm user vào group docker nếu cần
 check_docker_group() {
-    if ! groups "$USER" | grep -q docker; then
-        echo -e "${YELLOW}➕ Thêm user '$USER' vào nhóm docker...${NC}"
-        sudo usermod -aG docker "$USER"
-        echo -e "${GREEN}✅ Đã thêm user vào nhóm docker. Hãy logout/login lại để có hiệu lực.${NC}"
+    # Kiểm tra hệ điều hành
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS không yêu cầu người dùng thuộc nhóm docker
+        echo -e "${GREEN}✅ Trên macOS, không cần thêm user vào nhóm docker.${NC}"
+    else
+        # Linux - kiểm tra và thêm user vào nhóm docker nếu cần
+        if ! groups "$USER" | grep -q docker; then
+            echo -e "${YELLOW}➕ Thêm user '$USER' vào nhóm docker...${NC}"
+            sudo usermod -aG docker "$USER"
+            echo -e "${GREEN}✅ Đã thêm user vào nhóm docker. Hãy logout/login lại để có hiệu lực.${NC}"
+        fi
     fi
 }
 

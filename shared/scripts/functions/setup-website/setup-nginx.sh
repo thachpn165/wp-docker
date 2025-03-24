@@ -16,8 +16,6 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 source "$CONFIG_FILE"
 
-$SETUP_WORDPRESS_SCRIPT =  "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh"
-
 # ✅ Kiểm tra các biến cấu hình bắt buộc
 required_vars=(
   "PROJECT_ROOT" "SITES_DIR" "TEMPLATES_DIR" "CONFIG_DIR" "SCRIPTS_DIR"
@@ -56,7 +54,7 @@ chmod 666 "$SITE_DIR/logs/"*.log
 update_nginx_override_mounts "$site_name"
 
 # 🌐 Tạo file cấu hình nginx cho site
-bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh" "$site_name" "$domain"
+bash "$FUNCTIONS_DIR/setup-website/setup-nginx.sh" "$site_name" "$domain"
 
 # 📋 Sao chép php.ini & cấu hình tối ưu MariaDB, PHP-FPM
 copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
