@@ -51,5 +51,9 @@ fi
 
 cd "$PROJECT_ROOT"
 
+# ✅ Kiểm tra và tạo Docker network nếu chưa có
+echo -e "${YELLOW}🌐 Kiểm tra mạng Docker '${DOCKER_NETWORK}'...${NC}"
+create_docker_network "$DOCKER_NETWORK"
+
 
 echo -e "\n${GREEN}✅ Hệ thống đã sẵn sàng để sử dụng WP Docker LEMP.${NC}"
