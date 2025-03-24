@@ -64,11 +64,21 @@ fi
 
 # ♻ Cleanup nếu lỗi
 cleanup_on_fail() {
-    echo -e "${RED}❌ Có lỗi xảy ra. Đang xoá thư mục tạm $TMP_SITE_DIR...${NC}"
+    echo -e "${RED}❌ Có lỗi xảy ra. Đang xoá thư mục tạm $TMP_SITE_DIR và các container liên quan...${NC}"
+
+    # 👉 Dừng và xoá các container & volume nếu có
+    if docker compose --project-name "$site_name" ps -q &>/dev/null; then
+        docker compose --project-name "$site_name" down -v
+        echo -e "${YELLOW}🗑️ Đã dừng & xoá container của site $site_name.${NC}"
+    fi
+
+    # 👉 Xoá thư mục tạm nếu còn tồn tại
     rm -rf "$TMP_SITE_DIR"
     echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ❌ XOÁ SITE DO THẤT BẠI =====" >> "$LOG_FILE"
+
     exit 1
 }
+
 trap cleanup_on_fail ERR
 
 # 📂 Tạo thư mục tạm
