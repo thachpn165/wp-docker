@@ -43,7 +43,7 @@ wp_install() {
     local admin_email="$6"
 
     echo "🚀 Đang cài đặt WordPress..."
-    docker exec -i "$container" sh -c "
+    docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -i "$container" sh -c "
         wp core install --url='$site_url' --title='$title' --admin_user='$admin_user' \
         --admin_password='$admin_pass' --admin_email='$admin_email' --skip-email --path=/var/www/html --allow-root
     "
@@ -68,8 +68,8 @@ wp_set_permalinks() {
     local site_url="$2"
 
     echo -e "${YELLOW}🔗 Đang thiết lập permalinks cho WordPress...${NC}"
-    docker exec -u "$PHP_USER" -i "$container" sh -c "wp option update permalink_structure '/%postname%/' --path=/var/www/html"
-    
+    docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp option update permalink_structure '/%postname%/' --path=/var/www/html"
+
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Permalinks đã được thiết lập thành công.${NC}"
     else
@@ -83,7 +83,7 @@ wp_plugin_install_security_plugin() {
     local container="$1"
 
     echo -e "${YELLOW}🔒 Đang cài đặt plugin bảo mật WordPress...${NC}"
-    docker exec -u "$PHP_USER" -i "$container" sh -c "wp plugin install limit-login-attempts-reloaded --activate --path=/var/www/html"
+    docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp plugin install limit-login-attempts-reloaded --activate --path=/var/www/html"
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Plugin bảo mật đã được cài đặt và kích hoạt.${NC}"
@@ -96,11 +96,10 @@ wp_plugin_install_security_plugin() {
 # 📌 **Cài đặt và kích hoạt plugin Performance Lab**
 wp_plugin_install_performance_lab() {
     local container="$1"
-    
-    echo -e "${YELLOW}🔧 Đang cài đặt và kích hoạt plugin Performance Lab...${NC}"
-     docker exec -u "$PHP_USER" -i "$container" sh -c "wp plugin install performance-lab --activate --path=/var/www/html"
 
-    
+    echo -e "${YELLOW}🔧 Đang cài đặt và kích hoạt plugin Performance Lab...${NC}"
+    docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp plugin install performance-lab --activate --path=/var/www/html"
+
     echo -e "${GREEN}✅ Plugin Performance Lab đã được cài đặt và module WebP Uploads đã được kích hoạt.${NC}"
 }
 
