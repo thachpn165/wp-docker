@@ -59,6 +59,7 @@ yarn.lock
 *.key
 *.pem
 .wp-login-auth-*
+tmp/
 # Cấu hình Rclone
 rclone.conf
 
