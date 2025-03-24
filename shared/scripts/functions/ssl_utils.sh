@@ -15,9 +15,3 @@ generate_ssl_cert() {
 
     echo "✅ Chứng chỉ SSL đã được tạo tại $ssl_dir"
 }
-
-# Kiểm tra xem chứng chỉ SSL có hợp lệ không
-is_ssl_cert_valid() {
-    local cert_path="$1"
-    openssl x509 -noout -text -in "$cert_path" &> /dev/null
-}

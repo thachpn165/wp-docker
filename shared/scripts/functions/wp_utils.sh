@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# 🏗️ Kiểm tra xem WordPress đã được cài đặt chưa
-is_wordpress_installed() {
-    local container="$1"
-    docker exec -u "$PHP_USER" -i "$container" sh -c "wp core is-installed --path=/var/www/html" &> /dev/null
-}
-
 # 🛠️ Cấu hình wp-config.php
 wp_set_wpconfig() {
     local container_php="$1"
@@ -51,7 +45,7 @@ wp_install() {
     echo "🚀 Đang cài đặt WordPress..."
     docker exec -i "$container" sh -c "
         wp core install --url='$site_url' --title='$title' --admin_user='$admin_user' \
-        --admin_password='$admin_pass' --admin_email='$admin_email' --path=/var/www/html --allow-root
+        --admin_password='$admin_pass' --admin_email='$admin_email' --skip-email --path=/var/www/html --allow-root
     "
     echo "✅ WordPress đã được cài đặt."
 }
