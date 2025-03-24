@@ -4,6 +4,7 @@ update_nginx_override_mounts() {
     local MOUNT_ENTRY="      - ../sites/$site_name/wordpress:/var/www/$site_name"
     local MOUNT_LOGS="      - ../sites/$site_name/logs:/var/www/logs/$site_name"
 
+    # Nếu chưa tồn tại, tạo file mới
     if [ ! -f "$OVERRIDE_FILE" ]; then
         echo -e "${YELLOW}📄 Tạo mới docker-compose.override.yml...${NC}"
         cat > "$OVERRIDE_FILE" <<EOF
@@ -14,19 +15,23 @@ services:
 $MOUNT_ENTRY
 $MOUNT_LOGS
 EOF
-        echo -e "${GREEN}✅ Tạo mới và cập nhật docker-compose.override.yml thành công.${NC}"
+        echo -e "${GREEN}✅ File docker-compose.override.yml đã được tạo và cấu hình.${NC}"
+        return
+    fi
+
+    # Kiểm tra và thêm MOUNT_ENTRY nếu cần
+    if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
+        echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null
+        echo -e "${GREEN}➕ Đã thêm mount source: $MOUNT_ENTRY${NC}"
     else
-        if ! grep -q "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
-            echo "$MOUNT_ENTRY" >> "$OVERRIDE_FILE"
-            echo -e "${GREEN}✅ Website '$site_name' đã được thêm vào docker-compose.override.yml.${NC}"
-        else
-            echo -e "${YELLOW}⚠️ Website '$site_name' đã tồn tại trong docker-compose.override.yml.${NC}"
-        fi
-        if ! grep -q "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
-            echo "$MOUNT_LOGS" >> "$OVERRIDE_FILE"
-            echo -e "${GREEN}✅ Logs của website '$site_name' đã được thêm vào docker-compose.override.yml.${NC}"
-        else
-            echo -e "${YELLOW}⚠️ Logs của website '$site_name' đã tồn tại trong docker-compose.override.yml.${NC}"
-        fi
+        echo -e "${YELLOW}⚠️ Mount source đã tồn tại: $MOUNT_ENTRY${NC}"
+    fi
+
+    # Kiểm tra và thêm MOUNT_LOGS nếu cần
+    if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
+        echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null
+        echo -e "${GREEN}➕ Đã thêm mount logs: $MOUNT_LOGS${NC}"
+    else
+        echo -e "${YELLOW}⚠️ Mount logs đã tồn tại: $MOUNT_LOGS${NC}"
     fi
 }

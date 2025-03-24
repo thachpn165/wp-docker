@@ -31,9 +31,9 @@ check_required_envs "${required_vars[@]}"
 
 HOST_UID=$(id -u)
 
-echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
+echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚi =====${NC}"
 
-# 🗕️ Nhập thông tin người dùng
+# 🗅️ Nhập thông tin người dùng
 read -p "Tên miền (ví dụ: example.com): " domain
 suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
 read -p "Tên site (mặc định: $suggested_site_name): " site_name
@@ -48,7 +48,7 @@ touch "$LOG_FILE"
 
 start_time=$(date '+%Y-%m-%d %H:%M:%S')
 echo -e "${YELLOW}📄 Đang ghi log quá trình vào: $LOG_FILE${NC}"
-echo "===== [ $start_time ] BẮT ĐẦU TẠO WEBSITE: $site_name ($domain) =====" >> "$LOG_FILE"
+echo "===== [ $start_time ] Bắt ĐầU TẠO WEBSITE: $site_name ($domain) =====" >> "$LOG_FILE"
 
 exec > >(tee -a "$LOG_FILE") 2>&1
 
@@ -132,7 +132,7 @@ WP_INFO_FILE="$TMP_SITE_DIR/.wp-info"
 if [ -f "$WP_INFO_FILE" ]; then
     echo -e "${GREEN}\n==================================================="
     echo -e "🎉 WordPress đã được cài đặt thành công! 🎉"
-    echo -e "${RED} LƯU Ý: HÃY LƯU LẠI THÔNG TIN BÊN DƯỚI${NC}"
+    echo -e "${RED} LƯU Ý: HÃY LƯU LẠI THÔNG TIN BÊN DƯỚi${NC}"
     echo -e "===================================================${NC}"
     while read -r line; do
         echo -e "${YELLOW}$line${NC}"
