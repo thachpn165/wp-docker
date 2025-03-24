@@ -28,11 +28,11 @@ DOCKER_NETWORK="proxy_network"
 NGINX_PROXY_CONTAINER="nginx-proxy"
 
 # **Cấu hình Container**
-CONTAINER_PHP="${site_name}-php"
-CONTAINER_DB="${site_name}-mariadb"
+#CONTAINER_PHP="${site_name}-php"
+#CONTAINER_DB="${site_name}-mariadb"
 
 # **Cấu hình URL cho Website**
-SITE_URL="https://$DOMAIN"
+#SITE_URL="https://$DOMAIN"
 
 # **Import các function utilities**
 source "$FUNCTIONS_DIR/system_utils.sh"
