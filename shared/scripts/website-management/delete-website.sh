@@ -78,7 +78,7 @@ fi
 
 # 🧹 Thực hiện xóa
 cd "$SITE_DIR"
-docker compose down
+docker compose --project-name "$site_name" down
 cd "$PROJECT_ROOT"
 
 # 🔥 Xoá mã nguồn
