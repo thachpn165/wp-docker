@@ -30,69 +30,80 @@ remove_volume() {
     fi
 }
 
-# 🐳 **Hàm kiểm tra Docker có đang chạy không**
-is_docker_running() {
-    if ! docker info &> /dev/null; then
-        echo -e "${YELLOW}⚠️ Docker chưa chạy. Đang cố gắng khởi động Docker...${NC}"
-
-        OS_TYPE=$(uname -s)
-        if [[ "$OS_TYPE" == "Linux" ]]; then
-            if [ -f /etc/os-release ]; then
-                OS_ID=$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"')
-                OS_ID_LIKE=$(grep ^ID_LIKE= /etc/os-release | cut -d= -f2 | tr -d '"')
-
-                if [[ "$OS_ID" =~ (ubuntu|debian) || "$OS_ID_LIKE" =~ (debian) ]]; then
-                    sudo systemctl start docker || sudo service docker start
-
-                elif [[ "$OS_ID" =~ (centos|rhel|alma) || "$OS_ID_LIKE" =~ (rhel|fedora) ]]; then
-                    sudo service docker start
-
-                else
-                    echo -e "${RED}⚠️ Không xác định được bản phân phối Linux. Vui lòng khởi động Docker thủ công.${NC}"
-                    return 1
-                fi
-            else
-                echo -e "${RED}⚠️ Không tìm thấy /etc/os-release. Không thể xác định hệ điều hành.${NC}"
-                return 1
-            fi
-
-        elif [[ "$OS_TYPE" == "Darwin" ]]; then
-            echo -e "${YELLOW}🖥️ Vui lòng mở Docker Desktop để khởi động Docker trên macOS.${NC}"
-            return 1
-
-        else
-            echo -e "${RED}⚠️ Không xác định được hệ điều hành. Vui lòng khởi động Docker thủ công.${NC}"
-            return 1
-        fi
-
-        # Kiểm tra lại sau khi đã cố khởi động
-        sleep 3
-        if ! docker info &> /dev/null; then
-            echo -e "${RED}❌ Docker vẫn chưa chạy sau khi thử khởi động.${NC}"
-            return 1
-        else
-            echo -e "${GREEN}✅ Docker đã được khởi động thành công.${NC}"
-            return 0
-        fi
-
+# ✅ Hàm tự động cài Docker
+install_docker() {
+    echo -e "${YELLOW}🔧 Cài đặt Docker...${NC}"
+    if [ -x "$(command -v apt-get)" ]; then
+        sudo apt-get update
+        sudo apt-get install -y ca-certificates curl gnupg lsb-release
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg | \
+            sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+          https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") \
+          $(lsb_release -cs) stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    elif [ -x "$(command -v yum)" ]; then
+        sudo yum install -y yum-utils
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     else
-        return 0
+        echo -e "${RED}❌ Không hỗ trợ hệ điều hành này để cài Docker tự động.${NC}"
+        exit 1
     fi
 }
 
+# ✅ Hàm cài Docker Compose từ GitHub release
+install_docker_compose() {
+    echo -e "${YELLOW}📦 Cài đặt Docker Compose...${NC}"
+    latest_release=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep browser_download_url | grep "$(uname -s)-$(uname -m)" | cut -d '"' -f 4)
+    sudo curl -L "$latest_release" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+}
 
-# 🛠️ **Hàm kiểm tra trạng thái Docker và hiển thị thông tin**
-check_docker_status() {
-    echo -e "${YELLOW}🔍 Kiểm tra trạng thái Docker...${NC}"
-    
-    if is_docker_running; then
-        echo -e "${GREEN}✅ Docker đang hoạt động bình thường.${NC}"
-        #echo -e "${YELLOW}📊 Thống kê tổng quan Docker:${NC}"
-        #docker system df
+# ✅ Hàm kiểm tra Docker đã chạy chưa
+start_docker_if_needed() {
+    if (! docker stats --no-stream &> /dev/null); then
+        echo -e "${YELLOW}🌀 Docker chưa chạy. Đang khởi động Docker...${NC}"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            open --background -a Docker
+            while ! docker system info > /dev/null 2>&1; do
+                echo -n "."
+                sleep 1
+            done
+            echo " ✅"
+        else
+            sudo systemctl start docker
+        fi
     else
-        echo -e "${RED}❌ Docker không hoạt động. Hãy kiểm tra lại!${NC}"
+        echo -e "${GREEN}✅ Docker đang hoạt động.${NC}"
     fi
 }
+
+# ✅ Hàm kiểm tra & thêm user vào group docker nếu cần
+check_docker_group() {
+    # Kiểm tra hệ điều hành
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS không yêu cầu người dùng thuộc nhóm docker
+        echo -e "${GREEN}✅ Trên macOS, không cần thêm user vào nhóm docker.${NC}"
+    else
+        # Linux - kiểm tra và thêm user vào nhóm docker nếu cần
+        if ! groups "$USER" | grep -q docker; then
+            echo -e "${YELLOW}➕ Thêm user '$USER' vào nhóm docker...${NC}"
+            sudo usermod -aG docker "$USER"
+            echo -e "${GREEN}✅ Đã thêm user vào nhóm docker. Hãy logout/login lại để có hiệu lực.${NC}"
+        fi
+    fi
+}
+
+# 🧩 Hàm docker exec nhanh
+docker_exec_php() {
+    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "$1"
+}
+
 
 # Nếu script này được gọi trực tiếp, thực thi hàm tương ứng
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

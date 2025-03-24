@@ -18,7 +18,6 @@ SSL_DIR="$NGINX_PROXY_DIR/ssl"
 
 # **Biến Script**
 SETUP_WORDPRESS_SCRIPT="$WP_SCRIPTS_DIR/wp-setup.sh"
-PROXY_SCRIPT="$NGINX_SCRIPTS_DIR/manage-nginx.sh"
 PHP_USER="nobody"
 
 
@@ -29,11 +28,11 @@ DOCKER_NETWORK="proxy_network"
 NGINX_PROXY_CONTAINER="nginx-proxy"
 
 # **Cấu hình Container**
-CONTAINER_PHP="${site_name}-php"
-CONTAINER_DB="${site_name}-mariadb"
+#CONTAINER_PHP="${site_name}-php"
+#CONTAINER_DB="${site_name}-mariadb"
 
 # **Cấu hình URL cho Website**
-SITE_URL="https://$DOMAIN"
+#SITE_URL="https://$DOMAIN"
 
 # **Import các function utilities**
 source "$FUNCTIONS_DIR/system_utils.sh"
@@ -45,6 +44,7 @@ source "$FUNCTIONS_DIR/wp_utils.sh"
 source "$FUNCTIONS_DIR/php_utils.sh"
 source "$FUNCTIONS_DIR/db_utils.sh"
 source "$FUNCTIONS_DIR/website_utils.sh"
+source "$FUNCTIONS_DIR/misc_utils.sh"
 # 🎨 **Màu sắc terminal**
 RED='\033[1;31m'
 GREEN='\033[1;32m'
