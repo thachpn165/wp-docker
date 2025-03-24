@@ -5,7 +5,7 @@
 # =====================================
 
 set -euo pipefail
-REPO_URL="https://github.com/your-username/wp-docker-lemp"
+REPO_URL="https://github.com/thachpn165/wp-docker-lemp"
 BRANCH="main"
 INSTALL_DIR="$HOME/wp-docker-lemp"
 
