@@ -37,16 +37,9 @@ cd "$NGINX_PROXY_DIR"
 
 if ! docker compose ps | grep -q "nginx-proxy.*Up"; then
     echo -e "${YELLOW}🌀 Container nginx-proxy chưa chạy. Đang khởi động...${NC}"
-    docker compose up -d nginx-proxy
+    docker compose up -d
 else
     echo -e "${GREEN}✅ Container nginx-proxy đang chạy.${NC}"
-fi
-
-if ! docker compose ps | grep -q "redis-cache.*Up"; then
-    echo -e "${YELLOW}🌀 Container redis-cache chưa chạy. Đang khởi động...${NC}"
-    docker compose up -d redis-cache
-else
-    echo -e "${GREEN}✅ Container redis-cache đang chạy.${NC}"
 fi
 
 cd "$PROJECT_ROOT"
