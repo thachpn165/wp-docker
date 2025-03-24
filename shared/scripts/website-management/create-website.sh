@@ -33,7 +33,7 @@ HOST_UID=$(id -u)
 
 echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚI =====${NC}"
 
-# 📅 Nhập thông tin người dùng
+# 🗕️ Nhập thông tin người dùng
 read -p "Tên miền (ví dụ: example.com): " domain
 suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
 read -p "Tên site (mặc định: $suggested_site_name): " site_name
@@ -41,30 +41,28 @@ site_name=${site_name:-$suggested_site_name}
 read -p "Chọn phiên bản PHP (7.4, 8.1, 8.3) [mặc định: 8.3]: " php_version
 php_version=${php_version:-8.3}
 
-# 📝 Ghi log quá trình tại thư mục /logs
+# 📍 Ghi log quá trình tại thư mục /logs
 LOG_FILE="$PROJECT_ROOT/logs/${site_name}-setup.log"
 mkdir -p "$(dirname "$LOG_FILE")"
 touch "$LOG_FILE"
 
-# ⏰ Thời gian bắt đầu
 start_time=$(date '+%Y-%m-%d %H:%M:%S')
 echo -e "${YELLOW}📄 Đang ghi log quá trình vào: $LOG_FILE${NC}"
-echo "===== [ $start_time ] Bắt ĐầU TẠO WEBSITE: $site_name ($domain) =====" >> "$LOG_FILE"
+echo "===== [ $start_time ] BẮT ĐẦU TẠO WEBSITE: $site_name ($domain) =====" >> "$LOG_FILE"
 
-# ↺ Ghi toàn bộ output (stdout + stderr) vào file log
 exec > >(tee -a "$LOG_FILE") 2>&1
 
 SITE_DIR="$SITES_DIR/$site_name"
 TMP_SITE_DIR="$PROJECT_ROOT/tmp/${site_name}_$RANDOM"
 CONTAINER_PHP="${site_name}-php"
 
-# 🔐 Xử lý dịv tạo thư mục tạm nếu site đã tồn tại
+# 🔐 Kiểm tra site đã tồn tại
 if is_directory_exist "$SITE_DIR" false; then
     echo "❌ Website '$site_name' đã tồn tại. Vui lòng chọn tên khác."
     exit 1
 fi
 
-# ♻ Cleanup khi lỗi
+# ♻ Cleanup nếu lỗi
 cleanup_on_fail() {
     echo -e "${RED}❌ Có lỗi xảy ra. Đang xoá thư mục tạm $TMP_SITE_DIR...${NC}"
     rm -rf "$TMP_SITE_DIR"
@@ -81,7 +79,7 @@ chmod 666 "$TMP_SITE_DIR/logs/"*.log
 # ⚙️ docker-compose.override.yml
 update_nginx_override_mounts "$site_name"
 
-# 🌐 Tạo file cấu hình nginx
+# 🌐 Cấu hình nginx
 export site_name domain php_version
 SITE_DIR="$TMP_SITE_DIR"
 bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh"
@@ -107,7 +105,7 @@ MYSQL_USER=wpuser
 MYSQL_PASSWORD=$MYSQL_PASSWORD
 EOF
 
-# 📅 docker-compose.yml
+# 🗓️ docker-compose.yml
 TEMPLATE_FILE="$TEMPLATES_DIR/docker-compose.yml.template"
 TARGET_FILE="$TMP_SITE_DIR/docker-compose.yml"
 if is_file_exist "$TEMPLATE_FILE"; then
@@ -129,29 +127,34 @@ generate_ssl_cert "$domain" "$SSL_DIR"
 # ⚙️ Cài đặt WordPress
 bash "$SETUP_WORDPRESS_SCRIPT" "$site_name"
 
-# 🔄 Reload & chown
-restart_nginx_proxy
-docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R nobody:nogroup "/var/www/$site_name"
-docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup "/var/www/"
-
-# 📋 Hiển thị thông tin
+# 📄 Hiển thị thông tin tạo site
 WP_INFO_FILE="$TMP_SITE_DIR/.wp-info"
 if [ -f "$WP_INFO_FILE" ]; then
     echo -e "${GREEN}\n==================================================="
     echo -e "🎉 WordPress đã được cài đặt thành công! 🎉"
+    echo -e "${RED} LƯU Ý: HÃY LƯU LẠI THÔNG TIN BÊN DƯỚI${NC}"
     echo -e "===================================================${NC}"
     while read -r line; do
         echo -e "${YELLOW}$line${NC}"
     done < "$WP_INFO_FILE"
-    echo -e "${GREEN}==================================================="
-    echo -e "🚀 Hãy truy cập website của bạn ngay bây giờ!"
-    echo -e "===================================================${NC}"
     rm -f "$WP_INFO_FILE"
 fi
 
-# 📅 Hoàn tất & di chuyển site vào sites/
-mv "$TMP_SITE_DIR" "$SITE_DIR"
+# 🗓️ Di chuyển site vào thư mục chính
+mkdir -p "$SITE_DIR"
+shopt -s dotglob
+mv "$TMP_SITE_DIR"/* "$SITE_DIR"/
+shopt -u dotglob
+rm -rf "$TMP_SITE_DIR"
 echo -e "${GREEN}✅ Website đã được di chuyển từ tmp/ vào: $SITE_DIR${NC}"
 
-end_time=$(date '+%Y-%m-%d %H:%M:%S')
-echo "===== [ $end_time ] HOÀN THÀNH TẠO WEBSITE: $site_name =====" >> "$LOG_FILE"
+# 🔄 Reload nginx và thiết lập quyền
+restart_nginx_proxy
+docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R nobody:nogroup "/var/www/$site_name" > /dev/null 2>&1
+docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup "/var/www/"
+
+# restart lại container
+cd "$SITE_DIR"
+docker compose restart
+
+echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] HOÀN THÀNH TẠO WEBSITE: $site_name =====" >> "$LOG_FILE"
