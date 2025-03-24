@@ -45,7 +45,7 @@ wp_install() {
     echo "🚀 Đang cài đặt WordPress..."
     docker exec -i "$container" sh -c "
         wp core install --url='$site_url' --title='$title' --admin_user='$admin_user' \
-        --admin_password='$admin_pass' --admin_email='$admin_email' --path=/var/www/html --allow-root
+        --admin_password='$admin_pass' --admin_email='$admin_email' --skip-email --path=/var/www/html --allow-root
     "
     echo "✅ WordPress đã được cài đặt."
 }
