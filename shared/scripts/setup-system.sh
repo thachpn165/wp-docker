@@ -22,7 +22,7 @@ else
     echo -e "${GREEN}✅ Docker đã được cài đặt.${NC}"
 fi
 
-if ! command -v docker-compose &> /dev/null; then
+if ! command -v docker compose &> /dev/null; then
     install_docker_compose
 else
     echo -e "${GREEN}✅ Docker Compose đã được cài đặt.${NC}"
