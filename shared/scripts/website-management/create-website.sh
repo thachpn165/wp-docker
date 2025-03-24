@@ -39,6 +39,20 @@ site_name=${site_name:-$suggested_site_name}
 read -p "Chọn phiên bản PHP (7.4, 8.1, 8.3) [mặc định: 8.3]: " php_version
 php_version=${php_version:-8.3}
 
+# 📝 Ghi log quá trình tại thư mục /logs
+LOG_FILE="$PROJECT_ROOT/logs/${site_name}-setup.log"
+mkdir -p "$(dirname "$LOG_FILE")"
+touch "$LOG_FILE"
+
+# ⏰ Thời gian bắt đầu
+start_time=$(date '+%Y-%m-%d %H:%M:%S')
+echo -e "${YELLOW}📄 Đang ghi log quá trình vào: $LOG_FILE${NC}"
+echo "===== [ $start_time ] BẮT ĐẦU TẠO WEBSITE: $site_name ($domain) =====" >> "$LOG_FILE"
+
+# 🔁 Ghi toàn bộ output (stdout + stderr) vào file log
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+
 SITE_DIR="$SITES_DIR/$site_name"
 CONTAINER_PHP="${site_name}-php"
 
