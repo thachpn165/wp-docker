@@ -114,7 +114,7 @@ docker exec -u root "$container" chown -R nobody:nogroup /var/www/html/wp-conten
 wp_set_permalinks "$PHP_CONTAINER" "$SITE_URL"
 
 # 🔌 Cài plugin Performance Lab
-wp_plugin_install_performance_lab "$PHP_CONTAINER"
+#wp_plugin_install_performance_lab "$PHP_CONTAINER"
 
 # 📋 Ghi file .wp-info
 cat > "$ENV_FILE_DIR/.wp-info" <<EOF
