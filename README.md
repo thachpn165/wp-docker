@@ -7,7 +7,7 @@
 [![Made with ❤️](https://img.shields.io/badge/made%20with-%E2%9D%A4-red)](https://github.com/thachpn165/wp-lemp-docker/)
 
 ---
-
+![menu](https://raw.githubusercontent.com/thachpn165/wp-docker-lemp/refs/heads/main/menu-screenshot.png)
 ## 📝 Giới thiệu
 
 **WP Docker LEMP Stack** là một hệ thống quản lý WordPress hoàn chỉnh chạy bằng Docker, hỗ trợ nhiều website, tích hợp SSL, backup tự động, rclone upload, WP-CLI, hệ thống log và nhiều tiện ích nâng cao khác.
