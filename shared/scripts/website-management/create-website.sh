@@ -66,18 +66,23 @@ fi
 cleanup_on_fail() {
     echo -e "${RED}❌ Có lỗi xảy ra. Đang xoá thư mục tạm $TMP_SITE_DIR và các container liên quan...${NC}"
 
-    # 👉 Dừng và xoá các container & volume nếu có
-    if docker compose --project-name "$site_name" ps -q &>/dev/null; then
-        docker compose --project-name "$site_name" down -v
-        echo -e "${YELLOW}🗑️ Đã dừng & xoá container của site $site_name.${NC}"
-    fi
+    local php_container="${site_name}-php"
+    local db_container="${site_name}-mariadb"
 
-    # 👉 Xoá thư mục tạm nếu còn tồn tại
+    # 🛑 Dừng container nếu đang chạy
+    docker stop "$php_container" "$db_container" &>/dev/null || true
+    # 🗑️ Xoá container nếu tồn tại
+    docker rm "$php_container" "$db_container" &>/dev/null || true
+
+    echo -e "${YELLOW}🗑️ Đã xoá container $php_container và $db_container (nếu có).${NC}"
+
+    # 🗂️ Xoá thư mục tạm
     rm -rf "$TMP_SITE_DIR"
     echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ❌ XOÁ SITE DO THẤT BẠI =====" >> "$LOG_FILE"
 
     exit 1
 }
+
 
 trap cleanup_on_fail ERR
 
