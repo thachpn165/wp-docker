@@ -94,6 +94,12 @@ check_docker_status() {
     fi
 }
 
+# 🧩 Hàm docker exec nhanh
+docker_exec_php() {
+    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "$1"
+}
+
+
 # Nếu script này được gọi trực tiếp, thực thi hàm tương ứng
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     case "$1" in

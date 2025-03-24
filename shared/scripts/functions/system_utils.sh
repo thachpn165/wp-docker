@@ -15,3 +15,12 @@ get_total_cpu() {
         sysctl -n hw.ncpu
     fi
 }
+
+# 🧩 Hàm xử lý sed tương thích macOS/Linux
+sedi() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "$@"
+    else
+        sed -i "$@"
+    fi
+}
