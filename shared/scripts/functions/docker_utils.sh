@@ -58,11 +58,35 @@ install_docker() {
 
 # ✅ Hàm cài Docker Compose từ GitHub release
 install_docker_compose() {
-    echo -e "${YELLOW}📦 Cài đặt Docker Compose...${NC}"
-    latest_release=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep browser_download_url | grep "$(uname -s)-$(uname -m)" | cut -d '"' -f 4)
-    sudo curl -L "$latest_release" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+    echo -e "${YELLOW}📦 Đang cài đặt Docker Compose plugin...${NC}"
+
+    DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+    mkdir -p "$DOCKER_CONFIG/cli-plugins"
+
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    ARCH=$(uname -m)
+
+    # Chuẩn hóa kiến trúc
+    case "$ARCH" in
+        x86_64) ARCH="x86_64" ;;
+        aarch64 | arm64) ARCH="aarch64" ;;
+        *) echo "❌ Không hỗ trợ kiến trúc máy: $ARCH" && return 1 ;;
+    esac
+
+    COMPOSE_URL="https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-${OS}-${ARCH}"
+    DEST="$DOCKER_CONFIG/cli-plugins/docker-compose"
+
+    echo "➡️  Tải từ: $COMPOSE_URL"
+    curl -SL "$COMPOSE_URL" -o "$DEST"
+    chmod +x "$DEST"
+
+    if docker compose version &>/dev/null; then
+        echo -e "${GREEN}✅ Docker Compose đã được cài đặt thành công.${NC}"
+    else
+        echo -e "${RED}❌ Cài đặt Docker Compose thất bại. Hãy kiểm tra thủ công.${NC}"
+    fi
 }
+
 
 # ✅ Hàm kiểm tra Docker đã chạy chưa
 start_docker_if_needed() {
@@ -113,3 +137,19 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         *) echo -e "${RED}❌ Lệnh không hợp lệ!${NC} Sử dụng: $0 {is_docker_running|check_docker_status}" ;;
     esac
 fi
+
+
+# 🧹 Xoá container chính bao gồm nginx proxy và redis-cache
+remove_core_containers() {
+  echo -e "${YELLOW}🧹 Đang xoá các container $NGINX_PROXY_CONTAINER và redis-cache...${NC}"
+  docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
+}
+
+# 🧹 Xoá toàn bộ container và volume liên quan tới từng site
+remove_site_containers() {
+  for site in $(get_site_list); do
+    echo -e "${YELLOW}🧨 Đang xoá container cho site: $site${NC}"
+    docker rm -f "$site-php" "$site-mariadb" 2>/dev/null || true
+    docker volume rm "${site}_db_data" 2>/dev/null || true
+  done
+}
