@@ -18,7 +18,7 @@ done
 
 source "$CONFIG_FILE"
 
-BACKUP_DIR="$PROJECT_ROOT/backup_before_remove"
+BACKUP_DIR="$PROJECT_ROOT/archives/backups_before_remove"
 TMP_BACKUP_DIR="$PROJECT_ROOT/tmp"
 
 # 💬 Xác nhận hành động từ người dùng

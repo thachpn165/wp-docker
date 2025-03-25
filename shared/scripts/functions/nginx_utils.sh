@@ -1,3 +1,6 @@
+# =====================================
+# 🌐 nginx_utils.sh – Các hàm tiện ích liên quan đến NGINX Proxy
+# =====================================
 update_nginx_override_mounts() {
     local site_name="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
@@ -36,34 +39,24 @@ EOF
 }
 
 
-# Restart NGINX Proxy
-restart_nginx_proxy() {
-    echo -e "${YELLOW}🔄 Đang khởi động lại NGINX Proxy với docker-compose.override.yml...${NC}"
+# 🔁 Restart NGINX Proxy (dùng khi thay đổi docker-compose, mount volume, v.v)
+nginx_restart() {
+  echo -e "${YELLOW}🔁 Đang khởi động lại container NGINX Proxy...${NC}"
+  docker restart "$NGINX_PROXY_CONTAINER"
+  if [[ $? -eq 0 ]]; then
+    echo -e "${GREEN}✅ Đã restart NGINX Proxy thành công.${NC}"
+  else
+    echo -e "${RED}❌ Lỗi khi restart NGINX Proxy.${NC}"
+  fi
+}
 
-    # Di chuyển vào thư mục chứa docker-compose.yml
-    cd "$NGINX_PROXY_DIR" || {
-        echo -e "${RED}❌ Lỗi: Không thể truy cập thư mục $NGINX_PROXY_DIR${NC}"
-        return 1
-    }
-
-    # Dừng tất cả container trong docker-compose.yml và override
-    echo -e "${BLUE}🛑 Đang dừng tất cả container...${NC}"
-    docker compose down
-
-    # Chờ 2 giây để đảm bảo container dừng hoàn toàn (tránh lỗi mount)
-    sleep 2
-
-    # Khởi động lại Docker Compose mà không chỉ định -f, để nó tự động load override
-    echo -e "${GREEN}🚀 Đang khởi động lại container NGINX Proxy...${NC}"
-    docker compose up -d
-
-    # Kiểm tra xem container có khởi động thành công không
-    if docker ps --format '{{.Names}}' | grep -q "^$NGINX_PROXY_CONTAINER$"; then
-        echo -e "${GREEN}✅ NGINX Proxy đã được khởi động lại thành công.${NC}"
-    else
-        echo -e "${RED}❌ Lỗi: Không thể khởi động lại NGINX Proxy.${NC}"
-    fi
-
-    # Quay về thư mục cũ (nếu cần)
-    cd - > /dev/null 2>&1
+# 🔄 Reload NGINX (dùng khi thay đổi file config/nginx.conf/nginx site)
+nginx_reload() {
+  echo -e "${YELLOW}🔄 Đang reload NGINX Proxy...${NC}"
+  docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload 2>/dev/null
+  if [[ $? -eq 0 ]]; then
+    echo -e "${GREEN}✅ Đã reload NGINX thành công.${NC}"
+  else
+    echo -e "${RED}⚠️ Lỗi khi reload. Gợi ý: Kiểm tra log bằng 'docker logs $NGINX_PROXY_CONTAINER'${NC}"
+  fi
 }

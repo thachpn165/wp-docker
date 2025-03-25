@@ -120,8 +120,7 @@ elif [[ "$action_choice" == "2" ]]; then
 fi
 
 # **Reload NGINX để áp dụng thay đổi**
-docker exec nginx-proxy nginx -s reload > /dev/null 2>&1
-echo -e "${GREEN}✅ NGINX đã được reload thành công.${NC}"
+nginx_reload
 
 
 

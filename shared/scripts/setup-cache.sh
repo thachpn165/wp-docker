@@ -157,5 +157,5 @@ if [[ "$cache_type" == "wp-fastest-cache" ]]; then
 fi
 
 # ✅ Restart NGINX để áp dụng cấu hình mới
-docker exec nginx-proxy nginx -s reload
+nginx_reload
 echo -e "${GREEN}✅ NGINX đã được reload để áp dụng cache mới.${NC}"
