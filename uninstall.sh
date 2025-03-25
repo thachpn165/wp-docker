@@ -107,12 +107,16 @@ remove_all_except_backup() {
 # 🧾 Hiển thị container còn lại sau khi xoá
 show_remaining_containers() {
   echo -e "\n${CYAN}📋 Danh sách container còn lại sau khi gỡ cài đặt:${NC}"
-  docker ps -a || true
-
-  echo -e "\n${YELLOW}💡 Nếu bạn muốn xoá hết container còn sót lại, hãy chạy các lệnh sau:${NC}"
-  docker ps -a --format '{{.Names}}' | while read -r name; do
-    echo "docker stop $name && docker rm $name"
-  done
+  remaining=$(docker ps -a --format '{{.Names}}')
+  if [[ -z "$remaining" ]]; then
+    echo -e "${GREEN}✅ Không còn container Docker nào.${NC}"
+  else
+    docker ps -a
+    echo -e "\n${YELLOW}💡 Nếu bạn muốn xoá hết container còn sót lại, hãy chạy các lệnh sau:${NC}"
+    echo "$remaining" | while read -r name; do
+      echo "docker stop $name && docker rm $name"
+    done
+  fi
 }
 
 # ================================
