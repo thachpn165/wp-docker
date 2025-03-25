@@ -31,7 +31,7 @@ php_change_version() {
   docker rm -f "${SITE_NAME}-php" 2>/dev/null || true
 
   # Khởi động lại PHP với phiên bản mới
-  docker compose up -d php
+  docker compose --project-name "$site_name" up -d php
 
   echo -e "${GREEN}✅ Website $SITE_NAME đã được chạy lại với PHP: $selected_php${NC}"
 }

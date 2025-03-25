@@ -84,7 +84,7 @@ EOF
   fi
 
   cd "$TMP_SITE_DIR"
-  docker compose up -d
+  docker compose up --project-name "$site_name" -d
 
   generate_ssl_cert "$domain" "$SSL_DIR"
   bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name"
