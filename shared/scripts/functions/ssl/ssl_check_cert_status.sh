@@ -17,7 +17,7 @@ ssl_check_certificate_status() {
         return 1
     fi
 
-    local CERT_PATH="nginx-proxy/ssl/$DOMAIN.crt"
+    local CERT_PATH="$SSL_DIR/$DOMAIN.crt"
     if [ ! -f "$CERT_PATH" ]; then
         echo -e "${RED}❌ Không tìm thấy chứng chỉ: $CERT_PATH${NC}"
         return 1

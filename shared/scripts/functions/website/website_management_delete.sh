@@ -83,8 +83,8 @@ website_management_delete() {
   fi
 
   OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
-  MOUNT_ENTRY="      - ../sites/$site_name/wordpress:/var/www/$site_name"
-  MOUNT_LOGS="      - ../sites/$site_name/logs:/var/www/logs/$site_name"
+  MOUNT_ENTRY="      - ../../sites/$site_name/wordpress:/var/www/$site_name"
+  MOUNT_LOGS="      - ../../sites/$site_name/logs:/var/www/logs/$site_name"
 
   if [ -f "$OVERRIDE_FILE" ]; then
     temp_file=$(mktemp)

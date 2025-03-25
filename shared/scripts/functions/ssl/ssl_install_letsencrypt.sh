@@ -58,7 +58,7 @@ ssl_install_lets_encrypt() {
 
     echo -e "${GREEN}✅ Chứng chỉ đã được cấp thành công từ Let's Encrypt.${NC}"
 
-    local SSL_DIR="nginx-proxy/ssl"
+    
     mkdir -p "$SSL_DIR"
 
     sudo cp "$CERT_PATH" "$SSL_DIR/$DOMAIN.crt"

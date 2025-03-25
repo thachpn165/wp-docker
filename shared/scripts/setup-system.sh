@@ -37,7 +37,7 @@ cd "$NGINX_PROXY_DIR"
 
 if ! docker compose ps | grep -q "nginx-proxy.*Up"; then
     echo -e "${YELLOW}🌀 Container nginx-proxy chưa chạy. Đang khởi động...${NC}"
-    docker compose up -d
+    docker compose up --project-name $NGINX_PROXY_CONTAINER -d 
 else
     echo -e "${GREEN}✅ Container nginx-proxy đang chạy.${NC}"
 fi
