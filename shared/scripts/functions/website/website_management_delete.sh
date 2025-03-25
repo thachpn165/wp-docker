@@ -43,35 +43,39 @@ website_management_delete() {
     return 1
   fi
 
-  if confirm_action "🗑️ Xóa mã nguồn WordPress?"; then
-    delete_source=true
-  else
-    delete_source=false
-  fi
+  if confirm_action "💾 Bạn có muốn sao lưu mã nguồn và database trước khi xoá không?"; then
+    ARCHIVE_DIR="$PROJECT_ROOT/archives/old_website/$site_name-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$ARCHIVE_DIR"
 
-  if confirm_action "🗑️ Xóa volume database MariaDB?"; then
-    delete_db=true
-  else
-    delete_db=false
+    DB_NAME=$(grep '^MYSQL_DATABASE=' "$ENV_FILE" | cut -d '=' -f2)
+    DB_USER=$(grep '^MYSQL_USER=' "$ENV_FILE" | cut -d '=' -f2)
+    DB_PASS=$(grep '^MYSQL_PASSWORD=' "$ENV_FILE" | cut -d '=' -f2)
+
+    if [[ -n "$DB_NAME" && -n "$DB_USER" && -n "$DB_PASS" ]]; then
+      echo -e "${YELLOW}📦 Đang backup database...${NC}"
+      docker exec "${site_name}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" \
+        > "$ARCHIVE_DIR/${site_name}_db.sql" 2>/dev/null || true
+    fi
+
+    echo -e "${YELLOW}📦 Đang nén mã nguồn WordPress...${NC}"
+    tar -czf "$ARCHIVE_DIR/${site_name}_wordpress.tar.gz" -C "$SITE_DIR/wordpress" . || true
+
+    echo -e "${GREEN}✅ Đã sao lưu website vào: $ARCHIVE_DIR${NC}"
   fi
 
   cd "$SITE_DIR"
   docker compose --project-name "$site_name" down
   cd "$PROJECT_ROOT"
 
-  if [ "$delete_source" = true ]; then
-    remove_directory "$SITE_DIR"
-    echo -e "${GREEN}✅ Đã xóa thư mục website: $SITE_DIR${NC}"
-  fi
+  remove_directory "$SITE_DIR"
+  echo -e "${GREEN}✅ Đã xoá thư mục website: $SITE_DIR${NC}"
 
   remove_file "$SSL_DIR/$DOMAIN.crt"
   remove_file "$SSL_DIR/$DOMAIN.key"
   echo -e "${GREEN}✅ Đã xóa chứng chỉ SSL (nếu có).${NC}"
 
-  if [ "$delete_db" = true ]; then
-    remove_volume "$MARIADB_VOLUME"
-    echo -e "${GREEN}✅ Đã xóa volume DB: $MARIADB_VOLUME${NC}"
-  fi
+  remove_volume "$MARIADB_VOLUME"
+  echo -e "${GREEN}✅ Đã xóa volume DB: $MARIADB_VOLUME${NC}"
 
   if is_file_exist "$SITE_CONF_FILE"; then
     remove_file "$SITE_CONF_FILE"
