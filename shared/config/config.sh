@@ -1,6 +1,7 @@
 # **Đường dẫn thư mục chính**
-CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+CONFIG_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+PROJECT_ROOT="$(cd "$CONFIG_DIR/../.." && pwd)"
 SITES_DIR="$PROJECT_ROOT/sites"
 TEMPLATES_DIR="$PROJECT_ROOT/shared/templates"
 CONFIG_DIR="$PROJECT_ROOT/shared/config"
