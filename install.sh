@@ -18,47 +18,60 @@ mkdir -p "$TMP_DIR"
 # 📦 Cài đặt các package cần thiết
 install_dependencies() {
   echo "🔧 Đang kiểm tra và cài đặt các gói phụ thuộc..."
-  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+
+  # Kiểm tra docker
+  if command -v docker &>/dev/null; then
+    echo "✅ Đã có Docker"
+  else
+    echo "❌ Docker chưa được cài, đang tiến hành cài đặt..."
     if command -v apt &>/dev/null; then
       sudo apt update
-      sudo apt install -y curl unzip git openssl docker.io
-
-      # Cài Docker Compose plugin mới nhất
-      if ! command -v docker compose &>/dev/null; then
-        echo "🧩 Cài đặt Docker Compose (plugin)..."
-        mkdir -p ~/.docker/cli-plugins/
-        curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) \
-          -o ~/.docker/cli-plugins/docker-compose
-        chmod +x ~/.docker/cli-plugins/docker-compose
-      fi
-
+      sudo apt install -y docker.io
     elif command -v yum &>/dev/null; then
-      sudo yum install -y curl unzip git openssl docker
+      sudo yum install -y docker
+    fi
+  fi
 
-      # Cài Docker Compose plugin mới nhất
-      if ! command -v docker compose &>/dev/null; then
-        echo "🧩 Cài đặt Docker Compose (plugin)..."
-        mkdir -p ~/.docker/cli-plugins/
-        curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) \
-          -o ~/.docker/cli-plugins/docker-compose
-        chmod +x ~/.docker/cli-plugins/docker-compose
-      fi
-    fi
-  elif [[ "$OSTYPE" == "darwin"* ]]; then
-    if ! command -v brew &>/dev/null; then
-      echo "🍺 Homebrew chưa được cài đặt. Vui lòng cài đặt thủ công: https://brew.sh"
-      exit 1
-    fi
-    brew install curl unzip git openssl docker
-
-    # Docker Desktop cho macOS đã bao gồm Docker Compose
-    if ! command -v docker compose &>/dev/null; then
-      echo "⚠️ Vui lòng cài Docker Desktop để sử dụng Docker Compose"
-      exit 1
-    fi
+  # Kiểm tra docker compose plugin
+  if docker compose version &>/dev/null; then
+    echo "✅ Đã có Docker Compose (plugin)"
   else
-    echo "❌ Hệ điều hành không được hỗ trợ. Chỉ hỗ trợ macOS và Linux."
-    exit 1
+    echo "❌ Docker Compose plugin chưa có, đang tiến hành cài đặt..."
+    DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+    mkdir -p "$DOCKER_CONFIG/cli-plugins"
+    ARCH=$(uname -m)
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    curl -SL "https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-${OS}-${ARCH}" \
+      -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
+    chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
+    echo "✅ Đã cài Docker Compose plugin vào $DOCKER_CONFIG/cli-plugins"
+  fi
+
+  # Các gói cơ bản khác
+  for pkg in curl unzip git openssl; do
+    if ! command -v $pkg &>/dev/null; then
+      echo "❌ Gói $pkg chưa có, đang tiến hành cài đặt..."
+      if command -v apt &>/dev/null; then
+        sudo apt install -y $pkg
+      elif command -v yum &>/dev/null; then
+        sudo yum install -y $pkg
+      fi
+    else
+      echo "✅ Đã có $pkg"
+    fi
+  done
+
+  # Đặc biệt với macOS
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    if ! command -v brew &>/dev/null; then
+      echo "🍺 Homebrew chưa được cài đặt. Vui lòng cài đặt tại: https://brew.sh"
+      exit 1
+    fi
+    echo "✅ Hệ điều hành macOS - đang kiểm tra Docker Desktop..."
+    if ! docker compose version &>/dev/null; then
+      echo "⚠️ Vui lòng cài Docker Desktop để sử dụng Docker Compose trên macOS"
+      exit 1
+    fi
   fi
 }
 
