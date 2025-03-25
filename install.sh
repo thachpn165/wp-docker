@@ -4,6 +4,15 @@
 # 🧩 install.sh – Cài đặt WP Docker LEMP từ GitHub
 # =====================================
 
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[1;34m'
+MAGENTA='\033[1;35m'
+CYAN='\033[1;36m'
+WHITE='\033[1;37m'
+NC='\033[0m' # No Color
+
 set -euo pipefail
 
 REPO_URL="https://github.com/thachpn165/wp-docker-lemp"
@@ -96,8 +105,9 @@ mv "$EXTRACTED_DIR" "$INSTALL_DIR"
 # 🔖 Ghi phiên bản hiện tại
 cp "$INSTALL_DIR/version.txt" "$INSTALL_DIR/shared/VERSION"
 
-# ✅ Hiển thị thông tin kết thúc và chạy main.sh
+# ✅ Hiển thị thông tin kết thúc
 cd "$INSTALL_DIR"
-echo -e "\n✅ Đã cài đặt thành công tại: $INSTALL_DIR"
-echo -e "\n🚀 Khởi chạy trình quản lý hệ thống...\n"
-bash ./main.sh
+echo -e "\n✅ Đã cài đặt thành công tại: ${YELLOW}$INSTALL_DIR ${NC}"
+echo -e "\n👉 Bạn có thể bắt đầu sử dụng hệ thống bằng lệnh sau:\n"
+echo "   ${YELLOW}cd $INSTALL_DIR && bash ./main.sh ${NC}"
+echo -e "\n🚀 Chúc bạn sử dụng hiệu quả WP Docker LEMP Stack!"
