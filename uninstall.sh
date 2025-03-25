@@ -33,9 +33,12 @@ backup_all_sites() {
   mkdir -p "$BACKUP_DIR"
   for site in $(get_site_list); do
     echo -e "${BLUE}📦 Backup site: $site${NC}"
-    bash "$FUNCTIONS_DIR/backup-manager/backup_website.sh" "$site" "$TMP_BACKUP_DIR/$site"
+    SITE_NAME="$site"
+    export SITE_NAME  # để các hàm có thể sử dụng trong backup_website
+    source "$FUNCTIONS_DIR/backup-manager/backup_actions.sh"
+    backup_website || echo -e "${RED}❌ Lỗi khi backup site: $site${NC}"
     mkdir -p "$BACKUP_DIR/$site"
-    mv "$TMP_BACKUP_DIR/$site"/* "$BACKUP_DIR/$site/" 2>/dev/null || true
+    cp -r "$SITES_DIR/$site/backups" "$BACKUP_DIR/$site/" 2>/dev/null || true
   done
   rm -rf "$TMP_BACKUP_DIR"
 }
@@ -46,6 +49,17 @@ remove_all_except_backup() {
   for item in "$PROJECT_ROOT"/*; do
     [[ "$item" == "$BACKUP_DIR" ]] && continue
     rm -rf "$item"
+  done
+}
+
+# 🧾 Hiển thị container còn lại sau khi xoá
+show_remaining_containers() {
+  echo -e "\n${CYAN}📋 Danh sách container còn lại sau khi gỡ cài đặt:${NC}"
+  docker ps -a || true
+
+  echo -e "\n${YELLOW}💡 Nếu bạn muốn xoá hết container còn sót lại, hãy chạy các lệnh sau:${NC}"
+  docker ps -a --format '{{.Names}}' | while read -r name; do
+    echo "docker stop $name && docker rm $name"
   done
 }
 
@@ -67,3 +81,5 @@ remove_site_containers
 remove_all_except_backup
 
 echo -e "\n${GREEN}✅ Đã gỡ cài đặt toàn bộ hệ thống. Backup (nếu có) nằm trong: $BACKUP_DIR${NC}"
+
+show_remaining_containers
