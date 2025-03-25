@@ -3,7 +3,8 @@
 
 [![Phiên bản](https://img.shields.io/badge/version-v1.0.3--beta-blue)](https://github.com/thachpn165/wp-lemp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/)
-[![macOS & Linux](https://img.shields.io/badge/os-macOS%20%7C%20Linux-green)](https://github.com/thachpn165/wp-lemp-docker/)
+[![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker-lemp)
+[![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker-lemp)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker-lemp)](./LICENSE)
 [![Made with ChatGPT](https://img.shields.io/badge/made%20with-ChatGPT-teal)](https://github.com/thachpn165/wp-lemp-docker/)
 [![Discussions](https://img.shields.io/badge/💬%20Thảo%20luận%20trên%20GitHub-blue?logo=github)](https://github.com/thachpn165/wp-docker-lemp/discussions)
