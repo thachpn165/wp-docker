@@ -2,7 +2,7 @@
 # 🚀 WP Docker LEMP Stack
 
 [![Phiên bản](https://img.shields.io/badge/version-v1.0.3--beta-blue)](https://github.com/thachpn165/wp-lemp-docker/releases)
-[![Docker Support](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/)
+[![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker-lemp)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker-lemp)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker-lemp)](./LICENSE)
