@@ -12,7 +12,7 @@ website_management_create() {
   read -p "Tên site (mặc định: $suggested_site_name): " site_name
   site_name=${site_name:-$suggested_site_name}
 
-  choose_php_version || return 1
+  php_choose_version || return 1
   php_version="$REPLY"
 
   LOG_FILE="$PROJECT_ROOT/logs/${site_name}-setup.log"

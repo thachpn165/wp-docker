@@ -4,8 +4,8 @@
 update_nginx_override_mounts() {
     local site_name="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
-    local MOUNT_ENTRY="      - ../sites/$site_name/wordpress:/var/www/$site_name"
-    local MOUNT_LOGS="      - ../sites/$site_name/logs:/var/www/logs/$site_name"
+    local MOUNT_ENTRY="      - ../../sites/$site_name/wordpress:/var/www/$site_name"
+    local MOUNT_LOGS="      - ../../sites/$site_name/logs:/var/www/logs/$site_name"
 
     # Nếu chưa tồn tại, tạo file mới
     if [ ! -f "$OVERRIDE_FILE" ]; then

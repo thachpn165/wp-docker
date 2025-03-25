@@ -5,7 +5,7 @@ ssl_edit_certificate() {
         return 1
     fi
 
-    local SSL_DIR="nginx-proxy/ssl"
+    
     local target_crt="$SSL_DIR/$SITE_NAME.crt"
     local target_key="$SSL_DIR/$SITE_NAME.key"
 

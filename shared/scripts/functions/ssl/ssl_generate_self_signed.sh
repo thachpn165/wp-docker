@@ -5,7 +5,7 @@ ssl_generate_self_signed() {
         return 1
     fi
 
-    local SSL_DIR="nginx-proxy/ssl"
+    
     local CERT_PATH="$SSL_DIR/$SITE_NAME.crt"
     local KEY_PATH="$SSL_DIR/$SITE_NAME.key"
 

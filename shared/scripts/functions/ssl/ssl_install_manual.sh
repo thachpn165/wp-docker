@@ -5,7 +5,6 @@ ssl_install_manual_cert() {
         return 1
     fi
 
-    local SSL_DIR="nginx-proxy/ssl"
     mkdir -p "$SSL_DIR"
     local target_crt="$SSL_DIR/$SITE_NAME.crt"
     local target_key="$SSL_DIR/$SITE_NAME.key"

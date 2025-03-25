@@ -1,7 +1,5 @@
 
 php_choose_version() {
-  echo "PROJECT_ROOT = $PROJECT_ROOT"
-
   local PHP_VERSION_FILE="$PROJECT_ROOT/php_versions.txt"
 
   if [[ ! -f "$PHP_VERSION_FILE" ]]; then
