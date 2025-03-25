@@ -76,9 +76,12 @@ else
     delete_db=false
 fi
 
-# 🧹 Thực hiện xóa
+# 🧹 Xoá container PHP và MariaDB (nếu đang chạy độc lập)
+docker rm -f "$site_name-php" "$site_name-mariadb" 2>/dev/null || true
+
+# 🧹 Thực hiện xóa docker compose (nếu có)
 cd "$SITE_DIR"
-docker compose --project-name "$site_name" down
+docker compose --project-name "$site_name" down 2>/dev/null || true
 cd "$PROJECT_ROOT"
 
 # 🔥 Xoá mã nguồn
@@ -111,16 +114,12 @@ MOUNT_LOGS="      - ../sites/$site_name/logs:/var/www/logs/$site_name"
 
 if [ -f "$OVERRIDE_FILE" ]; then
     temp_file=$(mktemp)
-
     grep -vF "$MOUNT_ENTRY" "$OVERRIDE_FILE" | grep -vF "$MOUNT_LOGS" > "$temp_file"
     mv "$temp_file" "$OVERRIDE_FILE"
-
     echo -e "${GREEN}✅ Đã xóa website '$site_name' và logs khỏi docker-compose.override.yml.${NC}"
 else
     echo -e "${YELLOW}⚠️ Không tìm thấy docker-compose.override.yml, bỏ qua.${NC}"
 fi
-
-
 
 # 🔥 Xoá cronjob nếu có
 if crontab -l 2>/dev/null | grep -q "$site_name"; then
