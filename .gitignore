@@ -17,9 +17,9 @@ backups/
 *.zip
 
 # 🔐 CHỨNG CHỈ SSL 🔐
-nginx-proxy/ssl/*
+webserver/nginx/ssl/*
 sites/*/nginx/ssl/*
-!nginx-proxy/ssl/.gitkeep
+!webserver/nginx/ssl/.gitkeep
 !sites/**/nginx/ssl/.gitkeep
 
 # 🛠️ DOCKER & COMPOSE 🛠️
@@ -34,8 +34,8 @@ logs/*/*
 *.log.*
 debug.log
 php-errors.log
-nginx-proxy/access.log
-nginx-proxy/error.log
+webserver/nginx/access.log
+webserver/nginx/error.log
 sites/*/logs/*
 
 # ⚙️ MAC & LINUX SYSTEM FILES ⚙️
@@ -63,9 +63,9 @@ tmp/
 # Cấu hình Rclone
 rclone.conf
 
-# Cấu hình của website trong nginx-proxy/globals
-nginx-proxy/globals/wp-login*
-nginx-proxy/conf.d/*.conf
+# Cấu hình của website trong webserver/nginx/globals
+webserver/nginx/globals/wp-login*
+webserver/nginx/conf.d/*.conf
 
 # Bỏ qua file shared/bin/wp để luôn tải về phiên bản mới nhất
 shared/bin/wp

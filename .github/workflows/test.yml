@@ -52,7 +52,7 @@ jobs:
 
       - name: Kiểm tra cấu hình docker compose (chỉ Linux)
         if: runner.os == 'Linux'
-        run: docker compose -f nginx-proxy/docker-compose.yml config
+        run: docker compose -f webserver/nginx/docker-compose.yml config
         
 
       - name: Kiểm tra định dạng file .env

@@ -1,7 +1,7 @@
 
-# 🚀 WP Docker LEMP Stack
+# 🚀 WP Docker
 
-[![Phiên bản](https://img.shields.io/badge/version-v1.0.3--beta-blue)](https://github.com/thachpn165/wp-lemp-docker/releases)
+[![Phiên bản](https://img.shields.io/badge/version-v1.0.4--beta-blue)](https://github.com/thachpn165/wp-lemp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker-lemp)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker-lemp)
@@ -33,23 +33,46 @@ Dự án hướng tới: **đơn giản – dễ dùng – dễ mở rộng**, c
 
 ---
 
-## 🆕 Có gì mới trong `v1.0.3-beta`?
+## 🆕 Có gì mới trong `v1.0.4-beta`?
 
-### 🐘 Quản lý phiên bản PHP:
-- Cho phép chọn PHP cho từng website (ví dụ: 7.4, 8.1, 8.4…)
-- Tự động dừng & chạy lại container PHP khi đổi version
-- Giao diện chọn PHP từ danh sách trực quan
-- Cảnh báo nếu chọn PHP 7.4 trên môi trường ARM (Apple Silicon…)
+### 🧱 Refactor cấu trúc hệ thống:
 
-### 🛠️ Sửa cấu hình PHP trực tiếp:
-- Cho phép chọn trình soạn thảo (nano, vi, vim, micro, code…)
-- Hiển thị hướng dẫn sử dụng từng editor trước khi sửa
-- Tự động restart container PHP sau khi sửa `php.ini` hoặc `php-fpm.conf`
+- Di chuyển `nginx-proxy/` → `webserver/nginx/` để chuẩn bị hỗ trợ Caddy.
+- Biến `NGINX_PROXY_DIR`, `SSL_DIR`, `PROXY_CONF_DIR`... đã được cập nhật.
+- Tự động cập nhật lại mount trong `docker-compose.override.yml`.
 
-### 🔧 Cập nhật:
-- `setup-system.sh` kiểm tra và tự cài đặt `nano`, `vim` nếu thiếu
-- Danh sách PHP được lấy trực tiếp từ Docker Hub (Bitnami)
-- Hạn chế lỗi `"manifest not found"` bằng cách sử dụng đúng tag thật
+### 🌐 Sửa lỗi & chuẩn hóa Docker network:
+
+- Fix lỗi tên network bị sinh ngẫu nhiên do `docker compose up` trong thư mục `/tmp/`.
+- Thêm `--project-name "$site_name"` vào mọi lệnh `up`/`down`.
+- Tên network giờ sẽ chuẩn dạng: `tenwebsite_site_network`.
+
+### 🧼 Cải thiện tính năng xoá website:
+
+- Gộp câu hỏi thành một bước: **"Bạn có muốn sao lưu website trước khi xoá?"**
+- Nếu chọn Yes:
+  - Tự động backup `.sql` và `.tar.gz`
+  - Lưu vào `archives/old_website/site-YYYYMMDD-HHMMSS`
+- Sau đó xoá: thư mục site, container, volume, SSL, cronjob...
+
+### ♻️ Thêm tính năng: Khôi phục website từ backup:
+
+- Menu `Khôi phục website từ backup`
+- Cho phép chọn website đã xoá từ thư mục lưu trữ
+- Tự động giải nén mã nguồn và database
+- Hướng dẫn khởi chạy lại site sau khi phục hồi
+
+---
+
+## 📋 Changelog (v1.0.4-beta)
+
+```
+- Refactor nginx-proxy → webserver/nginx
+- Fix bug tên network khi tạo site mới
+- Chuẩn hóa docker compose project-name
+- Cải tiến xoá site: đơn giản, dễ hiểu, tự backup
+- Tính năng mới: Khôi phục website từ thư mục backup
+```
 
 ---
 
@@ -71,7 +94,7 @@ Dự án hướng tới: **đơn giản – dễ dùng – dễ mở rộng**, c
 │       ├── backups/         # File backup
 │       ├── php/             # PHP config
 │       └── mariadb/         # DB config
-└── nginx-proxy/             # NGINX Proxy chung
+└── webserver/nginx/         # NGINX Proxy
     ├── conf.d/              # Config từng site
     ├── ssl/                 # Chứng chỉ SSL
     └── globals/             # Global config, cache, WAF
@@ -122,6 +145,7 @@ bash main.sh
 - 🗓 Lên lịch backup định kỳ (cron)
 - ⚙️ Sửa trực tiếp `php.ini`, `php-fpm.conf`
 - 🔍 Kiểm tra SSL, thông tin site, logs
+- ♻️ Khôi phục site từ backup
 - 💥 Xoá site hoàn toàn (container, file, SSL, cronjob)
 
 ---
@@ -147,19 +171,6 @@ bash main.sh
 
 ---
 
-## 📋 Changelog (v1.0.3-beta)
-
-```text
-- Thêm menu Quản lý PHP riêng
-- Hỗ trợ chọn phiên bản PHP khi tạo website mới
-- Cho phép sửa php.ini và php-fpm.conf với editor tùy chọn
-- Tự động restart container PHP khi thay đổi cấu hình
-- Cải thiện lấy danh sách PHP từ Docker Hub (Bitnami)
-- Fix lỗi không hiển thị danh sách PHP do dùng subshell
-```
-
----
-
 ## 🤝 Đóng góp
 
 ### Cách tham gia:
@@ -175,5 +186,3 @@ bash main.sh
 ## 📃 License
 
 Dự án sử dụng [MIT License](./LICENSE)
-
----
