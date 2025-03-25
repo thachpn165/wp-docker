@@ -45,6 +45,7 @@ source "$FUNCTIONS_DIR/php_utils.sh"
 source "$FUNCTIONS_DIR/db_utils.sh"
 source "$FUNCTIONS_DIR/website_utils.sh"
 source "$FUNCTIONS_DIR/misc_utils.sh"
+source "$FUNCTIONS_DIR/nginx_utils.sh"
 # 🎨 **Màu sắc terminal**
 RED='\033[1;31m'
 GREEN='\033[1;32m'
