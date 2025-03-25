@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "Loại trừ: .git/, .github/, .vscode/, logs/, tmp/"
           mkdir dist
-          echo "${{ github.ref_name }}" > .version
+          echo "${{ github.ref_name }}" > version.txt
           zip -r dist/wp-docker-lemp.zip . \
             -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" \
             -x "*.DS_Store" "__MACOSX"

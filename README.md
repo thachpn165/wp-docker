@@ -1,4 +1,7 @@
 
+# 🚧 Đang phát triển
+Đây là phiên bản chưa hoàn thiện và có thể sẽ có nhiều thay đổi khi sử dụng trước khi phiên bản v1.0-stable ra mắt.
+
 # 🚀 WP Docker
 
 [![Phiên bản](https://img.shields.io/badge/version-v1.0.4--beta-blue)](https://github.com/thachpn165/wp-lemp-docker/releases)
