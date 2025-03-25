@@ -15,7 +15,7 @@ source "$CONFIG_FILE"
 
 # Import menu functions
 source "$(dirname "$0")/shared/scripts/functions/menu/menu_utils.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/manage_website_menu.sh"
+source "$(dirname "$0")/shared/scripts/functions/menu/website_management_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/wordpress_tools_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/system_tools_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/backup_menu.sh"
@@ -64,7 +64,7 @@ while true; do
 
     read -p "🔹 Chọn một tùy chọn (1-9): " choice
     case "$choice" in
-        1) manage_website_menu ;;
+        1) website_management_menu ;;
         2) ssl_menu ;;
         3) system_tools_menu ;;
         4) rclone_menu ;;
