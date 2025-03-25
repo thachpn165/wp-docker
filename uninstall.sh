@@ -27,20 +27,72 @@ confirm_action() {
   [[ "$confirm" == "y" || "$confirm" == "Y" ]]
 }
 
-# 💾 Backup toàn bộ site về tmp rồi chuyển vào backup_before_remove
+# 🔍 Quét danh sách site từ thư mục sites
+get_site_list() {
+  find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
+}
+
+# 💾 Backup toàn bộ site thủ công vào backup_before_remove
 backup_all_sites() {
   echo -e "${CYAN}💾 Đang sao lưu toàn bộ site vào $BACKUP_DIR...${NC}"
   mkdir -p "$BACKUP_DIR"
+
   for site in $(get_site_list); do
     echo -e "${BLUE}📦 Backup site: $site${NC}"
-    SITE_NAME="$site"
-    export SITE_NAME  # để các hàm có thể sử dụng trong backup_website
-    source "$FUNCTIONS_DIR/backup-manager/backup_actions.sh"
-    backup_website || echo -e "${RED}❌ Lỗi khi backup site: $site${NC}"
-    mkdir -p "$BACKUP_DIR/$site"
-    cp -r "$SITES_DIR/$site/backups" "$BACKUP_DIR/$site/" 2>/dev/null || true
+
+    site_path="$SITES_DIR/$site"
+    env_file="$site_path/.env"
+    wordpress_dir="$site_path/wordpress"
+    backup_target_dir="$BACKUP_DIR/$site"
+    mkdir -p "$backup_target_dir"
+
+    if [[ ! -f "$env_file" ]]; then
+      echo -e "${RED}❌ Bỏ qua site '$site': không tìm thấy file .env${NC}"
+      continue
+    fi
+
+    # Lấy thông tin DB từ file .env
+    DB_NAME=$(grep '^MYSQL_DATABASE=' "$env_file" | cut -d '=' -f2)
+    DB_USER=$(grep '^MYSQL_USER=' "$env_file" | cut -d '=' -f2)
+    DB_PASS=$(grep '^MYSQL_PASSWORD=' "$env_file" | cut -d '=' -f2)
+
+    if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
+      echo -e "${RED}❌ Không thể lấy thông tin database từ .env, bỏ qua site '$site'${NC}"
+      continue
+    fi
+
+    # Backup database
+    db_backup_file="$backup_target_dir/${site}_db.sql"
+    echo -e "${YELLOW}📦 Đang backup database: $DB_NAME${NC}"
+    docker exec "${site}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" > "$db_backup_file" || {
+      echo -e "${RED}❌ Lỗi khi backup database cho site '$site'${NC}"
+      continue
+    }
+
+    # Backup mã nguồn
+    echo -e "${YELLOW}📦 Đang nén mã nguồn WordPress...${NC}"
+    tar -czf "$backup_target_dir/${site}_wordpress.tar.gz" -C "$wordpress_dir" . || {
+      echo -e "${RED}❌ Lỗi khi nén mã nguồn cho site '$site'${NC}"
+      continue
+    }
+
+    echo -e "${GREEN}✅ Backup site '$site' hoàn tất tại: $backup_target_dir${NC}"
   done
-  rm -rf "$TMP_BACKUP_DIR"
+}
+
+# 🧹 Xoá container chính
+remove_core_containers() {
+  echo -e "${YELLOW}🧹 Đang xoá các container chính: nginx-proxy và redis-cache...${NC}"
+  docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
+}
+
+# 🧹 Xoá toàn bộ container và volume liên quan tới từng site
+remove_site_containers() {
+  for site in $(get_site_list); do
+    echo -e "${YELLOW}🧨 Đang xoá container cho site: $site${NC}"
+    docker rm -f "$site-php" "$site-mariadb" 2>/dev/null || true
+    docker volume rm "${site}_db_data" 2>/dev/null || true
+  done
 }
 
 # 🧨 Xoá toàn bộ thư mục trừ backup
