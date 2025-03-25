@@ -137,3 +137,19 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         *) echo -e "${RED}❌ Lệnh không hợp lệ!${NC} Sử dụng: $0 {is_docker_running|check_docker_status}" ;;
     esac
 fi
+
+
+# 🧹 Xoá container chính bao gồm nginx proxy và redis-cache
+remove_core_containers() {
+  echo -e "${YELLOW}🧹 Đang xoá các container $NGINX_PROXY_CONTAINER và redis-cache...${NC}"
+  docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
+}
+
+# 🧹 Xoá toàn bộ container và volume liên quan tới từng site
+remove_site_containers() {
+  for site in $(get_site_list); do
+    echo -e "${YELLOW}🧨 Đang xoá container cho site: $site${NC}"
+    docker rm -f "$site-php" "$site-mariadb" 2>/dev/null || true
+    docker volume rm "${site}_db_data" 2>/dev/null || true
+  done
+}

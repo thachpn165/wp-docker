@@ -17,3 +17,8 @@ select_website() {
         fi
     done
 }
+
+# 🔍 Quét danh sách site từ thư mục sites
+get_site_list() {
+  find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
+}
