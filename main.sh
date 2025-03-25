@@ -68,7 +68,7 @@ while true; do
         5) wordpress_tools_menu ;;
         6) backup_menu ;;
         7) bash "$SCRIPTS_DIR/setup-cache.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
-        9) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
+        8) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
         *) 
             echo -e "${RED}⚠️ Lựa chọn không hợp lệ! Vui lòng chọn từ [1-9].${NC}"
             sleep 2 
