@@ -58,8 +58,8 @@ while true; do
     echo -e "  ${GREEN}[1]${NC} 🌍 Quản lý Website WordPress     ${GREEN}[5]${NC} 🛠️ Tiện ích WordPress"
     echo -e "  ${GREEN}[2]${NC} 🔐 Quản lý Chứng Chỉ SSL         ${GREEN}[6]${NC} 🔄 Quản lý Backup Website"
     echo -e "  ${GREEN}[3]${NC} ⚙️ Công Cụ Hệ Thống               ${GREEN}[7]${NC} ⚡ Quản lý Cache WordPress"
-    echo -e "  ${GREEN}[4]${NC} 📤 Quản lý Rclone                 ${GREEN}[8]${NC} 💡 Quản lý PHP"
-    echo -e "                                  ${GREEN}[9]${NC} ❌ Thoát"
+    echo -e "  ${GREEN}[4]${NC} 📤 Quản lý Rclone                ${GREEN}[8]${NC} 💡 Quản lý PHP"
+    echo -e "  ${GREEN}[9]${NC} ❌ Thoát"
     echo ""
 
     read -p "🔹 Chọn một tùy chọn (1-9): " choice
