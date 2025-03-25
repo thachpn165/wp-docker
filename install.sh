@@ -26,13 +26,13 @@ mkdir -p "$TMP_DIR"
 
 # 📦 Cài đặt các package cần thiết
 install_dependencies() {
-  echo "🔧 Đang kiểm tra và cài đặt các gói phụ thuộc..."
+  echo -e "${CYAN}🔧 Đang kiểm tra và cài đặt các gói phụ thuộc...${NC}"
 
   # Kiểm tra docker
   if command -v docker &>/dev/null; then
-    echo "✅ Đã có Docker"
+    echo -e "${GREEN}✅ Đã có Docker${NC}"
   else
-    echo "❌ Docker chưa được cài, đang tiến hành cài đặt..."
+    echo -e "${YELLOW}❌ Docker chưa được cài, đang tiến hành cài đặt...${NC}"
     if command -v apt &>/dev/null; then
       sudo apt update
       sudo apt install -y docker.io
@@ -43,9 +43,9 @@ install_dependencies() {
 
   # Kiểm tra docker compose plugin
   if docker compose version &>/dev/null; then
-    echo "✅ Đã có Docker Compose (plugin)"
+    echo -e "${GREEN}✅ Đã có Docker Compose (plugin)${NC}"
   else
-    echo "❌ Docker Compose plugin chưa có, đang tiến hành cài đặt..."
+    echo -e "${YELLOW}❌ Docker Compose plugin chưa có, đang tiến hành cài đặt...${NC}"
     DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
     mkdir -p "$DOCKER_CONFIG/cli-plugins"
     ARCH=$(uname -m)
@@ -53,32 +53,32 @@ install_dependencies() {
     curl -SL "https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-${OS}-${ARCH}" \
       -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
     chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
-    echo "✅ Đã cài Docker Compose plugin vào $DOCKER_CONFIG/cli-plugins"
+    echo -e "${GREEN}✅ Đã cài Docker Compose plugin vào $DOCKER_CONFIG/cli-plugins${NC}"
   fi
 
   # Các gói cơ bản khác
   for pkg in curl unzip git openssl; do
     if ! command -v $pkg &>/dev/null; then
-      echo "❌ Gói $pkg chưa có, đang tiến hành cài đặt..."
+      echo -e "${YELLOW}❌ Gói $pkg chưa có, đang tiến hành cài đặt...${NC}"
       if command -v apt &>/dev/null; then
         sudo apt install -y $pkg
       elif command -v yum &>/dev/null; then
         sudo yum install -y $pkg
       fi
     else
-      echo "✅ Đã có $pkg"
+      echo -e "${GREEN}✅ Đã có $pkg${NC}"
     fi
   done
 
   # Đặc biệt với macOS
   if [[ "$OSTYPE" == "darwin"* ]]; then
     if ! command -v brew &>/dev/null; then
-      echo "🍺 Homebrew chưa được cài đặt. Vui lòng cài đặt tại: https://brew.sh"
+      echo -e "${RED}🍺 Homebrew chưa được cài đặt. Vui lòng cài đặt tại: https://brew.sh${NC}"
       exit 1
     fi
-    echo "✅ Hệ điều hành macOS - đang kiểm tra Docker Desktop..."
+    echo -e "${CYAN}✅ Hệ điều hành macOS - đang kiểm tra Docker Desktop...${NC}"
     if ! docker compose version &>/dev/null; then
-      echo "⚠️ Vui lòng cài Docker Desktop để sử dụng Docker Compose trên macOS"
+      echo -e "${RED}⚠️ Vui lòng cài Docker Desktop để sử dụng Docker Compose trên macOS${NC}"
       exit 1
     fi
   fi
@@ -87,17 +87,24 @@ install_dependencies() {
 install_dependencies
 
 # 📥 Tải source từ GitHub
-echo "📥 Đang tải WP Docker LEMP từ GitHub..."
+echo -e "${CYAN}📥 Đang tải WP Docker LEMP từ GitHub...${NC}"
 curl -L "$REPO_URL/archive/refs/heads/$BRANCH.zip" -o "$TMP_DIR/source.zip"
 unzip -q "$TMP_DIR/source.zip" -d "$TMP_DIR"
 
 # 🚀 Di chuyển vào thư mục cài đặt
 EXTRACTED_DIR="$TMP_DIR/wp-docker-lemp-$BRANCH"
 
-# ⚠️ Cảnh báo nếu đã tồn tại thư mục cũ
+# ⚠️ Nếu thư mục đã tồn tại thì hỏi người dùng
 if [[ -d "$INSTALL_DIR" ]]; then
-  echo "⚠️ Đã tồn tại thư mục $INSTALL_DIR, sẽ được ghi đè..."
-  rm -rf "$INSTALL_DIR"
+  echo -e "${YELLOW}⚠️ Thư mục $INSTALL_DIR đã tồn tại.${NC}"
+  read -rp "❓ Bạn có muốn xoá để cài lại không? [y/N]: " confirm
+  if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+    echo -e "${MAGENTA}🗑️ Đang xoá thư mục cũ...${NC}"
+    rm -rf "$INSTALL_DIR"
+  else
+    echo -e "${RED}❌ Huỷ cài đặt. Bạn có thể xoá thủ công thư mục $INSTALL_DIR rồi chạy lại.${NC}"
+    exit 1
+  fi
 fi
 
 mv "$EXTRACTED_DIR" "$INSTALL_DIR"
@@ -107,7 +114,7 @@ cp "$INSTALL_DIR/version.txt" "$INSTALL_DIR/shared/VERSION"
 
 # ✅ Hiển thị thông tin kết thúc
 cd "$INSTALL_DIR"
-echo -e "\n✅ Đã cài đặt thành công tại: ${YELLOW}$INSTALL_DIR ${NC}"
+echo -e "\n${GREEN}✅ Đã cài đặt thành công tại: ${YELLOW}$INSTALL_DIR${NC}"
 echo -e "\n👉 Bạn có thể bắt đầu sử dụng hệ thống bằng lệnh sau:\n"
-echo "   ${YELLOW}cd $INSTALL_DIR && bash ./main.sh ${NC}"
+echo -e "   ${YELLOW}cd $INSTALL_DIR && bash ./main.sh${NC}"
 echo -e "\n🚀 Chúc bạn sử dụng hiệu quả WP Docker LEMP Stack!"
