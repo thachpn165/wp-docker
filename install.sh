@@ -84,7 +84,13 @@ unzip -q "$TMP_DIR/source.zip" -d "$TMP_DIR"
 
 # 🚀 Di chuyển vào thư mục cài đặt
 EXTRACTED_DIR="$TMP_DIR/wp-docker-lemp-$BRANCH"
-rm -rf "$INSTALL_DIR"
+
+# ⚠️ Cảnh báo nếu đã tồn tại thư mục cũ
+if [[ -d "$INSTALL_DIR" ]]; then
+  echo "⚠️ Đã tồn tại thư mục $INSTALL_DIR, sẽ được ghi đè..."
+  rm -rf "$INSTALL_DIR"
+fi
+
 mv "$EXTRACTED_DIR" "$INSTALL_DIR"
 
 # 🔖 Ghi phiên bản hiện tại
@@ -94,4 +100,4 @@ cp "$INSTALL_DIR/version.txt" "$INSTALL_DIR/shared/VERSION"
 cd "$INSTALL_DIR"
 echo -e "\n✅ Đã cài đặt thành công tại: $INSTALL_DIR"
 echo -e "\n🚀 Khởi chạy trình quản lý hệ thống...\n"
-bash ./shared/scripts/main.sh
+bash ./main.sh
