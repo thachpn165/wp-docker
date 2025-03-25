@@ -11,7 +11,7 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wp_utils.sh"
-
+source "$FUNCTIONS_DIR/php/php_get_version.sh"
 # ✅ Thực thi các bước chính
 clear
 setup_timezone
@@ -48,5 +48,10 @@ cd "$PROJECT_ROOT"
 echo -e "${YELLOW}🌐 Kiểm tra mạng Docker '${DOCKER_NETWORK}'...${NC}"
 create_docker_network "$DOCKER_NETWORK"
 
+# Gọi hàm lấy danh sách phiên bản PHP từ image bitnami/php-fpm
+php_get_version
+
+echo -e "${YELLOW}📂 Đường dẫn PROJECT_ROOT: $PROJECT_ROOT${NC}"
+echo -e "${YELLOW}📄 Kiểm tra file: $PROJECT_ROOT/php_versions.txt${NC}"
 
 echo -e "\n${GREEN}✅ Hệ thống đã sẵn sàng để sử dụng WP Docker LEMP.${NC}"

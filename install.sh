@@ -57,13 +57,19 @@ install_dependencies() {
   fi
 
   # Các gói cơ bản khác
-  for pkg in curl unzip git openssl; do
+  for pkg in curl unzip git openssl nano; do
     if ! command -v $pkg &>/dev/null; then
       echo -e "${YELLOW}❌ Gói $pkg chưa có, đang tiến hành cài đặt...${NC}"
       if command -v apt &>/dev/null; then
         sudo apt install -y $pkg
       elif command -v yum &>/dev/null; then
         sudo yum install -y $pkg
+      elif [[ "$OSTYPE" == "darwin"* ]]; then
+        if command -v brew &>/dev/null; then
+          brew install $pkg
+        else
+          echo -e "${RED}⚠️ Không thể cài $pkg vì thiếu Homebrew trên macOS.${NC}"
+        fi
       fi
     else
       echo -e "${GREEN}✅ Đã có $pkg${NC}"

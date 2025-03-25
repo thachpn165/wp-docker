@@ -21,6 +21,8 @@ source "$(dirname "$0")/shared/scripts/functions/menu/system_tools_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/backup_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/rclone_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/ssl_menu.sh"
+source "$(dirname "$0")/shared/scripts/functions/menu/php_menu.sh"
+
 # **Chạy setup hệ thống trước khi hiển thị menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
 
@@ -56,7 +58,8 @@ while true; do
     echo -e "  ${GREEN}[1]${NC} 🌍 Quản lý Website WordPress     ${GREEN}[5]${NC} 🛠️ Tiện ích WordPress"
     echo -e "  ${GREEN}[2]${NC} 🔐 Quản lý Chứng Chỉ SSL         ${GREEN}[6]${NC} 🔄 Quản lý Backup Website"
     echo -e "  ${GREEN}[3]${NC} ⚙️ Công Cụ Hệ Thống               ${GREEN}[7]${NC} ⚡ Quản lý Cache WordPress"
-    echo -e "  ${GREEN}[4]${NC} 📤 Quản lý Rclone                 ${GREEN}[8]${NC} ❌ Thoát"
+    echo -e "  ${GREEN}[4]${NC} 📤 Quản lý Rclone                 ${GREEN}[8]${NC} 💡 Quản lý PHP"
+    echo -e "                                  ${GREEN}[9]${NC} ❌ Thoát"
     echo ""
 
     read -p "🔹 Chọn một tùy chọn (1-9): " choice
@@ -68,7 +71,8 @@ while true; do
         5) wordpress_tools_menu ;;
         6) backup_menu ;;
         7) bash "$SCRIPTS_DIR/setup-cache.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
-        8) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
+        8) php_menu ;;
+        9) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
         *) 
             echo -e "${RED}⚠️ Lựa chọn không hợp lệ! Vui lòng chọn từ [1-9].${NC}"
             sleep 2 

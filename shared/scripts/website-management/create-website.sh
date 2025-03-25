@@ -18,6 +18,7 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 source "$CONFIG_FILE"
 source "$SCRIPTS_FUNCTIONS_DIR/nginx_utils.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/php/php_choose_version.sh"
 SETUP_WORDPRESS_SCRIPT="$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh"
 
 # ✅ Kiểm tra các biến cấu hình bắt buộc
@@ -38,8 +39,10 @@ read -p "Tên miền (ví dụ: example.com): " domain
 suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
 read -p "Tên site (mặc định: $suggested_site_name): " site_name
 site_name=${site_name:-$suggested_site_name}
-read -p "Chọn phiên bản PHP (7.4, 8.1, 8.3) [mặc định: 8.3]: " php_version
-php_version=${php_version:-8.3}
+
+# 📦 Chọn phiên bản PHP qua giao diện
+php_choose_version || exit 1
+php_version="$REPLY"
 
 # 📍 Ghi log quá trình tại thư mục /logs
 LOG_FILE="$PROJECT_ROOT/logs/${site_name}-setup.log"
@@ -82,7 +85,6 @@ cleanup_on_fail() {
 
     exit 1
 }
-
 
 trap cleanup_on_fail ERR
 
@@ -147,7 +149,7 @@ WP_INFO_FILE="$TMP_SITE_DIR/.wp-info"
 if [ -f "$WP_INFO_FILE" ]; then
     echo -e "${GREEN}\n==================================================="
     echo -e "🎉 WordPress đã được cài đặt thành công! 🎉"
-    echo -e "${RED} LƯU Ý: HÃY LƯU LẠI THÔNG TIN BÊN DƯỚi${NC}"
+    echo -e "${RED} LƯU Ý: HÃY LƯU LẠI THÔNG TIN BÊN DƯới${NC}"
     echo -e "===================================================${NC}"
     while read -r line; do
         echo -e "${YELLOW}$line${NC}"
