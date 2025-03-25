@@ -108,12 +108,9 @@ EOF
   rm -rf "$TMP_SITE_DIR"
   echo -e "${GREEN}✅ Website đã được di chuyển từ tmp/ vào: $SITE_DIR${NC}"
 
-  restart_nginx_proxy
+  nginx_restart
   docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R nobody:nogroup "/var/www/$site_name"
   docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup "/var/www/"
-
-  cd "$SITE_DIR"
-  docker compose restart
 
   echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] HOÀN THÀNH TẠO WEBSITE: $site_name =====" >> "$LOG_FILE"
 }

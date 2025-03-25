@@ -97,6 +97,6 @@ website_management_delete() {
     echo -e "${GREEN}✅ Đã xóa cronjob liên quan đến site.${NC}"
   fi
 
-  restart_nginx_proxy
+  nginx_restart
   echo -e "${GREEN}✅ Website '$site_name' đã được xoá hoàn toàn.${NC}"
 }
