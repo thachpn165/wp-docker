@@ -58,11 +58,35 @@ install_docker() {
 
 # ✅ Hàm cài Docker Compose từ GitHub release
 install_docker_compose() {
-    echo -e "${YELLOW}📦 Cài đặt Docker Compose...${NC}"
-    latest_release=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep browser_download_url | grep "$(uname -s)-$(uname -m)" | cut -d '"' -f 4)
-    sudo curl -L "$latest_release" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+    echo -e "${YELLOW}📦 Đang cài đặt Docker Compose plugin...${NC}"
+
+    DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+    mkdir -p "$DOCKER_CONFIG/cli-plugins"
+
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    ARCH=$(uname -m)
+
+    # Chuẩn hóa kiến trúc
+    case "$ARCH" in
+        x86_64) ARCH="x86_64" ;;
+        aarch64 | arm64) ARCH="aarch64" ;;
+        *) echo "❌ Không hỗ trợ kiến trúc máy: $ARCH" && return 1 ;;
+    esac
+
+    COMPOSE_URL="https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-${OS}-${ARCH}"
+    DEST="$DOCKER_CONFIG/cli-plugins/docker-compose"
+
+    echo "➡️  Tải từ: $COMPOSE_URL"
+    curl -SL "$COMPOSE_URL" -o "$DEST"
+    chmod +x "$DEST"
+
+    if docker compose version &>/dev/null; then
+        echo -e "${GREEN}✅ Docker Compose đã được cài đặt thành công.${NC}"
+    else
+        echo -e "${RED}❌ Cài đặt Docker Compose thất bại. Hãy kiểm tra thủ công.${NC}"
+    fi
 }
+
 
 # ✅ Hàm kiểm tra Docker đã chạy chưa
 start_docker_if_needed() {
