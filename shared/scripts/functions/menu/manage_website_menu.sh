@@ -9,10 +9,11 @@ manage_website_menu() {
         echo -e "${GREEN}[4]${NC} 🔄 Restart Website"
         echo -e "${GREEN}[5]${NC} 📄 Xem Logs Website"
         echo -e "${GREEN}[6]${NC} 🔍 Xem Thông Tin Website"
-        echo -e "${GREEN}[7]${NC} ⬅️ Quay lại"
+        echo -e "${GREEN}[7]${NC} 🔀 Thay Đổi Phiên Bản PHP"
+        echo -e "${GREEN}[8]${NC} ⬅️ Quay lại"
         echo ""
 
-        read -p "Chọn một chức năng (1-7): " sub_choice
+        read -p "Chọn một chức năng (1-8): " sub_choice
         case $sub_choice in
             1) bash "$WEBSITE_MGMT_DIR/create-website.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
             2) bash "$WEBSITE_MGMT_DIR/delete-website.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
@@ -20,9 +21,10 @@ manage_website_menu() {
             4) bash "$WEBSITE_MGMT_DIR/restart-website.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
             5) bash "$WEBSITE_MGMT_DIR/logs-website.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
             6) bash "$WEBSITE_MGMT_DIR/view-website-info.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
-            7) break ;;
+            7) bash "$WEBSITE_MGMT_DIR/website-change-php.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
+            8) break ;;
             *) 
-                echo -e "${RED}⚠️ Lựa chọn không hợp lệ! Vui lòng chọn từ [1-7].${NC}"
+                echo -e "${RED}⚠️ Lựa chọn không hợp lệ! Vui lòng chọn từ [1-8].${NC}"
                 sleep 2 
                 ;;
         esac
