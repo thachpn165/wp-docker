@@ -42,13 +42,13 @@ EOF
 # 🔁 Restart NGINX Proxy (dùng khi thay đổi docker-compose, mount volume, v.v)
 nginx_restart() {
   echo -e "${YELLOW}🔁 Đang khởi động lại container NGINX Proxy...${NC}"
-  docker restart "$NGINX_PROXY_CONTAINER"
-  if [[ $? -eq 0 ]]; then
-    echo -e "${GREEN}✅ Đã restart NGINX Proxy thành công.${NC}"
-  else
-    echo -e "${RED}❌ Lỗi khi restart NGINX Proxy.${NC}"
-  fi
+  pushd "$NGINX_PROXY_DIR" > /dev/null
+  docker compose down
+  docker compose up -d --force-recreate
+  popd > /dev/null
+  echo -e "${GREEN}✅ Đã restart NGINX Proxy thành công.${NC}"
 }
+
 
 # 🔄 Reload NGINX (dùng khi thay đổi file config/nginx.conf/nginx site)
 nginx_reload() {
