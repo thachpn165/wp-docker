@@ -25,7 +25,6 @@ services:
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql
-      - ./mariadb/data:/site-db
       - ./backups:/backups
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
