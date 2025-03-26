@@ -24,9 +24,7 @@ fi
 source "$CONFIG_FILE"
 
 # ✅ Đảm bảo file tồn tại
-mkdir -p "$TEMPLATE_DIR"
-touch "$TEMPLATE_VERSION_FILE"
-touch "$TEMPLATE_CHANGELOG_FILE"
+mkdir -p "$(dirname "$TEMPLATE_CHANGELOG_FILE")"
 
 # 🧠 Hàm tính version tiếp theo
 bump_version() {
