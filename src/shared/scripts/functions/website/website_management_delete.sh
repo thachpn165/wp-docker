@@ -44,7 +44,7 @@ website_management_delete() {
   fi
 
   if confirm_action "💾 Bạn có muốn sao lưu mã nguồn và database trước khi xoá không?"; then
-    ARCHIVE_DIR="$PROJECT_ROOT/archives/old_website/$site_name-$(date +%Y%m%d-%H%M%S)"
+    ARCHIVE_DIR="$BASE_DIR/archives/old_website/$site_name-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$ARCHIVE_DIR"
 
     DB_NAME=$(grep '^MYSQL_DATABASE=' "$ENV_FILE" | cut -d '=' -f2)
@@ -65,7 +65,7 @@ website_management_delete() {
 
   cd "$SITE_DIR"
   docker compose down
-  cd "$PROJECT_ROOT"
+  cd "$BASE_DIR"
 
   remove_directory "$SITE_DIR"
   echo -e "${GREEN}✅ Đã xoá thư mục website: $SITE_DIR${NC}"

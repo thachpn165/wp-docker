@@ -18,8 +18,8 @@ done
 
 source "$CONFIG_FILE"
 
-BACKUP_DIR="$PROJECT_ROOT/archives/backups_before_remove"
-TMP_BACKUP_DIR="$PROJECT_ROOT/tmp"
+BACKUP_DIR="$BASE_DIR/archives/backups_before_remove"
+TMP_BACKUP_DIR="$BASE_DIR/tmp"
 
 # 💬 Xác nhận hành động từ người dùng
 confirm_action() {
@@ -98,7 +98,7 @@ remove_site_containers() {
 # 🧨 Xoá toàn bộ thư mục trừ backup
 remove_all_except_backup() {
   echo -e "${MAGENTA}🗑️  Đang xoá toàn bộ hệ thống trừ thư mục backup_before_remove...${NC}"
-  for item in "$PROJECT_ROOT"/*; do
+  for item in "$BASE_DIR"/*; do
     [[ "$item" == "$BACKUP_DIR" ]] && continue
     rm -rf "$item"
   done

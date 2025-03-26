@@ -1,5 +1,5 @@
 php_get_version() {
-  local output_file="$PROJECT_ROOT/php_versions.txt"
+  local output_file="$BASE_DIR/php_versions.txt"
   echo -e "${CYAN}🌐 Đang lấy danh sách phiên bản PHP từ Bitnami...${NC}"
 
   versions=$(curl -s --max-time 10 "https://hub.docker.com/v2/repositories/bitnami/php-fpm/tags?page_size=100" \

@@ -1,6 +1,6 @@
 
 php_choose_version() {
-  local PHP_VERSION_FILE="$PROJECT_ROOT/php_versions.txt"
+  local PHP_VERSION_FILE="$BASE_DIR/php_versions.txt"
 
   if [[ ! -f "$PHP_VERSION_FILE" ]]; then
     echo -e "${RED}❌ Không tìm thấy danh sách phiên bản PHP tại: $PHP_VERSION_FILE${NC}"

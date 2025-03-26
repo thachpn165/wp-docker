@@ -28,7 +28,7 @@ get_site_list() {
 # =====================================
 
 website_restore_from_archive() {
-  ARCHIVE_DIR="$PROJECT_ROOT/archives/old_website"
+  ARCHIVE_DIR="$BASE_DIR/archives/old_website"
 
   if [[ ! -d "$ARCHIVE_DIR" ]]; then
     echo -e "${RED}❌ Không tìm thấy thư mục lưu trữ: $ARCHIVE_DIR${NC}"

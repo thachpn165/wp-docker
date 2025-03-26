@@ -3,10 +3,10 @@
 # =====================================
 
 # ==== Tự động xác định PROJECT_ROOT dù là src/ hay bản release ====
-SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"   # Hoạt động tốt với cả source & bash
 CONFIG_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 
-# Nếu nằm trong src/, lùi lên để tới repo gốc
+# Nếu nằm trong src/shared/config thì lùi lên 3 cấp
 if [[ "$CONFIG_DIR" == */src/shared/config ]]; then
   PROJECT_ROOT="$(cd "$CONFIG_DIR/../../.." && pwd)"
 else
@@ -31,7 +31,12 @@ WEBSITE_MGMT_DIR="$SCRIPTS_DIR/website-management"
 WORDPRESS_TOOLS_DIR="$SCRIPTS_DIR/wordpress-tools"
 SYSTEM_TOOLS_FUNC_DIR="$FUNCTIONS_DIR/system-tools"
 SCRIPTS_FUNCTIONS_DIR="$FUNCTIONS_DIR"
+
+# ==== Các thư mục ghi dữ liệu tạm & log (luôn ở gốc project) ====
 TMP_DIR="$PROJECT_ROOT/tmp"
+LOGS_DIR="$PROJECT_ROOT/logs"
+ARCHIVES_DIR="$PROJECT_ROOT/archives"
+
 # ==== Webserver (NGINX) ====
 NGINX_PROXY_DIR="$BASE_DIR/webserver/nginx"
 PROXY_CONF_DIR="$NGINX_PROXY_DIR/conf.d"

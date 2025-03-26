@@ -15,8 +15,8 @@ website_management_create() {
   php_choose_version || return 1
   php_version="$REPLY"
 
-  LOG_FILE="$PROJECT_ROOT/logs/${site_name}-setup.log"
-  mkdir -p "$(dirname "$LOG_FILE")"
+  mkdir -p "$LOGS_DIR"
+  LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
 
   start_time=$(date '+%Y-%m-%d %H:%M:%S')
@@ -26,8 +26,8 @@ website_management_create() {
   exec > >(tee -a "$LOG_FILE") 2>&1
 
   SITE_DIR="$SITES_DIR/$site_name"
-  TMP_SITE_DIR="$TMP_DIR/${site_name}"
-  CONTAINER_PHP="${site_name}-php"
+  mkdir -p "$TMP_DIR"
+  TMP_SITE_DIR="$TMP_DIR/${site_name}"  CONTAINER_PHP="${site_name}-php"
 
   if is_directory_exist "$SITE_DIR" false; then
     echo "❌ Website '$site_name' đã tồn tại. Vui lòng chọn tên khác."
@@ -87,7 +87,7 @@ EOF
   docker compose up -d
 
   generate_ssl_cert "$domain" "$SSL_DIR"
-  cd "$PROJECT_ROOT"
+  cd "$BASE_DIR"
   bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name"
 
   WP_INFO_FILE="$TMP_SITE_DIR/.wp-info"
