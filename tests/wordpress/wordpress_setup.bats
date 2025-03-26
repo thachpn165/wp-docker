@@ -47,30 +47,30 @@ file_contains() {
 file_exists() {
     local file="$1"
     
-    [ -f "$file" ]
+    [[ -f "$file" ]]
 }
 
 # Helper function to check if a directory exists
 dir_exists() {
     local dir="$1"
     
-    [ -d "$dir" ]
+    [[ -d "$dir" ]]
 }
 
 # Helper function to check if a file has correct permissions
 file_has_permissions() {
     local file="$1"
-    local permissions="$2"
-    
-    [ "$(stat -f "%Lp" "$file")" = "$permissions" ]
+    local expected_perms="$2"
+    local actual_perms=$(stat -c "%a" "$file" 2>/dev/null || stat -f "%Lp" "$file" 2>/dev/null)
+    [[ "$actual_perms" == "$expected_perms" ]]
 }
 
 # Helper function to check if a directory has correct permissions
 dir_has_permissions() {
     local dir="$1"
-    local permissions="$2"
-    
-    [ "$(stat -f "%Lp" "$dir")" = "$permissions" ]
+    local expected_perms="$2"
+    local actual_perms=$(stat -c "%a" "$dir" 2>/dev/null || stat -f "%Lp" "$dir" 2>/dev/null)
+    [[ "$actual_perms" == "$expected_perms" ]]
 }
 
 @test "WordPress installation creates required files" {

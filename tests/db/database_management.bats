@@ -40,22 +40,25 @@ file_contains() {
 }
 
 file_exists() {
-    local file="$1"
-    
-    [ -f "$file" ]
+    [[ -f "$1" ]]
 }
 
 dir_exists() {
-    local dir="$1"
-    
-    [ -d "$dir" ]
+    [[ -d "$1" ]]
 }
 
 file_has_permissions() {
     local file="$1"
-    local permissions="$2"
-    
-    [ "$(stat -f "%Lp" "$file")" = "$permissions" ]
+    local expected_perms="$2"
+    local actual_perms=$(stat -c "%a" "$file" 2>/dev/null || stat -f "%Lp" "$file" 2>/dev/null)
+    [[ "$actual_perms" == "$expected_perms" ]]
+}
+
+dir_has_permissions() {
+    local dir="$1"
+    local expected_perms="$2"
+    local actual_perms=$(stat -c "%a" "$dir" 2>/dev/null || stat -f "%Lp" "$dir" 2>/dev/null)
+    [[ "$actual_perms" == "$expected_perms" ]]
 }
 
 # Tests
