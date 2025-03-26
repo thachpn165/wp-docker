@@ -15,18 +15,6 @@ if [[ "$1" == "--dev" ]]; then
   echo "🛠 Đang cài đặt ở chế độ DEV (không tạo symlink hệ thống)"
 fi
 
-for cmd in curl unzip docker composer; do
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "❌ Thiếu chương trình: $cmd. Vui lòng cài đặt trước."
-    exit 1
-  fi
-done
-
-if ! docker compose version >/dev/null 2>&1; then
-  echo "❌ Docker Compose plugin chưa được cài hoặc không khả dụng."
-  exit 1
-fi
-
 # ========================
 # 🧹 Kiểm tra nếu thư mục đã tồn tại
 # ========================
