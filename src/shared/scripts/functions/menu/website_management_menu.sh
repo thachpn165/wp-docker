@@ -9,6 +9,7 @@ source "$FUNCTIONS_DIR/website/website_management_list.sh"
 source "$FUNCTIONS_DIR/website/website_management_restart.sh"
 source "$FUNCTIONS_DIR/website/website_management_logs.sh"
 source "$FUNCTIONS_DIR/website/website_management_info.sh"
+source "$FUNCTIONS_DIR/website/website_update_site_template.sh"
 
 # Hiển thị menu quản lý website
 website_management_menu() {
@@ -21,7 +22,8 @@ website_management_menu() {
     echo -e "${GREEN}[4]${NC} 🔄 Restart Website"
     echo -e "${GREEN}[5]${NC} 📄 Xem Logs Website"
     echo -e "${GREEN}[6]${NC} 🔍 Xem Thông Tin Website"
-    echo -e "${GREEN}[7]${NC} ⬅️ Quay lại"
+    echo -e "${GREEN}[7]${NC} 🔄 Cập nhật template cấu hình Website"
+    echo -e "${GREEN}[8]${NC} ⬅️ Quay lại"
     echo ""
 
     read -p "Chọn một chức năng (1-7): " sub_choice
@@ -32,7 +34,8 @@ website_management_menu() {
       4) website_management_restart; read -p "Nhấn Enter để tiếp tục..." ;;
       5) website_management_logs; read -p "Nhấn Enter để tiếp tục..." ;;
       6) website_management_info; read -p "Nhấn Enter để tiếp tục..." ;;
-      7) break ;;
+      7) website_update_site_template; read -p "Nhấn Enter để tiếp tục..." ;;
+      8) break ;;
       *) echo -e "${RED}⚠️ Lựa chọn không hợp lệ! Vui lòng chọn từ [1-7].${NC}"; sleep 2 ;;
     esac
   done

@@ -1,0 +1,47 @@
+name: 🤖 Auto Bump Template Version
+
+on:
+  push:
+    paths:
+      - 'src/shared/templates/**'
+  pull_request:
+    paths:
+      - 'src/shared/templates/**'
+      
+permissions:
+  contents: write
+
+jobs:
+  bump-template:
+    name: 🔁 Tự động tăng template version
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+
+    steps:
+      - name: 📥 Checkout source code
+        uses: actions/checkout@v3
+
+      - name: 🔍 Kiểm tra có thay đổi template không
+        id: check
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q 'src/shared/templates/'; then
+            echo "templates_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "templates_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 🆙 Auto bump template version
+        if: steps.check.outputs.templates_changed == 'true'
+        run: |
+          cd src
+          chmod +x shared/scripts/tools/template_bump_version.sh
+          ./shared/scripts/tools/template_bump_version.sh --auto
+
+      - name: 📤 Commit & push thay đổi version
+        if: steps.check.outputs.templates_changed == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add src/shared/templates/.template_version src/shared/templates/TEMPLATE_CHANGELOG.md
+          git commit -m "🤖 Auto bump template version (CI)"
+          git push

@@ -26,6 +26,8 @@ WEBSITE_MGMT_DIR="$SCRIPTS_DIR/website-management"
 WORDPRESS_TOOLS_DIR="$SCRIPTS_DIR/wordpress-tools"
 SYSTEM_TOOLS_FUNC_DIR="$FUNCTIONS_DIR/system-tools"
 SCRIPTS_FUNCTIONS_DIR="$FUNCTIONS_DIR"
+export TEMPLATE_VERSION_FILE="$BASE_DIR/shared/templates/.template_version"
+export TEMPLATE_CHANGELOG_FILE="$BASE_DIR/shared/templates/TEMPLATE_CHANGELOG.md"
 
 # ==== Các thư mục dữ liệu (nằm trong src/) ====
 TMP_DIR="$BASE_DIR/tmp"
