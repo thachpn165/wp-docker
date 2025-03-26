@@ -42,6 +42,23 @@ start_docker_if_needed
 # ✅ Kiểm tra nhóm docker
 check_docker_group
 
+# ✅ Kiểm tra thư mục shared/bin và cài WP-CLI nếu chưa có
+WP_CLI_PATH="$BASE_DIR/shared/bin/wp"
+if [[ ! -f "$WP_CLI_PATH" ]]; then
+    echo -e "${YELLOW}⚠️ WP-CLI chưa được cài đặt. Đang cài đặt WP-CLI...${NC}"
+    
+    # Tải WP-CLI mới nhất từ GitHub
+    curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+
+    # Cấp quyền thực thi và di chuyển vào thư mục shared/bin
+    chmod +x wp-cli.phar
+    mv wp-cli.phar "$WP_CLI_PATH"
+
+    echo -e "${GREEN}✅ WP-CLI đã được cài đặt thành công.${NC}"
+else
+    echo -e "${GREEN}✅ WP-CLI đã có sẵn tại $WP_CLI_PATH.${NC}"
+fi
+
 # ✅ Khởi động nginx-proxy và redis nếu chưa chạy
 echo -e "${YELLOW}🚀 Kiểm tra và khởi động nginx-proxy và redis-cache nếu cần...${NC}"
 cd "$NGINX_PROXY_DIR"
@@ -69,7 +86,6 @@ if [[ "$status" != "running" ]]; then
     echo -e "\n${RED}💥 Vui lòng kiểm tra lại file cấu hình, volume mount hoặc cổng đang sử dụng.${NC}"
     exit 1
 fi
-
 
 cd "$BASE_DIR"
 

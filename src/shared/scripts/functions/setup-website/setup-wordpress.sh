@@ -98,8 +98,14 @@ done
 # 📦 Tải mã nguồn WordPress nếu chưa có
 if [[ ! -f "$SITE_DIR/wordpress/index.php" ]]; then
   echo -e "${YELLOW}📦 Đang tải WordPress...${NC}"
-  docker exec -i "$PHP_CONTAINER" sh -c "curl -o wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
-    tar -xzf wordpress.tar.gz --strip-components=1 -C /var/www/html && rm wordpress.tar.gz"
+
+  # Kiểm tra thư mục đích trong container trước khi tải
+  docker exec -i "$PHP_CONTAINER" sh -c "mkdir -p /var/www/html && chown -R nobody:nogroup /var/www/html"
+  
+  # Tải và giải nén WordPress vào thư mục đúng
+  docker exec -i "$PHP_CONTAINER" sh -c "curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
+    tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && rm /var/www/html/wordpress.tar.gz"
+
   echo -e "${GREEN}✅ Đã tải mã nguồn WordPress.${NC}"
 else
   echo -e "${GREEN}✅ Mã nguồn WordPress đã có sẵn.${NC}"
