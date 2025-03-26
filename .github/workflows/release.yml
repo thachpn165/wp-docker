@@ -20,7 +20,7 @@ jobs:
       - name: 🧼 Dọn dẹp & đóng gói
         run: |
           mkdir -p dist
-          
+
           # Tạo thư mục tạm để chứa source (không có thư mục src/)
           mkdir wp-docker
           cp -r src/* wp-docker/
@@ -28,10 +28,12 @@ jobs:
           # Ghi phiên bản vào file version.txt trong bản build
           echo "${{ github.ref_name }}" > wp-docker/version.txt
 
-          # Tạo file zip đúng định dạng
-          zip -r dist/wp-docker.zip wp-docker \
+          # Zip nội dung bên trong wp-docker (không bao gồm thư mục gốc wp-docker)
+          cd wp-docker
+          zip -r ../dist/wp-docker.zip . \
             -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" "tests/*" "sites/" \
             -x "*.DS_Store" "__MACOSX"
+          cd ..
 
       - name: 🚀 Tạo GitHub Release
         uses: softprops/action-gh-release@v1
