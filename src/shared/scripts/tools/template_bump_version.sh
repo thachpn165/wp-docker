@@ -3,63 +3,92 @@
 # =========================================
 # 🛠 template_bump_version.sh
 # Tăng phiên bản template & ghi changelog
-# Hỗ trợ chạy tay (dev) và tự động (CI/CD)
+# Hỗ trợ chạy tay và CI/CD
 # =========================================
 
-TEMPLATE_DIR="shared/templates"
-VERSION_FILE="$TEMPLATE_DIR/.template_version"
-CHANGELOG_FILE="$TEMPLATE_DIR/TEMPLATE_CHANGELOG.md"
+# === 🔍 Tìm và load config.sh ===
+if [[ -n "$PROJECT_DIR" ]]; then
+  CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
+else
+  # Xác định thư mục chứa script hiện tại (an toàn cho mọi trường hợp)
+  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+  SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+  CONFIG_FILE="$SCRIPT_DIR/../../config/config.sh"
+fi
+
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "❌ Không tìm thấy config.sh tại: $CONFIG_FILE" >&2
+  exit 1
+fi
+
+source "$CONFIG_FILE"
 
 # ✅ Đảm bảo file tồn tại
-mkdir -p "$TEMPLATE_DIR"
-touch "$VERSION_FILE"
-touch "$CHANGELOG_FILE"
+mkdir -p "$(dirname "$TEMPLATE_CHANGELOG_FILE")"
 
 # 🧠 Hàm tính version tiếp theo
 bump_version() {
   local ver="$1"
-  echo "$ver" | awk -F. '{$NF+=1; OFS="."; print}'
+  IFS='.' read -r major minor patch <<< "$ver"
+
+  major=${major:-1}
+  minor=${minor:-0}
+  patch=${patch:-0}
+  patch=$((patch + 1))
+
+  echo "$major.$minor.$patch"
 }
 
 # ========================================
-# 🤖 CHẾ ĐỘ TỰ ĐỘNG (từ GitHub Actions)
+# 🤖 CHẾ ĐỘ TỰ ĐỘNG (CI/CD)
 # ========================================
 if [[ "$1" == "--auto" ]]; then
-  CUR_VER=$(cat "$VERSION_FILE" 2>/dev/null || echo "0.0.0")
+  if [[ -f "$TEMPLATE_VERSION_FILE" && -s "$TEMPLATE_VERSION_FILE" ]]; then
+    CUR_VER=$(<"$TEMPLATE_VERSION_FILE")
+  else
+    CUR_VER="1.0.0"
+  fi
+
   NEXT_VER=$(bump_version "$CUR_VER")
   DATE_NOW=$(date '+%Y-%m-%d %H:%M:%S')
 
-  echo "$NEXT_VER" > "$VERSION_FILE"
+  echo ">>> BEFORE: $(cat "$TEMPLATE_VERSION_FILE")"
+  echo "$NEXT_VER" > "$TEMPLATE_VERSION_FILE"
+  sync  # Ensure file is written
 
-  echo "" >> "$CHANGELOG_FILE"
-  echo "## $NEXT_VER – $DATE_NOW" >> "$CHANGELOG_FILE"
-  echo "- 🤖 Tự động bump từ GitHub Actions" >> "$CHANGELOG_FILE"
+  echo ">>> AFTER: $(cat "$TEMPLATE_VERSION_FILE")"
+
+  {
+    echo ""
+    echo "## $NEXT_VER – $DATE_NOW"
+    echo "- 🤖 Auto bump version from CI"
+  } >> "$TEMPLATE_CHANGELOG_FILE"
 
   echo "✅ Auto bump template version: $CUR_VER → $NEXT_VER"
   exit 0
 fi
 
 # ========================================
-# 🧑 Chế độ thủ công (developer)
+# 👨‍💻 Chế độ thủ công (dev)
 # ========================================
-CUR_VER=$(cat "$VERSION_FILE" 2>/dev/null || echo "0.0.0")
-echo "🔢 Template version hiện tại: $CUR_VER"
+CUR_VER=$(cat "$TEMPLATE_VERSION_FILE" 2>/dev/null || echo "0.0.0")
+echo "🔢 Current template version: $CUR_VER"
 
-read -rp "👉 Nhập version mới (VD: 1.0.7): " NEW_VER
-[[ -z "$NEW_VER" ]] && echo "❌ Bạn chưa nhập version mới!" && exit 1
-[[ "$NEW_VER" == "$CUR_VER" ]] && echo "⚠️ Phiên bản mới giống phiên bản hiện tại." && exit 0
+read -rp "👉 Enter new version (e.g. 1.0.7): " NEW_VER
+[[ -z "$NEW_VER" ]] && echo "❌ No version entered!" && exit 1
+[[ "$NEW_VER" == "$CUR_VER" ]] && echo "⚠️ Version unchanged." && exit 0
 
-read -rp "📝 Mô tả changelog cho bản $NEW_VER: " CHANGELOG_LINE
+read -rp "📝 Enter changelog message: " CHANGELOG_LINE
 DATE_NOW=$(date '+%Y-%m-%d %H:%M:%S')
 
-# ✅ Ghi version & changelog
-echo "$NEW_VER" > "$VERSION_FILE"
+echo "$NEW_VER" > "$TEMPLATE_VERSION_FILE"
+sync  # Ensure file is written
 
 {
   echo ""
   echo "## $NEW_VER – $DATE_NOW"
   echo "- $CHANGELOG_LINE"
-} >> "$CHANGELOG_FILE"
+} >> "$TEMPLATE_CHANGELOG_FILE"
 
-echo "✅ Đã cập nhật .template_version → $NEW_VER"
-echo "📄 Đã ghi vào TEMPLATE_CHANGELOG.md"
+echo "✅ Updated template version to: $NEW_VER"
+echo "📄 Changelog updated at: $TEMPLATE_CHANGELOG_FILE"
