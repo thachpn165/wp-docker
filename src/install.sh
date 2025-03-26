@@ -8,43 +8,12 @@ ZIP_NAME="wp-docker.zip"
 DEV_MODE=false
 
 # ========================
-# 🧩 Hàm cài đặt dependencies
-# ========================
-install_dependencies() {
-  echo "📦 Đang kiểm tra và cài đặt dependencies..."
-
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    if ! command -v docker &>/dev/null; then
-      echo "⚠️ Docker chưa được cài. Vui lòng cài Docker Desktop tại: https://www.docker.com/products/docker-desktop/"
-    fi
-    if ! command -v unzip &>/dev/null; then
-      brew install unzip
-    fi
-    if ! command -v composer &>/dev/null; then
-      brew install composer
-    fi
-  else
-    if command -v apt-get &>/dev/null; then
-      sudo apt-get update
-      sudo apt-get install -y curl unzip docker.io composer
-    elif command -v yum &>/dev/null; then
-      sudo yum install -y curl unzip docker composer
-    fi
-  fi
-}
-
-# ========================
 # ⚙️ Xử lý tham số dòng lệnh
 # ========================
 if [[ "$1" == "--dev" ]]; then
   DEV_MODE=true
   echo "🛠 Đang cài đặt ở chế độ DEV (không tạo symlink hệ thống)"
 fi
-
-# ========================
-# ✅ Kiểm tra công cụ bắt buộc
-# ========================
-install_dependencies
 
 for cmd in curl unzip docker composer; do
   if ! command -v "$cmd" >/dev/null 2>&1; then

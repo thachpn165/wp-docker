@@ -30,7 +30,7 @@ jobs:
 
           # Tạo file zip đúng định dạng
           zip -r dist/wp-docker.zip wp-docker \
-            -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" "tests/*" \
+            -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" "tests/*" "sites/" \
             -x "*.DS_Store" "__MACOSX"
 
       - name: 🚀 Tạo GitHub Release
