@@ -38,7 +38,7 @@ echo "📌 Phiên bản hiện tại: $CURRENT_VERSION" | tee -a "$LOG_FILE"
 # ✅ Ghi đè các tệp hệ thống (không chạm vào data)
 echo "♻️ Đang cập nhật các file hệ thống..." | tee -a "$LOG_FILE"
 
-# Debug: Kiểm tra các thư mục được exclude
+# Debug: In ra các thư mục sẽ được exclude
 echo "🔴 Excluding directories: sites, logs, archives" | tee -a "$LOG_FILE"
 
 # Chạy rsync với các thư mục loại trừ chính xác và lưu log chi tiết
