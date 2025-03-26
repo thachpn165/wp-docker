@@ -100,3 +100,19 @@ fi
 
 echo "✅ Cài đặt thành công tại: $INSTALL_DIR"
 echo "👉 Bạn có thể chạy hệ thống bằng lệnh: $BIN_NAME"
+# ========================
+# 📢 Cảnh báo đặc biệt cho macOS (Docker Desktop)
+# ========================
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  echo ""
+  echo "⚠️  ${YELLOW}LƯU Ý QUAN TRỌNG CHO NGƯỜI DÙNG macOS${NC}"
+  echo "💡 Docker trên macOS yêu cầu chia sẻ thủ công thư mục /opt với Docker Desktop."
+  echo "🔧 Vui lòng thực hiện theo các bước sau:"
+  echo ""
+  echo "1. Mở Docker Desktop → Settings → Resources → File Sharing"
+  echo "2. Nhấn nút '+' và thêm đường dẫn: /opt"
+  echo "3. Nhấn Apply & Restart để Docker khởi động lại"
+  echo ""
+  echo "👉 Xem hướng dẫn chính thức: https://docs.docker.com/desktop/settings/mac/#file-sharing"
+  echo ""
+fi
