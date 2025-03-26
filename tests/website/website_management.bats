@@ -1,7 +1,76 @@
 #!/usr/bin/env bats
 
-# Load test helper
-load "../test_helper.bats"
+setup() {
+    # Create temporary test directory
+    export TEST_DIR="$(mktemp -d)"
+    
+    # Create required directories
+    mkdir -p "$TEST_DIR/sites"
+    mkdir -p "$TEST_DIR/shared/config"
+    mkdir -p "$TEST_DIR/webserver"
+    mkdir -p "$TEST_DIR/logs"
+    mkdir -p "$TEST_DIR/tmp"
+}
+
+teardown() {
+    # Clean up test directory
+    if [ -n "$TEST_DIR" ] && [ -d "$TEST_DIR" ]; then
+        rm -rf "$TEST_DIR"
+    fi
+}
+
+# Helper function to create a test site
+create_test_site() {
+    local site_name="$1"
+    local domain="$2"
+    
+    mkdir -p "$TEST_DIR/sites/$site_name"
+    cat > "$TEST_DIR/sites/$site_name/.env" << EOF
+DOMAIN=$domain
+MYSQL_DATABASE=test_db
+MYSQL_USER=test_user
+MYSQL_PASSWORD=test_pass
+PHP_VERSION=8.1
+EOF
+}
+
+# Helper function to check if a file contains specific content
+file_contains() {
+    local file="$1"
+    local content="$2"
+    
+    grep -q "$content" "$file"
+}
+
+# Helper function to check if a directory exists
+dir_exists() {
+    local dir="$1"
+    
+    [ -d "$dir" ]
+}
+
+# Helper function to check if a file exists
+file_exists() {
+    local file="$1"
+    
+    [ -f "$file" ]
+}
+
+# Helper function to check if a file has correct permissions
+file_has_permissions() {
+    local file="$1"
+    local permissions="$2"
+    
+    [ "$(stat -f "%Lp" "$file")" = "$permissions" ]
+}
+
+# Helper function to check if a directory has correct permissions
+dir_has_permissions() {
+    local dir="$1"
+    local permissions="$2"
+    
+    [ "$(stat -f "%Lp" "$dir")" = "$permissions" ]
+}
 
 @test "Website creation creates required directories and files" {
     local site_name="test-site"

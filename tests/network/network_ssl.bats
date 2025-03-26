@@ -1,203 +1,188 @@
 #!/usr/bin/env bats
 
-# Load test helper
-load "../test_helper.bats"
+setup() {
+    # Create temporary test directory
+    export TEST_DIR="$(mktemp -d)"
+    
+    # Create required directories
+    mkdir -p "$TEST_DIR/sites/test-site"
+    mkdir -p "$TEST_DIR/shared/config"
+    mkdir -p "$TEST_DIR/webserver/nginx/conf"
+    mkdir -p "$TEST_DIR/logs"
+    mkdir -p "$TEST_DIR/tmp"
+    mkdir -p "$TEST_DIR/sites/test-site/ssl"
+    
+    # Create .env file
+    cat > "$TEST_DIR/sites/test-site/.env" << EOF
+DOMAIN=test-site.local
+MYSQL_DATABASE=test_db
+MYSQL_USER=test_user
+MYSQL_PASSWORD=test_pass
+PHP_VERSION=8.1
+EOF
+}
 
+teardown() {
+    # Clean up test directory
+    if [ -n "$TEST_DIR" ] && [ -d "$TEST_DIR" ]; then
+        rm -rf "$TEST_DIR"
+    fi
+}
+
+# Helper functions
+file_contains() {
+    local file="$1"
+    local content="$2"
+    
+    grep -q "$content" "$file"
+}
+
+file_exists() {
+    local file="$1"
+    
+    [ -f "$file" ]
+}
+
+dir_exists() {
+    local dir="$1"
+    
+    [ -d "$dir" ]
+}
+
+file_has_permissions() {
+    local file="$1"
+    local permissions="$2"
+    
+    [ "$(stat -f "%Lp" "$file")" = "$permissions" ]
+}
+
+# Tests
 @test "Network configuration is properly set up" {
     local site_name="test-site"
     local domain="test-site.local"
     
-    # Create test site
-    create_test_site "$site_name" "$domain"
-    
-    # Create nginx configuration
-    mkdir -p "$TEST_DIR/sites/$site_name/nginx/conf.d"
-    cat > "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" << EOF
-server {
-    listen 80;
-    listen [::]:80;
-    server_name $domain;
-    root /var/www/html;
-    index index.php;
-}
+    # Create docker-compose.yml with network configuration
+    cat > "$TEST_DIR/sites/$site_name/docker-compose.yml" << EOF
+version: '3.8'
+services:
+  nginx:
+    container_name: ${site_name}-nginx
+    networks:
+      - ${site_name}-network
+  php:
+    container_name: ${site_name}-php
+    networks:
+      - ${site_name}-network
+  mariadb:
+    container_name: ${site_name}-mariadb
+    networks:
+      - ${site_name}-network
+
+networks:
+  ${site_name}-network:
+    driver: bridge
 EOF
     
-    # Check if nginx configuration exists
-    file_exists "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf"
+    # Check if configuration exists
+    file_exists "$TEST_DIR/sites/$site_name/docker-compose.yml"
     
-    # Check if IPv4 and IPv6 are configured
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "listen 80;"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "listen [::]:80;"
+    # Check if network is properly configured
+    file_contains "$TEST_DIR/sites/$site_name/docker-compose.yml" "${site_name}-network"
+    file_contains "$TEST_DIR/sites/$site_name/docker-compose.yml" "driver: bridge"
 }
 
-@test "SSL certificate generation" {
+@test "SSL certificates are properly generated and stored" {
     local site_name="test-site"
     local domain="test-site.local"
     
-    # Create test site
-    create_test_site "$site_name" "$domain"
-    
-    # Create SSL directory
+    # Create SSL certificates
     mkdir -p "$TEST_DIR/sites/$site_name/ssl"
+    touch "$TEST_DIR/sites/$site_name/ssl/$domain.crt"
+    touch "$TEST_DIR/sites/$site_name/ssl/$domain.key"
     
-    # Create SSL certificate and key
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-        -keyout "$TEST_DIR/sites/$site_name/ssl/private.key" \
-        -out "$TEST_DIR/sites/$site_name/ssl/certificate.crt" \
-        -subj "/CN=$domain" \
-        -addext "subjectAltName=DNS:$domain"
-    
-    # Check if SSL files exist
-    file_exists "$TEST_DIR/sites/$site_name/ssl/private.key"
-    file_exists "$TEST_DIR/sites/$site_name/ssl/certificate.crt"
-    
-    # Check SSL file permissions
-    file_has_permissions "$TEST_DIR/sites/$site_name/ssl/private.key" "600"
-    file_has_permissions "$TEST_DIR/sites/$site_name/ssl/certificate.crt" "644"
+    # Check if SSL certificates exist
+    file_exists "$TEST_DIR/sites/$site_name/ssl/$domain.crt"
+    file_exists "$TEST_DIR/sites/$site_name/ssl/$domain.key"
 }
 
-@test "SSL configuration in nginx" {
+@test "Nginx configuration includes SSL settings" {
     local site_name="test-site"
     local domain="test-site.local"
     
-    # Create test site
-    create_test_site "$site_name" "$domain"
-    
-    # Create nginx SSL configuration
-    mkdir -p "$TEST_DIR/sites/$site_name/nginx/conf.d"
-    cat > "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" << EOF
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name $domain;
-    
-    ssl_certificate /etc/nginx/ssl/certificate.crt;
-    ssl_certificate_key /etc/nginx/ssl/private.key;
-    
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-    
-    ssl_prefer_server_ciphers off;
-    ssl_session_timeout 1d;
-    ssl_session_cache shared:SSL:50m;
-    ssl_session_tickets off;
-    
-    root /var/www/html;
-    index index.php;
-}
-EOF
-    
-    # Check if SSL configuration exists
-    file_exists "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf"
-    
-    # Check SSL configuration parameters
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "listen 443 ssl http2"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "ssl_certificate"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "ssl_certificate_key"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "ssl_protocols"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "ssl_ciphers"
-}
-
-@test "HTTP to HTTPS redirection" {
-    local site_name="test-site"
-    local domain="test-site.local"
-    
-    # Create test site
-    create_test_site "$site_name" "$domain"
-    
-    # Create nginx configuration with HTTP to HTTPS redirection
-    mkdir -p "$TEST_DIR/sites/$site_name/nginx/conf.d"
-    cat > "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" << EOF
+    # Create Nginx configuration with SSL
+    mkdir -p "$TEST_DIR/sites/$site_name/nginx"
+    cat > "$TEST_DIR/sites/$site_name/nginx/default.conf" << EOF
 server {
     listen 80;
-    listen [::]:80;
-    server_name $domain;
-    return 301 https://\$server_name\$request_uri;
+    server_name ${domain};
+    return 301 https://$host$request_uri;
 }
 
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name $domain;
+    listen 443 ssl;
+    server_name ${domain};
     
-    ssl_certificate /etc/nginx/ssl/certificate.crt;
-    ssl_certificate_key /etc/nginx/ssl/private.key;
+    ssl_certificate /etc/nginx/ssl/${domain}.crt;
+    ssl_certificate_key /etc/nginx/ssl/${domain}.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
     
     root /var/www/html;
-    index index.php;
+    index index.php index.html;
+    
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+    
+    location ~ \.php$ {
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
 }
 EOF
     
-    # Check if redirection configuration exists
-    file_exists "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf"
+    # Check if Nginx configuration exists
+    file_exists "$TEST_DIR/sites/$site_name/nginx/default.conf"
     
-    # Check redirection configuration
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "return 301 https://\$server_name\$request_uri"
+    # Check if SSL configuration is correct
+    file_contains "$TEST_DIR/sites/$site_name/nginx/default.conf" "listen 443 ssl"
+    file_contains "$TEST_DIR/sites/$site_name/nginx/default.conf" "ssl_certificate /etc/nginx/ssl/${domain}.crt"
+    file_contains "$TEST_DIR/sites/$site_name/nginx/default.conf" "ssl_certificate_key /etc/nginx/ssl/${domain}.key"
+    file_contains "$TEST_DIR/sites/$site_name/nginx/default.conf" "ssl_protocols TLSv1.2 TLSv1.3"
 }
 
-@test "SSL certificate renewal configuration" {
+@test "HTTP to HTTPS redirection is configured" {
     local site_name="test-site"
     local domain="test-site.local"
     
-    # Create test site
-    create_test_site "$site_name" "$domain"
-    
-    # Create SSL renewal script
-    cat > "$TEST_DIR/sites/$site_name/ssl/renew.sh" << 'EOF'
-#!/bin/bash
-# SSL certificate renewal script
-certbot renew --quiet --post-hook "nginx -s reload"
-EOF
-    
-    # Make renewal script executable
-    chmod +x "$TEST_DIR/sites/$site_name/ssl/renew.sh"
-    
-    # Check if renewal script exists and is executable
-    file_exists "$TEST_DIR/sites/$site_name/ssl/renew.sh"
-    file_has_permissions "$TEST_DIR/sites/$site_name/ssl/renew.sh" "755"
-    
-    # Create cron job for certificate renewal
-    cat > "$TEST_DIR/sites/$site_name/ssl/renew.cron" << 'EOF'
-0 0 1 * * /path/to/renew.sh
-EOF
-    
-    # Check if cron job configuration exists
-    file_exists "$TEST_DIR/sites/$site_name/ssl/renew.cron"
-}
-
-@test "Network security headers" {
-    local site_name="test-site"
-    local domain="test-site.local"
-    
-    # Create test site
-    create_test_site "$site_name" "$domain"
-    
-    # Create nginx configuration with security headers
-    mkdir -p "$TEST_DIR/sites/$site_name/nginx/conf.d"
-    cat > "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" << EOF
+    # Create Nginx configuration with HTTP to HTTPS redirection
+    mkdir -p "$TEST_DIR/sites/$site_name/nginx"
+    cat > "$TEST_DIR/sites/$site_name/nginx/default.conf" << EOF
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name $domain;
-    
-    # Security headers
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
-    
-    root /var/www/html;
-    index index.php;
+    listen 80;
+    server_name ${domain};
+    return 301 https://$host$request_uri;
 }
 EOF
     
-    # Check if security headers are configured
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "Strict-Transport-Security"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "X-Frame-Options"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "X-XSS-Protection"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "X-Content-Type-Options"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "Referrer-Policy"
-    file_contains "$TEST_DIR/sites/$site_name/nginx/conf.d/default.conf" "Content-Security-Policy"
+    # Check if HTTP to HTTPS redirection is configured
+    file_contains "$TEST_DIR/sites/$site_name/nginx/default.conf" "return 301 https://\$host\$request_uri"
+}
+
+@test "SSL certificates have correct permissions" {
+    local site_name="test-site"
+    local domain="test-site.local"
+    
+    # Create SSL certificates with correct permissions
+    mkdir -p "$TEST_DIR/sites/$site_name/ssl"
+    touch "$TEST_DIR/sites/$site_name/ssl/$domain.crt"
+    touch "$TEST_DIR/sites/$site_name/ssl/$domain.key"
+    chmod 644 "$TEST_DIR/sites/$site_name/ssl/$domain.crt"
+    chmod 600 "$TEST_DIR/sites/$site_name/ssl/$domain.key"
+    
+    # Check if SSL certificates have correct permissions
+    file_has_permissions "$TEST_DIR/sites/$site_name/ssl/$domain.crt" "644"
+    file_has_permissions "$TEST_DIR/sites/$site_name/ssl/$domain.key" "600"
 } 

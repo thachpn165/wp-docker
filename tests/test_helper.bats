@@ -13,25 +13,30 @@ setup() {
     mkdir -p "$TEST_DIR/logs"
     mkdir -p "$TEST_DIR/tmp"
     
+    # Colors for output
+    export RED='\033[0;31m'
+    export GREEN='\033[0;32m'
+    export YELLOW='\033[1;33m'
+    export BLUE='\033[0;34m'
+    export NC='\033[0m'
+    
     # Create mock config file
-    cat > "$TEST_DIR/shared/config/config.sh" << EOF
+    cat > "$TEST_DIR/shared/config/config.sh" << 'EOF'
 # Mock configuration
-SITES_DIR="$TEST_DIR/sites"
-TMP_DIR="$TEST_DIR/tmp"
-LOGS_DIR="$TEST_DIR/logs"
+SITES_DIR="/tmp/sites"
+TMP_DIR="/tmp/tmp"
+LOGS_DIR="/tmp/logs"
 WEBSERVER_TYPE="nginx"
 PHP_VERSIONS=("8.1" "8.2" "8.3")
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
 EOF
     
-    # Create mock functions
+    # Source the config file
     source "$TEST_DIR/shared/config/config.sh"
+    
+    # Override paths to use TEST_DIR
+    export SITES_DIR="$TEST_DIR/sites"
+    export TMP_DIR="$TEST_DIR/tmp"
+    export LOGS_DIR="$TEST_DIR/logs"
 }
 
 teardown() {
@@ -46,8 +51,8 @@ create_test_site() {
     local site_name="$1"
     local domain="$2"
     
-    mkdir -p "$SITES_DIR/$site_name"
-    cat > "$SITES_DIR/$site_name/.env" << EOF
+    mkdir -p "$TEST_DIR/sites/$site_name"
+    cat > "$TEST_DIR/sites/$site_name/.env" << EOF
 DOMAIN=$domain
 MYSQL_DATABASE=test_db
 MYSQL_USER=test_user

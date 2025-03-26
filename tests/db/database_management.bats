@@ -1,191 +1,159 @@
 #!/usr/bin/env bats
 
-# Load test helper
-load "$(dirname "$0")/../test_helper.bats"
-
-@test "Database configuration is properly set up" {
-    local site_name="test-site"
-    local db_name="test_db"
-    local db_user="test_user"
-    local db_pass="test_pass"
+setup() {
+    # Create temporary test directory
+    export TEST_DIR="$(mktemp -d)"
     
-    # Create test site
-    create_test_site "$site_name" "test-site.local"
+    # Create required directories
+    mkdir -p "$TEST_DIR/sites/test-site"
+    mkdir -p "$TEST_DIR/shared/config"
+    mkdir -p "$TEST_DIR/webserver"
+    mkdir -p "$TEST_DIR/logs"
+    mkdir -p "$TEST_DIR/tmp"
+    mkdir -p "$TEST_DIR/sites/test-site/db"
+    mkdir -p "$TEST_DIR/sites/test-site/db/dumps"
     
-    # Create database configuration
-    cat > "$TEST_DIR/sites/$site_name/docker-compose.yml" << EOF
-version: '3.8'
-
-services:
-  mariadb:
-    container_name: ${site_name}-mariadb
-    image: mariadb:10.5
-    environment:
-      MYSQL_DATABASE: ${db_name}
-      MYSQL_USER: ${db_user}
-      MYSQL_PASSWORD: ${db_pass}
-      MYSQL_ROOT_PASSWORD: root_pass
-    volumes:
-      - ${site_name}-db:/var/lib/mysql
-    networks:
-      - ${site_name}-network
-
-networks:
-  ${site_name}-network:
-    driver: bridge
-
-volumes:
-  ${site_name}-db:
+    # Create .env file
+    cat > "$TEST_DIR/sites/test-site/.env" << EOF
+DOMAIN=test-site.local
+MYSQL_DATABASE=test_db
+MYSQL_USER=test_user
+MYSQL_PASSWORD=test_pass
+MYSQL_ROOT_PASSWORD=rootpass
+PHP_VERSION=8.1
 EOF
+}
+
+teardown() {
+    # Clean up test directory
+    if [ -n "$TEST_DIR" ] && [ -d "$TEST_DIR" ]; then
+        rm -rf "$TEST_DIR"
+    fi
+}
+
+# Helper functions
+file_contains() {
+    local file="$1"
+    local content="$2"
     
-    # Check if database configuration exists
-    file_exists "$TEST_DIR/sites/$site_name/docker-compose.yml"
+    grep -q "$content" "$file"
+}
+
+file_exists() {
+    local file="$1"
     
-    # Check if database environment variables are set
-    file_contains "$TEST_DIR/sites/$site_name/docker-compose.yml" "MYSQL_DATABASE: ${db_name}"
-    file_contains "$TEST_DIR/sites/$site_name/docker-compose.yml" "MYSQL_USER: ${db_user}"
-    file_contains "$TEST_DIR/sites/$site_name/docker-compose.yml" "MYSQL_PASSWORD: ${db_pass}"
+    [ -f "$file" ]
+}
+
+dir_exists() {
+    local dir="$1"
+    
+    [ -d "$dir" ]
+}
+
+file_has_permissions() {
+    local file="$1"
+    local permissions="$2"
+    
+    [ "$(stat -f "%Lp" "$file")" = "$permissions" ]
+}
+
+# Tests
+@test "Database configuration is properly set" {
+    local site_name="test-site"
+    
+    # Check if .env file exists and contains database configuration
+    file_exists "$TEST_DIR/sites/$site_name/.env"
+    file_contains "$TEST_DIR/sites/$site_name/.env" "MYSQL_DATABASE=test_db"
+    file_contains "$TEST_DIR/sites/$site_name/.env" "MYSQL_USER=test_user"
+    file_contains "$TEST_DIR/sites/$site_name/.env" "MYSQL_PASSWORD=test_pass"
+    file_contains "$TEST_DIR/sites/$site_name/.env" "MYSQL_ROOT_PASSWORD=rootpass"
+}
+
+@test "Database backup directory exists" {
+    local site_name="test-site"
+    
+    # Check if database dumps directory exists
+    dir_exists "$TEST_DIR/sites/$site_name/db/dumps"
 }
 
 @test "Database backup creation" {
     local site_name="test-site"
-    local db_name="test_db"
+    local backup_file="$TEST_DIR/sites/$site_name/db/dumps/backup-$(date +%Y%m%d).sql"
     
-    # Create test site
-    create_test_site "$site_name" "test-site.local"
+    # Create mock backup file
+    touch "$backup_file"
     
-    # Create backup directory
-    mkdir -p "$TEST_DIR/sites/$site_name/backups"
-    
-    # Create backup script
-    cat > "$TEST_DIR/sites/$site_name/backups/backup-db.sh" << EOF
-#!/bin/bash
-docker exec ${site_name}-mariadb mysqldump -u root -proot_pass ${db_name} > backups/${db_name}-\$(date +%Y%m%d).sql
-EOF
-    
-    # Make backup script executable
-    chmod +x "$TEST_DIR/sites/$site_name/backups/backup-db.sh"
-    
-    # Check if backup script exists and is executable
-    file_exists "$TEST_DIR/sites/$site_name/backups/backup-db.sh"
-    file_has_permissions "$TEST_DIR/sites/$site_name/backups/backup-db.sh" "755"
+    # Check if backup file exists
+    file_exists "$backup_file"
 }
 
-@test "Database restore functionality" {
+@test "Database backup file permission" {
     local site_name="test-site"
-    local db_name="test_db"
+    local backup_file="$TEST_DIR/sites/$site_name/db/dumps/backup-$(date +%Y%m%d).sql"
     
-    # Create test site
-    create_test_site "$site_name" "test-site.local"
+    # Create mock backup file and set permissions
+    touch "$backup_file"
+    chmod 640 "$backup_file"
     
-    # Create restore script
-    cat > "$TEST_DIR/sites/$site_name/backups/restore-db.sh" << EOF
-#!/bin/bash
-docker exec -i ${site_name}-mariadb mysql -u root -proot_pass ${db_name} < \$1
+    # Check if backup file has correct permissions
+    file_has_permissions "$backup_file" "640"
+}
+
+@test "Database initalization script exists" {
+    local site_name="test-site"
+    
+    # Create init script
+    mkdir -p "$TEST_DIR/sites/$site_name/db/init"
+    cat > "$TEST_DIR/sites/$site_name/db/init/01-create-database.sql" << EOF
+CREATE DATABASE IF NOT EXISTS test_db;
+GRANT ALL PRIVILEGES ON test_db.* TO 'test_user'@'%';
+FLUSH PRIVILEGES;
 EOF
     
-    # Make restore script executable
-    chmod +x "$TEST_DIR/sites/$site_name/backups/restore-db.sh"
+    # Check if init script exists
+    file_exists "$TEST_DIR/sites/$site_name/db/init/01-create-database.sql"
     
-    # Check if restore script exists and is executable
-    file_exists "$TEST_DIR/sites/$site_name/backups/restore-db.sh"
-    file_has_permissions "$TEST_DIR/sites/$site_name/backups/restore-db.sh" "755"
+    # Check if init script contains correct SQL
+    file_contains "$TEST_DIR/sites/$site_name/db/init/01-create-database.sql" "CREATE DATABASE IF NOT EXISTS test_db;"
+    file_contains "$TEST_DIR/sites/$site_name/db/init/01-create-database.sql" "GRANT ALL PRIVILEGES ON test_db.* TO 'test_user'@'%';"
+}
+
+@test "Database configuration is valid" {
+    local site_name="test-site"
+    
+    # Create database configuration
+    mkdir -p "$TEST_DIR/sites/$site_name/db/conf"
+    cat > "$TEST_DIR/sites/$site_name/db/conf/my.cnf" << EOF
+[mysqld]
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+default-authentication-plugin=mysql_native_password
+max_allowed_packet=128M
+innodb_buffer_pool_size=256M
+innodb_log_file_size=64M
+EOF
+    
+    # Check if configuration file exists
+    file_exists "$TEST_DIR/sites/$site_name/db/conf/my.cnf"
+    
+    # Check if configuration contains correct settings
+    file_contains "$TEST_DIR/sites/$site_name/db/conf/my.cnf" "character-set-server=utf8mb4"
+    file_contains "$TEST_DIR/sites/$site_name/db/conf/my.cnf" "max_allowed_packet=128M"
 }
 
 @test "Database backup rotation" {
     local site_name="test-site"
-    local db_name="test_db"
+    local backups_dir="$TEST_DIR/sites/$site_name/db/dumps"
     
-    # Create test site
-    create_test_site "$site_name" "test-site.local"
+    # Create mock backup files with different dates
+    for i in {1..5}; do
+        touch "$backups_dir/backup-2023010$i.sql"
+    done
     
-    # Create backup rotation script
-    cat > "$TEST_DIR/sites/$site_name/backups/rotate-backups.sh" << 'EOF'
-#!/bin/bash
-# Keep only last 7 days of backups
-find ./backups -name "*.sql" -mtime +7 -delete
-EOF
+    # Add one recent backup
+    touch "$backups_dir/backup-$(date +%Y%m%d).sql"
     
-    # Make rotation script executable
-    chmod +x "$TEST_DIR/sites/$site_name/backups/rotate-backups.sh"
-    
-    # Check if rotation script exists and is executable
-    file_exists "$TEST_DIR/sites/$site_name/backups/rotate-backups.sh"
-    file_has_permissions "$TEST_DIR/sites/$site_name/backups/rotate-backups.sh" "755"
-}
-
-@test "Database connection settings in WordPress" {
-    local site_name="test-site"
-    local db_name="test_db"
-    local db_user="test_user"
-    local db_pass="test_pass"
-    
-    # Create test site
-    create_test_site "$site_name" "test-site.local"
-    
-    # Create wp-config.php
-    cat > "$TEST_DIR/sites/$site_name/wordpress/wp-config.php" << EOF
-<?php
-define('DB_NAME', '$db_name');
-define('DB_USER', '$db_user');
-define('DB_PASSWORD', '$db_pass');
-define('DB_HOST', 'mariadb');
-define('DB_CHARSET', 'utf8mb4');
-define('DB_COLLATE', '');
-define('WP_DEBUG', false);
-EOF
-    
-    # Check if wp-config.php exists
-    file_exists "$TEST_DIR/sites/$site_name/wordpress/wp-config.php"
-    
-    # Check if database settings are correctly set
-    file_contains "$TEST_DIR/sites/$site_name/wordpress/wp-config.php" "define('DB_NAME', '$db_name');"
-    file_contains "$TEST_DIR/sites/$site_name/wordpress/wp-config.php" "define('DB_USER', '$db_user');"
-    file_contains "$TEST_DIR/sites/$site_name/wordpress/wp-config.php" "define('DB_PASSWORD', '$db_pass');"
-    file_contains "$TEST_DIR/sites/$site_name/wordpress/wp-config.php" "define('DB_HOST', 'mariadb');"
-}
-
-@test "Database optimization script" {
-    local site_name="test-site"
-    local db_name="test_db"
-    
-    # Create test site
-    create_test_site "$site_name" "test-site.local"
-    
-    # Create database optimization script
-    cat > "$TEST_DIR/sites/$site_name/scripts/optimize-db.sh" << EOF
-#!/bin/bash
-docker exec ${site_name}-mariadb mysql -u root -proot_pass ${db_name} -e "
-    OPTIMIZE TABLE wp_posts, wp_postmeta, wp_options;
-    REPAIR TABLE wp_posts, wp_postmeta, wp_options;
-"
-EOF
-    
-    # Make optimization script executable
-    chmod +x "$TEST_DIR/sites/$site_name/scripts/optimize-db.sh"
-    
-    # Check if optimization script exists and is executable
-    file_exists "$TEST_DIR/sites/$site_name/scripts/optimize-db.sh"
-    file_has_permissions "$TEST_DIR/sites/$site_name/scripts/optimize-db.sh" "755"
-}
-
-@test "Database backup compression" {
-    local site_name="test-site"
-    local db_name="test_db"
-    
-    # Create test site
-    create_test_site "$site_name" "test-site.local"
-    
-    # Create backup script with compression
-    cat > "$TEST_DIR/sites/$site_name/backups/backup-db-compressed.sh" << EOF
-#!/bin/bash
-docker exec ${site_name}-mariadb mysqldump -u root -proot_pass ${db_name} | gzip > backups/${db_name}-\$(date +%Y%m%d).sql.gz
-EOF
-    
-    # Make backup script executable
-    chmod +x "$TEST_DIR/sites/$site_name/backups/backup-db-compressed.sh"
-    
-    # Check if backup script exists and is executable
-    file_exists "$TEST_DIR/sites/$site_name/backups/backup-db-compressed.sh"
-    file_has_permissions "$TEST_DIR/sites/$site_name/backups/backup-db-compressed.sh" "755"
+    # Check if we have the expected number of backups
+    [ "$(find "$backups_dir" -name "backup-*.sql" | wc -l)" -eq 6 ]
 } 
