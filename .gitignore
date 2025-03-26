@@ -72,5 +72,5 @@ src/shared/bin/wp
 src/shared/bin/wp-cli.phar
 
 # 🚀 BUILD DIRECTORY
-dist/
+dist/*
 wp-docker-lemp/

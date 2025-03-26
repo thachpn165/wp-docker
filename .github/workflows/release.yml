@@ -3,7 +3,7 @@ name: 🚀 Build & Release
 on:
   push:
     tags:
-      - 'v*'  # Tự động chạy khi tag bắt đầu bằng v, ví dụ: v1.0.4-beta
+      - 'v*'  # Tự động chạy khi tag bắt đầu bằng v, ví dụ: v1.0.5-beta
 
 permissions:
   contents: write
@@ -21,6 +21,7 @@ jobs:
         run: |
           echo "${{ github.ref_name }}" > src/version.txt
 
+          mkdir -p dist
           mkdir wp-docker-lemp
           cp -r src/* wp-docker-lemp/
 

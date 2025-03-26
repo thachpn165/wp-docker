@@ -4,7 +4,7 @@
 
 # 🚀 WP Docker
 
-[![Phiên bản](https://img.shields.io/badge/version-v1.0.4--beta-blue)](https://github.com/thachpn165/wp-lemp-docker/releases)
+[![Phiên bản](https://img.shields.io/badge/version-v1.0.5--beta-blue)](https://github.com/thachpn165/wp-lemp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker-lemp)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker-lemp)
@@ -36,45 +36,48 @@ Dự án hướng tới: **đơn giản – dễ dùng – dễ mở rộng**, c
 
 ---
 
-## 🆕 Có gì mới trong `v1.0.4-beta`?
+## 🆕 Có gì mới trong `v1.0.5-beta`?
 
-### 🧱 Refactor cấu trúc hệ thống:
+### ⚙️ Tối ưu quá trình tạo và xoá website
 
-- Di chuyển `nginx-proxy/` → `webserver/nginx/` để chuẩn bị hỗ trợ Caddy.
-- Biến `NGINX_PROXY_DIR`, `SSL_DIR`, `PROXY_CONF_DIR`... đã được cập nhật.
-- Tự động cập nhật lại mount trong `docker-compose.override.yml`.
+- **Tạo website trực tiếp trong `sites/`**, không dùng thư mục tạm `/tmp` nữa
+- Tự động tạo `.env`, `docker-compose.yml`, cấu hình NGINX và khởi động container an toàn
+- Kiểm tra container PHP & MariaDB đã sẵn sàng trước khi cài WordPress
+- Tích hợp `website_create_env.sh` để sinh `.env` ổn định hơn
+- Cập nhật `nginx_restart()` đảm bảo reload NGINX hiệu quả
+- Fix lỗi không mount được `logs/` hoặc `wordpress/` khi tạo site
 
-### 🌐 Sửa lỗi & chuẩn hóa Docker network:
+### 🧹 Cải tiến tính năng xoá website
 
-- Fix lỗi tên network bị sinh ngẫu nhiên do `docker compose up` trong thư mục `/tmp/`.
-- Thêm `` vào mọi lệnh `up`/`down`.
-- Tên network giờ sẽ chuẩn dạng: `tenwebsite_site_network`.
+- Xóa trọn vẹn:
+    - Cấu hình NGINX (`.conf`)
+    - Chứng chỉ SSL (`.crt`/`.key`)
+    - Volume database MariaDB
+    - Cronjob backup nếu có
+    - Thư mục `sites/$site_name`
+- Gỡ entry trong `docker-compose.override.yml` và restart NGINX Proxy
 
-### 🧼 Cải thiện tính năng xoá website:
+### 🛠 Cập nhật cấu trúc hệ thống
 
-- Gộp câu hỏi thành một bước: **"Bạn có muốn sao lưu website trước khi xoá?"**
-- Nếu chọn Yes:
-  - Tự động backup `.sql` và `.tar.gz`
-  - Lưu vào `archives/old_website/site-YYYYMMDD-HHMMSS`
-- Sau đó xoá: thư mục site, container, volume, SSL, cronjob...
-
-### ♻️ Thêm tính năng: Khôi phục website từ backup:
-
-- Menu `Khôi phục website từ backup`
-- Cho phép chọn website đã xoá từ thư mục lưu trữ
-- Tự động giải nén mã nguồn và database
-- Hướng dẫn khởi chạy lại site sau khi phục hồi
+- Chuẩn hoá các biến: `SITE_DIR`, `LOGS_DIR`, `TMP_DIR`, `ARCHIVES_DIR`
+- Hỗ trợ phân biệt môi trường dev và bản release qua biến `DEV_MODE`
+- Cải thiện tính nhất quán và tránh xung đột khi xử lý tên container, volume
 
 ---
 
-## 📋 Changelog (v1.0.4-beta)
+## 📋 Changelog (v1.0.5-beta)
 
 ```
-- Refactor nginx-proxy → webserver/nginx
-- Fix bug tên network khi tạo site mới
-- Chuẩn hóa docker compose project-name
-- Cải tiến xoá site: đơn giản, dễ hiểu, tự backup
-- Tính năng mới: Khôi phục website từ thư mục backup
+- Tạo site trực tiếp trong thư mục sites/, bỏ thư mục tạm /tmp
+- Cải tiến quá trình tạo site: sinh file .env, khởi động container, kiểm tra dịch vụ
+- Tích hợp script website_create_env.sh để sinh cấu hình .env
+- Cập nhật nginx_restart() để reload bind mount hiệu quả hơn
+- Fix lỗi không mount logs/ hoặc wordpress/ khi tạo site
+- Tối ưu setup-wordpress.sh, tránh lỗi kết nối DB
+- Cải tiến xóa site: xoá SSL, cấu hình NGINX, volume, cronjob, restart NGINX Proxy
+- Chuẩn hoá biến hệ thống: BASE_DIR, SITE_DIR, LOGS_DIR, ...
+- Thêm chế độ DEV_MODE để phân biệt môi trường dev và bản phát hành
+
 ```
 
 ---
