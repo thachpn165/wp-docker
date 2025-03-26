@@ -42,7 +42,7 @@ echo "♻️ Đang cập nhật các file hệ thống..." | tee -a "$LOG_FILE"
 echo "🔴 Excluding directories: sites, logs, archives" | tee -a "$LOG_FILE"
 
 # Chạy rsync với các thư mục loại trừ chính xác và lưu log chi tiết
-rsync -a --delete \
+rsync -a --dry-run --verbose \
   --exclude='/sites/' \
   --exclude='/logs/' \
   --exclude='/archives/' \
