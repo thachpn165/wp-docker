@@ -2,31 +2,46 @@
 # 🐳 website_management_create – Tạo website WordPress mới
 # =====================================
 
+# Load config và các hàm phụ thuộc
+CONFIG_FILE="shared/config/config.sh"
+while [ ! -f "$CONFIG_FILE" ]; do
+    CONFIG_FILE="../$CONFIG_FILE"
+    if [ "$(pwd)" = "/" ]; then
+        echo "❌ Không tìm thấy config.sh!" >&2
+        exit 1
+    fi
+done
+source "$CONFIG_FILE"
+
+# ✅ Source hàm tạo file .env
+source "$FUNCTIONS_DIR/website/website_create_env.sh"
+
 website_management_create() {
   HOST_UID=$(id -u)
 
-  echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚi =====${NC}"
+  echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỘi =====${NC}"
 
-  read -p "Tên miền (ví dụ: example.com): " domain
+  read -p "Tên miên (ví dụ: example.com): " domain
   suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
   read -p "Tên site (mặc định: $suggested_site_name): " site_name
   site_name=${site_name:-$suggested_site_name}
 
-  php_choose_version || return 1
-  php_version="$REPLY"
+  # Kiểm tra xem site đã tồn tại chưa
   if is_directory_exist "$SITE_DIR" false; then
     echo "❌ Website '$site_name' đã tồn tại. Vui lòng chọn tên khác."
     return 1
   fi
 
-  
+  php_choose_version || return 1
+  php_version="$REPLY"
+
   mkdir -p "$LOGS_DIR"
   LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
 
   start_time=$(date '+%Y-%m-%d %H:%M:%S')
   echo -e "${YELLOW}📄 Đang ghi log quá trình vào: $LOG_FILE${NC}"
-  echo "===== [ $start_time ] Bắt ĐầU TẠO WEBSITE: $site_name ($domain) =====" >> "$LOG_FILE"
+  echo "===== [ $start_time ] Bắt Đầu TẠO WEBSITE: $site_name ($domain) =====" >> "$LOG_FILE"
 
   exec > >(tee -a "$LOG_FILE") 2>&1
 
@@ -34,7 +49,6 @@ website_management_create() {
   mkdir -p "$TMP_DIR"
   TMP_SITE_DIR="$TMP_DIR/${site_name}_$RANDOM"
   CONTAINER_PHP="${site_name}-php"
-
 
 
   cleanup_on_fail() {
@@ -52,7 +66,6 @@ website_management_create() {
   chmod 666 "$TMP_SITE_DIR/logs/"*.log
 
   update_nginx_override_mounts "$site_name"
-
   export site_name domain php_version
   SITE_DIR="$TMP_SITE_DIR"
   bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh"
@@ -64,17 +77,7 @@ website_management_create() {
   echo -e "${YELLOW}⚙️ Đang tạo cấu hình PHP-FPM tối ưu...${NC}"
   create_optimized_php_fpm_config "$TMP_SITE_DIR/php/php-fpm.conf"
 
-  MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
-  MYSQL_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
-  cat > "$TMP_SITE_DIR/.env" <<EOF
-SITE_NAME=$site_name
-DOMAIN=$domain
-PHP_VERSION=$php_version
-MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
-MYSQL_DATABASE=wordpress
-MYSQL_USER=wpuser
-MYSQL_PASSWORD=$MYSQL_PASSWORD
-EOF
+  website_create_env "$TMP_SITE_DIR" "$site_name" "$domain" "$php_version"
 
   TEMPLATE_FILE="$TEMPLATES_DIR/docker-compose.yml.template"
   TARGET_FILE="$TMP_SITE_DIR/docker-compose.yml"
@@ -98,7 +101,7 @@ EOF
   if [ -f "$WP_INFO_FILE" ]; then
     echo -e "${GREEN}\n==================================================="
     echo -e "🎉 WordPress đã được cài đặt thành công! 🎉"
-    echo -e "${RED} LƯU Ý: HÃY LƯU LẠI THÔNG TIN BÊN DƯới${NC}"
+    echo -e "${RED} LƯU Ý: HÃY LƯU LẠI THÔNG TIN BÊN DƯỚi${NC}"
     echo -e "===================================================${NC}"
     while read -r line; do
       echo -e "${YELLOW}$line${NC}"
@@ -113,9 +116,17 @@ EOF
   rm -rf "$TMP_SITE_DIR"
   echo -e "${GREEN}✅ Website đã được di chuyển từ tmp/ vào: $SITE_DIR${NC}"
 
+  cd "$SITE_DIR"
+  docker compose up -d
+  sleep 5
   nginx_restart
-  docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R nobody:nogroup "/var/www/$site_name"
-  docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup "/var/www/"
+
+  if is_container_running "$CONTAINER_PHP"; then
+    docker exec -u root "$NGINX_PROXY_CONTAINER" chown -R nobody:nogroup "/var/www/$site_name"
+    docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup "/var/www/"
+  else
+    echo -e "${RED}❌ Container PHP '$CONTAINER_PHP' chưa khởi động. Bỏ qua chown...${NC}"
+  fi
 
   echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] HOÀN THÀNH TẠO WEBSITE: $site_name =====" >> "$LOG_FILE"
 }
