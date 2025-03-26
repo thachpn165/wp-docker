@@ -47,7 +47,7 @@ Dự án hướng tới: **đơn giản – dễ dùng – dễ mở rộng**, c
 ### 🌐 Sửa lỗi & chuẩn hóa Docker network:
 
 - Fix lỗi tên network bị sinh ngẫu nhiên do `docker compose up` trong thư mục `/tmp/`.
-- Thêm `--project-name "$site_name"` vào mọi lệnh `up`/`down`.
+- Thêm `` vào mọi lệnh `up`/`down`.
 - Tên network giờ sẽ chuẩn dạng: `tenwebsite_site_network`.
 
 ### 🧼 Cải thiện tính năng xoá website:

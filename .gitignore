@@ -1,26 +1,25 @@
 # 🛑 ẨN CÁC FILE NHẠY CẢM 🛑
 .env
 .env.* 
-!*.env.example # Giữ lại file env mẫu
+!*.env.example
 secrets/
 keys/
 config/secrets.yml
 
 # 🚀 BỎ QUA DỮ LIỆU CỦA WORDPRESS 🚀
-sites/*
+src/sites/*
 
 # ⚡️ BỎ QUA FILE BACKUP ⚡️
-backups/
+src/sites/*/backups/
 *.sql
 *.sql.gz
 *.tar.gz
 *.zip
 
 # 🔐 CHỨNG CHỈ SSL 🔐
-webserver/nginx/ssl/*
-sites/*/nginx/ssl/*
-!webserver/nginx/ssl/.gitkeep
-!sites/**/nginx/ssl/.gitkeep
+src/webserver/nginx/ssl/*
+!src/webserver/nginx/ssl/.gitkeep
+!src/sites/**/nginx/ssl/.gitkeep
 
 # 🛠️ DOCKER & COMPOSE 🛠️
 **/docker-compose.override.yml
@@ -28,15 +27,14 @@ sites/*/nginx/ssl/*
 **/docker-compose.override.yml.bak
 
 # 🔍 LOG & CACHE 🔍
-logs/
-logs/*/*
+src/logs/
+src/sites/*/logs/
 *.log
 *.log.*
 debug.log
 php-errors.log
-webserver/nginx/access.log
-webserver/nginx/error.log
-sites/*/logs/*
+src/webserver/nginx/access.log
+src/webserver/nginx/error.log
 
 # ⚙️ MAC & LINUX SYSTEM FILES ⚙️
 .DS_Store
@@ -46,6 +44,7 @@ Thumbs.db
 *.swp
 *.swo
 __MACOSX
+
 # ⛔ NODE & DEPENDENCIES ⛔
 node_modules/
 npm-debug.log
@@ -54,19 +53,24 @@ yarn.lock
 # 💾 GIT TRACKING FILES 💾
 #.gitignore
 
-# Misc
+# 📦 MISC
 *.crt
 *.key
 *.pem
 .wp-login-auth-*
 tmp/
-# Cấu hình Rclone
-rclone.conf
 
-# Cấu hình của website trong webserver/nginx/globals
-webserver/nginx/globals/wp-login*
-webserver/nginx/conf.d/*.conf
+# ☁️ RCLONE CONFIG
+src/shared/config/rclone/rclone.conf
 
-# Bỏ qua file shared/bin/wp để luôn tải về phiên bản mới nhất
-shared/bin/wp
-shared/bin/wp-cli.phar
+# 🌐 NGINX GLOBAL CONFIG - không commit theo site
+src/webserver/nginx/globals/wp-login*
+src/webserver/nginx/conf.d/*.conf
+
+# 🧩 WP CLI binary (tự động tải lại)
+src/shared/bin/wp
+src/shared/bin/wp-cli.phar
+
+# 🚀 BUILD DIRECTORY
+dist/
+wp-docker-lemp/

@@ -3,9 +3,11 @@ name: 🚀 Build & Release
 on:
   push:
     tags:
-      - 'v*'  # Chạy khi tag bắt đầu bằng 'v', ví dụ: v1.0.0, v2.1.3
+      - 'v*'  # Tự động chạy khi tag bắt đầu bằng v, ví dụ: v1.0.4-beta
+
 permissions:
   contents: write
+
 jobs:
   build-and-release:
     name: 📦 Đóng gói & Tạo bản phát hành
@@ -14,13 +16,16 @@ jobs:
     steps:
       - name: 📥 Checkout source code
         uses: actions/checkout@v3
-      - name: 🧼 Dọn dẹp các thư mục không cần thiết
+
+      - name: 🧼 Dọn dẹp & đóng gói
         run: |
-          echo "Loại trừ: .git/, .github/, .vscode/, logs/, tmp/"
-          mkdir dist
-          echo "${{ github.ref_name }}" > version.txt
-          zip -r dist/wp-docker-lemp.zip . \
-            -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" \
+          echo "${{ github.ref_name }}" > src/version.txt
+
+          mkdir wp-docker-lemp
+          cp -r src/* wp-docker-lemp/
+
+          zip -r dist/wp-docker-lemp.zip wp-docker-lemp \
+            -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" "tests/*" \
             -x "*.DS_Store" "__MACOSX"
 
       - name: 🚀 Tạo GitHub Release
