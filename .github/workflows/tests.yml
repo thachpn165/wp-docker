@@ -1,4 +1,4 @@
-name: Run Tests
+name: Test
 
 on:
   push:
@@ -9,44 +9,41 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Install Bats
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y bats
-    
-    - name: Install Docker
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker.io
-        sudo systemctl start docker
-        sudo systemctl enable docker
-    
-    - name: Install Docker Compose
-      run: |
-        sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-    
-    - name: Run Website Management Tests
-      run: bats tests/website/website_management.bats
-    
-    - name: Run WordPress Setup Tests
-      run: bats tests/wordpress/wordpress_setup.bats
-    
-    - name: Run Docker Management Tests
-      run: bats tests/docker/docker_management.bats
-    
-    - name: Run File Management Tests
-      run: bats tests/file/file_management.bats
-    
-    - name: Run Network and SSL Tests
-      run: bats tests/network/network_ssl.bats
-    
-    - name: Run Database Management Tests
-      run: bats tests/db/database_management.bats
-    
-    - name: Run PHP Management Tests
-      run: bats tests/php/php_management.bats 
+      - uses: actions/checkout@v4
+
+      - name: Install Bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+
+      - name: Install Docker
+        run: |
+          # Remove any existing containerd packages to avoid conflicts
+          sudo apt-get remove -y containerd containerd.io || true
+          sudo apt-get autoremove -y
+          
+          # Install Docker dependencies
+          sudo apt-get update
+          sudo apt-get install -y \
+            apt-transport-https \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release
+
+          # Add Docker's official GPG key
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+          # Set up the Docker repository
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+          # Install Docker Engine
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+      - name: Run Tests
+        run: |
+          bats tests/**/*.bats 
