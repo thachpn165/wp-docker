@@ -1,5 +1,4 @@
 #!/bin/bash
-
 website_update_site_template() {
   source "$BASE_DIR/shared/config/config.sh"
   TEMPLATE_VERSION_NEW=$(cat "$BASE_DIR/shared/templates/.template_version" 2>/dev/null || echo "unknown")

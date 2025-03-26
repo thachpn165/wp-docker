@@ -2,29 +2,35 @@
 
 setup() {
     export TEST_DIR="$(mktemp -d)"
-    export PROJECT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../src" && pwd)"
+    export PROJECT_DIR="$TEST_DIR/src"
 
-    # Giả lập dữ liệu .template_version và changelog (dữ liệu thật trong hệ thống)
+    # Lấy đúng đường dẫn script thật
+    SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../src" && pwd)"
+
     mkdir -p "$PROJECT_DIR/shared/templates"
+    mkdir -p "$PROJECT_DIR/shared/scripts/tools"
+
+    cp "$SCRIPT_DIR/shared/scripts/tools/template_bump_version.sh" "$PROJECT_DIR/shared/scripts/tools/"
+    chmod +x "$PROJECT_DIR/shared/scripts/tools/template_bump_version.sh"
+
+    # Giả lập dữ liệu .template_version và changelog
     echo "1.0.6" > "$PROJECT_DIR/shared/templates/.template_version"
     echo "# TEMPLATE CHANGELOG" > "$PROJECT_DIR/shared/templates/TEMPLATE_CHANGELOG.md"
 }
 
 teardown() {
-    # Khôi phục lại version cũ sau test (tuỳ chọn nếu cần giữ môi trường)
-    echo "1.0.6" > "$PROJECT_DIR/shared/templates/.template_version"
-    echo "# TEMPLATE CHANGELOG" > "$PROJECT_DIR/shared/templates/TEMPLATE_CHANGELOG.md"
+    [[ -n "$TEST_DIR" && -d "$TEST_DIR" ]] && rm -rf "$TEST_DIR"
 }
 
-@test "Auto bump template version increases correctly (real script)" {
-    run bash "$PROJECT_DIR/shared/scripts/tools/template_bump_version.sh" --auto
+@test "Auto bump template version increases correctly (real script copy)" {
+    run env PROJECT_DIR="$PROJECT_DIR" bash "$PROJECT_DIR/shared/scripts/tools/template_bump_version.sh" --auto
     [ "$status" -eq 0 ]
 
     run cat "$PROJECT_DIR/shared/templates/.template_version"
     [ "$output" = "1.0.7" ]
 }
 
-@test "Changelog entry is added after bump (real script)" {
+@test "Changelog entry is added after bump (real script copy)" {
     bash "$PROJECT_DIR/shared/scripts/tools/template_bump_version.sh" --auto
 
     run grep "## 1.0.7" "$PROJECT_DIR/shared/templates/TEMPLATE_CHANGELOG.md"
