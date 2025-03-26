@@ -2,25 +2,20 @@
 # ⚙️ CẤU HÌNH TOÀN CỤC - config.sh
 # =====================================
 
-# ==== Tự động xác định PROJECT_ROOT dù là src/ hay bản release ====
-SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"   # Hoạt động tốt với cả source & bash
+# ==== Tự động xác định BASE_DIR (gốc của mã nguồn) ====
+SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 CONFIG_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 
-# Nếu nằm trong src/shared/config thì lùi lên 3 cấp
+# Nếu là môi trường DEV: có thư mục src/ → BASE_DIR sẽ là /.../wp-docker-lemp/src
 if [[ "$CONFIG_DIR" == */src/shared/config ]]; then
-  PROJECT_ROOT="$(cd "$CONFIG_DIR/../../.." && pwd)"
+  BASE_DIR="$(cd "$CONFIG_DIR/../../.." && pwd)/src"
+  DEV_MODE=true
 else
-  PROJECT_ROOT="$(cd "$CONFIG_DIR/../.." && pwd)"
+  BASE_DIR="$(cd "$CONFIG_DIR/../.." && pwd)"
+  DEV_MODE=false
 fi
 
-# ==== Nếu có thư mục src/ thì là môi trường DEV
-if [[ -d "$PROJECT_ROOT/src" ]]; then
-  BASE_DIR="$PROJECT_ROOT/src"
-else
-  BASE_DIR="$PROJECT_ROOT"
-fi
-
-# ==== Các thư mục chính ====
+# ==== Các thư mục mã nguồn chính ====
 SITES_DIR="$BASE_DIR/sites"
 TEMPLATES_DIR="$BASE_DIR/shared/templates"
 CONFIG_DIR="$BASE_DIR/shared/config"
@@ -32,10 +27,11 @@ WORDPRESS_TOOLS_DIR="$SCRIPTS_DIR/wordpress-tools"
 SYSTEM_TOOLS_FUNC_DIR="$FUNCTIONS_DIR/system-tools"
 SCRIPTS_FUNCTIONS_DIR="$FUNCTIONS_DIR"
 
-# ==== Các thư mục ghi dữ liệu tạm & log (luôn ở gốc project) ====
-TMP_DIR="$PROJECT_ROOT/tmp"
-LOGS_DIR="$PROJECT_ROOT/logs"
-ARCHIVES_DIR="$PROJECT_ROOT/archives"
+# ==== Các thư mục dữ liệu (dù DEV hay bản release đều nằm ngoài src) ====
+ROOT_DIR="$(cd "$BASE_DIR/.." && pwd)"
+TMP_DIR="$ROOT_DIR/tmp"
+LOGS_DIR="$ROOT_DIR/logs"
+ARCHIVES_DIR="$ROOT_DIR/archives"
 
 # ==== Webserver (NGINX) ====
 NGINX_PROXY_DIR="$BASE_DIR/webserver/nginx"

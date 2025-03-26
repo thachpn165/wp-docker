@@ -51,7 +51,8 @@ create_docker_network "$DOCKER_NETWORK"
 # Gọi hàm lấy danh sách phiên bản PHP từ image bitnami/php-fpm
 php_get_version
 
-echo -e "${YELLOW}📂 Đường dẫn PROJECT_ROOT: $BASE_DIR${NC}"
-echo -e "${YELLOW}📄 Kiểm tra file: $BASE_DIR/php_versions.txt${NC}"
+echo -e "${CYAN}📁 BASE_DIR: $BASE_DIR${NC}"
+echo -e "${CYAN}📝 DEV_MODE: $DEV_MODE${NC}"
+echo -e "${CYAN}📦 LOGS_DIR: $LOGS_DIR${NC}"
 
 echo -e "\n${GREEN}✅ Hệ thống đã sẵn sàng để sử dụng WP Docker LEMP.${NC}"

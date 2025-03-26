@@ -16,7 +16,7 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 
 source "$CONFIG_FILE"
-export PROJECT_ROOT
+export BASE_DIR
 source "$FUNCTIONS_DIR/php/php_choose_version.sh"
 source "$FUNCTIONS_DIR/php/php_change_version.sh"
 source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
