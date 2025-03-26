@@ -1,0 +1,59 @@
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    # 🚀 Chuyển hướng HTTP sang HTTPS
+    return 301 https://${DOMAIN}$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name ${DOMAIN};
+    root /var/www/${SITE_NAME};
+    index index.php index.html index.htm;
+
+    # 🔐 Chứng chỉ SSL
+    ssl_certificate /etc/nginx/ssl/${DOMAIN}.crt;
+    ssl_certificate_key /etc/nginx/ssl/${DOMAIN}.key;
+
+    # 🚀 Include một số tập tin tối ưu Nginx
+    include /etc/nginx/globals/security.conf;
+    include /etc/nginx/globals/gzip.conf;
+    include /etc/nginx/globals/cache-control.conf;
+
+    # Hỗ trợ CloudFlare
+    include /etc/nginx/globals/cloudflare.conf;
+
+    # Tích hợp WAF, nếu không dùng thì thêm dấu `#` vào đoạn include bên dưới
+    include /etc/nginx/globals/waf.conf;
+
+    # 📥 **Include cache configuration (mặc định là no-cache)**
+    include /etc/nginx/cache/no-cache.conf;
+
+    # 🔧 Thiết lập biến `$php_upstream` cho container PHP riêng của mỗi website
+    # Resolver 127.0.0.11 là DNS resolver của Docker, giúp giảm thời gian resolve domain và để resolve domain trong network Docker
+    # Không nên xoá nếu không muốn gặp lỗi "host not found in upstream" khi restart Nginx
+    resolver 127.0.0.11 valid=10s;
+    set $php_upstream "${SITE_NAME}-php:9000";
+
+    # 📌 Xử lý file tĩnh (các file hình ảnh, JS, CSS, fonts...)
+    location ~* \.(ico|css|js|gif|jpg|jpeg|png|woff2?|ttf|eot|svg|mp4|webm|ogv|webp|pdf|zip|tar|gz|bz2|rar|7z|xml|rss|atom|txt|json|map)$ {
+        expires max;
+        access_log off;
+    }
+
+    # 🛠️ **Xử lý PHP với PHP-FPM**
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass $php_upstream;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name;
+        fastcgi_buffers 16 16k;
+        fastcgi_buffer_size 32k;
+        fastcgi_read_timeout 300;
+        fastcgi_intercept_errors on;
+    }
+
+    error_log  /var/www/logs/${SITE_NAME}/error.log;
+    access_log /var/www/logs/${SITE_NAME}/access.log;
+}
