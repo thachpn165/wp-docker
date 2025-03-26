@@ -34,6 +34,8 @@ file_contains() {
     local file="$1"
     local content="$2"
     
+    # Escape special characters in the content
+    content=$(echo "$content" | sed 's/[]\/$*.^[]/\\&/g')
     grep -q "$content" "$file"
 }
 
@@ -171,7 +173,7 @@ server {
 EOF
     
     # Check if HTTP to HTTPS redirection is configured
-    file_contains "$TEST_DIR/sites/$site_name/nginx/default.conf" "return 301 https://\$host\$request_uri"
+    file_contains "$TEST_DIR/sites/$site_name/nginx/default.conf" "return 301 https://$host$request_uri"
 }
 
 @test "SSL certificates have correct permissions" {
