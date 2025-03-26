@@ -14,6 +14,10 @@ setup() {
     mkdir -p "$PROJECT_DIR/sites/test-site/db"  # Tạo thư mục db giả lập
     mkdir -p "$PROJECT_DIR/sites/test-site/db/dumps"  # Tạo thư mục dumps giả lập
 
+    # Tạo thư mục archives và logs
+    mkdir -p "$PROJECT_DIR/archives"  # Tạo thư mục archives giả lập
+    mkdir -p "$PROJECT_DIR/logs"      # Tạo thư mục logs giả lập
+
     # Giả lập file .template_version và changelog
     echo "1.0.6" > "$PROJECT_DIR/shared/templates/.template_version"
     echo "# TEMPLATE CHANGELOG" > "$PROJECT_DIR/shared/templates/TEMPLATE_CHANGELOG.md"
@@ -53,6 +57,10 @@ teardown() {
 @test "Update should exclude specific directories (like sites and logs)" {
     run bash "$PROJECT_DIR/update.sh"
 
+    # Debug: In ra các thư mục đã được loại trừ trong rsync
+    echo ">>> Debugging rsync output:"
+    cat /tmp/update_wp_docker.log
+
     # Kiểm tra nếu các thư mục `sites` và `logs` không bị ghi đè
     run [ -d "$PROJECT_DIR/sites" ]
     [ "$status" -eq 0 ]
@@ -60,8 +68,8 @@ teardown() {
     run [ -d "$PROJECT_DIR/logs" ]
     [ "$status" -eq 0 ]
 
-    # Kiểm tra nếu các thư mục này **không bị xóa**
-    run [ ! -d "$PROJECT_DIR/sites/test-site" ]  # Kiểm tra site cũ không bị xoá
+    # Kiểm tra nếu các thư mục này **không bị xóa** và **vẫn tồn tại** sau khi update
+    run [ -d "$PROJECT_DIR/sites/test-site" ]  # Kiểm tra site cũ không bị xoá
     [ "$status" -eq 0 ]
 }
 

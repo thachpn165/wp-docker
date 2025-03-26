@@ -38,15 +38,14 @@ echo "📌 Phiên bản hiện tại: $CURRENT_VERSION" | tee -a "$LOG_FILE"
 # ✅ Ghi đè các tệp hệ thống (không chạm vào data)
 echo "♻️ Đang cập nhật các file hệ thống..." | tee -a "$LOG_FILE"
 
-# Debug: In ra các thư mục sẽ được exclude
+# Debug: Kiểm tra các thư mục được exclude
 echo "🔴 Excluding directories: sites, logs, archives" | tee -a "$LOG_FILE"
 
-# Chạy rsync với các thư mục loại trừ chính xác và lưu log chi tiết
-rsync -a --dry-run --verbose \
+# Thực thi rsync với các thư mục loại trừ chính xác và lưu log chi tiết
+rsync -a --delete \
   --exclude='/sites/' \
   --exclude='/logs/' \
   --exclude='/archives/' \
-  --exclude='shared/config/config.sh' \
   "$TMP_DIR/" "$INSTALL_DIR/" | tee -a "$LOG_FILE"
 
 # ✅ Ghi lại version mới
@@ -95,4 +94,23 @@ else
   done
   echo ""
   echo "👉 Vào menu chính (main.sh) → chọn 'Cập nhật cấu hình website đã cài'" | tee -a "$LOG_FILE"
+fi
+
+# ================================
+# ✅ Kiểm tra và chạy các tập tin trong thư mục upgrade/{version}
+# ================================
+
+UPGRADE_DIR="$INSTALL_DIR/upgrade/$NEW_VERSION"
+if [[ -d "$UPGRADE_DIR" ]]; then
+  echo "🚀 Tìm thấy thư mục upgrade cho phiên bản $NEW_VERSION. Đang chạy các script trong đó..." | tee -a "$LOG_FILE"
+
+  # Chạy tất cả các script trong thư mục upgrade/{version}
+  for script in "$UPGRADE_DIR"/*.sh; do
+    if [[ -f "$script" ]]; then
+      echo "🎯 Đang chạy script nâng cấp: $script" | tee -a "$LOG_FILE"
+      bash "$script" | tee -a "$LOG_FILE"
+    fi
+  done
+else
+  echo "✅ Không có script nâng cấp nào cho phiên bản $NEW_VERSION." | tee -a "$LOG_FILE"
 fi
