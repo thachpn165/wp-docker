@@ -27,11 +27,11 @@ WORDPRESS_TOOLS_DIR="$SCRIPTS_DIR/wordpress-tools"
 SYSTEM_TOOLS_FUNC_DIR="$FUNCTIONS_DIR/system-tools"
 SCRIPTS_FUNCTIONS_DIR="$FUNCTIONS_DIR"
 
-# ==== Các thư mục dữ liệu (dù DEV hay bản release đều nằm ngoài src) ====
-ROOT_DIR="$(cd "$BASE_DIR/.." && pwd)"
-TMP_DIR="$ROOT_DIR/tmp"
-LOGS_DIR="$ROOT_DIR/logs"
-ARCHIVES_DIR="$ROOT_DIR/archives"
+# ==== Các thư mục dữ liệu (nằm trong src/) ====
+TMP_DIR="$BASE_DIR/tmp"
+LOGS_DIR="$BASE_DIR/logs"
+ARCHIVES_DIR="$BASE_DIR/archives"
+
 
 # ==== Webserver (NGINX) ====
 NGINX_PROXY_DIR="$BASE_DIR/webserver/nginx"

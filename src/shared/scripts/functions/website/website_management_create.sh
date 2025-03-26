@@ -14,7 +14,12 @@ website_management_create() {
 
   php_choose_version || return 1
   php_version="$REPLY"
+  if is_directory_exist "$SITE_DIR" false; then
+    echo "❌ Website '$site_name' đã tồn tại. Vui lòng chọn tên khác."
+    return 1
+  fi
 
+  
   mkdir -p "$LOGS_DIR"
   LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
@@ -30,10 +35,7 @@ website_management_create() {
   TMP_SITE_DIR="$TMP_DIR/${site_name}_$RANDOM"
   CONTAINER_PHP="${site_name}-php"
 
-  if is_directory_exist "$SITE_DIR" false; then
-    echo "❌ Website '$site_name' đã tồn tại. Vui lòng chọn tên khác."
-    return 1
-  fi
+
 
   cleanup_on_fail() {
     echo -e "${RED}❌ Có lỗi xảy ra. Đang xoá thư mục tạm $TMP_SITE_DIR và container liên quan...${NC}"
