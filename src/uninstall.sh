@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =====================================
-# ❌ uninstall.sh – Gỡ cài đặt WP Docker LEMP hoàn toàn khỏi hệ thống
+# ❌ uninstall.sh – Gỡ cài đặt WP Docker hoàn toàn khỏi hệ thống
 # =====================================
 
 set -euo pipefail
@@ -100,8 +100,23 @@ remove_all_except_backup() {
   echo -e "${MAGENTA}🗑️  Đang xoá toàn bộ hệ thống trừ thư mục backup_before_remove...${NC}"
   for item in "$BASE_DIR"/*; do
     [[ "$item" == "$BACKUP_DIR" ]] && continue
+    [[ "$item" == "$BASE_DIR/.git" || "$item" == "$BASE_DIR/.github" ]] && continue
     rm -rf "$item"
   done
+}
+
+# 🗑️ Gỡ symbolic link lệnh wpdocker nếu có
+remove_symlink() {
+  if [ -L "/usr/local/bin/wpdocker" ]; then
+    echo -e "${YELLOW}🗑️ Đang xoá symlink /usr/local/bin/wpdocker...${NC}"
+    sudo rm -f /usr/local/bin/wpdocker
+  fi
+}
+
+# 🧽 Gỡ cronjob chứa backup
+remove_cronjobs() {
+  echo -e "${YELLOW}🧽 Đang xoá các cronjob backup (nếu có)...${NC}"
+  crontab -l 2>/dev/null | grep -v "backup_runner.sh" | crontab - || true
 }
 
 # 🧾 Hiển thị container còn lại sau khi xoá
@@ -123,7 +138,7 @@ show_remaining_containers() {
 # 🚀 Tiến trình chính
 # ================================
 
-echo -e "${RED}⚠️ CẢNH BÁO: Script này sẽ xoá toàn bộ hệ thống WP Docker LEMP!${NC}"
+echo -e "${RED}⚠️ CẢNH BÁO: Script này sẽ xoá toàn bộ hệ thống WP Docker!${NC}"
 echo "Bao gồm toàn bộ site, container, volume, mã nguồn, SSL, cấu hình."
 
 if confirm_action; then
@@ -134,8 +149,12 @@ fi
 
 remove_core_containers
 remove_site_containers
+remove_cronjobs
+remove_symlink
 remove_all_except_backup
 
 echo -e "\n${GREEN}✅ Đã gỡ cài đặt toàn bộ hệ thống. Backup (nếu có) nằm trong: $BACKUP_DIR${NC}"
+echo -e "${CYAN}📦 Bạn có thể khôi phục lại site từ thư mục backup: $BACKUP_DIR${NC}"
+echo -e "${CYAN}👉 Dùng menu 'Khôi phục website từ backup' sau khi cài lại để khôi phục.${NC}"
 
 show_remaining_containers

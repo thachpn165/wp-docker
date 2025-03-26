@@ -3,7 +3,7 @@ name: 🚀 Build & Release
 on:
   push:
     tags:
-      - 'v*'  # Tự động chạy khi tag bắt đầu bằng v, ví dụ: v1.0.5-beta
+      - 'v*'  # Tự động chạy khi tag bắt đầu bằng v, ví dụ: v1.0.6-beta
 
 permissions:
   contents: write
@@ -19,13 +19,17 @@ jobs:
 
       - name: 🧼 Dọn dẹp & đóng gói
         run: |
-          echo "${{ github.ref_name }}" > src/version.txt
-
           mkdir -p dist
-          mkdir wp-docker-lemp
-          cp -r src/* wp-docker-lemp/
+          
+          # Tạo thư mục tạm để chứa source (không có thư mục src/)
+          mkdir wp-docker
+          cp -r src/* wp-docker/
 
-          zip -r dist/wp-docker-lemp.zip wp-docker-lemp \
+          # Ghi phiên bản vào file version.txt trong bản build
+          echo "${{ github.ref_name }}" > wp-docker/version.txt
+
+          # Tạo file zip đúng định dạng
+          zip -r dist/wp-docker.zip wp-docker \
             -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" "tests/*" \
             -x "*.DS_Store" "__MACOSX"
 
@@ -34,7 +38,7 @@ jobs:
         with:
           name: "${{ github.ref_name }}"
           tag_name: ${{ github.ref_name }}
-          files: dist/wp-docker-lemp.zip
+          files: dist/wp-docker.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
