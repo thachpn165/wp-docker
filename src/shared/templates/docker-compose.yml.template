@@ -7,7 +7,7 @@ services:
       - ./php/php-fpm.conf:/opt/bitnami/php/etc/php-fpm.conf:ro
       - ./wordpress:/var/www/html
       - ./backups:/backups
-      - ../../src/shared/bin/wp:/usr/local/bin/wp:ro
+      - ../../shared/bin/wp:/usr/local/bin/wp:ro
     networks:
       - proxy_network
       - ${SITE_NAME}_site_network

@@ -7,7 +7,8 @@ keys/
 config/secrets.yml
 
 # 🚀 BỎ QUA DỮ LIỆU CỦA WORDPRESS 🚀
-src/sites/*
+src/sites/
+/sites
 
 # ⚡️ BỎ QUA FILE BACKUP ⚡️
 src/sites/*/backups/
