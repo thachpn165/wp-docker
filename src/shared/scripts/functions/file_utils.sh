@@ -78,3 +78,20 @@ log_with_time() {
     # In ra terminal và ghi log, nhưng chỉ ghi log một lần
     echo -e "$formatted_time" | tee -a "$log_file" > /dev/null
 }
+
+# Hàm chạy lệnh trong thư mục sử dụng pushd/popd để đảm bảo lệnh chạy chính xác và trở về thư mục gốc
+run_in_dir() {
+  local target_dir="$1"
+  shift
+
+  if [[ ! -d "$target_dir" ]]; then
+    echo -e "${RED}❌ Thư mục '$target_dir' không tồn tại!${NC}"
+    return 1
+  fi
+
+  pushd "$target_dir" > /dev/null
+  "$@"
+  local status=$?
+  popd > /dev/null
+  return $status
+}
