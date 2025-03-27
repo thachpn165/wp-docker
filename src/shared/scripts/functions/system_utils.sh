@@ -100,3 +100,51 @@ choose_editor() {
 
   return 0
 }
+
+# Hàm kiểm tra và cài đặt các lệnh cần thiết
+check_required_commands() {
+    echo -e "${YELLOW}🔍 Đang kiểm tra các lệnh cần thiết...${NC}"
+
+    # Danh sách các lệnh cần thiết
+    required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab dialog)
+
+    for cmd in "${required_cmds[@]}"; do
+        # Trường hợp đặc biệt: kiểm tra docker compose là plugin
+        if [[ "$cmd" == "docker compose" ]]; then
+            if docker compose version &> /dev/null; then
+                echo -e "${GREEN}✅ 'docker compose' đã có sẵn.${NC}"
+                continue
+            else
+                echo -e "${YELLOW}⚠️ 'docker compose' chưa được cài đặt. Đang tiến hành cài đặt...${NC}"
+                install_docker_compose
+                continue
+            fi
+        fi
+
+        if ! command -v $(echo "$cmd" | awk '{print $1}') &> /dev/null; then
+            echo -e "${YELLOW}⚠️ Lệnh '$cmd' chưa được cài đặt. Đang tiến hành cài đặt...${NC}"
+
+            if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+                if command -v apt &> /dev/null; then
+                    sudo apt update -y && sudo apt install -y $(echo "$cmd" | awk '{print $1}')
+                elif command -v yum &> /dev/null; then
+                    sudo yum install -y $(echo "$cmd" | awk '{print $1}')
+                elif command -v dnf &> /dev/null; then
+                    sudo dnf install -y $(echo "$cmd" | awk '{print $1}')
+                else
+                    echo -e "${RED}❌ Không tìm thấy trình quản lý gói phù hợp để cài đặt '$cmd'.${NC}"
+                fi
+            elif [[ "$OSTYPE" == "darwin"* ]]; then
+                if ! command -v brew &> /dev/null; then
+                    echo -e "${YELLOW}🍺 Homebrew chưa được cài. Đang cài đặt Homebrew...${NC}"
+                    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                fi
+                brew install $(echo "$cmd" | awk '{print $1}')
+            else
+                echo -e "${RED}❌ Hệ điều hành không được hỗ trợ để cài '$cmd'.${NC}"
+            fi
+        else
+            echo -e "${GREEN}✅ Lệnh '$cmd' đã có sẵn.${NC}"
+        fi
+    done
+}
