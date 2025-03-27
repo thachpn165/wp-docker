@@ -34,7 +34,6 @@ source "$(dirname "$0")/shared/scripts/functions/menu/backup_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/rclone_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/ssl_menu.sh"
 source "$(dirname "$0")/shared/scripts/functions/menu/php_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/core/core_update.sh"
 source "$(dirname "$0")/shared/scripts/functions/core/core_version_management.sh"
 # **Chạy setup hệ thống trước khi hiển thị menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
@@ -61,11 +60,16 @@ print_header() {
     echo -e "  💾 RAM: ${YELLOW}${USED_RAM}MB / ${TOTAL_RAM}MB${NC}"
     echo -e "  📀 Disk: ${YELLOW}${DISK_USAGE}${NC}"
     echo -e "  🌍 IP Address: ${CYAN}${IP_ADDRESS}${NC}"
+    echo ""
+    # **Hiển thị phiên bản hiện tại và phiên bản mới nhất**
+    core_display_version
+
     echo -e "${MAGENTA}==============================================${NC}"
 }
 
 # 🎯 **Hiển thị menu chính**
 while true; do
+    core_check_for_update
     print_header
     echo -e "${BLUE}MENU CHÍNH:${NC}"
     echo -e "  ${GREEN}[1]${NC} 🌍 Quản lý Website WordPress     ${GREEN}[5]${NC} 🛠️ Tiện ích WordPress"
@@ -85,7 +89,7 @@ while true; do
         6) backup_menu ;;
         7) bash "$SCRIPTS_DIR/setup-cache.sh"; read -p "Nhấn Enter để tiếp tục..." ;;
         8) php_menu ;;
-        9) check_version_and_update ;;  # Gọi hàm hiển thị phiên bản và cập nhật
+        9) core_check_version_update ;;  # Gọi hàm hiển thị phiên bản và cập nhật
         10) echo -e "${GREEN}❌ Thoát chương trình.${NC}" && exit 0 ;;
         *) 
             echo -e "${RED}⚠️ Lựa chọn không hợp lệ! Vui lòng chọn từ [1-10].${NC}"

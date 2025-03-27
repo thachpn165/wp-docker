@@ -73,6 +73,10 @@ CYAN="${CYAN:-\033[1;36m}"  # Cyan
 WHITE="${WHITE:-\033[1;37m}"  # White
 NC="${NC:-\033[0m}"  # No color
 
+# ==== Emoji 🫠 ====
+CHECKMARK="${GREEN}✅${NC}"
+CROSSMARK="${RED}❌${NC}"
+
 # ==== Rclone configuration ====
 RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$CONFIG_DIR/rclone}"  # Rclone config directory
 RCLONE_CONFIG_FILE="${RCLONE_CONFIG_FILE:-$RCLONE_CONFIG_DIR/rclone.conf}"  # Rclone config file
