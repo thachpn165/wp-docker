@@ -45,3 +45,19 @@ run_unless_test() {
     echo "🧪 Bỏ qua trong TEST_MODE: $*" >&2
   fi
 }
+
+# ✅ Lấy giá trị đầu vào từ người dùng, hoặc dùng giá trị test nếu đang TEST_MODE
+# Cách dùng:
+#   domain=$(get_input_or_test_value "Nhập domain: " "example.com")
+
+get_input_or_test_value() {
+  local prompt="$1"
+  local fallback="$2"
+
+  if is_test_mode; then
+    echo "$fallback"
+  else
+    read -p "$prompt" input
+    echo "${input:-$fallback}"
+  fi
+}

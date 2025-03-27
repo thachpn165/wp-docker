@@ -2,7 +2,6 @@
 # 🐋 website_management_create – Tạo website WordPress mới
 # =====================================
 # Load config và các hàm phụ thuộc
-
 CONFIG_FILE="shared/config/config.sh"
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
@@ -22,20 +21,11 @@ source "$FUNCTIONS_DIR/website/website_create_env.sh"
 website_management_create() {
   echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚi =====${NC}"
 
-  # 👉 Nhập domain + site_name (test mode hoặc interactive)
-  get_domain_interactive() {
-    read -p "Tên miền (ví dụ: example.com): " input
-    echo "$input"
-  }
-  domain=$(run_if_not_test "${TEST_DOMAIN:-example.com}" get_domain_interactive)
-
+  # 📥 Nhập domain và tên site
+  domain="$(get_input_or_test_value "Tên miền (ví dụ: example.com): " "${TEST_DOMAIN:-example.com}")"
   suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
-
-  get_site_name_interactive() {
-    read -p "Tên site (mặc định: $suggested_site_name): " input
-    echo "${input:-$suggested_site_name}"
-  }
-  site_name=$(run_if_not_test "${TEST_SITE_NAME:-$suggested_site_name}" get_site_name_interactive)
+  site_name="$(get_input_or_test_value "Tên site (mặc định: $suggested_site_name): " "${TEST_SITE_NAME:-$suggested_site_name}")"
+  site_name=${site_name:-$suggested_site_name}
 
   php_choose_version || return 1
   php_version="$REPLY"
@@ -54,10 +44,7 @@ website_management_create() {
   mkdir -p "$LOGS_DIR"
   LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
-  if ! is_test_mode; then
-    exec > >(tee -a "$LOG_FILE") 2>&1
-  fi
-
+  run_unless_test exec > >(tee -a "$LOG_FILE") 2>&1
   echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] BẮT ĐẦU TẠO SITE: $site_name =====" >> "$LOG_FILE"
 
   # 🧱 Tạo cấu trúc thư mục
@@ -68,7 +55,7 @@ website_management_create() {
   # 🔧 Cấu hình NGINX
   update_nginx_override_mounts "$site_name"
   export site_name domain php_version
-  bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh"
+  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh"
 
   # ⚙️ Tạo cấu hình
   copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
@@ -88,7 +75,7 @@ website_management_create() {
     return 1
   fi
 
-  # 🚀 Khởi động container (bỏ qua nếu test)
+  # 🚀 Khởi động container
   run_unless_test run_in_dir "$SITE_DIR" docker compose up -d
 
   echo -e "${YELLOW}⏳ Đang kiểm tra container khởi động...${NC}"
@@ -97,7 +84,7 @@ website_management_create() {
       echo -e "${GREEN}✅ Container đã sẵn sàng.${NC}"
       break
     fi
-    sleep 1
+    run_unless_test sleep 1
   done
 
   if ! is_container_running "$CONTAINER_PHP" || ! is_container_running "$CONTAINER_DB"; then
@@ -107,7 +94,7 @@ website_management_create() {
 
   # 🔐 Cài đặt SSL + WordPress
   generate_ssl_cert "$domain" "$SSL_DIR"
-  bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name"
+  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name"
 
   # 📦 Hiển thị thông tin
   WP_INFO_FILE="$SITE_DIR/.wp-info"
@@ -122,7 +109,7 @@ website_management_create() {
 
   # 🧑‍🔧 Phân quyền
   if is_container_running "$CONTAINER_PHP"; then
-    docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/
+    run_unless_test docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/
   else
     echo -e "${YELLOW}⚠️ Container PHP chưa chạy, bỏ qua phân quyền.${NC}"
   fi
