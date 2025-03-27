@@ -22,17 +22,20 @@ source "$FUNCTIONS_DIR/website/website_create_env.sh"
 website_management_create() {
   echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚi =====${NC}"
 
-  if [[ "$TEST_MODE" == true ]]; then
-    domain="${TEST_DOMAIN:-example.com}"
-    suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
-    site_name="${TEST_SITE_NAME:-$suggested_site_name}"
-  else
-    read -p "Tên miền (ví dụ: example.com): " domain
-    suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
-    read -p "Tên site (mặc định: $suggested_site_name): " site_name
-    site_name=${site_name:-$suggested_site_name}
-  fi
+  # 👉 Nhập domain + site_name (test mode hoặc interactive)
+  get_domain_interactive() {
+    read -p "Tên miền (ví dụ: example.com): " input
+    echo "$input"
+  }
+  domain=$(run_if_not_test "${TEST_DOMAIN:-example.com}" get_domain_interactive)
 
+  suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
+
+  get_site_name_interactive() {
+    read -p "Tên site (mặc định: $suggested_site_name): " input
+    echo "${input:-$suggested_site_name}"
+  }
+  site_name=$(run_if_not_test "${TEST_SITE_NAME:-$suggested_site_name}" get_site_name_interactive)
 
   php_choose_version || return 1
   php_version="$REPLY"
@@ -51,8 +54,7 @@ website_management_create() {
   mkdir -p "$LOGS_DIR"
   LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
-  # Nếu không ở chế độ test, mới thực hiện ghi log
-  if [[ -z "$TEST_MODE" ]]; then
+  if ! is_test_mode; then
     exec > >(tee -a "$LOG_FILE") 2>&1
   fi
 
@@ -86,8 +88,8 @@ website_management_create() {
     return 1
   fi
 
-  # 🚀 Khởi động container
-  run_in_dir "$SITE_DIR" docker compose up -d
+  # 🚀 Khởi động container (bỏ qua nếu test)
+  run_unless_test run_in_dir "$SITE_DIR" docker compose up -d
 
   echo -e "${YELLOW}⏳ Đang kiểm tra container khởi động...${NC}"
   for i in {1..30}; do
