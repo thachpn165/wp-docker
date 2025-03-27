@@ -38,7 +38,7 @@ EOF
   cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/php/php_utils.sh" "$FUNCTIONS_DIR/php/" || true
   cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/file_utils.sh" "$FUNCTIONS_DIR/"
   cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/misc_utils.sh" "$FUNCTIONS_DIR/"
-  cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/nginx_utils.sh" "$FUNCTIONS_DIR/nginx/"
+  cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/nginx/nginx_utils.sh" "$FUNCTIONS_DIR/nginx/"
   cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/ssl_utils.sh" "$FUNCTIONS_DIR/ssl/"
   cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/website/website_create_env.sh" "$FUNCTIONS_DIR/website/"
   cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/db_utils.sh" "$FUNCTIONS_DIR/db/" || true
