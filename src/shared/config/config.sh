@@ -15,6 +15,12 @@ else
   DEV_MODE=false
 fi
 
+# Mặc định TEST_MODE luôn false, chỉ chuyển sang true khi chạy test
+# Khi viết test, có thể set TEST_MODE=true để bỏ qua các hàm kiểm tra Docker
+# Hoặc luôn pass các hàm kiểm tra bằng cách set TEST_ALWAYS_READY=true
+TEST_MODE="${TEST_MODE:-false}"
+TEST_ALWAYS_READY="${TEST_ALWAYS_READY:-false}"
+
 # ==== Các thư mục mã nguồn chính ====
 SITES_DIR="$BASE_DIR/sites"
 TEMPLATES_DIR="$BASE_DIR/shared/templates"
