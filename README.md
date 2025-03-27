@@ -32,32 +32,22 @@ Hướng đến: **đơn giản – dễ dùng – dễ mở rộng**, hoạt đ
 
 ---
 
-## V1.0.7-beta có gì mới?
+## v1.0.8-beta - Changelog
 
-### 🚀 Cài đặt WP-CLI tự động và cập nhật hệ thống
+### Những thay đổi chính:
 
-- **Kiểm tra và cài đặt WP-CLI** tự động nếu chưa có.
-- **Cập nhật hệ thống WP Docker** từ GitHub Release mà không làm mất dữ liệu quan trọng.
-- **Cập nhật template version** cho các website đã cài đặt, giúp các site sử dụng phiên bản template mới nhất.
+1. **Refactor sử dụng `run_in_dir`**: Đã thay thế các lệnh `cd` bằng hàm `run_in_dir` để tăng tính bảo mật và giảm thiểu lỗi khi thao tác với thư mục. Các hàm thực thi lệnh trong thư mục cụ thể mà không thay đổi thư mục làm việc của script.
 
-### 🛠 Cập nhật hệ thống tự động
+2. **Cải thiện TEST_MODE**: Đảm bảo tất cả các bài kiểm tra tự động trong môi trường test được kiểm soát chặt chẽ bằng việc sử dụng các biến môi trường `TEST_MODE` và `TEST_ALWAYS_READY`. Điều này giúp môi trường kiểm tra ổn định và đồng nhất trên cả hệ thống Linux và macOS.
 
-- **Tải và giải nén bản release mới nhất** từ GitHub.
-- **Loại trừ các thư mục quan trọng** như `sites/`, `logs/`, và `archives/` khi cập nhật.
-- **Cập nhật file hệ thống**, nhưng giữ nguyên dữ liệu của người dùng.
-- **Kiểm tra và cập nhật template version** cho các website sử dụng phiên bản cũ.
+3. **Container và Volume Checks**: Tối ưu hóa việc kiểm tra trạng thái container và volumes Docker. Các hàm như `is_container_running` và `is_volume_exist` đã được cập nhật với các debug message rõ ràng, giúp việc kiểm tra trạng thái container trong môi trường thực tế dễ dàng hơn.
 
-### 🔧 Tính năng bổ sung
+4. **Sửa lỗi khởi động container nginx-proxy**: Đảm bảo quá trình kiểm tra và khởi động container `nginx-proxy` chạy đúng trên mọi hệ điều hành, đồng thời kiểm tra trạng thái container sau khi khởi động thành công.
 
-- **Tính năng upgrade**: Kiểm tra và chạy **script nâng cấp** nếu có file `upgrade/{version}` trùng với phiên bản mới, giúp cập nhật file template cho các website đang dùng template cũ.
-- **Tự động tải và cài đặt WP-CLI** nếu thiếu trong thư mục `shared/bin/`, đồng thời tạo symlink cho lệnh `wp` hoạt động từ bất kỳ thư mục nào.
+5. **Update Script Refactoring**: Tối ưu các script cập nhật và phục hồi hệ thống để loại trừ các thư mục không cần thiết như `sites`, `logs`, và tránh mất dữ liệu quan trọng trong quá trình cập nhật.
 
-### 🛑 Cải tiến tính năng uninstall
+6. **Cải tiến thông báo log**: Tinh chỉnh cách hiển thị log trong quá trình chạy script để người dùng có thể theo dõi và phân tích kết quả một cách dễ dàng.
 
-- **Sao lưu trước khi xóa**: Hỏi người dùng có muốn sao lưu trước khi xóa website không.
-- **Sao lưu toàn bộ**: Lưu database và mã nguồn WP vào thư mục `archives/`.
-- **Xóa sạch**: Xóa container, volume, SSL, cấu hình NGINX, cronjob và `docker-compose.override.yml` liên quan.
-- **Reload nginx-proxy** sau khi xóa website.
 
 ---
 
