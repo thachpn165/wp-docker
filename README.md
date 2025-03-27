@@ -1,9 +1,9 @@
 # 🚧 Đang phát triển
-🔹 Phiên bản `v1.0.7-beta` đang trong giai đoạn hoàn thiện và có thể thay đổi trước khi ra mắt bản stable.
+🔹 Phiên bản `v1.0.8-beta` đang trong giai đoạn hoàn thiện và có thể thay đổi trước khi ra mắt bản stable.
 
 # 🚀 WP Docker
 
-[![Phiên bản](https://img.shields.io/badge/version-v1.0.7--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Phiên bản](https://img.shields.io/badge/version-v1.0.8--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)

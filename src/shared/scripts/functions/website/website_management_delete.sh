@@ -65,9 +65,7 @@ website_management_delete() {
   fi
 
   # 🛑 Dừng container
-  cd "$SITE_DIR"
-  docker compose down
-  cd "$BASE_DIR"
+  run_in_dir "$SITE_DIR" docker compose down
 
   # 🧹 Xóa entry override trước khi xoá thư mục
   OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
