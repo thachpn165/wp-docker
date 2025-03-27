@@ -2,6 +2,7 @@
 # 🐋 website_management_create – Tạo website WordPress mới
 # =====================================
 # Load config và các hàm phụ thuộc
+
 CONFIG_FILE="shared/config/config.sh"
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
@@ -21,11 +22,18 @@ source "$FUNCTIONS_DIR/website/website_create_env.sh"
 website_management_create() {
   echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚi =====${NC}"
 
-  # 🖊️ Nhập thông tin domain và site name
-  read -p "Tên miền (ví dụ: example.com): " domain
-  suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
-  read -p "Tên site (mặc định: $suggested_site_name): " site_name
-  site_name=${site_name:-$suggested_site_name}
+  if [[ "$TEST_MODE" == true ]]; then
+    domain="${TEST_DOMAIN:-example.com}"
+    suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
+    site_name="${TEST_SITE_NAME:-$suggested_site_name}"
+  else
+    read -p "Tên miền (ví dụ: example.com): " domain
+    suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
+    read -p "Tên site (mặc định: $suggested_site_name): " site_name
+    site_name=${site_name:-$suggested_site_name}
+  fi
+
+
   php_choose_version || return 1
   php_version="$REPLY"
 
@@ -43,7 +51,11 @@ website_management_create() {
   mkdir -p "$LOGS_DIR"
   LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
-  exec > >(tee -a "$LOG_FILE") 2>&1
+  # Nếu không ở chế độ test, mới thực hiện ghi log
+  if [[ -z "$TEST_MODE" ]]; then
+    exec > >(tee -a "$LOG_FILE") 2>&1
+  fi
+
   echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] BẮT ĐẦU TẠO SITE: $site_name =====" >> "$LOG_FILE"
 
   # 🧱 Tạo cấu trúc thư mục
@@ -75,8 +87,7 @@ website_management_create() {
   fi
 
   # 🚀 Khởi động container
-  cd "$SITE_DIR"
-  docker compose up -d
+  run_in_dir "$SITE_DIR" docker compose up -d
 
   echo -e "${YELLOW}⏳ Đang kiểm tra container khởi động...${NC}"
   for i in {1..30}; do
@@ -94,7 +105,6 @@ website_management_create() {
 
   # 🔐 Cài đặt SSL + WordPress
   generate_ssl_cert "$domain" "$SSL_DIR"
-  cd "$BASE_DIR"
   bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name"
 
   # 📦 Hiển thị thông tin
