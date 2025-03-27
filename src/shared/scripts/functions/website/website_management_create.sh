@@ -1,24 +1,36 @@
 # =====================================
 # 🐋 website_management_create – Tạo website WordPress mới
 # =====================================
-# Load config và các hàm phụ thuộc
-CONFIG_FILE="shared/config/config.sh"
-while [ ! -f "$CONFIG_FILE" ]; do
-    CONFIG_FILE="../$CONFIG_FILE"
-    if [ "$(pwd)" = "/" ]; then
-        echo "❌ Không tìm thấy config.sh!" >&2
-        exit 1
+
+
+# === 🧠 Tự động xác định PROJECT_DIR (gốc mã nguồn) ===
+if [[ -z "$PROJECT_DIR" ]]; then
+  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+  while [[ "$SCRIPT_PATH" != "/" ]]; do
+    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
+      PROJECT_DIR="$SCRIPT_PATH"
+      break
     fi
-done
+    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+  done
+fi
+
+# === ✅ Load config.sh từ PROJECT_DIR ===
+CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "❌ Không tìm thấy config.sh tại: $CONFIG_FILE" >&2
+  exit 1
+fi
 source "$CONFIG_FILE"
 
-# ✅ Source hàm tạo file .env
+# Load config và các hàm phụ thuộc
 source "$FUNCTIONS_DIR/website/website_create_env.sh"
 
 # =====================================
 # 🐋 website_management_create – Tạo website WordPress mới
 # =====================================
 website_management_create() {
+  
   echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚi =====${NC}"
 
   # 📥 Nhập domain và tên site
