@@ -1,9 +1,9 @@
 # 🚧 Đang phát triển
-🔹 Phiên bản `v1.0.6-beta` đang trong giai đoạn hoàn thiện và có thể thay đổi trước khi ra mắt bản stable.
+🔹 Phiên bản `v1.0.7-beta` đang trong giai đoạn hoàn thiện và có thể thay đổi trước khi ra mắt bản stable.
 
 # 🚀 WP Docker
 
-[![Phiên bản](https://img.shields.io/badge/version-v1.0.6--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Phiên bản](https://img.shields.io/badge/version-v1.0.7--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
@@ -32,19 +32,34 @@ Hướng đến: **đơn giản – dễ dùng – dễ mở rộng**, hoạt đ
 
 ---
 
-## V1.0.6-beta có gì mới?
+## V1.0.7-beta có gì mới?
 
-### 🚀 Cài đặt nhanh và gọn
+### 🚀 Cài đặt WP-CLI tự động và cập nhật hệ thống
 
-- Hỗ trợ lệnh `wpdocker` để truy cập menu
-- Tích hợp check `brew`, `apt`, `yum` cho macOS & Linux
+- **Kiểm tra và cài đặt WP-CLI** tự động nếu chưa có.
+- **Cập nhật hệ thống WP Docker** từ GitHub Release mà không làm mất dữ liệu quan trọng.
+- **Cập nhật template version** cho các website đã cài đặt, giúp các site sử dụng phiên bản template mới nhất.
 
-### 🛠 Uninstall toàn diện
+### 🛠 Cập nhật hệ thống tự động
 
-- Hỏi backup trước khi xóa
-- Backup DB + WP source vào `archives/`
-- Xóa container, volume, SSL, config, cronjob, docker-compose.override.yml
-- Reload nginx-proxy sau khi xóa site
+- **Tải và giải nén bản release mới nhất** từ GitHub.
+- **Loại trừ các thư mục quan trọng** như `sites/`, `logs/`, và `archives/` khi cập nhật.
+- **Cập nhật file hệ thống**, nhưng giữ nguyên dữ liệu của người dùng.
+- **Kiểm tra và cập nhật template version** cho các website sử dụng phiên bản cũ.
+
+### 🔧 Tính năng bổ sung
+
+- **Tính năng upgrade**: Kiểm tra và chạy **script nâng cấp** nếu có file `upgrade/{version}` trùng với phiên bản mới, giúp cập nhật file template cho các website đang dùng template cũ.
+- **Tự động tải và cài đặt WP-CLI** nếu thiếu trong thư mục `shared/bin/`, đồng thời tạo symlink cho lệnh `wp` hoạt động từ bất kỳ thư mục nào.
+
+### 🛑 Cải tiến tính năng uninstall
+
+- **Sao lưu trước khi xóa**: Hỏi người dùng có muốn sao lưu trước khi xóa website không.
+- **Sao lưu toàn bộ**: Lưu database và mã nguồn WP vào thư mục `archives/`.
+- **Xóa sạch**: Xóa container, volume, SSL, cấu hình NGINX, cronjob và `docker-compose.override.yml` liên quan.
+- **Reload nginx-proxy** sau khi xóa website.
+
+---
 
 ### 🌎 Cài nhanh `wpdocker`
 

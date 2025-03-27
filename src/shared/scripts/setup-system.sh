@@ -96,6 +96,8 @@ create_docker_network "$DOCKER_NETWORK"
 # ✅ Lấy danh sách tag PHP mới nhất từ Docker Hub
 php_get_version
 
+# ✅ Kiểm tra các package cần thiết
+check_required_commands
 # ✅ Hiển thị thông tin cấu hình
 echo -e "${CYAN}📁 BASE_DIR: $BASE_DIR${NC}"
 echo -e "${CYAN}📝 DEV_MODE: $DEV_MODE${NC}"
