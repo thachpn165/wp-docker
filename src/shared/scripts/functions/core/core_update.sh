@@ -115,8 +115,17 @@ core_run_upgrade_scripts() {
   fi
 }
 
-# Chạy toàn bộ quy trình cập nhật
+# Hàm chạy toàn bộ quy trình cập nhật
 core_update_system() {
+  # Hỏi người dùng có chắc chắn muốn cập nhật không
+  echo -e "${YELLOW}⚠️ Bạn có chắc chắn muốn cập nhật WP Docker lên phiên bản mới không? (y/n)${NC}"
+  read -p "Nhập 'y' để tiếp tục, 'n' để hủy: " choice
+  if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
+    echo -e "${GREEN}✅ Đã hủy quá trình cập nhật.${NC}"
+    exit 0
+  fi
+
+  # Nếu người dùng đồng ý, tiếp tục thực hiện các bước cập nhật
   core_check_install_dir
   core_download_latest_release
   core_extract_release
@@ -126,3 +135,4 @@ core_update_system() {
   core_run_upgrade_scripts
   core_cleanup
 }
+
