@@ -30,6 +30,9 @@ setup() {
 #!/bin/bash
 # Nội dung chính của update.sh (có thể dùng thực tế hoặc mock lại một phần)
 source /opt/wp-docker/scripts/update.sh
+
+# Ghi vào file log để kiểm tra trong test
+echo "Updating WP Docker..." > /tmp/update_wp_docker.log
 EOF
 
     chmod +x "$PROJECT_DIR/update.sh"
@@ -56,6 +59,10 @@ teardown() {
 
 @test "Update should exclude specific directories (like sites and logs)" {
     run bash "$PROJECT_DIR/update.sh"
+
+    # Kiểm tra xem log đã được tạo
+    run cat /tmp/update_wp_docker.log
+    [ "$status" -eq 0 ]
 
     # Debug: In ra các thư mục đã được loại trừ trong rsync
     echo ">>> Debugging rsync output:"
