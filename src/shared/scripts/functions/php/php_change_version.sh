@@ -36,10 +36,10 @@ php_change_version() {
 
   # ✅ Restart container PHP
   echo -e "${YELLOW}🔄 Đang khởi động lại website để áp dụng thay đổi...${NC}"
-  cd "$SITE_DIR"
-  docker compose stop php
-  docker rm -f "${SITE_NAME}-php" 2>/dev/null || true
-  docker compose up -d php
+
+run_in_dir "$SITE_DIR" docker compose stop php
+run_in_dir "$SITE_DIR" docker rm -f "${SITE_NAME}-php" 2>/dev/null || true
+run_in_dir "$SITE_DIR" docker compose up -d php
 
   echo -e "${GREEN}✅ Website $SITE_NAME đã chạy lại với PHP: $selected_php${NC}"
 }
