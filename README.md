@@ -59,20 +59,6 @@ curl -L https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/s
 
 ---
 
-## 📓 Changelog (v1.0.6-beta)
-
-```bash
-- Tự động tải release + cài vào /opt/wp-docker
-- Tạo symlink wp-cli: wpdocker
-- Phát hiện macOS và nhắc chia sẻ /opt
-- Cải tiến uninstall.sh: backup site, xóa container + volume + SSL
-- Fix vấn đề mount logs/wordpress trên Docker macOS
-- Kiểm tra container nginx-proxy chạy trước khi tiếp tục
-- Hiển thị logs container khi không start được
-```
-
----
-
 ## Dành cho Developer
 
 Khi phát triển, hãy lưu ý symlink thư mục `/opt/wp-docker` trên máy đến thư mục của project và luôn test thông qua lệnh `wpdocker` để đảm bảo sự nhất quán.
