@@ -118,5 +118,5 @@ teardown() {
   run website_management_create
   echo "[DEBUG] 💥 Output:\n$output" >&2
   [ "$status" -ne 0 ]
-  [[ "$output" == *"Website"* && "$output" == *"đã tồn tại"* ]]
+  [[ "$output" == *"Website"* && "$output" == *"already exists"* ]]
 }

@@ -92,11 +92,11 @@ set_file_mtime() {
 
 @test "core_check_template_version detects outdated template" {
   run core_check_template_version
-  [[ "$output" =~ "CŨ" ]]
+  [[ "$output" =~ "OLD" ]]
 }
 
 @test "core_check_for_update detects new version" {
   echo "v1.0.0" > "$BASE_DIR/version.txt"
   run core_check_for_update
-  [[ "$output" =~ "⚠️ Có phiên bản mới" ]]
+  [[ "$output" =~ "⚠️ New version available" ]]
 }
