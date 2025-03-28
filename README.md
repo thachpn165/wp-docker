@@ -57,14 +57,7 @@ After installation, you **must add `/opt`** to Docker → Settings → Resources
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/thachpn165/wp-docker.git
-
-# Navigate to the project directory
-cd wp-docker
-
-# Run the installation script
-./install.sh
+curl -fsSL https://github.com/thachpn165/wp-docker/blob/main/src/install.sh | bash
 ```
 
 ## Usage
