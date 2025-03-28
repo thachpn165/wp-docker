@@ -40,6 +40,24 @@ core_version_cache() {
   echo "$LATEST_VERSION"
 }
 
+# Function to compare two versions
+core_compare_versions() {
+  # Returns 0 if $1 == $2, 1 if $1 > $2, 2 if $1 < $2
+  local v1=$(echo "$1" | sed 's/^v//')
+  local v2=$(echo "$2" | sed 's/^v//')
+
+  if [[ "$v1" == "$v2" ]]; then return 0; fi
+
+  # Use sort -V to compare versions (available in GNU coreutils)
+  sorted=$(printf "%s\n%s" "$v1" "$v2" | sort -V | head -n1)
+
+  if [[ "$sorted" == "$v1" ]]; then
+    return 2  # $1 < $2
+  else
+    return 1  # $1 > $2
+  fi
+}
+
 # Function to get and display project version
 core_get_version() {
     VERSION=$(core_version_cache)
@@ -64,40 +82,32 @@ core_check_version_update() {
 
 # Function to display WP Docker version from cache or GitHub
 core_display_version() {
-  # Get current version
   CURRENT_VERSION=$(cat "$BASE_DIR/version.txt")
-  
-  # Get latest version from cache or GitHub
   LATEST_VERSION=$(core_version_cache)
 
-  # Display a single line
-  if [[ "$CURRENT_VERSION" == "$LATEST_VERSION" ]]; then
-    echo -e "${BLUE}📦 WP Docker Version:${NC} ${CURRENT_VERSION} ${GREEN}(latest)${NC}"
+  core_compare_versions "$CURRENT_VERSION" "$LATEST_VERSION"
+  result=$?
+
+  if [[ "$result" -eq 2 ]]; then
+    echo -e "📦 WP Docker Version: ${CURRENT_VERSION} ${RED}(new version available: $LATEST_VERSION)${NC}"
   else
-    echo -e "📦 WP Docker Version: ${CURRENT_VERSION} ${RED}(new version available)${NC}"
+    echo -e "${BLUE}📦 WP Docker Version:${NC} ${CURRENT_VERSION} ${GREEN}(latest)${NC}"
   fi
 }
 
 # Function to check current version and compare with new version from cache or GitHub
 core_check_for_update() {
-  # Get current version
   CURRENT_VERSION=$(cat "$BASE_DIR/version.txt")
-  
-  # Get latest version from cache or GitHub
   LATEST_VERSION=$(core_version_cache)
 
-  # If no cache or cache version is latest, just display message
-  if [[ "$LATEST_VERSION" == "❌ No cache found. Fetching version from GitHub..." ]]; then
-    echo "⚠️ No cache found, fetching new version from GitHub..."
-    echo "👉 You can run the update feature to upgrade the system."
-    return
-  fi
+  core_compare_versions "$CURRENT_VERSION" "$LATEST_VERSION"
+  result=$?
 
-  # Compare versions
-  if [[ "$CURRENT_VERSION" != "$LATEST_VERSION" ]]; then
+  if [[ "$result" -eq 2 ]]; then
     echo "⚠️ New version available! Current version is $CURRENT_VERSION and latest version is $LATEST_VERSION."
     echo "👉 You can run the update feature to upgrade the system."
   else
     echo "✅ You are using the latest version: $CURRENT_VERSION"
   fi
 }
+
