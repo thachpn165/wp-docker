@@ -119,7 +119,10 @@ wp_install "$PHP_CONTAINER" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSW
 
 # 🛠️ Phân quyền & tối ưu
 if is_container_running "$PHP_CONTAINER"; then
-  docker exec -u root "$PHP_CONTAINER" chown -R nobody:nogroup "/var/www/"
+  docker exec -u root "$PHP_CONTAINER" chown -R nobody:nogroup "/var/www/" || {
+    echo -e "${RED}❌ Phân quyền thất bại.${NC}"
+    exit 1
+  }
 else
   echo -e "${RED}❌ Bỏ qua chown vì container chưa sẵn sàng.${NC}"
 fi
