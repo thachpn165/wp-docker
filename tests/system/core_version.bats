@@ -25,7 +25,6 @@ setup() {
   echo "0.0.0" > "$SITES_DIR/example-site/.template_version"
 }
 
-
 teardown() {
   rm -rf "$BASE_DIR"
 }
@@ -83,10 +82,11 @@ set_file_mtime() {
   [[ "$output" =~ "latest" ]]
 }
 
-
 @test "core_display_version shows warning if outdated" {
   echo "v1.0.0" > "$BASE_DIR/version.txt"
+  echo "v9.9.9" > "$BASE_DIR/latest_version.txt"
   run core_display_version
+  echo "DEBUG: output=$output"
   [[ "$output" =~ "new version available" ]]
 }
 
@@ -97,6 +97,8 @@ set_file_mtime() {
 
 @test "core_check_for_update detects new version" {
   echo "v1.0.0" > "$BASE_DIR/version.txt"
+  echo "v9.9.9" > "$BASE_DIR/latest_version.txt"
   run core_check_for_update
+  echo "DEBUG: output=$output"
   [[ "$output" =~ "⚠️ New version available" ]]
 }
