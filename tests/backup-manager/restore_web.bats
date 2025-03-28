@@ -40,12 +40,15 @@ teardown() {
 }
 
 @test "backup_restore_web runs real restore functions successfully" {
+  # Simulate user input for restore
   run backup_restore_web <<< $"1\ny\n$(basename "$CODE_BACKUP_FILE")\ny\n$(basename "$DB_BACKUP_FILE")"
 
   echo "DEBUG Output:"
   echo "$output"
 
+  # Check if the expected messages are present in the output
   [[ "$output" =~ "KHÔI PHỤC WEBSITE" ]]
   [[ "$output" =~ "Đã tìm thấy file backup" ]]
   [[ "$output" =~ "✅ Hoàn tất khôi phục website" ]]
 }
+
