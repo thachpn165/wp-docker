@@ -1,4 +1,4 @@
-# WP Docker LEMP Stack
+# WP Docker
 
 [![Version](https://img.shields.io/badge/version-v1.1.0--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
@@ -12,9 +12,21 @@
 
 ## Introduction
 
-**WP Docker LEMP Stack** is a comprehensive solution for managing multiple WordPress installations through Docker, featuring an intuitive terminal-based interface. The system automates WordPress setup, SSL certificate generation, backup procedures, WP-CLI integration, and cloud synchronisation, among other essential functionalities.
+**WP Docker** is a specialized containerization platform designed for WordPress environments, offering an intuitive, terminal-based interface for developers and system administrators.
 
-This solution combines Linux, NGINX, MySQL, and PHP (LEMP) in a containerized environment, providing isolation, scalability, and simplified development workflows. Compared to traditional WordPress installations, this approach offers enhanced security, easy environment replication, and simplified maintenance.
+This enterprise-grade toolkit provides a security-hardened, performance-optimized infrastructure with key features such as:
+- Automated WordPress provisioning
+- SSL certificate management (including Let's Encrypt and custom certs)
+- Modular backup orchestration with local and cloud (Rclone) support
+- Full WP-CLI integration
+- Seamless cloud synchronization
+
+The platform adopts a modular architecture supporting interchangeable web servers such as OpenResty (NGINX + Lua), Caddy Server, and OpenLiteSpeed. This flexibility allows seamless switching between stacks with automatic configuration adaptation.
+
+Unlike conventional WordPress setups, WP Docker embraces infrastructure-as-code principles to eliminate vendor lock-in. Its isolated containerized environment—combining Linux, PHP, and database services—ensures maximum portability, scalability, and operational consistency.
+
+By simplifying multi-stage environment replication (dev → staging → prod), WP Docker enhances security posture, accelerates deployment workflows, and ensures consistent performance across different infrastructures.
+
 
 Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
