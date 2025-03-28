@@ -47,8 +47,8 @@ teardown() {
   echo "DEBUG Output:"
   echo "$output"
 
-  # Check if the expected message "Hoàn tất khôi phục website" is present in the output
-  [[ "$output" =~ "Hoàn tất khôi phục website" ]]
+  # Check if the expected message "restore completed" is present in the output
+  [[ "$output" =~ "restore completed" ]]
 }
 
 
