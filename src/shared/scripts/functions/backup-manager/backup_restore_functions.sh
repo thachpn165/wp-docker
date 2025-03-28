@@ -44,6 +44,14 @@ backup_restore_database() {
     return 1
   fi
 
+  # Lấy tên database từ file .env
+  DB_NAME=$(fetch_env_variable "$SITE_DIR/.env" "MYSQL_DATABASE")
+  
+  if [[ -z "$DB_NAME" ]]; then
+    echo "❌ Không lấy được tên database từ .env"
+    return 1
+  fi
+
   # Kiểm tra file backup cơ sở dữ liệu có tồn tại không
   if [[ ! -f "$DB_BACKUP" ]]; then
     echo "❌ Không tìm thấy file backup cơ sở dữ liệu: $DB_BACKUP"
@@ -52,13 +60,19 @@ backup_restore_database() {
 
   # Khôi phục cơ sở dữ liệu từ file backup
   echo "🔄 Đang khôi phục cơ sở dữ liệu từ $DB_BACKUP vào container $DB_CONTAINER..."
-  docker exec -i "$DB_CONTAINER" mysql -u root -p"$MYSQL_ROOT_PASSWORD" < "$DB_BACKUP"
-  
+
+  # Drop database nếu có và tạo lại
+  docker exec -i "$DB_CONTAINER" mysql -u root -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
+
+  # Restore lại database
+  docker exec -i "$DB_CONTAINER" mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$DB_NAME" < "$DB_BACKUP"
+
   if [[ $? -eq 0 ]]; then
-    echo "✅ Cơ sở dữ liệu đã được khôi phục thành công từ backup."
+    echo "✅ Cơ sở dữ liệu đã được khôi phục thành công từ backup vào database '$DB_NAME'."
   else
     echo "❌ Đã xảy ra lỗi khi khôi phục cơ sở dữ liệu từ backup."
     return 1
   fi
 }
+
 
