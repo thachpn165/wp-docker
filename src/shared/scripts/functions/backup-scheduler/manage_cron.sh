@@ -2,86 +2,86 @@
 
 CONFIG_FILE="shared/config/config.sh"
 
-# Xác định đường dẫn tuyệt đối của `config.sh`
+# Determine absolute path of `config.sh`
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
     if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
+        echo "❌ Error: config.sh not found!" >&2
         exit 1
     fi
 done
 
 source "$CONFIG_FILE"
 
-# Định nghĩa tập tin backup runner
+# Define backup runner file
 BACKUP_RUNNER="$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_runner.sh"
 
-# Chuyển đổi thời gian cron thành dạng dễ hiểu
+# Convert cron time to human-readable format
 cron_translate() {
     local cron_exp="$1"
 
-    # Tách các trường cron
+    # Split cron fields
     local minute=$(echo "$cron_exp" | awk '{print $1}')
     local hour=$(echo "$cron_exp" | awk '{print $2}')
     local day=$(echo "$cron_exp" | awk '{print $3}')
     local month=$(echo "$cron_exp" | awk '{print $4}')
     local weekday=$(echo "$cron_exp" | awk '{print $5}')
 
-    # Xác định thời gian
+    # Determine time
     local time="$hour:$minute"
 
-    # Xác định tần suất
+    # Determine frequency
     if [[ "$day" == "*" && "$month" == "*" && "$weekday" == "*" ]]; then
-        schedule="Hàng ngày vào lúc $time"
+        schedule="Daily at $time"
     elif [[ "$day" == "*" && "$month" == "*" && "$weekday" != "*" ]]; then
-        schedule="Hàng tuần vào lúc $time, ngày $(convert_weekday "$weekday")"
+        schedule="Weekly at $time, on $(convert_weekday "$weekday")"
     elif [[ "$day" != "*" && "$month" == "*" ]]; then
-        schedule="Hàng tháng vào lúc $time, ngày $day"
+        schedule="Monthly at $time, on day $day"
     else
-        schedule="Lịch tùy chỉnh: $cron_exp"
+        schedule="Custom schedule: $cron_exp"
     fi
 
     echo "$schedule"
 }
 
-# Chuyển đổi ngày trong tuần từ số sang chữ
+# Convert weekday from number to text
 convert_weekday() {
     case $1 in
-        0) echo "Chủ Nhật" ;;
-        1) echo "Thứ Hai" ;;
-        2) echo "Thứ Ba" ;;
-        3) echo "Thứ Tư" ;;
-        4) echo "Thứ Năm" ;;
-        5) echo "Thứ Sáu" ;;
-        6) echo "Thứ Bảy" ;;
-        *) echo "Không xác định" ;;
+        0) echo "Sunday" ;;
+        1) echo "Monday" ;;
+        2) echo "Tuesday" ;;
+        3) echo "Wednesday" ;;
+        4) echo "Thursday" ;;
+        5) echo "Friday" ;;
+        6) echo "Saturday" ;;
+        *) echo "Unknown" ;;
     esac
 }
 
-# Hiển thị danh sách các website có lịch backup và cho phép xem chi tiết
+# Display list of websites with backup schedules and allow viewing details
 schedule_backup_list() {
-    echo -e "${BLUE}📅 Danh sách các website có lịch backup:${NC}"
+    echo -e "${BLUE}📅 List of websites with backup schedules:${NC}"
 
-    # Lấy danh sách website từ crontab
+    # Get website list from crontab
     local websites=($(crontab -l 2>/dev/null | grep "backup_runner.sh" | awk -F 'backup_runner.sh ' '{print $2}' | awk '{print $1}' | sort -u))
 
     if [[ ${#websites[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ Không có website nào có lịch backup.${NC}"
+        echo -e "${RED}❌ No websites have backup schedules.${NC}"
         return 1
     fi
 
-    # Hiển thị danh sách website
-    echo -e "${YELLOW}🔹 Chọn một website để xem lịch backup:${NC}"
+    # Display website list
+    echo -e "${YELLOW}🔹 Select a website to view its backup schedule:${NC}"
     select SITE_NAME in "${websites[@]}"; do
         if [[ -n "$SITE_NAME" ]]; then
-            echo -e "${GREEN}✅ Đang xem lịch backup của: $SITE_NAME${NC}"
+            echo -e "${GREEN}✅ Viewing backup schedule for: $SITE_NAME${NC}"
             break
         else
-            echo -e "${RED}❌ Lựa chọn không hợp lệ!${NC}"
+            echo -e "${RED}❌ Invalid selection!${NC}"
         fi
     done
 
-    # Xác định hệ điều hành (macOS hoặc Linux)
+    # Determine operating system (macOS or Linux)
     if [[ "$(uname)" == "Darwin" ]]; then
         cron_jobs=$(crontab -l 2>/dev/null | grep "backup_runner.sh $SITE_NAME")
     else
@@ -89,18 +89,18 @@ schedule_backup_list() {
     fi
 
     if [[ -z "$cron_jobs" ]]; then
-        echo -e "${RED}❌ Không tìm thấy lịch backup cho website: $SITE_NAME${NC}"
+        echo -e "${RED}❌ No backup schedule found for website: $SITE_NAME${NC}"
     else
-        echo -e "${GREEN}📜 Lịch backup cho $SITE_NAME:${NC}"
-        echo -e "${YELLOW}Tần suất chạy | Website | Đường dẫn lưu log${NC}"
+        echo -e "${GREEN}📜 Backup schedule for $SITE_NAME:${NC}"
+        echo -e "${YELLOW}Frequency | Website | Log Path${NC}"
         echo -e "${MAGENTA}------------------------------------------------------${NC}"
         
-        # Dịch nghĩa thời gian chạy cron và hiển thị đầy đủ
+        # Translate cron time and display full details
         while IFS= read -r line; do
             cron_exp=$(echo "$line" | awk '{print $1, $2, $3, $4, $5}')
             schedule=$(cron_translate "$cron_exp")
-            website=$(echo "$line" | awk -F 'backup_runner.sh ' '{print $2}' | awk '{print $1}')   # Lấy tên website chính xác
-            log_path=$(echo "$line" | awk -F '>> ' '{print $2}' | awk '{print $1}')               # Lấy đường dẫn log chính xác
+            website=$(echo "$line" | awk -F 'backup_runner.sh ' '{print $2}' | awk '{print $1}')   # Get exact website name
+            log_path=$(echo "$line" | awk -F '>> ' '{print $2}' | awk '{print $1}')               # Get exact log path
             
             echo -e "⏰ $schedule | 🌐 $website | 📝 $log_path"
         done <<< "$cron_jobs"
@@ -109,9 +109,7 @@ schedule_backup_list() {
     fi
 }
 
-
-
-# Xóa lịch backup của một website
+# Remove backup schedule for a website
 schedule_backup_remove() {
     select_website || return
 
@@ -120,38 +118,38 @@ schedule_backup_remove() {
     crontab "$temp_cron"
     rm -f "$temp_cron"
 
-    echo -e "${GREEN}✅ Đã xóa lịch backup của website: $SITE_NAME${NC}"
+    echo -e "${GREEN}✅ Removed backup schedule for website: $SITE_NAME${NC}"
 }
 
-# Hiển thị menu quản lý crontab
+# Display crontab management menu
 manage_cron_menu() {
     while true; do
         echo -e "${BLUE}============================${NC}"
-        echo -e "${BLUE}   ⚙️ QUẢN LÝ LỊCH BACKUP (CRON)   ${NC}"
+        echo -e "${BLUE}   ⚙️ BACKUP SCHEDULE MANAGEMENT (CRON)   ${NC}"
         echo -e "${BLUE}============================${NC}"
-        echo -e "  ${GREEN}[1]${NC} 📜 Xem danh sách lịch backup"
-        echo -e "  ${GREEN}[2]${NC} ❌ Xóa lịch backup của một website"
-        echo -e "  ${GREEN}[3]${NC} 🔙 Quay lại"
+        echo -e "  ${GREEN}[1]${NC} 📜 View backup schedules"
+        echo -e "  ${GREEN}[2]${NC} ❌ Remove website backup schedule"
+        echo -e "  ${GREEN}[3]${NC} 🔙 Back"
         echo -e "${BLUE}============================${NC}"
 
-        read -p "🔹 Chọn một tùy chọn (1-3): " choice
+        read -p "🔹 Select an option (1-3): " choice
         case "$choice" in
             1) schedule_backup_list ;;
             2) schedule_backup_remove ;;
-            3) echo -e "${GREEN}🔙 Quay lại menu chính.${NC}"; break ;;
-            *) echo -e "${RED}❌ Lựa chọn không hợp lệ, vui lòng nhập lại!${NC}" ;;
+            3) echo -e "${GREEN}🔙 Returning to main menu.${NC}"; break ;;
+            *) echo -e "${RED}❌ Invalid option, please try again!${NC}" ;;
         esac
     done
 }
 
-# Kiểm tra xem một website đã có lịch backup chưa
+# Check if a website has a backup schedule
 schedule_backup_exists() {
     local site_name="$1"
 
-    # Kiểm tra trong crontab có backup_runner.sh cho website đó không
+    # Check if backup_runner.sh exists in crontab for that website
     if crontab -l 2>/dev/null | grep -q "backup_runner.sh $site_name"; then
-        return 0  # Đã có lịch backup
+        return 0  # Backup schedule exists
     else
-        return 1  # Chưa có lịch backup
+        return 1  # No backup schedule
     fi
 }

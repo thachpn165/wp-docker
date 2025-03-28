@@ -1,11 +1,11 @@
 #!/bin/bash
 
 CONFIG_FILE="shared/config/config.sh"
-# Xác định đường dẫn tuyệt đối của `config.sh`
+# Determine absolute path of `config.sh`
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
     if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
+        echo "❌ Error: config.sh not found!" >&2
         exit 1
     fi
 done
@@ -16,26 +16,23 @@ source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_database.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/cleanup_backups.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/rclone/manage_rclone.sh"
 
-
-
 backup_runner() {
     local site_name="$1"
     local storage_option="$2"
 
     if [[ -z "$site_name" ]]; then
-        log_with_time "${RED}❌ Lỗi: Không tìm thấy tên website để backup!${NC}"
+        log_with_time "${RED}❌ Error: No website name found for backup!${NC}"
         exit 1
     fi
 
-    # Nếu storage_option rỗng, mặc định là local
+    # If storage_option is empty, default to local
     if [[ -z "$storage_option" ]]; then
         storage_option="local"
     fi
 
-    # Đảm bảo thư mục backup và logs tồn tại
+    # Ensure backup and logs directories exist
     is_directory_exist "$SITES_DIR/$site_name/backups"
     is_directory_exist "$SITES_DIR/$site_name/logs"
-
 
     local env_file="$SITES_DIR/$site_name/.env"
     local web_root="$SITES_DIR/$site_name/wordpress"
@@ -47,71 +44,71 @@ backup_runner() {
     is_directory_exist "$log_dir"
 
     if [[ ! -f "$env_file" ]]; then
-        log_with_time "${RED}❌ Không tìm thấy tập tin .env trong $SITES_DIR/$site_name!${NC}"
+        log_with_time "${RED}❌ .env file not found in $SITES_DIR/$site_name!${NC}"
         exit 1
     fi
 
-    # Lấy thông tin database từ .env
+    # Get database information from .env
     DB_NAME=$(grep "^MYSQL_DATABASE=" "$env_file" | cut -d '=' -f2)
     DB_USER=$(grep "^MYSQL_USER=" "$env_file" | cut -d '=' -f2)
     DB_PASS=$(grep "^MYSQL_PASSWORD=" "$env_file" | cut -d '=' -f2)
 
     if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-        log_with_time "${RED}❌ Lỗi: Không thể lấy thông tin database từ .env!${NC}"
+        log_with_time "${RED}❌ Error: Could not get database information from .env!${NC}"
         exit 1
     fi
 
-    log_with_time "${GREEN}✅ Bắt đầu tiến trình backup tự động cho: $site_name${NC}"
+    log_with_time "${GREEN}✅ Starting automatic backup process for: $site_name${NC}"
     
-    # Tiến hành backup
-    log_with_time "🔄 Đang sao lưu database..."
+    # Perform backup
+    log_with_time "🔄 Backing up database..."
     db_backup_file=$(backup_database "$site_name" "$DB_NAME" "$DB_USER" "$DB_PASS" | tail -n 1)
-    log_with_time "🔄 Đang sao lưu mã nguồn..."
+    log_with_time "🔄 Backing up source code..."
     files_backup_file=$(backup_files "$site_name" "$web_root" | tail -n 1)
 
-    # Kiểm tra nếu file backup đã tồn tại
+    # Check if backup files exist
     if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then
-        log_with_time "${RED}❌ Lỗi: Không thể tìm thấy tập tin backup!${NC}"
+        log_with_time "${RED}❌ Error: Could not find backup files!${NC}"
         exit 1
     fi
 
     if [[ "$storage_option" == "local" ]]; then
-        log_with_time "${GREEN}💾 Backup hoàn tất và lưu tại: $backup_dir${NC}"
+        log_with_time "${GREEN}💾 Backup completed and saved to: $backup_dir${NC}"
     else
-        log_with_time "${GREEN}☁️  Đang lưu backup lên Storage: '$storage_option'${NC}"
+        log_with_time "${GREEN}☁️  Saving backup to Storage: '$storage_option'${NC}"
 
-        # Kiểm tra storage có tồn tại trong rclone.conf không
+        # Check if storage exists in rclone.conf
         if ! grep -q "^\[$storage_option\]" "$RCLONE_CONFIG_FILE"; then
-            log_with_time "${RED}❌ Lỗi: Storage '$storage_option' không tồn tại trong rclone.conf!${NC}"
+            log_with_time "${RED}❌ Error: Storage '$storage_option' does not exist in rclone.conf!${NC}"
             exit 1
         fi
 
-        # Gọi upload backup
-        log_with_time "📤 Bắt đầu upload backup lên Storage..."
+        # Call upload backup
+        log_with_time "📤 Starting backup upload to Storage..."
         bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" "$storage_option" "$db_backup_file" "$files_backup_file" > /dev/null 2>>"$log_file"
 
         if [[ $? -eq 0 ]]; then
-            log_with_time "${GREEN}✅ Backup và upload lên Storage hoàn tất!${NC}"
+            log_with_time "${GREEN}✅ Backup and upload to Storage completed!${NC}"
             
-            # Xóa tập tin backup sau khi upload thành công
-            log_with_time "🗑️ Đang xóa tập tin backup sau khi upload thành công..."
+            # Delete backup files after successful upload
+            log_with_time "🗑️ Deleting backup files after successful upload..."
             rm -f "$db_backup_file" "$files_backup_file"
 
-            # Kiểm tra nếu file đã bị xóa
+            # Check if files were deleted
             if [[ ! -f "$db_backup_file" && ! -f "$files_backup_file" ]]; then
-                log_with_time "${GREEN}✅ Tập tin backup đã được xóa khỏi thư mục backups.${NC}"
+                log_with_time "${GREEN}✅ Backup files have been deleted from backups directory.${NC}"
             else
-                log_with_time "${RED}❌ Lỗi: Không thể xóa tập tin backup!${NC}"
+                log_with_time "${RED}❌ Error: Could not delete backup files!${NC}"
             fi
         else
-            log_with_time "${RED}❌ Lỗi khi upload backup lên Storage!${NC}"
+            log_with_time "${RED}❌ Error uploading backup to Storage!${NC}"
         fi
     fi
 
-    log_with_time "${GREEN}✅ Hoàn thành backup tự động cho: $site_name${NC}"
+    log_with_time "${GREEN}✅ Completed automatic backup for: $site_name${NC}"
 }
 
-# Thực thi nếu script được gọi từ cronjob
+# Execute if script is called from cronjob
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     backup_runner "$@"
 fi
