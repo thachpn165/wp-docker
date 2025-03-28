@@ -1,22 +1,25 @@
 # Hiển thị danh sách website để chọn
 select_website() {
     local sites=($(ls -d $SITES_DIR/*/ | xargs -n 1 basename))
+
+    # Nếu không tìm thấy website nào
     if [[ ${#sites[@]} -eq 0 ]]; then
         echo -e "${RED}❌ Không tìm thấy website nào trong $SITES_DIR${NC}"
         return 1
     fi
 
-    echo -e "${BLUE}🔹 Chọn một website:${NC}"
-    echo ""
-    select SITE_NAME in "${sites[@]}"; do
-        if [[ -n "$SITE_NAME" ]]; then
-            echo -e "${GREEN}✅ Đã chọn: $SITE_NAME${NC}"
-            break
-        else
-            echo -e "${RED}❌ Lựa chọn không hợp lệ!${NC}"
-        fi
-    done
+    # Sử dụng get_input_or_test_value để chọn website
+    SELECTED_WEBSITE=$(get_input_or_test_value "🔹 Chọn một website:" "${sites[0]}")
+
+    # Kiểm tra xem người dùng có chọn website hợp lệ không
+    if [[ ! " ${sites[@]} " =~ " ${SELECTED_WEBSITE} " ]]; then
+        echo -e "${RED}❌ Lựa chọn không hợp lệ!${NC}"
+        return 1
+    fi
+
+    echo -e "${GREEN}✅ Đã chọn: $SELECTED_WEBSITE${NC}"
 }
+
 
 # 🔍 Quét danh sách site từ thư mục sites
 get_site_list() {

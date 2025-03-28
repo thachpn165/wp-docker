@@ -30,6 +30,7 @@ setup_env() {
   export RCLONE_CONFIG_FILE="$RCLONE_CONFIG_DIR/rclone.conf"
 mkdir -p "$FUNCTIONS_DIR" "$FUNCTIONS_DIR/php"
 mkdir -p "$FUNCTIONS_DIR/core"
+mkdir -p "$FUNCTIONS_DIR/backup-manager"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/system_utils.sh"         "$FUNCTIONS_DIR/"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/docker_utils.sh"         "$FUNCTIONS_DIR/"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/file_utils.sh"           "$FUNCTIONS_DIR/"
@@ -45,7 +46,28 @@ cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/core/core_update.sh" \
    "$FUNCTIONS_DIR/core/"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/core/core_version_management.sh" \
    "$FUNCTIONS_DIR/core/"
+cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/backup-manager/backup_restore_web.sh" \
+   "$FUNCTIONS_DIR/backup-manager/"
 
+cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/backup-manager/backup_restore_functions.sh" \
+   "$FUNCTIONS_DIR/backup-manager/"
+
+# Import các file utils từ thư mục tạm
+source "$FUNCTIONS_DIR/system_utils.sh"
+source "$FUNCTIONS_DIR/docker_utils.sh"
+source "$FUNCTIONS_DIR/file_utils.sh"
+source "$FUNCTIONS_DIR/network_utils.sh"
+source "$FUNCTIONS_DIR/ssl_utils.sh"
+source "$FUNCTIONS_DIR/wp_utils.sh"
+source "$FUNCTIONS_DIR/php/php_utils.sh"
+source "$FUNCTIONS_DIR/db_utils.sh"
+source "$FUNCTIONS_DIR/website_utils.sh"
+source "$FUNCTIONS_DIR/misc_utils.sh"
+source "$FUNCTIONS_DIR/nginx_utils.sh"
+#source "$FUNCTIONS_DIR/core/core_update.sh"
+source "$FUNCTIONS_DIR/core/core_version_management.sh"
+source "$FUNCTIONS_DIR/backup-manager/backup_restore_web.sh"
+source "$FUNCTIONS_DIR/backup-manager/backup_restore_functions.sh"
 
 # Tạo file config.sh giả tại đúng vị trí mà core_update.sh cần
 mkdir -p "$PROJECT_DIR/shared/config"
@@ -78,7 +100,6 @@ NGINX_PROXY_CONTAINER="nginx-proxy"
 RED="" GREEN="" YELLOW="" BLUE="" MAGENTA="" CYAN="" WHITE="" NC=""
 CHECKMARK="✅"
 CROSSMARK="❌"
-
 # Avoid sourcing actual functions again during tests
 EOF
 
