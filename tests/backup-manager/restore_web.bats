@@ -10,8 +10,11 @@ source "${BATS_TEST_DIRNAME}/../helpers/mock_env.bash"
 setup() {
   setup_env
 
+  # ✅ Mock giá trị SITE_NAME cho test
+  export SITE_NAME="demo-site"
+  
   # ✅ Tạo folder và file cần thiết
-  site_name="demo-site"
+  site_name="$SITE_NAME"
   SITE_DIR="$SITES_DIR/$site_name"
   mkdir -p "$SITE_DIR/backups"
 
