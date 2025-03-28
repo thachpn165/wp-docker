@@ -3,40 +3,40 @@ calculate_mariadb_config() {
     local total_ram=$(get_total_ram)
     local total_cpu=$(get_total_cpu)
 
-    # Cấu hình tối ưu dựa theo tài nguyên hệ thống
-    max_connections=$((total_ram / 4))  # Số kết nối tối đa (1/4 RAM)
-    query_cache_size=32  # Dung lượng cache query (MB)
+    # Optimize configuration based on system resources
+    max_connections=$((total_ram / 4))  # Maximum connections (1/4 RAM)
+    query_cache_size=32  # Query cache size (MB)
     innodb_buffer_pool_size=$((total_ram / 2))  # InnoDB Buffer Pool = 1/2 RAM
     innodb_log_file_size=$((innodb_buffer_pool_size / 4))  # InnoDB Log File = 1/4 Buffer Pool
-    table_open_cache=$((total_ram * 8))  # Cache bảng mở
-    thread_cache_size=$((total_cpu * 8))  # Cache luồng
+    table_open_cache=$((total_ram * 8))  # Table open cache
+    thread_cache_size=$((total_cpu * 8))  # Thread cache
 
-    # Giới hạn giá trị tối thiểu và tối đa hợp lý
+    # Set reasonable minimum and maximum values
     max_connections=$((max_connections > 100 ? max_connections : 100))
     innodb_buffer_pool_size=$((innodb_buffer_pool_size > 256 ? innodb_buffer_pool_size : 256))
     innodb_log_file_size=$((innodb_log_file_size > 64 ? innodb_log_file_size : 64))
     table_open_cache=$((table_open_cache > 400 ? table_open_cache : 400))
     thread_cache_size=$((thread_cache_size > 16 ? thread_cache_size : 16))
 
-    # Trả về giá trị tính toán
+    # Return calculated values
     echo "$max_connections,$query_cache_size,$innodb_buffer_pool_size,$innodb_log_file_size,$table_open_cache,$thread_cache_size"
 }
 
 apply_mariadb_config() {
     local mariadb_conf_path="$1"
 
-    # Nếu file đã tồn tại, xoá để tạo mới
+    # If file exists, remove to create new
     if [ -f "$mariadb_conf_path" ]; then
         rm -f "$mariadb_conf_path"
     fi
 
-    # Lấy thông số tối ưu
+    # Get optimal parameters
     IFS=',' read -r max_connections query_cache_size innodb_buffer_pool_size innodb_log_file_size table_open_cache thread_cache_size <<< "$(calculate_mariadb_config)"
 
-    # Đặt cứng giá trị `innodb_io_capacity = 1500`
+    # Set fixed value for `innodb_io_capacity = 1500`
     innodb_io_capacity=1500
 
-    # Tạo file cấu hình
+    # Create configuration file
     cat > "$mariadb_conf_path" <<EOF
 [mysqld]
 character-set-server = utf8mb4
@@ -52,17 +52,16 @@ thread_cache_size = $thread_cache_size
 innodb_io_capacity = $innodb_io_capacity
 EOF
 
-    echo "✅ Đã tạo cấu hình MariaDB tối ưu tại $mariadb_conf_path"
+    echo "✅ Created optimized MariaDB configuration at $mariadb_conf_path"
 }
 
-
-# Hàm kiểm tra xem container database có đang chạy không
+# Function to check if database container is running
 is_mariadb_running() {
     local container_name="$1-mariadb"
     docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
 }
 
-# Hàm reset (xóa toàn bộ bảng) trong database
+# Function to reset (drop all tables) database
 db_reset_database() {
     local site_name="$1"
     local db_user="$2"
@@ -70,16 +69,16 @@ db_reset_database() {
     local db_name="$4"
     
     if ! is_mariadb_running "$site_name"; then
-        echo "❌ Container MariaDB cho site '$site_name' không chạy. Kiểm tra lại!"
+        echo "❌ MariaDB container for site '$site_name' is not running. Please check!"
         return 1
     fi
     
-    echo "🚨 Đang reset database: $db_name cho site: $site_name..."
+    echo "🚨 Resetting database: $db_name for site: $site_name..."
     docker exec -i ${site_name}-mariadb mysql -u$db_user -p$db_password -e "DROP DATABASE $db_name; CREATE DATABASE $db_name;"
-    echo "✅ Database đã được reset thành công!"
+    echo "✅ Database has been reset successfully!"
 }
 
-# Hàm export database (backup)
+# Function to export database (backup)
 db_export_database() {
     local site_name="$1"
     local db_user="$2"
@@ -88,16 +87,16 @@ db_export_database() {
     local backup_file="./sites/mariadb/data/${site_name}-backup-$(date +%F).sql"
     
     if ! is_mariadb_running "$site_name"; then
-        echo "❌ Container MariaDB cho site '$site_name' không chạy. Kiểm tra lại!"
+        echo "❌ MariaDB container for site '$site_name' is not running. Please check!"
         return 1
     fi
     
-    echo "💾 Đang backup database: $db_name cho site: $site_name..."
+    echo "💾 Backing up database: $db_name for site: $site_name..."
     docker exec ${site_name}-mariadb mysqldump -u$db_user -p$db_password $db_name > "$backup_file"
-    echo "✅ Backup hoàn tất: $backup_file"
+    echo "✅ Backup completed: $backup_file"
 }
 
-# Hàm import database (khôi phục từ backup)
+# Function to import database (restore from backup)
 db_import_database() {
     local site_name="$1"
     local db_user="$2"
@@ -106,16 +105,16 @@ db_import_database() {
     local backup_file="$5"
     
     if ! is_mariadb_running "$site_name"; then
-        echo "❌ Container MariaDB cho site '$site_name' không chạy. Kiểm tra lại!"
+        echo "❌ MariaDB container for site '$site_name' is not running. Please check!"
         return 1
     fi
     
     if [ ! -f "$backup_file" ]; then
-        echo "❌ File backup không tồn tại: $backup_file"
+        echo "❌ Backup file does not exist: $backup_file"
         return 1
     fi
     
-    echo "📥 Đang khôi phục database: $db_name cho site: $site_name từ file: $backup_file..."
+    echo "📥 Restoring database: $db_name for site: $site_name from file: $backup_file..."
     docker exec -i ${site_name}-mariadb mysql -u$db_user -p$db_password $db_name < "$backup_file"
-    echo "✅ Import database hoàn tất!"
+    echo "✅ Database import completed!"
 }

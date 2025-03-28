@@ -1,51 +1,50 @@
 #!/bin/bash
 
-# Kiểm tra xem một tệp tin có tồn tại không
+# Check if a file exists
 is_file_exist() {
     local file_path="$1"
     [[ -f "$file_path" ]]
 }
 
-
-# Xóa tệp tin nếu nó tồn tại
+# Remove file if it exists
 remove_file() {
     local file_path="$1"
     if is_file_exist "$file_path"; then
-        echo "🗑️ Đang xóa tệp tin: $file_path"
+        echo "🗑️ Removing file: $file_path"
         rm -f "$file_path"
     fi
 }
 
-# Xóa thư mục nếu nó tồn tại
+# Remove directory if it exists
 remove_directory() {
     local dir_path="$1"
     if is_directory_exist "$dir_path"; then
-        echo "🗑️ Đang xóa thư mục: $dir_path"
+        echo "🗑️ Removing directory: $dir_path"
         rm -rf "$dir_path"
     fi
 }
 
-# Sao chép tệp tin với kiểm tra lỗi
+# Copy file with error checking
 copy_file() {
     local src="$1"
     local dest="$2"
     if is_file_exist "$src"; then
-        echo "📂 Sao chép tệp tin từ $src -> $dest"
+        echo "📂 Copying file from $src -> $dest"
         cp "$src" "$dest"
     else
-        echo "❌ Lỗi: Không tìm thấy tệp tin nguồn: $src"
+        echo "❌ Error: Source file not found: $src"
         return 1
     fi
 }
 
-# Hàm kiểm tra thư mục có tồn tại không, nếu không thì tự tạo thư mục
+# Function to check if directory exists, create if missing
 is_directory_exist() {
     local dir="$1"
-    local create_if_missing="$2" # Nếu là "false" thì không tạo
+    local create_if_missing="$2" # If "false" then don't create
 
     if [ ! -d "$dir" ]; then
         if [ "$create_if_missing" != "false" ]; then
-            echo "📁 [DEBUG] Tạo thư mục: $dir"
+            echo "📁 [DEBUG] Creating directory: $dir"
             mkdir -p "$dir"
         else
             return 1
@@ -53,39 +52,37 @@ is_directory_exist() {
     fi
 }
 
-
-
-# Hỏi người dùng xác nhận hành động
+# Ask user to confirm action
 confirm_action() {
     local message="$1"
     
     while true; do
         read -rp "$message (y/n): " response
         case "$response" in
-            [Yy]*) return 0 ;;  # Xác nhận hành động
-            [Nn]*) return 1 ;;  # Hủy hành động
-            *) echo -e "${RED}⚠️ Vui lòng nhập 'y' hoặc 'n'.${NC}" ;;
+            [Yy]*) return 0 ;;  # Confirm action
+            [Nn]*) return 1 ;;  # Cancel action
+            *) echo -e "${RED}⚠️ Please enter 'y' or 'n'.${NC}" ;;
         esac
     done
 }
 
-# Hàm hỗ trợ ghi log với timestamp, tránh trùng lặp log
+# Function to write log with timestamp, avoid duplicate logs
 log_with_time() {
     local message="$1"
     local formatted_time
     formatted_time="$(date '+%Y-%m-%d %H:%M:%S') - $message"
 
-    # In ra terminal và ghi log, nhưng chỉ ghi log một lần
+    # Print to terminal and write to log, but only write log once
     echo -e "$formatted_time" | tee -a "$log_file" > /dev/null
 }
 
-# Hàm chạy lệnh trong thư mục sử dụng pushd/popd để đảm bảo lệnh chạy chính xác và trở về thư mục gốc
+# Function to run command in directory using pushd/popd to ensure command runs correctly and returns to original directory
 run_in_dir() {
   local target_dir="$1"
   shift
 
   if [[ ! -d "$target_dir" ]]; then
-    echo -e "${RED}❌ Thư mục '$target_dir' không tồn tại!${NC}"
+    echo -e "${RED}❌ Directory '$target_dir' does not exist!${NC}"
     return 1
   fi
 

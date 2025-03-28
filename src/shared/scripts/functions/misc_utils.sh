@@ -1,29 +1,29 @@
-# Định nghĩa các hàm tiện ích không thuộc một chuyên mục cụ thể nào
+# Define utility functions that don't belong to a specific category
 
 # =========================================
-# 🧪 Liên quan đến môi trường hệ thống
+# 🧪 System Environment Related
 # =========================================
-# 📝 **Kiểm tra các biến môi trường bắt buộc**
+# 📝 **Check Required Environment Variables**
 check_required_envs() {
   for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
-      echo -e "${RED}❌ Lỗi: Biến '$var' chưa được định nghĩa trong config.sh${NC}"
+      echo -e "${RED}❌ Error: Variable '$var' is not defined in config.sh${NC}"
       exit 1
     fi
   done
 }
 
 # =========================================
-# 🧪 Hàm hỗ trợ TEST_MODE
+# 🧪 TEST_MODE Support Functions
 # =========================================
 
-# ✅ Kiểm tra có đang ở chế độ test không
+# ✅ Check if running in test mode
 is_test_mode() {
   [[ "$TEST_MODE" == true ]]
 }
 
-# ✅ Thực thi lệnh nếu không phải test, nếu test thì trả về giá trị fallback
-# Cách dùng:
+# ✅ Execute command if not in test mode, return fallback value if in test mode
+# Usage:
 #   domain=$(run_if_not_test "example.com" get_input_domain)
 run_if_not_test() {
   local fallback="$1"
@@ -35,20 +35,20 @@ run_if_not_test() {
   fi
 }
 
-# ✅ Chạy 1 lệnh (hoặc hàm) chỉ khi không phải TEST_MODE
-# Cách dùng:
+# ✅ Run a command (or function) only when not in TEST_MODE
+# Usage:
 #   run_unless_test docker compose up -d
 run_unless_test() {
   if ! is_test_mode; then
     "$@"
   else
-    echo "🧪 Bỏ qua trong TEST_MODE: $*" >&2
+    echo "🧪 Skipping in TEST_MODE: $*" >&2
   fi
 }
 
-# ✅ Lấy giá trị đầu vào từ người dùng, hoặc dùng giá trị test nếu đang TEST_MODE
-# Cách dùng:
-#   domain=$(get_input_or_test_value "Nhập domain: " "example.com")
+# ✅ Get input from user, or use test value if in TEST_MODE
+# Usage:
+#   domain=$(get_input_or_test_value "Enter domain: " "example.com")
 
 get_input_or_test_value() {
   local prompt="$1"
@@ -62,26 +62,25 @@ get_input_or_test_value() {
   fi
 }
 
-
 # =========================================
-# Hàm khác
+# Other Functions
 # =========================================
 
-# Hàm hiển thị hiệu ứng loading
+# Function to display loading animation
 show_loading() {
     local message="$1"
-    local delay="$2"  # Thời gian trễ giữa các vòng quay (tính bằng giây)
+    local delay="$2"  # Delay between rotation cycles (in seconds)
     
-    # Tạo mảng chứa các dấu hiệu loading
+    # Create array of loading symbols
     local symbols=("/" "-" "\\" "|")
     
-    # Vòng lặp hiển thị loading
+    # Loading animation loop
     echo -n "$message "
     while true; do
         for symbol in "${symbols[@]}"; do
             echo -n "$symbol"
             sleep "$delay"
-            echo -ne "\b"  # Di chuyển con trỏ về vị trí trước đó (backspace)
+            echo -ne "\b"  # Move cursor back one position (backspace)
         done
     done
 }

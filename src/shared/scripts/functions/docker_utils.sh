@@ -1,61 +1,60 @@
 #!/bin/bash
 
-# Kiểm tra xem một container có đang chạy không
+# Check if a container is running
 is_container_running() {
     local container_name="$1"
     
-    # Mock khi ở TEST_MODE
+    # Mock when in TEST_MODE
     if [[ "$TEST_MODE" == true && "$TEST_ALWAYS_READY" == true ]]; then
-        return 0  # container luôn sẵn sàng trong TEST_MODE
+        return 0  # container is always ready in TEST_MODE
     fi
 
-    # Kiểm tra container khi không ở TEST_MODE
+    # Check container when not in TEST_MODE
     docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
 }
 
-# Kiểm tra xem một volume Docker có tồn tại không
+# Check if a Docker volume exists
 is_volume_exist() {
     local volume_name="$1"
     
-    # Mock khi ở TEST_MODE
+    # Mock when in TEST_MODE
     if [[ "$TEST_MODE" == true && "$TEST_ALWAYS_READY" == true ]]; then
-        return 0  # volume luôn tồn tại trong TEST_MODE
+        return 0  # volume always exists in TEST_MODE
     fi
 
-    # Kiểm tra volume khi không ở TEST_MODE
+    # Check volume when not in TEST_MODE
     docker volume ls --format '{{.Name}}' | grep -q "^${volume_name}$"
 }
 
-# Xóa container nếu nó đang chạy
+# Remove container if it's running
 remove_container() {
     local container_name="$1"
     
-    # Mock khi ở TEST_MODE
+    # Mock when in TEST_MODE
     if [[ "$TEST_MODE" == true && "$TEST_ALWAYS_READY" == true ]]; then
-        echo "🧪 Bỏ qua xóa container trong TEST_MODE: $container_name"
-        return 0  # không làm gì trong TEST_MODE
+        echo "🧪 Skipping container removal in TEST_MODE: $container_name"
+        return 0  # do nothing in TEST_MODE
     fi
 
-    # Thực hiện xóa container khi không ở TEST_MODE
+    # Perform container removal when not in TEST_MODE
     if is_container_running "$container_name"; then
-        echo "🛑 Đang dừng và xóa container: $container_name..."
+        echo "🛑 Stopping and removing container: $container_name..."
         docker rm -f "$container_name"
     fi
 }
 
-
-# Xóa volume nếu nó tồn tại
+# Remove volume if it exists
 remove_volume() {
     local volume_name="$1"
     if is_volume_exist "$volume_name"; then
-        echo "🗑️ Đang xóa volume: $volume_name..."
+        echo "🗑️ Removing volume: $volume_name..."
         docker volume rm "$volume_name"
     fi
 }
 
-# ✅ Hàm tự động cài Docker
+# ✅ Function to automatically install Docker
 install_docker() {
-    echo -e "${YELLOW}🔧 Cài đặt Docker...${NC}"
+    echo -e "${YELLOW}🔧 Installing Docker...${NC}"
     if [ -x "$(command -v apt-get)" ]; then
         sudo apt-get update
         sudo apt-get install -y ca-certificates curl gnupg lsb-release
@@ -74,14 +73,14 @@ install_docker() {
         sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
         sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     else
-        echo -e "${RED}❌ Không hỗ trợ hệ điều hành này để cài Docker tự động.${NC}"
+        echo -e "${RED}❌ This operating system is not supported for automatic Docker installation.${NC}"
         exit 1
     fi
 }
 
-# ✅ Hàm cài Docker Compose từ GitHub release
+# ✅ Function to install Docker Compose from GitHub release
 install_docker_compose() {
-    echo -e "${YELLOW}📦 Đang cài đặt Docker Compose plugin...${NC}"
+    echo -e "${YELLOW}📦 Installing Docker Compose plugin...${NC}"
 
     DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
     mkdir -p "$DOCKER_CONFIG/cli-plugins"
@@ -89,32 +88,31 @@ install_docker_compose() {
     OS=$(uname -s | tr '[:upper:]' '[:lower:]')
     ARCH=$(uname -m)
 
-    # Chuẩn hóa kiến trúc
+    # Normalize architecture
     case "$ARCH" in
         x86_64) ARCH="x86_64" ;;
         aarch64 | arm64) ARCH="aarch64" ;;
-        *) echo "❌ Không hỗ trợ kiến trúc máy: $ARCH" && return 1 ;;
+        *) echo "❌ Unsupported machine architecture: $ARCH" && return 1 ;;
     esac
 
     COMPOSE_URL="https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-${OS}-${ARCH}"
     DEST="$DOCKER_CONFIG/cli-plugins/docker-compose"
 
-    echo "➡️  Tải từ: $COMPOSE_URL"
+    echo "➡️  Downloading from: $COMPOSE_URL"
     curl -SL "$COMPOSE_URL" -o "$DEST"
     chmod +x "$DEST"
 
     if docker compose version &>/dev/null; then
-        echo -e "${GREEN}✅ Docker Compose đã được cài đặt thành công.${NC}"
+        echo -e "${GREEN}✅ Docker Compose has been installed successfully.${NC}"
     else
-        echo -e "${RED}❌ Cài đặt Docker Compose thất bại. Hãy kiểm tra thủ công.${NC}"
+        echo -e "${RED}❌ Docker Compose installation failed. Please check manually.${NC}"
     fi
 }
 
-
-# ✅ Hàm kiểm tra Docker đã chạy chưa
+# ✅ Function to check if Docker is running
 start_docker_if_needed() {
     if (! docker stats --no-stream &> /dev/null); then
-        echo -e "${YELLOW}🌀 Docker chưa chạy. Đang khởi động Docker...${NC}"
+        echo -e "${YELLOW}🌀 Docker is not running. Starting Docker...${NC}"
         if [[ "$OSTYPE" == "darwin"* ]]; then
             open --background -a Docker
             while ! docker system info > /dev/null 2>&1; do
@@ -126,52 +124,50 @@ start_docker_if_needed() {
             sudo systemctl start docker
         fi
     else
-        echo -e "${GREEN}✅ Docker đang hoạt động.${NC}"
+        echo -e "${GREEN}✅ Docker is running.${NC}"
     fi
 }
 
-# ✅ Hàm kiểm tra & thêm user vào group docker nếu cần
+# ✅ Function to check & add user to docker group if needed
 check_docker_group() {
-    # Kiểm tra hệ điều hành
+    # Check operating system
     if [[ "$(uname)" == "Darwin" ]]; then
-        # macOS không yêu cầu người dùng thuộc nhóm docker
-        echo -e "${GREEN}✅ Trên macOS, không cần thêm user vào nhóm docker.${NC}"
+        # macOS doesn't require user to be in docker group
+        echo -e "${GREEN}✅ On macOS, no need to add user to docker group.${NC}"
     else
-        # Linux - kiểm tra và thêm user vào nhóm docker nếu cần
+        # Linux - check and add user to docker group if needed
         if ! groups "$USER" | grep -q docker; then
-            echo -e "${YELLOW}➕ Thêm user '$USER' vào nhóm docker...${NC}"
+            echo -e "${YELLOW}➕ Adding user '$USER' to docker group...${NC}"
             sudo usermod -aG docker "$USER"
-            echo -e "${GREEN}✅ Đã thêm user vào nhóm docker. Hãy logout/login lại để có hiệu lực.${NC}"
+            echo -e "${GREEN}✅ User has been added to docker group. Please logout/login for changes to take effect.${NC}"
         fi
     fi
 }
 
-# 🧩 Hàm docker exec nhanh
+# 🧩 Quick docker exec function
 docker_exec_php() {
     docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "$1"
 }
 
-
-# Nếu script này được gọi trực tiếp, thực thi hàm tương ứng
+# If this script is called directly, execute the corresponding function
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     case "$1" in
         is_docker_running) is_docker_running ;;
         check_docker_status) check_docker_status ;;
-        *) echo -e "${RED}❌ Lệnh không hợp lệ!${NC} Sử dụng: $0 {is_docker_running|check_docker_status}" ;;
+        *) echo -e "${RED}❌ Invalid command!${NC} Usage: $0 {is_docker_running|check_docker_status}" ;;
     esac
 fi
 
-
-# 🧹 Xoá container chính bao gồm nginx proxy và redis-cache
+# 🧹 Remove core containers including nginx proxy and redis-cache
 remove_core_containers() {
-  echo -e "${YELLOW}🧹 Đang xoá các container $NGINX_PROXY_CONTAINER và redis-cache...${NC}"
+  echo -e "${YELLOW}🧹 Removing containers $NGINX_PROXY_CONTAINER and redis-cache...${NC}"
   docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
 }
 
-# 🧹 Xoá toàn bộ container và volume liên quan tới từng site
+# 🧹 Remove all containers and volumes related to each site
 remove_site_containers() {
   for site in $(get_site_list); do
-    echo -e "${YELLOW}🧨 Đang xoá container cho site: $site${NC}"
+    echo -e "${YELLOW}🧨 Removing containers for site: $site${NC}"
     docker rm -f "$site-php" "$site-mariadb" 2>/dev/null || true
     docker volume rm "${site}_db_data" 2>/dev/null || true
   done

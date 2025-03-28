@@ -1,120 +1,141 @@
-# 🚧 Đang phát triển
-🔹 Phiên bản `v1.0.8-beta` đang trong giai đoạn hoàn thiện và có thể thay đổi trước khi ra mắt bản stable.
+# WP Docker LEMP Stack
 
-# 🚀 WP Docker
-
-[![Phiên bản](https://img.shields.io/badge/version-v1.0.8--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Version](https://img.shields.io/badge/version-v1.1.0--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker)](./LICENSE)
 
----
+> **Note**: Version `v1.1.0-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
 
-![menu](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
+![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
 
-## 📝 Giới thiệu
+## Introduction
 
-**WP Docker LEMP Stack** là hệ thống quản lý nhiều website WordPress qua Docker với giao diện menu tương tác trong terminal. 
-Tự động cài WP, sinh SSL, backup, WP-CLI, upload cloud...
+**WP Docker LEMP Stack** is a comprehensive solution for managing multiple WordPress installations through Docker, featuring an intuitive terminal-based interface. The system automates WordPress setup, SSL certificate generation, backup procedures, WP-CLI integration, and cloud synchronisation, among other essential functionalities.
 
-Hướng đến: **đơn giản – dễ dùng – dễ mở rộng**, hoạt động trên **macOS & Linux**.
+This solution combines Linux, NGINX, MySQL, and PHP (LEMP) in a containerized environment, providing isolation, scalability, and simplified development workflows. Compared to traditional WordPress installations, this approach offers enhanced security, easy environment replication, and simplified maintenance.
 
----
+Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
-## 🌟 Mục tiêu dự án
+## Latest Release - v1.1.0-beta
 
-- ✅ Quản lý nhiều website WordPress
-- ✅ Tích hợp SSL: Let's Encrypt, tự ký, thủ công
-- ✅ Backup định kỳ + upload cloud (GDrive,...)
-- ✅ WP-CLI, log, cronjob terminal giao diện
-- ✅ Cấu trúc module dễ bảo trì & phát triển
+### Added
+- **NGINX Rebuild**: System tool to rebuild the NGINX proxy container with latest OpenResty image
+- **Advanced Backup Restoration**: Enhanced functionality supporting both files and database restoration
+- **Improved Menu Integration**: Streamlined access to restoration tools through the system menu
+- **Test Mode Support**: Enhanced simulation capabilities for backup and restore processes
+- **Comprehensive Logging**: Refined debug output for monitoring key operations
 
----
+### Fixed
+- **Test Environment Stability**: Resolved issues with environment variable handling in test scenarios
+- **Dynamic Container Management**: Improved handling of container names based on environment variables
 
-## v1.0.8-beta - Changelog
+### Changed
+- **Code Optimization**: Refactored backup functions for improved maintenance and readability
+- **Container Initialization**: Enhanced pre-operation container status verification
+- **Standardized Naming Conventions**: Improved organization of backup files
 
-### Những thay đổi chính:
+*For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
 
-1. **Refactor sử dụng `run_in_dir`**: Đã thay thế các lệnh `cd` bằng hàm `run_in_dir` để tăng tính bảo mật và giảm thiểu lỗi khi thao tác với thư mục. Các hàm thực thi lệnh trong thư mục cụ thể mà không thay đổi thư mục làm việc của script.
+## Prerequisites
 
-2. **Cải thiện TEST_MODE**: Đảm bảo tất cả các bài kiểm tra tự động trong môi trường test được kiểm soát chặt chẽ bằng việc sử dụng các biến môi trường `TEST_MODE` và `TEST_ALWAYS_READY`. Điều này giúp môi trường kiểm tra ổn định và đồng nhất trên cả hệ thống Linux và macOS.
+### System Requirements
+- Docker and Docker Compose installed
+- Git (for installation and updates)
+- Bash 4.0+ (pre-installed on most Linux distributions and macOS)
+- At least 1GB of RAM per WordPress site (recommended)
 
-3. **Container và Volume Checks**: Tối ưu hóa việc kiểm tra trạng thái container và volumes Docker. Các hàm như `is_container_running` và `is_volume_exist` đã được cập nhật với các debug message rõ ràng, giúp việc kiểm tra trạng thái container trong môi trường thực tế dễ dàng hơn.
+### macOS-Specific Requirements
 
-4. **Sửa lỗi khởi động container nginx-proxy**: Đảm bảo quá trình kiểm tra và khởi động container `nginx-proxy` chạy đúng trên mọi hệ điều hành, đồng thời kiểm tra trạng thái container sau khi khởi động thành công.
+Docker on macOS **cannot mount any folder** outside of the shared file system list.
 
-5. **Update Script Refactoring**: Tối ưu các script cập nhật và phục hồi hệ thống để loại trừ các thư mục không cần thiết như `sites`, `logs`, và tránh mất dữ liệu quan trọng trong quá trình cập nhật.
+After installation, you **must add `/opt`** to Docker → Settings → Resources → File Sharing:
 
-6. **Cải tiến thông báo log**: Tinh chỉnh cách hiển thị log trong quá trình chạy script để người dùng có thể theo dõi và phân tích kết quả một cách dễ dàng.
+[Docker File Sharing Documentation](https://docs.docker.com/desktop/settings/mac/#file-sharing)
 
-
----
-
-### 🌎 Cài nhanh `wpdocker`
-
-```bash
-curl -L https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/src/install.sh | bash
-```
-
----
-
-## Dành cho Developer
-
-Khi phát triển, hãy lưu ý symlink thư mục `/opt/wp-docker` trên máy đến thư mục của project và luôn test thông qua lệnh `wpdocker` để đảm bảo sự nhất quán.
+## Installation
 
 ```bash
-sudo rm -rf /opt/wp-docker
-sudo ln -s ~/wp-docker-lemp/src /opt/wp-docker
+# Clone the repository
+git clone https://github.com/thachpn165/wp-docker.git
+
+# Navigate to the project directory
+cd wp-docker
+
+# Run the installation script
+./install.sh
 ```
 
-> Bây giờ bạn có thể test lệnh `wpdocker` mà code vẫn là source `~/wp-docker-lemp/src/`
+## Usage
 
-### 🚨 Lưu ý cho macOS
-
-Docker trên macOS KHÔNG mount được bất kỳ folder nào ngoài danh sách chia sẻ.
-
-Sau khi cài bạn Cần thêm `/opt` vào Docker → Settings → Resources → File Sharing:
-
-> 🔍 [https://docs.docker.com/desktop/settings/mac/#file-sharing](https://docs.docker.com/desktop/settings/mac/#file-sharing)
-
----
-
-## Cách sử dụng
+Once installed, simply run:
 
 ```bash
 wpdocker
 ```
 
-Mở menu terminal quản lý WP: tạo site, SSL, backup...
+This command opens the interactive terminal menu for managing your WordPress sites.
 
+## Key Features
 
-## 🔧 Tính năng nổi bật
+### WordPress Site Management
+- Create and manage multiple WordPress installations simultaneously
+- Configure independent PHP versions for individual sites
+- Implement multilingual and multisite configurations
 
-- 🌍 Tạo và quản lý nhiều website WordPress
-- 🔀 Thay đổi phiên bản PHP cho từng site
-- 🔐 Tự động cài SSL (Let's Encrypt, thủ công, tự ký)
-- 🔁 Backup + upload lên cloud (qua Rclone)
-- 🗓 Lên lịch backup định kỳ (cron)
-- ⚙️ Sửa trực tiếp `php.ini`, `php-fpm.conf`
-- 🔍 Kiểm tra SSL, thông tin site, logs
-- ♻️ Khôi phục site từ backup
-- 💥 Xoá site hoàn toàn (container, file, SSL, cronjob)
+### Security Features
+- Automatic SSL certificate deployment (Let's Encrypt, custom, or self-signed)
+- Isolated container environments for enhanced security
+- Advanced firewall configurations through NGINX
 
----
+### Backup and Recovery
+- Execute comprehensive backup solutions with cloud integration (via Rclone)
+- Schedule automated periodic backups through cron functionality
+- Restore sites from previous backup points with file and database recovery
 
-## 🤝 Đóng góp
+### Configuration and Monitoring
+- Directly modify configuration files including `php.ini` and `php-fpm.conf`
+- Monitor site health through SSL verification and log analysis
+- Performance optimization tools for NGINX and PHP-FPM
 
-### Cách tham gia:
-1. Fork repo
-2. Tạo branch từ `main`
-3. Commit & gửi pull request
+### System Administration
+- Perform complete site removal including containers, files, and SSL certificates
+- Update Docker images and system components
+- Access container shells for advanced troubleshooting
 
-### Báo lỗi hoặc đề xuất:
-- Mở issue tại GitHub repo
+## Advanced Configuration
 
----
+For advanced users requiring custom configurations, the following files can be modified:
 
-## 📃 License
+- `config/nginx/`: NGINX configuration templates
+- `config/php/`: PHP version-specific configurations
+- `config/mysql/`: MySQL server settings
 
-Dự án sử dụng [MIT License](./LICENSE)
+After modifying configuration files, restart the affected services through the system menu.
+
+## Acknowledgments
+
+I would like to extend my sincere appreciation to **@sonpython** for his valuable contributions to this project. My heartfelt thanks also go to my colleagues at **AZDIGI**: **@dotrungquan**, **@BamBo355**, **@phongdh262**, and **@RakunFatalis** for their unwavering support throughout the development process.
+
+Furthermore, I am grateful for the innovative AI tools **ChatGPT** and **Cursor**, which significantly enhanced the efficiency and quality of this project.
+
+## Contributing
+
+### Contribution Guidelines
+
+1. Fork the repository to your personal GitHub account
+2. Create a feature branch from the `main` branch
+3. Implement your changes, commit them with descriptive messages, and submit a pull request
+4. For comprehensive contribution procedures, please consult our [CONTRIBUTING.md](./CONTRIBUTING.md) documentation
+
+### Reporting Issues
+- For bugs or feature requests, please open an issue in the GitHub repository
+- Include detailed information about your environment and steps to reproduce any bugs
+
+## Documentation
+Coming soon
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).

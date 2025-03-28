@@ -1,13 +1,13 @@
 # =====================================
-# 📄 website_management_logs – Xem logs website WordPress
+# 📄 website_management_logs – View WordPress Website Logs
 # =====================================
 
 website_management_logs() {
-  echo -e "${YELLOW}📋 Danh sách các website có thể xem logs:${NC}"
+  echo -e "${YELLOW}📋 List of websites to view logs:${NC}"
   site_list=($(ls -1 "$SITES_DIR"))
 
   if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào để xem logs.${NC}"
+    echo -e "${RED}❌ No websites available to view logs.${NC}"
     return 1
   fi
 
@@ -16,32 +16,32 @@ website_management_logs() {
   done
 
   echo ""
-  read -p "Nhập số tương ứng với website cần xem logs: " site_index
+  read -p "Enter the number corresponding to the website to view logs: " site_index
   site_name="${site_list[$site_index]}"
 
   log_file="$SITES_DIR/$site_name/logs/access.log"
   error_log="$SITES_DIR/$site_name/logs/error.log"
 
-  echo -e "${CYAN}📂 Bạn muốn xem loại log nào?${NC}"
+  echo -e "${CYAN}📂 Which type of log would you like to view?${NC}"
   echo -e "  ${GREEN}[1]${NC} 📜 Access Log"
   echo -e "  ${GREEN}[2]${NC} 📛 Error Log"
-  read -p "Chọn một tuỳ chọn (1-2): " log_choice
+  read -p "Select an option (1-2): " log_choice
 
-  echo -ne "${YELLOW}⏳ Đang tải log"; for i in {1..5}; do echo -n "."; sleep 0.2; done; echo "${NC}"
+  echo -ne "${YELLOW}⏳ Loading log"; for i in {1..5}; do echo -n "."; sleep 0.2; done; echo "${NC}"
 
   case "$log_choice" in
     1)
-      echo -e "\n${CYAN}📜 Đang theo dõi Access Log: $log_file${NC}"
-      echo -e "${YELLOW}💡 Nhấn Ctrl + C để thoát khỏi chế độ theo dõi logs.${NC}\n"
+      echo -e "\n${CYAN}📜 Following Access Log: $log_file${NC}"
+      echo -e "${YELLOW}💡 Press Ctrl + C to exit log following mode.${NC}\n"
       tail -f "$log_file"
       ;;
     2)
-      echo -e "\n${MAGENTA}📛 Đang theo dõi Error Log: $error_log${NC}"
-      echo -e "${YELLOW}💡 Nhấn Ctrl + C để thoát khỏi chế độ theo dõi logs.${NC}\n"
+      echo -e "\n${MAGENTA}📛 Following Error Log: $error_log${NC}"
+      echo -e "${YELLOW}💡 Press Ctrl + C to exit log following mode.${NC}\n"
       tail -f "$error_log"
       ;;
     *)
-      echo -e "${RED}❌ Tuỳ chọn không hợp lệ.${NC}"
+      echo -e "${RED}❌ Invalid option.${NC}"
       ;;
   esac
 }

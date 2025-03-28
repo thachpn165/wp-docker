@@ -8,68 +8,69 @@ ZIP_NAME="wp-docker.zip"
 DEV_MODE=false
 
 # ========================
-# ⚙️ Xử lý tham số dòng lệnh
+# ⚙️ Command Line Parameter Processing
 # ========================
 if [[ "$1" == "--dev" ]]; then
   DEV_MODE=true
-  echo "🛠 Đang cài đặt ở chế độ DEV (không tạo symlink hệ thống)"
+  echo "🛠 Installing in DEV mode (no system symlink creation)"
 fi
 
 # ========================
-# 🧹 Kiểm tra nếu thư mục đã tồn tại
+# 🧹 Check if directory exists
 # ========================
 if [[ -d "$INSTALL_DIR" ]]; then
-  echo "⚠️ Thư mục $INSTALL_DIR đã tồn tại."
-  read -rp "❓ Bạn có muốn xoá và cài đè lên không? [y/N]: " confirm
+  echo "⚠️ Directory $INSTALL_DIR already exists."
+  read -rp "❓ Do you want to delete and overwrite it? [y/N]: " confirm
   if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-    echo "❌ Huỷ cài đặt."
+    echo "❌ Installation cancelled."
     exit 0
   fi
   sudo rm -rf "$INSTALL_DIR"
 fi
 
 # ========================
-# 📥 Tải và giải nén release
+# 📥 Download and extract release
 # ========================
-echo "📦 Đang tải mã nguồn từ GitHub Release..."
+echo "📦 Downloading source code from GitHub Release..."
 curl -L "$REPO_URL/releases/latest/download/wp-docker.zip" -o "$ZIP_NAME"
 
-echo "📁 Đang giải nén vào $INSTALL_DIR..."
+echo "📁 Extracting to $INSTALL_DIR..."
 sudo mkdir -p "$INSTALL_DIR"
 sudo unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
 rm "$ZIP_NAME"
 
 # ========================
-# ✅ Cấp quyền cho user hiện tại
+# ✅ Set permissions for current user
 # ========================
-echo "🔐 Cấp quyền sử dụng cho user: $USER"
+echo "🔐 Setting permissions for user: $USER"
 sudo chown -R "$USER" "$INSTALL_DIR"
 
 # ========================
-# 🔗 Tạo alias toàn cục nếu không phải chế độ dev
+# 🔗 Create global alias if not in dev mode
 # ========================
 chmod +x "$INSTALL_DIR/shared/bin/$BIN_NAME.sh"
 
 if [[ "$DEV_MODE" != true ]]; then
   sudo ln -sf "$INSTALL_DIR/shared/bin/$BIN_NAME.sh" "$BIN_LINK"
-  echo "✅ Đã tạo lệnh '$BIN_NAME' để chạy từ bất kỳ đâu."
+  echo "✅ Created '$BIN_NAME' command for running from anywhere."
 fi
 
-echo "✅ Cài đặt thành công tại: $INSTALL_DIR"
-echo "👉 Bạn có thể chạy hệ thống bằng lệnh: $BIN_NAME"
+echo "✅ Installation successful at: $INSTALL_DIR"
+echo "👉 You can run the system using: $BIN_NAME"
+
 # ========================
-# 📢 Cảnh báo đặc biệt cho macOS (Docker Desktop)
+# 📢 Special warning for macOS (Docker Desktop)
 # ========================
 if [[ "$OSTYPE" == "darwin"* ]]; then
   echo ""
-  echo "⚠️  ${YELLOW}LƯU Ý QUAN TRỌNG CHO NGƯỜI DÙNG macOS${NC}"
-  echo "💡 Docker trên macOS yêu cầu chia sẻ thủ công thư mục /opt với Docker Desktop."
-  echo "🔧 Vui lòng thực hiện theo các bước sau:"
+  echo "⚠️  ${YELLOW}IMPORTANT NOTE FOR macOS USERS${NC}"
+  echo "💡 Docker on macOS requires manual sharing of the /opt directory with Docker Desktop."
+  echo "🔧 Please follow these steps:"
   echo ""
-  echo "1. Mở Docker Desktop → Settings → Resources → File Sharing"
-  echo "2. Nhấn nút '+' và thêm đường dẫn: /opt"
-  echo "3. Nhấn Apply & Restart để Docker khởi động lại"
+  echo "1. Open Docker Desktop → Settings → Resources → File Sharing"
+  echo "2. Click the '+' button and add the path: /opt"
+  echo "3. Click Apply & Restart to restart Docker"
   echo ""
-  echo "👉 Xem hướng dẫn chính thức: https://docs.docker.com/desktop/settings/mac/#file-sharing"
+  echo "👉 See official guide: https://docs.docker.com/desktop/settings/mac/#file-sharing"
   echo ""
 fi
