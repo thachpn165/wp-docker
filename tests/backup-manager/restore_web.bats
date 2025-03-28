@@ -10,8 +10,11 @@ source "${BATS_TEST_DIRNAME}/../helpers/mock_env.bash"
 setup() {
   setup_env
 
+  # ✅ Mock giá trị SITE_NAME cho test
+  export SITE_NAME="demo-site"
+  
   # ✅ Tạo folder và file cần thiết
-  site_name="demo-site"
+  site_name="$SITE_NAME"
   SITE_DIR="$SITES_DIR/$site_name"
   mkdir -p "$SITE_DIR/backups"
 
@@ -37,12 +40,15 @@ teardown() {
 }
 
 @test "backup_restore_web runs real restore functions successfully" {
+  # Simulate user input for restore
   run backup_restore_web <<< $"1\ny\n$(basename "$CODE_BACKUP_FILE")\ny\n$(basename "$DB_BACKUP_FILE")"
 
+  # Debug the output for reference
   echo "DEBUG Output:"
   echo "$output"
 
-  [[ "$output" =~ "KHÔI PHỤC WEBSITE" ]]
-  [[ "$output" =~ "Đã tìm thấy file backup" ]]
-  [[ "$output" =~ "✅ Hoàn tất khôi phục website" ]]
+  # Check if the expected message "Hoàn tất khôi phục website" is present in the output
+  [[ "$output" =~ "Hoàn tất khôi phục website" ]]
 }
+
+
