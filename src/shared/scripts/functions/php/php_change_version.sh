@@ -8,38 +8,38 @@ php_change_version() {
   DOCKER_COMPOSE_FILE="$SITE_DIR/docker-compose.yml"
 
   if [[ ! -f "$ENV_FILE" ]]; then
-    echo -e "${RED}❌ Không tìm thấy file .env trong website ${SITE_NAME}!${NC}"
+    echo -e "${RED}❌ .env file not found in website ${SITE_NAME}!${NC}"
     return 1
   fi
 
   php_choose_version || return 1
   selected_php="$REPLY"
 
-  # ✅ Cập nhật .env
+  # ✅ Update .env
   sed -i.bak "s/^PHP_VERSION=.*/PHP_VERSION=$selected_php/" "$ENV_FILE"
-  echo -e "${GREEN}✅ Đã cập nhật phiên bản PHP trong .env: $selected_php${NC}"
+  echo -e "${GREEN}✅ Updated PHP version in .env: $selected_php${NC}"
 
-  # ✅ Cập nhật docker-compose.yml (nếu có)
+  # ✅ Update docker-compose.yml (if exists)
   if [[ -f "$DOCKER_COMPOSE_FILE" ]]; then
-    echo -e "${YELLOW}🔧 Đang cập nhật docker-compose.yml với PHP version mới...${NC}"
+    echo -e "${YELLOW}🔧 Updating docker-compose.yml with new PHP version...${NC}"
     sed -i.bak -E "s|^( *image: *bitnami/php-fpm:)[^ ]+|\1${selected_php}|" "$DOCKER_COMPOSE_FILE"
     
     if grep -q "bitnami/php-fpm:$selected_php" "$DOCKER_COMPOSE_FILE"; then
-      echo -e "${GREEN}✅ docker-compose.yml đã được cập nhật thành công.${NC}"
+      echo -e "${GREEN}✅ docker-compose.yml has been updated successfully.${NC}"
     else
-      echo -e "${RED}❌ Không tìm thấy dòng image để cập nhật. Vui lòng kiểm tra thủ công.${NC}"
+      echo -e "${RED}❌ Image line not found for update. Please check manually.${NC}"
     fi
   else
-    echo -e "${RED}❌ Không tìm thấy docker-compose.yml để cập nhật!${NC}"
+    echo -e "${RED}❌ docker-compose.yml not found for update!${NC}"
   fi
 
 
-  # ✅ Restart container PHP
-  echo -e "${YELLOW}🔄 Đang khởi động lại website để áp dụng thay đổi...${NC}"
+  # ✅ Restart PHP container
+  echo -e "${YELLOW}🔄 Restarting website to apply changes...${NC}"
 
 run_in_dir "$SITE_DIR" docker compose stop php
 run_in_dir "$SITE_DIR" docker rm -f "${SITE_NAME}-php" 2>/dev/null || true
 run_in_dir "$SITE_DIR" docker compose up -d php
 
-  echo -e "${GREEN}✅ Website $SITE_NAME đã chạy lại với PHP: $selected_php${NC}"
+  echo -e "${GREEN}✅ Website $SITE_NAME is now running with PHP: $selected_php${NC}"
 }

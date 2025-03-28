@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Import các hàm cần thiết từ backup-manager
+# Import required functions from backup-manager
 source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_files.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_database.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/cleanup_backups.sh"
@@ -22,148 +22,146 @@ backup_website() {
     is_directory_exist "$log_dir"
 
     if [[ ! -f "$env_file" ]]; then
-        echo -e "${RED}❌ Không tìm thấy tập tin .env trong $SITES_DIR/$SITE_NAME!${NC}"
+        echo -e "${RED}❌ .env file not found in $SITES_DIR/$SITE_NAME!${NC}"
         return 1
     fi
 
-    # Lấy thông tin database từ .env
+    # Get database information from .env
     DB_NAME=$(grep "^MYSQL_DATABASE=" "$env_file" | cut -d '=' -f2)
     DB_USER=$(grep "^MYSQL_USER=" "$env_file" | cut -d '=' -f2)
     DB_PASS=$(grep "^MYSQL_PASSWORD=" "$env_file" | cut -d '=' -f2)
 
     if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-        echo -e "${RED}❌ Lỗi: Không thể lấy thông tin database từ .env!${NC}"
+        echo -e "${RED}❌ Error: Could not get database information from .env!${NC}"
         return 1
     fi
 
-    echo -e "${GREEN}✅ Đang chuẩn bị sao lưu website: $SITE_NAME${NC}"
-    echo -e "📂 Mã nguồn: $web_root"
+    echo -e "${GREEN}✅ Preparing to backup website: $SITE_NAME${NC}"
+    echo -e "📂 Source code: $web_root"
     echo -e "🗄️ Database: $DB_NAME (User: $DB_USER)"
 
-    # Hỏi người dùng nơi lưu backup trước khi backup
-    echo -e "${BLUE}📂 Chọn nơi lưu backup:${NC}"
-    echo -e "  ${GREEN}[1]${NC} 💾 Lưu vào máy chủ (local)"
-    echo -e "  ${GREEN}[2]${NC} ☁️  Lưu vào Storage đã thiết lập"
-    read -p "🔹 Chọn một tùy chọn (1-2): " storage_choice
+    # Ask user where to save backup before proceeding
+    echo -e "${BLUE}📂 Select backup storage location:${NC}"
+    echo -e "  ${GREEN}[1]${NC} 💾 Save to server (local)"
+    echo -e "  ${GREEN}[2]${NC} ☁️  Save to configured Storage"
+    read -p "🔹 Select an option (1-2): " storage_choice
 
     if [[ "$storage_choice" == "2" ]]; then
-        echo -e "${BLUE}📂 Đang lấy danh sách Storage từ rclone.conf...${NC}"
+        echo -e "${BLUE}📂 Getting Storage list from rclone.conf...${NC}"
 
-        # Gọi `rclone_storage_list()` để lấy danh sách Storage
+        # Call `rclone_storage_list()` to get Storage list
         local storages=()
         while IFS= read -r line; do
             storages+=("$line")
         done < <(rclone_storage_list)
 
         if [[ ${#storages[@]} -eq 0 ]]; then
-            echo -e "${RED}❌ Không có Storage nào được thiết lập trong rclone.conf!${NC}"
+            echo -e "${RED}❌ No Storage configured in rclone.conf!${NC}"
             return 1
         fi
 
-        # Hiển thị danh sách Storage rõ ràng
-        echo -e "${BLUE}📂 Danh sách Storage khả dụng:${NC}"
+        # Display Storage list clearly
+        echo -e "${BLUE}📂 Available Storage list:${NC}"
         for storage in "${storages[@]}"; do
             echo -e "  ${GREEN}➜${NC} ${CYAN}$storage${NC}"
         done
 
-        echo -e "${YELLOW}💡 Hãy nhập chính xác tên Storage từ danh sách trên.${NC}"
+        echo -e "${YELLOW}💡 Please enter the exact Storage name from the list above.${NC}"
         while true; do
-            read -p "🔹 Nhập tên Storage để sử dụng: " selected_storage
-            selected_storage=$(echo "$selected_storage" | xargs)  # Loại bỏ khoảng trắng thừa
+            read -p "🔹 Enter Storage name to use: " selected_storage
+            selected_storage=$(echo "$selected_storage" | xargs)  # Remove extra spaces
 
-            # Kiểm tra nếu storage tồn tại trong danh sách
+            # Check if storage exists in list
             if [[ " ${storages[*]} " =~ " ${selected_storage} " ]]; then
-                echo -e "${GREEN}☁️  Đã chọn Storage: '$selected_storage'${NC}"
+                echo -e "${GREEN}☁️  Selected Storage: '$selected_storage'${NC}"
                 break
             else
-                echo -e "${RED}❌ Storage không hợp lệ! Vui lòng nhập đúng tên Storage.${NC}"
+                echo -e "${RED}❌ Invalid Storage! Please enter the correct Storage name.${NC}"
             fi
         done
     fi
 
-    # Bắt đầu tiến trình backup
-    echo -e "${YELLOW}🔹 Đang sao lưu database và mã nguồn...${NC}"
+    # Start backup process
+    echo -e "${YELLOW}🔹 Backing up database and source code...${NC}"
     db_backup_file=$(backup_database "$SITE_NAME" "$DB_NAME" "$DB_USER" "$DB_PASS" | tail -n 1)
     files_backup_file=$(backup_files "$SITE_NAME" "$web_root" | tail -n 1)
 
-    # Kiểm tra nếu file backup đã tồn tại
+    # Check if backup files exist
     if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then
-        echo -e "${RED}❌ Lỗi: Không thể tìm thấy tập tin backup!${NC}"
-        echo -e "${RED}🛑 Đường dẫn kiểm tra:${NC}"
+        echo -e "${RED}❌ Error: Could not find backup files!${NC}"
+        echo -e "${RED}🛑 Check paths:${NC}"
         echo -e "📂 Database: $db_backup_file"
         echo -e "📂 Files: $files_backup_file"
         return 1
     fi
 
     if [[ "$storage_choice" == "1" ]]; then
-        echo -e "${GREEN}💾 Backup hoàn tất và lưu tại: $backup_dir${NC}"
+        echo -e "${GREEN}💾 Backup completed and saved to: $backup_dir${NC}"
     elif [[ "$storage_choice" == "2" ]]; then
-        echo -e "${GREEN}☁️  Đang lưu backup lên Storage: '$selected_storage'${NC}"
+        echo -e "${GREEN}☁️  Saving backup to Storage: '$selected_storage'${NC}"
 
-        # Kiểm tra storage có tồn tại trong rclone.conf không
+        # Check if storage exists in rclone.conf
         if ! grep -q "^\[$selected_storage\]" "$RCLONE_CONFIG_FILE"; then
-            echo -e "${RED}❌ Lỗi: Storage '$selected_storage' không tồn tại trong rclone.conf!${NC}"
+            echo -e "${RED}❌ Error: Storage '$selected_storage' does not exist in rclone.conf!${NC}"
             return 1
         fi
 
-        # Gọi upload backup
+        # Call upload backup
         bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" "$selected_storage" "$db_backup_file" "$files_backup_file"
 
         if [[ $? -eq 0 ]]; then
-            echo -e "${GREEN}✅ Backup và upload lên Storage hoàn tất!${NC}"
+            echo -e "${GREEN}✅ Backup and upload to Storage completed!${NC}"
             
-            # Xóa tập tin backup sau khi upload thành công
-            echo -e "${YELLOW}🗑️ Đang xóa tập tin backup sau khi upload thành công...${NC}"
+            # Delete backup files after successful upload
+            echo -e "${YELLOW}🗑️ Deleting backup files after successful upload...${NC}"
             rm -f "$db_backup_file" "$files_backup_file"
 
-            # Kiểm tra nếu file đã bị xóa
+            # Check if files were deleted
             if [[ ! -f "$db_backup_file" && ! -f "$files_backup_file" ]]; then
-                echo -e "${GREEN}✅ Tập tin backup đã được xóa khỏi thư mục backups.${NC}"
+                echo -e "${GREEN}✅ Backup files have been deleted from backups directory.${NC}"
             else
-                echo -e "${RED}❌ Lỗi: Không thể xóa tập tin backup!${NC}"
+                echo -e "${RED}❌ Error: Could not delete backup files!${NC}"
             fi
         else
-            echo -e "${RED}❌ Lỗi khi upload backup lên Storage!${NC}"
+            echo -e "${RED}❌ Error uploading backup to Storage!${NC}"
         fi
     fi
 }
 
-
-
-# Chức năng xóa backup cũ
+# Function to delete old backups
 cleanup_old_backups() {
     select_website || return
 
-    read -p "Giữ lại backup trong bao nhiêu ngày? (VD: 7): " RETENTION_DAYS
+    read -p "Keep backups for how many days? (e.g., 7): " RETENTION_DAYS
     cleanup_backups "$SITE_NAME" "$RETENTION_DAYS"
 }
 
-# Chức năng xem danh sách backup
+# Function to list backup files
 list_backup_files() {
     select_website || return
 
     local backup_dir="$SITES_DIR/$SITE_NAME/backups"
 
     if ! is_directory_exist "$backup_dir"; then
-        echo -e "${RED}❌ Không tìm thấy thư mục backup trong $backup_dir${NC}"
+        echo -e "${RED}❌ Backup directory not found in $backup_dir${NC}"
         return 1
     fi
 
-    echo -e "${BLUE}📂 Danh sách backup của $SITE_NAME:${NC}"
+    echo -e "${BLUE}📂 Backup list for $SITE_NAME:${NC}"
 
-    # Xác định hệ điều hành (macOS hoặc Linux)
+    # Determine operating system (macOS or Linux)
     if [[ "$(uname)" == "Darwin" ]]; then
         FIND_CMD="ls -lt $backup_dir | awk '{print \$6, \$7, \$8, \$9}'"
     else
         FIND_CMD="find $backup_dir -type f -printf '%TY-%Tm-%Td %TH:%TM %p\n' | sort -r"
     fi
 
-    # Hiển thị backup database
-    echo -e "${GREEN}🗄️ Backup Database:${NC}"
+    # Display database backups
+    echo -e "${GREEN}🗄️ Database Backups:${NC}"
     eval "$FIND_CMD" | grep "db-.*\.sql" | awk '{print "  📄 " $1, $2, "-", $NF}'
 
-    # Hiển thị backup mã nguồn
-    echo -e "${YELLOW}📂 Backup Mã nguồn:${NC}"
+    # Display source code backups
+    echo -e "${YELLOW}📂 Source Code Backups:${NC}"
     eval "$FIND_CMD" | grep "files-.*\.tar.gz" | awk '{print "  📦 " $1, $2, "-", $NF}'
 }
 

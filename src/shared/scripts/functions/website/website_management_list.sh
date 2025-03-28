@@ -1,19 +1,19 @@
 # =====================================
-# 📋 website_management_list – Hiển thị danh sách website hiện có
+# 📋 website_management_list – Display List of Existing Websites
 # =====================================
 
 website_management_list() {
   if [[ ! -d "$SITES_DIR" ]]; then
-    echo -e "${RED}❌ Thư mục $SITES_DIR không tồn tại.${NC}"
+    echo -e "${RED}❌ Directory $SITES_DIR does not exist.${NC}"
     return 1
   fi
 
   site_list=($(ls -1 "$SITES_DIR"))
 
-  echo -e "${YELLOW}📋 Danh sách các website hiện có:${NC}"
+  echo -e "${YELLOW}📋 List of Existing Websites:${NC}"
 
   if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào được cài đặt.${NC}"
+    echo -e "${RED}❌ No websites are installed.${NC}"
     return 0
   fi
 
@@ -21,6 +21,6 @@ website_management_list() {
     echo -e "  ${GREEN}[$i]${NC} ${site_list[$i]}"
   done
 
-  echo -e "${GREEN}✅ Hiển thị danh sách website hoàn tất.${NC}"
-  read -p "Nhấn Enter để quay lại menu..."
+  echo -e "${GREEN}✅ Website list display completed.${NC}"
+  read -p "Press Enter to return to menu..."
 }

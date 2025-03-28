@@ -1,76 +1,76 @@
 #!/bin/bash
 
 # ===========================================
-# Hàm khôi phục backup mã nguồn của website
+# Function to restore website source code backup
 # ===========================================
 
 backup_restore_files() {
-  BACKUP_FILE="$1"  # Đường dẫn đến file backup mã nguồn (tar.gz)
-  SITE_DIR="$2"     # Thư mục chứa website cần khôi phục
+  BACKUP_FILE="$1"  # Path to source code backup file (tar.gz)
+  SITE_DIR="$2"     # Directory containing website to restore
 
   if [[ -z "$BACKUP_FILE" || -z "$SITE_DIR" ]]; then
-    echo "❌ Thiếu tham số: Đường dẫn file backup hoặc thư mục website không hợp lệ!"
+    echo "❌ Missing parameters: Invalid backup file path or website directory!"
     return 1
   fi
 
-  # Kiểm tra file backup có tồn tại không
+  # Check if backup file exists
   if [[ ! -f "$BACKUP_FILE" ]]; then
-    echo "❌ Không tìm thấy file backup: $BACKUP_FILE"
+    echo "❌ Backup file not found: $BACKUP_FILE"
     return 1
   fi
 
-  # Giải nén mã nguồn vào thư mục website
-  echo "📦 Đang khôi phục mã nguồn từ $BACKUP_FILE vào $SITE_DIR/wordpress..."
+  # Extract source code to website directory
+  echo "📦 Restoring source code from $BACKUP_FILE to $SITE_DIR/wordpress..."
   tar -xzf "$BACKUP_FILE" -C "$SITE_DIR/wordpress"
   
   if [[ $? -eq 0 ]]; then
-    echo "✅ Mã nguồn đã được khôi phục thành công từ backup."
+    echo "✅ Source code has been successfully restored from backup."
   else
-    echo "❌ Đã xảy ra lỗi khi khôi phục mã nguồn từ backup."
+    echo "❌ An error occurred while restoring source code from backup."
     return 1
   fi
 }
 
 # ===========================================
-# Hàm khôi phục backup cơ sở dữ liệu
+# Function to restore database backup
 # ===========================================
 
 backup_restore_database() {
-  DB_BACKUP="$1"          # Đường dẫn đến file backup cơ sở dữ liệu (.sql)
-  DB_CONTAINER="$2"       # Tên container chứa cơ sở dữ liệu (mariadb)
+  DB_BACKUP="$1"          # Path to database backup file (.sql)
+  DB_CONTAINER="$2"       # Name of container containing database (mariadb)
 
   if [[ -z "$DB_BACKUP" || -z "$DB_CONTAINER" ]]; then
-    echo "❌ Thiếu tham số: Đường dẫn file backup cơ sở dữ liệu hoặc container không hợp lệ!"
+    echo "❌ Missing parameters: Invalid database backup file path or container!"
     return 1
   fi
 
-  # Lấy tên database từ file .env
+  # Get database name from .env file
   DB_NAME=$(fetch_env_variable "$SITE_DIR/.env" "MYSQL_DATABASE")
   
   if [[ -z "$DB_NAME" ]]; then
-    echo "❌ Không lấy được tên database từ .env"
+    echo "❌ Could not get database name from .env"
     return 1
   fi
 
-  # Kiểm tra file backup cơ sở dữ liệu có tồn tại không
+  # Check if database backup file exists
   if [[ ! -f "$DB_BACKUP" ]]; then
-    echo "❌ Không tìm thấy file backup cơ sở dữ liệu: $DB_BACKUP"
+    echo "❌ Database backup file not found: $DB_BACKUP"
     return 1
   fi
 
-  # Khôi phục cơ sở dữ liệu từ file backup
-  echo "🔄 Đang khôi phục cơ sở dữ liệu từ $DB_BACKUP vào container $DB_CONTAINER..."
+  # Restore database from backup file
+  echo "🔄 Restoring database from $DB_BACKUP to container $DB_CONTAINER..."
 
-  # Drop database nếu có và tạo lại
+  # Drop database if exists and create new one
   docker exec -i "$DB_CONTAINER" mysql -u root -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
 
-  # Restore lại database
+  # Restore database
   docker exec -i "$DB_CONTAINER" mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$DB_NAME" < "$DB_BACKUP"
 
   if [[ $? -eq 0 ]]; then
-    echo "✅ Cơ sở dữ liệu đã được khôi phục thành công từ backup vào database '$DB_NAME'."
+    echo "✅ Database has been successfully restored from backup to database '$DB_NAME'."
   else
-    echo "❌ Đã xảy ra lỗi khi khôi phục cơ sở dữ liệu từ backup."
+    echo "❌ An error occurred while restoring database from backup."
     return 1
   fi
 }

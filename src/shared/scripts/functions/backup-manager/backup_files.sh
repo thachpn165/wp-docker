@@ -7,15 +7,14 @@ backup_files() {
     is_directory_exist "$SITES_DIR/$site_name/backups"
     is_directory_exist "$SITES_DIR/$site_name/logs"
 
-
-    echo "🔹 Đang sao lưu file của ${site_name}..."
+    echo "🔹 Backing up files for ${site_name}..."
     tar -czf "${backup_file}" -C "${web_root}" . 2>/dev/null
 
     if [[ $? -eq 0 ]]; then
-        echo "✅ File WordPress được sao lưu thành công: ${backup_file}"
-        echo -n "$backup_file"  # Chỉ trả về đường dẫn, không có log
+        echo "✅ WordPress files backup successful: ${backup_file}"
+        echo -n "$backup_file"  # Return only the path, no log
     else
-        echo "❌ Lỗi khi sao lưu file!"
+        echo "❌ Error during file backup!"
         return 1
     fi
 }

@@ -1,5 +1,5 @@
 # =====================================
-# 🌐 nginx_utils.sh – Các hàm tiện ích liên quan đến NGINX Proxy
+# 🌐 nginx_utils.sh – NGINX Proxy utility functions
 # =====================================
 update_nginx_override_mounts() {
     local site_name="$1"
@@ -7,9 +7,9 @@ update_nginx_override_mounts() {
     local MOUNT_ENTRY="      - ../../sites/$site_name/wordpress:/var/www/$site_name"
     local MOUNT_LOGS="      - ../../sites/$site_name/logs:/var/www/logs/$site_name"
 
-    # Nếu chưa tồn tại, tạo file mới
+    # If file doesn't exist, create new one
     if [ ! -f "$OVERRIDE_FILE" ]; then
-        echo -e "${YELLOW}📄 Tạo mới docker-compose.override.yml...${NC}"
+        echo -e "${YELLOW}📄 Creating new docker-compose.override.yml...${NC}"
         cat > "$OVERRIDE_FILE" <<EOF
 services:
   nginx-proxy:
@@ -17,46 +17,46 @@ services:
 $MOUNT_ENTRY
 $MOUNT_LOGS
 EOF
-        echo -e "${GREEN}✅ File docker-compose.override.yml đã được tạo và cấu hình.${NC}"
+        echo -e "${GREEN}✅ docker-compose.override.yml has been created and configured.${NC}"
         return
     fi
 
-    # Kiểm tra và thêm MOUNT_ENTRY nếu cần
+    # Check and add MOUNT_ENTRY if needed
     if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
         echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null
-        echo -e "${GREEN}➕ Đã thêm mount source: $MOUNT_ENTRY${NC}"
+        echo -e "${GREEN}➕ Added mount source: $MOUNT_ENTRY${NC}"
     else
-        echo -e "${YELLOW}⚠️ Mount source đã tồn tại: $MOUNT_ENTRY${NC}"
+        echo -e "${YELLOW}⚠️ Mount source already exists: $MOUNT_ENTRY${NC}"
     fi
 
-    # Kiểm tra và thêm MOUNT_LOGS nếu cần
+    # Check and add MOUNT_LOGS if needed
     if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
         echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null
-        echo -e "${GREEN}➕ Đã thêm mount logs: $MOUNT_LOGS${NC}"
+        echo -e "${GREEN}➕ Added mount logs: $MOUNT_LOGS${NC}"
     else
-        echo -e "${YELLOW}⚠️ Mount logs đã tồn tại: $MOUNT_LOGS${NC}"
+        echo -e "${YELLOW}⚠️ Mount logs already exists: $MOUNT_LOGS${NC}"
     fi
 }
 
 
-# 🔁 Restart NGINX Proxy (dùng khi thay đổi docker-compose, mount volume, v.v)
+# 🔁 Restart NGINX Proxy (use when changing docker-compose, mount volume, etc.)
 nginx_restart() {
-  echo -e "${YELLOW}🔁 Đang khởi động lại container NGINX Proxy...${NC}"
+  echo -e "${YELLOW}🔁 Restarting NGINX Proxy container...${NC}"
   pushd "$NGINX_PROXY_DIR" > /dev/null
   docker compose down
   docker compose up -d --force-recreate
   popd > /dev/null
-  echo -e "${GREEN}✅ Đã restart NGINX Proxy thành công.${NC}"
+  echo -e "${GREEN}✅ NGINX Proxy has been restarted successfully.${NC}"
 }
 
 
-# 🔄 Reload NGINX (dùng khi thay đổi file config/nginx.conf/nginx site)
+# 🔄 Reload NGINX (use when changing config/nginx.conf/nginx site)
 nginx_reload() {
-  echo -e "${YELLOW}🔄 Đang reload NGINX Proxy...${NC}"
+  echo -e "${YELLOW}🔄 Reloading NGINX Proxy...${NC}"
   docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload 2>/dev/null
   if [[ $? -eq 0 ]]; then
-    echo -e "${GREEN}✅ Đã reload NGINX thành công.${NC}"
+    echo -e "${GREEN}✅ NGINX has been reloaded successfully.${NC}"
   else
-    echo -e "${RED}⚠️ Lỗi khi reload. Gợi ý: Kiểm tra log bằng 'docker logs $NGINX_PROXY_CONTAINER'${NC}"
+    echo -e "${RED}⚠️ Error during reload. Tip: Check logs with 'docker logs $NGINX_PROXY_CONTAINER'${NC}"
   fi
 }

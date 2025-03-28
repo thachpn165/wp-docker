@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # =====================================
-# ❌ uninstall.sh – Gỡ cài đặt WP Docker hoàn toàn khỏi hệ thống
+# ❌ uninstall.sh – Completely remove WP Docker from the system
 # =====================================
 
 set -euo pipefail
 CONFIG_FILE="shared/config/config.sh"
 
-# Xác định đường dẫn tuyệt đối của `config.sh`
+# Determine absolute path of `config.sh`
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
     if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
+        echo "❌ Error: config.sh not found!" >&2
         exit 1
     fi
 done
@@ -21,24 +21,24 @@ source "$CONFIG_FILE"
 BACKUP_DIR="$BASE_DIR/archives/backups_before_remove"
 TMP_BACKUP_DIR="$BASE_DIR/tmp"
 
-# 💬 Xác nhận hành động từ người dùng
+# 💬 Confirm action from user
 confirm_action() {
-  read -rp "❓ Bạn có muốn sao lưu lại toàn bộ website trước khi xoá không? [y/N]: " confirm
+  read -rp "❓ Do you want to backup all websites before deletion? [y/N]: " confirm
   [[ "$confirm" == "y" || "$confirm" == "Y" ]]
 }
 
-# 🔍 Quét danh sách site từ thư mục sites
+# 🔍 Scan site list from sites directory
 get_site_list() {
   find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
 }
 
-# 💾 Backup toàn bộ site thủ công vào backup_before_remove
+# 💾 Manually backup all sites to backup_before_remove
 backup_all_sites() {
-  echo -e "${CYAN}💾 Đang sao lưu toàn bộ site vào $BACKUP_DIR...${NC}"
+  echo -e "${CYAN}💾 Backing up all sites to $BACKUP_DIR...${NC}"
   mkdir -p "$BACKUP_DIR"
 
   for site in $(get_site_list); do
-    echo -e "${BLUE}📦 Backup site: $site${NC}"
+    echo -e "${BLUE}📦 Backing up site: $site${NC}"
 
     site_path="$SITES_DIR/$site"
     env_file="$site_path/.env"
@@ -47,57 +47,57 @@ backup_all_sites() {
     mkdir -p "$backup_target_dir"
 
     if [[ ! -f "$env_file" ]]; then
-      echo -e "${RED}❌ Bỏ qua site '$site': không tìm thấy file .env${NC}"
+      echo -e "${RED}❌ Skipping site '$site': .env file not found${NC}"
       continue
     fi
 
-    # Lấy thông tin DB từ file .env
+    # Get DB information from .env file
     DB_NAME=$(grep '^MYSQL_DATABASE=' "$env_file" | cut -d '=' -f2)
     DB_USER=$(grep '^MYSQL_USER=' "$env_file" | cut -d '=' -f2)
     DB_PASS=$(grep '^MYSQL_PASSWORD=' "$env_file" | cut -d '=' -f2)
 
     if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-      echo -e "${RED}❌ Không thể lấy thông tin database từ .env, bỏ qua site '$site'${NC}"
+      echo -e "${RED}❌ Unable to get database information from .env, skipping site '$site'${NC}"
       continue
     fi
 
     # Backup database
     db_backup_file="$backup_target_dir/${site}_db.sql"
-    echo -e "${YELLOW}📦 Đang backup database: $DB_NAME${NC}"
+    echo -e "${YELLOW}📦 Backing up database: $DB_NAME${NC}"
     docker exec "${site}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" > "$db_backup_file" || {
-      echo -e "${RED}❌ Lỗi khi backup database cho site '$site'${NC}"
+      echo -e "${RED}❌ Error backing up database for site '$site'${NC}"
       continue
     }
 
-    # Backup mã nguồn
-    echo -e "${YELLOW}📦 Đang nén mã nguồn WordPress...${NC}"
+    # Backup source code
+    echo -e "${YELLOW}📦 Compressing WordPress source code...${NC}"
     tar -czf "$backup_target_dir/${site}_wordpress.tar.gz" -C "$wordpress_dir" . || {
-      echo -e "${RED}❌ Lỗi khi nén mã nguồn cho site '$site'${NC}"
+      echo -e "${RED}❌ Error compressing source code for site '$site'${NC}"
       continue
     }
 
-    echo -e "${GREEN}✅ Backup site '$site' hoàn tất tại: $backup_target_dir${NC}"
+    echo -e "${GREEN}✅ Backup completed for site '$site' at: $backup_target_dir${NC}"
   done
 }
 
-# 🧹 Xoá container chính
+# 🧹 Remove core containers
 remove_core_containers() {
-  echo -e "${YELLOW}🧹 Đang xoá các container chính: nginx-proxy và redis-cache...${NC}"
+  echo -e "${YELLOW}🧹 Removing core containers: nginx-proxy and redis-cache...${NC}"
   docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
 }
 
-# 🧹 Xoá toàn bộ container và volume liên quan tới từng site
+# 🧹 Remove all containers and volumes related to each site
 remove_site_containers() {
   for site in $(get_site_list); do
-    echo -e "${YELLOW}🧨 Đang xoá container cho site: $site${NC}"
+    echo -e "${YELLOW}🧨 Removing containers for site: $site${NC}"
     docker rm -f "$site-php" "$site-mariadb" 2>/dev/null || true
     docker volume rm "${site}_db_data" 2>/dev/null || true
   done
 }
 
-# 🧨 Xoá toàn bộ thư mục trừ backup
+# 🧨 Remove all directories except backup
 remove_all_except_backup() {
-  echo -e "${MAGENTA}🗑️  Đang xoá toàn bộ hệ thống trừ thư mục backup_before_remove...${NC}"
+  echo -e "${MAGENTA}🗑️  Removing entire system except backup_before_remove directory...${NC}"
   for item in "$BASE_DIR"/*; do
     [[ "$item" == "$BACKUP_DIR" ]] && continue
     [[ "$item" == "$BASE_DIR/.git" || "$item" == "$BASE_DIR/.github" ]] && continue
@@ -105,29 +105,29 @@ remove_all_except_backup() {
   done
 }
 
-# 🗑️ Gỡ symbolic link lệnh wpdocker nếu có
+# 🗑️ Remove wpdocker command symlink if exists
 remove_symlink() {
   if [ -L "/usr/local/bin/wpdocker" ]; then
-    echo -e "${YELLOW}🗑️ Đang xoá symlink /usr/local/bin/wpdocker...${NC}"
+    echo -e "${YELLOW}🗑️ Removing symlink /usr/local/bin/wpdocker...${NC}"
     sudo rm -f /usr/local/bin/wpdocker
   fi
 }
 
-# 🧽 Gỡ cronjob chứa backup
+# 🧽 Remove backup-related cronjobs
 remove_cronjobs() {
-  echo -e "${YELLOW}🧽 Đang xoá các cronjob backup (nếu có)...${NC}"
+  echo -e "${YELLOW}🧽 Removing backup cronjobs (if any)...${NC}"
   crontab -l 2>/dev/null | grep -v "backup_runner.sh" | crontab - || true
 }
 
-# 🧾 Hiển thị container còn lại sau khi xoá
+# 🧾 Display remaining containers after removal
 show_remaining_containers() {
-  echo -e "\n${CYAN}📋 Danh sách container còn lại sau khi gỡ cài đặt:${NC}"
+  echo -e "\n${CYAN}📋 List of remaining containers after uninstallation:${NC}"
   remaining=$(docker ps -a --format '{{.Names}}')
   if [[ -z "$remaining" ]]; then
-    echo -e "${GREEN}✅ Không còn container Docker nào.${NC}"
+    echo -e "${GREEN}✅ No Docker containers remaining.${NC}"
   else
     docker ps -a
-    echo -e "\n${YELLOW}💡 Nếu bạn muốn xoá hết container còn sót lại, hãy chạy các lệnh sau:${NC}"
+    echo -e "\n${YELLOW}💡 If you want to remove all remaining containers, run these commands:${NC}"
     echo "$remaining" | while read -r name; do
       echo "docker stop $name && docker rm $name"
     done
@@ -135,16 +135,16 @@ show_remaining_containers() {
 }
 
 # ================================
-# 🚀 Tiến trình chính
+# 🚀 Main Process
 # ================================
 
-echo -e "${RED}⚠️ CẢNH BÁO: Script này sẽ xoá toàn bộ hệ thống WP Docker!${NC}"
-echo "Bao gồm toàn bộ site, container, volume, mã nguồn, SSL, cấu hình."
+echo -e "${RED}⚠️ WARNING: This script will remove the entire WP Docker system!${NC}"
+echo "Including all sites, containers, volumes, source code, SSL, and configurations."
 
 if confirm_action; then
   backup_all_sites
 else
-  echo -e "${YELLOW}⏩ Bỏ qua bước sao lưu.${NC}"
+  echo -e "${YELLOW}⏩ Skipping backup step.${NC}"
 fi
 
 remove_core_containers
@@ -153,8 +153,8 @@ remove_cronjobs
 remove_symlink
 remove_all_except_backup
 
-echo -e "\n${GREEN}✅ Đã gỡ cài đặt toàn bộ hệ thống. Backup (nếu có) nằm trong: $BACKUP_DIR${NC}"
-echo -e "${CYAN}📦 Bạn có thể khôi phục lại site từ thư mục backup: $BACKUP_DIR${NC}"
-echo -e "${CYAN}👉 Dùng menu 'Khôi phục website từ backup' sau khi cài lại để khôi phục.${NC}"
+echo -e "\n${GREEN}✅ System completely uninstalled. Backup (if any) is located in: $BACKUP_DIR${NC}"
+echo -e "${CYAN}📦 You can restore sites from the backup directory: $BACKUP_DIR${NC}"
+echo -e "${CYAN}👉 Use the 'Restore website from backup' menu after reinstallation to restore.${NC}"
 
 show_remaining_containers
