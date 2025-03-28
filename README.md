@@ -23,7 +23,7 @@ This enterprise-grade toolkit provides a security-hardened, performance-optimize
 
 The platform adopts a modular architecture supporting interchangeable web servers such as OpenResty (NGINX + Lua), Caddy Server, and OpenLiteSpeed. This flexibility allows seamless switching between stacks with automatic configuration adaptation.
 
-Unlike conventional WordPress setups, WP Docker embraces infrastructure-as-code principles to eliminate vendor lock-in. Its isolated containerized environment—combining Linux, PHP, and database services—ensures maximum portability, scalability, and operational consistency.
+Unlike conventional WordPress setups, WP Docker embraces infrastructure-as-code (IaC) principles to eliminate vendor lock-in. Its isolated containerized environment—combining Linux, PHP, and database services—ensures maximum portability, scalability, and operational consistency.
 
 By simplifying multi-stage environment replication (dev → staging → prod), WP Docker enhances security posture, accelerates deployment workflows, and ensures consistent performance across different infrastructures.
 
