@@ -1,80 +1,102 @@
 # 📦 CHANGELOG – WP Docker LEMP
 
-## [v1.0.8-beta] - 2025-03-30
+## [v1.1.0-beta] - 2025-03-28
 
 ### Added
-- **Refactor**: Tối ưu hóa và thay thế các lệnh `cd` trong script bằng hàm `run_in_dir` để tránh thay đổi thư mục làm việc, giúp tăng tính linh hoạt và bảo mật trong quá trình thực thi.
-- **Support for TEST_MODE**: Đảm bảo TEST_MODE được kiểm soát chặt chẽ trong môi trường test và trong mã thực tế. Thêm biến môi trường `TEST_MODE` và `TEST_ALWAYS_READY` vào cấu hình để đảm bảo mã chạy đúng trong môi trường kiểm tra tự động.
-- **Container and Volume Checks**: Thêm các hàm `is_container_running` và `is_volume_exist` được tối ưu hóa với thông báo debug rõ ràng, hỗ trợ việc kiểm tra trạng thái container và volumes khi thực hiện các thao tác Docker.
-- **Test Enhancements**: Cải thiện các bài kiểm tra tự động trong `bats` bằng cách mock các chức năng cần thiết, tránh gặp phải các lỗi liên quan đến môi trường khi chạy các thử nghiệm trên Github Actions và môi trường thực tế.
+- **NGINX Rebuild**: Added a new system tool to rebuild the NGINX proxy container. This tool stops, removes, and pulls the latest OpenResty image, followed by re-creating the NGINX container.
+- **Backup Restore**: Enhanced website restore functionality, supporting restoring both files and database from backups.
+- **Menu Integration**: Integrated the "Restore Backup" functionality into the system tools menu (`system_tools_menu.sh`) for easier access.
+- **Support for Test Mode**: Improved test mode handling for better simulation and testing of backup and restore processes.
+- **Better Output Logging**: Refined debug output for backup restore process to capture key steps and results more effectively.
+
+### Fixed
+- **Test Fixes**: Fixed issues with the `backup_restore_web` test where `SITE_NAME` was not correctly set in the test environment.
+- **Container Name Dynamic Handling**: Fixed the issue of hardcoded container names and improved dynamic handling based on environment variables.
+  
+### Changed
+- **Code Refactoring**: Cleaned up and optimized backup-related functions for easier maintenance and better code readability.
+- **Container Handling**: Improved Docker container initialization checks to ensure containers are up and running before backup operations begin.
+- **Backup Naming Convention**: Standardized backup file naming convention to ensure better readability and organization of backup files.
+
+### Known Issues
+- No known issues at the time of release.
+
+---
+
+## [v1.0.8-beta] - 2025-03-27
+
+### Added
+- **Refactor**: Optimized and replaced `cd` commands in scripts with `run_in_dir` functions to avoid changing the working directory, enhancing flexibility and security during execution.
+- **Support for TEST_MODE**: Ensured `TEST_MODE` is strictly controlled in both the test environment and actual code. Added `TEST_MODE` and `TEST_ALWAYS_READY` environment variables to configuration for accurate execution in automatic testing environments.
+- **Container and Volume Checks**: Added optimized `is_container_running` and `is_volume_exist` functions with clear debug messages to assist in checking container and volume statuses during Docker operations.
+- **Test Enhancements**: Improved automated tests in `bats` by mocking necessary functions, avoiding errors related to the environment when running tests on GitHub Actions and real environments.
   
 ### Fixed
-- **Docker Compose Container Startup**: Sửa lỗi trong quá trình kiểm tra và khởi động container `nginx-proxy` để đảm bảo quá trình chờ khởi động và kiểm tra trạng thái container được thực hiện chính xác trong các môi trường khác nhau.
-- **File System Permissions**: Đảm bảo các tệp cấu hình Docker và các tệp cần thiết không bị lỗi quyền truy cập khi thực thi trên các môi trường khác nhau (Linux/macOS).
+- **Docker Compose Container Startup**: Fixed issues related to container startup and status checking for `nginx-proxy` to ensure accurate container startup wait and checks in different environments.
+- **File System Permissions**: Ensured Docker configuration files and necessary files do not face permission errors when running in different environments (Linux/macOS).
 
 ### Changed
-- **Update Script Refactoring**: Cải tiến mã nguồn của các script liên quan đến cập nhật và phục hồi (update) hệ thống để loại trừ các thư mục không cần thiết (sites, logs) và không làm mất dữ liệu quan trọng khi chạy các lệnh cập nhật tự động.
-- **Log Output Adjustments**: Tinh chỉnh thông báo lỗi và thông tin quá trình trong log để dễ dàng theo dõi và phân tích trong quá trình chạy các script cài đặt và cập nhật hệ thống.
+- **Update Script Refactoring**: Improved update and recovery script code to exclude unnecessary directories (sites, logs) and avoid losing important data during automatic update operations.
+- **Log Output Adjustments**: Fine-tuned error messages and process information in logs to make tracking and analysis easier during installation and update script execution.
+
+---
 
 ## [v1.0.7-beta] - 2025-03-23
 
 ### Added
-- **Support for managing SSL certificates**: Thêm các tính năng quản lý chứng chỉ SSL bao gồm:
-  - Cài đặt chứng chỉ tự ký (self-signed).
-  - Cài đặt chứng chỉ từ Let's Encrypt (miễn phí).
-  - Kiểm tra trạng thái chứng chỉ SSL, bao gồm ngày hết hạn và tình trạng hợp lệ.
-  - Quản lý các chứng chỉ SSL trong NGINX Proxy.
-- **Backup improvements**: Cải thiện tính năng sao lưu, đảm bảo việc sao lưu và phục hồi không gặp phải lỗi với các tệp cấu hình và thư mục dữ liệu quan trọng.
+- **Support for managing SSL certificates**: Added SSL certificate management features, including:
+  - Self-signed certificate installation.
+  - Let's Encrypt (free) certificate installation.
+  - SSL certificate status checking, including expiration date and validity.
+  - SSL certificate management in NGINX Proxy.
+- **Backup improvements**: Enhanced backup functionality to ensure no errors occur when backing up and restoring essential configuration files and data directories.
 
 ### Fixed
-- **Docker Compose compatibility**: Đảm bảo tính tương thích với các phiên bản Docker Compose mới, bao gồm việc xử lý các container và volumes Docker một cách chính xác hơn.
-- **Script execution in different environments**: Đảm bảo các script cài đặt và quản lý hoạt động ổn định trên cả macOS và Linux, đặc biệt là khi thực hiện các thao tác với Docker và NGINX.
+- **Docker Compose compatibility**: Ensured compatibility with newer Docker Compose versions, including more accurate handling of Docker containers and volumes.
+- **Script execution in different environments**: Ensured installation and management scripts work reliably on both macOS and Linux, especially when interacting with Docker and NGINX.
 
 ### Changed
-- **Refactor system configuration**: Cải tiến cấu trúc mã nguồn của các script cài đặt và quản lý để dễ dàng mở rộng và bảo trì. Sử dụng hàm chung và đơn giản hóa các bước cài đặt chứng chỉ SSL.
-- **Improved Docker container startup checks**: Cải tiến việc kiểm tra và khởi động các container Docker, đặc biệt là trong trường hợp container `nginx-proxy` không khởi động đúng.
+- **Refactor system configuration**: Improved script structure for easier extension and maintenance. Utilized shared functions and simplified SSL certificate installation steps.
+- **Improved Docker container startup checks**: Improved Docker container startup checks, particularly in cases where the `nginx-proxy` container doesn't start correctly.
 
 ### Removed
-- **Deprecated SSL certificate management code**: Loại bỏ mã cũ không còn sử dụng để quản lý chứng chỉ SSL, thay vào đó sử dụng các hàm mới và dễ bảo trì hơn.
+- **Deprecated SSL certificate management code**: Removed obsolete SSL certificate management code, replacing it with more maintainable functions.
 
 ### Misc
-- **Bugfixes and optimization**: Tối ưu hóa mã nguồn, sửa các lỗi nhỏ và cải tiến các thông báo lỗi trong các bước cài đặt và kiểm tra.
+- **Bugfixes and optimization**: Optimized code, fixed minor bugs, and improved error messages during installation and configuration checks.
 
+---
 
 ## [v1.0.6-beta] - 2025-03-26
 
-### 🚀 Tính năng mới
+### 🚀 New Features
+- **Support for running `wpdocker` commands from any directory**.
+- **New `install.sh` script**:
+  - Automatically downloads the latest release from GitHub.
+  - Extracts to `/opt/wp-docker`.
+  - Creates a symlink `/usr/local/bin/wpdocker`.
+  - Checks the operating system and provides warnings (macOS requires `/opt` to be added to Docker File Sharing).
+- **New `uninstall.sh` script**:
+  - Allows backing up the entire site before uninstalling.
+  - Cleans up container, volume, configuration, cron jobs, and source code.
 
-- **Hỗ trợ chạy bằng lệnh `wpdocker`** từ bất kỳ thư mục nào
-- **Thêm script `install.sh` mới**:
-  - Tự động tải bản release mới nhất từ GitHub
-  - Giải nén vào `/opt/wp-docker`
-  - Tạo symlink `/usr/local/bin/wpdocker`
-  - Kiểm tra hệ điều hành và cảnh báo (macOS cần thêm `/opt` vào Docker File Sharing)
-- **Thêm script `uninstall.sh`**:
-  - Cho phép sao lưu toàn bộ site trước khi gỡ
-  - Xóa sạch container, volume, cấu hình, cronjob và mã nguồn
+### 🔧 Improvements
+- Optimized `setup-system.sh`:
+  - Checks Docker & Docker Compose status.
+  - Waits for `nginx-proxy` to start before continuing.
+  - Displays logs if `nginx-proxy` fails to start.
+- Improved `wpdocker.sh` script to correctly run `main.sh` from the new installation path.
+- Support for **symlinking `/opt/wp-docker` to local source code** for easier dev/test workflows.
 
-### 🔧 Cải tiến
+### 🛠 Bug Fixes
+- Fixed `wp: Permission denied` error when running WP-CLI inside the container.
+- Fixed mount errors on macOS due to missing directory sharing permissions.
+- Fixed `docker-compose.override.yml` path mismatch errors.
+- Fixed file write permission issues with `php_versions.txt`.
 
-- Tối ưu lại `setup-system.sh`:
-  - Kiểm tra Docker & Docker Compose
-  - Chờ `nginx-proxy` khởi động xong rồi mới tiếp tục
-  - Hiển thị log nếu `nginx-proxy` khởi động thất bại
-- Cải tiến script `wpdocker.sh` để chạy đúng `main.sh` từ đường dẫn cài đặt mới
-- Hỗ trợ **symlink thư mục `/opt/wp-docker` đến mã nguồn local** để dev/test dễ dàng
-
-### 🛠 Fix lỗi
-
-- Fix lỗi `wp: Permission denied` khi chạy WP-CLI trong container
-- Fix lỗi mount trên macOS do thiếu quyền chia sẻ thư mục `/opt`
-- Fix lỗi cấu hình `docker-compose.override.yml` không đồng bộ mount path
-- Fix lỗi kiểm tra quyền ghi file `php_versions.txt`
-
-### 💡 Ghi chú
-
-- Trên **macOS**, bắt buộc phải thêm `/opt` vào Docker → Settings → File Sharing để tránh lỗi mount
-- Nếu bạn đang dev và muốn test bằng source local:
+### 💡 Notes
+- On **macOS**, Docker must add `/opt` to Docker → Settings → File Sharing to avoid mount errors.
+- For local dev/test using the source code:
   ```bash
   sudo rm -rf /opt/wp-docker
   sudo ln -s ~/wp-docker-lemp/src /opt/wp-docker

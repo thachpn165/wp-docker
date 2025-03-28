@@ -1,7 +1,7 @@
 ssl_edit_certificate() {
     select_website
     if [ -z "$SITE_NAME" ]; then
-        echo -e "${RED}❌ Không có website nào được chọn.${NC}"
+        echo -e "${RED}❌ No website selected.${NC}"
         return 1
     fi
 
@@ -9,26 +9,26 @@ ssl_edit_certificate() {
     local target_crt="$SSL_DIR/$SITE_NAME.crt"
     local target_key="$SSL_DIR/$SITE_NAME.key"
 
-    echo -e "${YELLOW}📝 Đang sửa chứng chỉ SSL cho website: $SITE_NAME${NC}"
+    echo -e "${YELLOW}📝 Editing SSL certificate for website: $SITE_NAME${NC}"
 
-    echo -e "${BLUE}🔹 Dán nội dung mới của file .crt:${NC}"
-    echo -e "${YELLOW}👉 Nhấn Ctrl+D (Linux/macOS) hoặc Ctrl+Z rồi Enter (Windows Git Bash) khi hoàn tất${NC}"
+    echo -e "${BLUE}🔹 Paste new content for .crt file:${NC}"
+    echo -e "${YELLOW}👉 Press Ctrl+D (Linux/macOS) or Ctrl+Z then Enter (Windows Git Bash) when done${NC}"
     cat > "$target_crt"
 
-    echo -e "\n${BLUE}🔹 Dán nội dung mới của file .key:${NC}"
-    echo -e "${YELLOW}👉 Nhấn Ctrl+D (Linux/macOS) hoặc Ctrl+Z rồi Enter (Windows Git Bash) khi hoàn tất${NC}"
+    echo -e "\n${BLUE}🔹 Paste new content for .key file:${NC}"
+    echo -e "${YELLOW}👉 Press Ctrl+D (Linux/macOS) or Ctrl+Z then Enter (Windows Git Bash) when done${NC}"
     cat > "$target_key"
 
-    # Kiểm tra file sau khi paste
+    # Check files after pasting
     if [[ ! -s "$target_crt" || ! -s "$target_key" ]]; then
-        echo -e "${RED}❌ Một trong hai file mới bị rỗng. Hủy thao tác.${NC}"
+        echo -e "${RED}❌ One of the new files is empty. Operation cancelled.${NC}"
         return 1
     fi
 
-    echo -e "${GREEN}✅ Chứng chỉ của $SITE_NAME đã được cập nhật.${NC}"
+    echo -e "${GREEN}✅ Certificate for $SITE_NAME has been updated.${NC}"
 
-    echo -e "${YELLOW}🔄 Reload NGINX Proxy để áp dụng chứng chỉ mới...${NC}"
+    echo -e "${YELLOW}🔄 Reloading NGINX Proxy to apply new certificate...${NC}"
     docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload
 
-    echo -e "${GREEN}✅ NGINX Proxy đã được reload thành công.${NC}"
+    echo -e "${GREEN}✅ NGINX Proxy has been reloaded successfully.${NC}"
 }

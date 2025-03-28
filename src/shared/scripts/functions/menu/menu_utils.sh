@@ -1,4 +1,4 @@
-# 🖥️ **Lấy thông tin hệ thống (Linux & macOS)**
+# 🖥️ **Get System Information (Linux & macOS)**
 get_system_info() {
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
@@ -8,7 +8,7 @@ get_system_info() {
         USED_RAM=$(vm_stat | awk -F ': +' '/Pages active/ {print $2 * 4096 / 1024 / 1024}')
         DISK_USAGE=$(df -h / | awk 'NR==2 {print $3 " / " $2}')
 
-        # Lấy IP Address trên macOS
+        # Get IP Address on macOS
         IP_ADDRESS=$(ipconfig getifaddr en0)
         if [ -z "$IP_ADDRESS" ]; then
             IP_ADDRESS=$(ifconfig | awk '/inet / && $2 !~ /127\.0\.0\.1/ {print $2; exit}')
@@ -21,12 +21,12 @@ get_system_info() {
         USED_RAM=$(free -m | awk '/^Mem:/{print $3}')
         DISK_USAGE=$(df -h / | awk 'NR==2 {print $3 " / " $2}')
 
-        # Lấy IP Address trên Linux
+        # Get IP Address on Linux
         IP_ADDRESS=$(hostname -I | awk '{print $1}')
     fi
 }
 
-# 🐳 **Kiểm tra trạng thái Docker**
+# 🐳 **Check Docker Status**
 check_docker_status() {
     if docker info &>/dev/null; then
         echo -e "$CHECKMARK Docker"
@@ -35,7 +35,7 @@ check_docker_status() {
     fi
 }
 
-# 🌐 **Kiểm tra trạng thái Docker Network**
+# 🌐 **Check Docker Network Status**
 check_docker_network() {
     if docker network inspect "$DOCKER_NETWORK" &>/dev/null; then
         echo -e "$CHECKMARK Docker Network ($DOCKER_NETWORK)"
@@ -44,7 +44,7 @@ check_docker_network() {
     fi
 }
 
-# 🚀 **Kiểm tra trạng thái NGINX Proxy**
+# 🚀 **Check NGINX Proxy Status**
 check_nginx_status() {
     if is_container_running "$NGINX_PROXY_CONTAINER"; then
         echo -e "$CHECKMARK NGINX Proxy"

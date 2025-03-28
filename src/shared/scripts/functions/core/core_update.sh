@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# === 🧠 Tự động xác định PROJECT_DIR (gốc mã nguồn) ===
+# === 🧠 Automatically determine PROJECT_DIR (source root) ===
 if [[ -z "$PROJECT_DIR" ]]; then
   SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
   while [[ "$SCRIPT_PATH" != "/" ]]; do
@@ -12,40 +12,40 @@ if [[ -z "$PROJECT_DIR" ]]; then
   done
 fi
 
-# === ✅ Load config.sh từ PROJECT_DIR ===
+# === ✅ Load config.sh from PROJECT_DIR ===
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Không tìm thấy config.sh tại: $CONFIG_FILE" >&2
+  echo "❌ config.sh not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
 
-# Hàm kiểm tra thư mục cài đặt
+# Function to check installation directory
 core_check_install_dir() {
   if [[ ! -d "$INSTALL_DIR" ]]; then
-    echo "❌ Không tìm thấy $INSTALL_DIR. Bạn cần cài đặt bằng install.sh trước." | tee -a "$LOG_FILE"
+    echo "❌ $INSTALL_DIR not found. You need to install using install.sh first." | tee -a "$LOG_FILE"
     exit 1
   fi
 }
 
-# Hàm tải bản release mới nhất từ GitHub
+# Function to download latest release from GitHub
 core_download_latest_release() {
-  echo "📥 Tải bản release mới nhất từ GitHub..." | tee -a "$LOG_FILE"
+  echo "📥 Downloading latest release from GitHub..." | tee -a "$LOG_FILE"
   curl -L "$REPO_URL/releases/latest/download/wp-docker.zip" -o "$ZIP_NAME"
 }
 
-# Hàm giải nén bản release vào thư mục tạm
+# Function to extract release to temporary directory
 core_extract_release() {
-  echo "📁 Giải nén vào thư mục tạm: $TMP_DIR" | tee -a "$LOG_FILE"
+  echo "📁 Extracting to temporary directory: $TMP_DIR" | tee -a "$LOG_FILE"
   rm -rf "$TMP_DIR"
   mkdir -p "$TMP_DIR"
   unzip -q "$ZIP_NAME" -d "$TMP_DIR"
   rm "$ZIP_NAME"
 }
 
-# Hàm cập nhật các file hệ thống từ bản release mới
+# Function to update system files from new release
 core_update_system_files() {
-  echo "♻️ Đang cập nhật các file hệ thống..." | tee -a "$LOG_FILE"
+  echo "♻️ Updating system files..." | tee -a "$LOG_FILE"
   rsync -a --delete \
     --exclude='/sites/' \
     --exclude='/logs/' \
@@ -53,23 +53,23 @@ core_update_system_files() {
     "$TMP_DIR/" "$INSTALL_DIR/" | tee -a "$LOG_FILE"
 }
 
-# Hàm cập nhật file version.txt với phiên bản mới
+# Function to update version.txt with new version
 core_update_version_file() {
   NEW_VERSION=$(cat "$TMP_DIR/$CORE_VERSION_FILE")
   echo "$NEW_VERSION" > "$INSTALL_DIR/version.txt"
-  echo "✅ Đã cập nhật WP Docker lên phiên bản: $NEW_VERSION" | tee -a "$LOG_FILE"
+  echo "✅ WP Docker has been updated to version: $NEW_VERSION" | tee -a "$LOG_FILE"
 }
 
-# Hàm dọn dẹp các file tạm
+# Function to clean up temporary files
 core_cleanup() {
   rm -rf "$TMP_DIR"
 }
 
-# Hàm kiểm tra và liệt kê các website sử dụng template cũ
+# Function to check and list websites using old template
 core_check_template_version() {
   TEMPLATE_VERSION_NEW=$(cat "$INSTALL_DIR/shared/templates/.template_version" 2>/dev/null || echo "0.0.0")
-  echo "🔧 Template version hiện tại: $TEMPLATE_VERSION_NEW" | tee -a "$LOG_FILE"
-  echo "🔍 Đang kiểm tra các site dùng template cũ..." | tee -a "$LOG_FILE"
+  echo "🔧 Current template version: $TEMPLATE_VERSION_NEW" | tee -a "$LOG_FILE"
+  echo "🔍 Checking sites using old template..." | tee -a "$LOG_FILE"
 
   outdated_sites=()
 
@@ -86,46 +86,46 @@ core_check_template_version() {
   done
 
   if [[ ${#outdated_sites[@]} -eq 0 ]]; then
-    echo "✅ Tất cả site đang dùng template mới nhất." | tee -a "$LOG_FILE"
+    echo "✅ All sites are using the latest template." | tee -a "$LOG_FILE"
   else
-    echo "⚠️ Các site sau đang dùng template CŨ:" | tee -a "$LOG_FILE"
+    echo "⚠️ The following sites are using OLD template:" | tee -a "$LOG_FILE"
     for s in "${outdated_sites[@]}"; do
-      echo "  - $s → nên cập nhật lên $TEMPLATE_VERSION_NEW" | tee -a "$LOG_FILE"
+      echo "  - $s → should update to $TEMPLATE_VERSION_NEW" | tee -a "$LOG_FILE"
     done
     echo ""
-    echo "👉 Vào menu chính (main.sh) → chọn 'Cập nhật cấu hình website đã cài'" | tee -a "$LOG_FILE"
+    echo "👉 Go to main menu (main.sh) → select 'Update installed website configuration'" | tee -a "$LOG_FILE"
   fi
 }
 
-# Hàm chạy các script nâng cấp nếu có trong thư mục upgrade
+# Function to run upgrade scripts if available in upgrade directory
 core_run_upgrade_scripts() {
   UPGRADE_DIR="$INSTALL_DIR/upgrade/$NEW_VERSION"
   if [[ -d "$UPGRADE_DIR" ]]; then
-    echo "🚀 Tìm thấy thư mục upgrade cho phiên bản $NEW_VERSION. Đang chạy các script trong đó..." | tee -a "$LOG_FILE"
+    echo "🚀 Found upgrade directory for version $NEW_VERSION. Running scripts..." | tee -a "$LOG_FILE"
 
-    # Chạy tất cả các script trong thư mục upgrade/{version}
+    # Run all scripts in upgrade/{version} directory
     for script in "$UPGRADE_DIR"/*.sh; do
       if [[ -f "$script" ]]; then
-        echo "🎯 Đang chạy script nâng cấp: $script" | tee -a "$LOG_FILE"
+        echo "🎯 Running upgrade script: $script" | tee -a "$LOG_FILE"
         bash "$script" | tee -a "$LOG_FILE"
       fi
     done
   else
-    echo "✅ Không có script nâng cấp nào cho phiên bản $NEW_VERSION." | tee -a "$LOG_FILE"
+    echo "✅ No upgrade scripts found for version $NEW_VERSION." | tee -a "$LOG_FILE"
   fi
 }
 
-# Hàm chạy toàn bộ quy trình cập nhật
+# Function to run the complete update process
 core_update_system() {
-  # Hỏi người dùng có chắc chắn muốn cập nhật không
-  echo -e "${YELLOW}⚠️ Bạn có chắc chắn muốn cập nhật WP Docker lên phiên bản mới không? (y/n)${NC}"
-  read -p "Nhập 'y' để tiếp tục, 'n' để hủy: " choice
+  # Ask user to confirm update
+  echo -e "${YELLOW}⚠️ Are you sure you want to update WP Docker to the latest version? (y/n)${NC}"
+  read -p "Enter 'y' to continue, 'n' to cancel: " choice
   if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
-    echo -e "${GREEN}✅ Đã hủy quá trình cập nhật.${NC}"
+    echo -e "${GREEN}✅ Update process cancelled.${NC}"
     exit 0
   fi
 
-  # Nếu người dùng đồng ý, tiếp tục thực hiện các bước cập nhật
+  # If user agrees, proceed with update steps
   core_check_install_dir
   core_download_latest_release
   core_extract_release

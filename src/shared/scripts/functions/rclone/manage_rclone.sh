@@ -1,44 +1,44 @@
-# Hàm hiển thị danh sách storage đã thiết lập
+# Function to display list of configured storages
 rclone_storage_list() {
     local rclone_config="${RCLONE_CONFIG_FILE:-shared/config/rclone/rclone.conf}"
 
 
     if ! is_file_exist "$rclone_config"; then
-        echo -e "${RED}❌ Không tìm thấy tập tin cấu hình Rclone.${NC}"
+        echo -e "${RED}❌ Rclone configuration file not found.${NC}"
         return 1
     fi
 
-    # Lấy danh sách storage từ `rclone.conf` (hoạt động trên cả macOS & Linux)
+    # Get list of storages from `rclone.conf` (works on both macOS & Linux)
     sed -n 's/^\[\(.*\)\]$/\1/p' "$rclone_config"
 }
 
 
 
-# Hàm xóa storage đã thiết lập
+# Function to delete configured storage
 rclone_storage_delete() {
     local rclone_config="${RCLONE_CONFIG_FILE:-shared/config/rclone/rclone.conf}"
 
 
     if ! is_file_exist "$rclone_config"; then
-        echo -e "${RED}❌ Không tìm thấy tập tin cấu hình Rclone.${NC}"
+        echo -e "${RED}❌ Rclone configuration file not found.${NC}"
         return 1
     fi
 
     local storages=($(grep '^\[' "$rclone_config" | tr -d '[]'))
 
     if [[ ${#storages[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ Không có storage nào để xóa.${NC}"
+        echo -e "${RED}❌ No storages available to delete.${NC}"
         return 1
     fi
 
-    echo -e "${BLUE}📂 Chọn storage để xóa:${NC}"
+    echo -e "${BLUE}📂 Select storage to delete:${NC}"
     select storage in "${storages[@]}"; do
         if [[ -n "$storage" ]]; then
             sed -i "/^\[$storage\]/,/^$/d" "$rclone_config"
-            echo -e "${GREEN}✅ Storage '$storage' đã được xóa khỏi cấu hình.${NC}"
+            echo -e "${GREEN}✅ Storage '$storage' has been removed from configuration.${NC}"
             break
         else
-            echo -e "${RED}❌ Lựa chọn không hợp lệ.${NC}"
+            echo -e "${RED}❌ Invalid selection.${NC}"
         fi
     done
 }

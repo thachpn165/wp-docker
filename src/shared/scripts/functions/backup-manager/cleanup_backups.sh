@@ -7,25 +7,25 @@ cleanup_backups() {
     local deleted_files=()
 
     if [[ ! -d "$backup_dir" ]]; then
-        echo "❌ Không tìm thấy thư mục backup cho $site_name!"
+        echo "❌ Backup directory not found for $site_name!"
         return 1
     fi
 
-    echo "🗑️ Đang kiểm tra và xóa các bản sao lưu cũ hơn ${retention_days} ngày..."
+    echo "🗑️ Checking and deleting backups older than ${retention_days} days..."
 
-    # Tìm và lưu danh sách file sẽ bị xóa
+    # Find and save list of files to be deleted
     while IFS= read -r file; do
         deleted_files+=("$file")
     done < <(find "$backup_dir" -type f \( -name "*.tar.gz" -o -name "*.sql" \) -mtime +$retention_days)
 
-    # Xóa file nếu có
+    # Delete files if any exist
     if [[ ${#deleted_files[@]} -gt 0 ]]; then
         for file in "${deleted_files[@]}"; do
             rm -f "$file"
-            echo "🗑️ Đã xóa: $file"
+            echo "🗑️ Deleted: $file"
         done
-        echo "✅ Hoàn thành dọn dẹp backup của $site_name."
+        echo "✅ Cleanup completed for $site_name backups."
     else
-        echo "ℹ️ Không có backup nào bị xóa. Tất cả bản sao lưu đều trong giới hạn ${retention_days} ngày."
+        echo "ℹ️ No backups were deleted. All backups are within the ${retention_days} days limit."
     fi
 }

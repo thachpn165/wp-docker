@@ -1,9 +1,8 @@
-
 php_choose_version() {
   local PHP_VERSION_FILE="$BASE_DIR/php_versions.txt"
 
   if [[ ! -f "$PHP_VERSION_FILE" ]]; then
-    echo -e "${RED}❌ Không tìm thấy danh sách phiên bản PHP tại: $PHP_VERSION_FILE${NC}"
+    echo -e "${RED}❌ PHP version list not found at: $PHP_VERSION_FILE${NC}"
     return 1
   fi
 
@@ -13,28 +12,28 @@ php_choose_version() {
   done < "$PHP_VERSION_FILE"
 
   if [[ ${#PHP_VERSIONS[@]} -eq 0 ]]; then
-    echo -e "${RED}❌ Danh sách phiên bản PHP rỗng. Vui lòng chạy lại lệnh cập nhật phiên bản PHP.${NC}"
-    echo -e "${YELLOW}👉 Gợi ý: bash shared/scripts/setup-system.sh${NC}"
+    echo -e "${RED}❌ PHP version list is empty. Please run the PHP version update command again.${NC}"
+    echo -e "${YELLOW}👉 Tip: bash shared/scripts/setup-system.sh${NC}"
     return 1
   fi
 
-  echo -e "${YELLOW}📦 Danh sách phiên bản PHP hỗ trợ (Bitnami):${NC}"
+  echo -e "${YELLOW}📦 Supported PHP versions (Bitnami):${NC}"
   for i in "${!PHP_VERSIONS[@]}"; do
     echo -e "  ${GREEN}[$i]${NC} ${PHP_VERSIONS[$i]}"
   done
 
-  echo -e "\n${YELLOW}⚠️ Ghi chú:${NC}"
-  echo -e "${RED}- PHP 8.0 trở xuống có thể KHÔNG hoạt động trên hệ điều hành ARM như:${NC}"
-  echo -e "  ${CYAN}- Apple Silicon (M1, M2,...), Raspberry Pi, máy chủ ARM64...${NC}"
-  echo -e "  ${WHITE}→ Nếu gặp lỗi \"platform mismatch\", hãy thêm:${NC}"
-  echo -e "     ${GREEN}platform: linux/amd64${NC} trong docker-compose.yml"
-  echo -e "     ${WHITE}Sau đó sử dụng tính năng Restart website để khởi động lại"
+  echo -e "\n${YELLOW}⚠️ Note:${NC}"
+  echo -e "${RED}- PHP 8.0 and below may NOT work on ARM operating systems such as:${NC}"
+  echo -e "  ${CYAN}- Apple Silicon (M1, M2,...), Raspberry Pi, ARM64 servers...${NC}"
+  echo -e "  ${WHITE}→ If you encounter \"platform mismatch\" error, add:${NC}"
+  echo -e "     ${GREEN}platform: linux/amd64${NC} in docker-compose.yml"
+  echo -e "     ${WHITE}Then use the Restart website feature to restart"
   sleep 0.2
   echo ""
-  read -p "🔹 Nhập số tương ứng với phiên bản PHP muốn chọn: " php_index
+  read -p "🔹 Enter the number corresponding to the PHP version you want to select: " php_index
 
   if ! [[ "$php_index" =~ ^[0-9]+$ ]] || (( php_index < 0 || php_index >= ${#PHP_VERSIONS[@]} )); then
-    echo -e "${RED}❌ Lựa chọn không hợp lệ.${NC}"
+    echo -e "${RED}❌ Invalid selection.${NC}"
     return 1
   fi
 

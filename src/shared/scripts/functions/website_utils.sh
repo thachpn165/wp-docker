@@ -1,48 +1,47 @@
-# Hiển thị danh sách website để chọn
+# Display list of websites for selection
 select_website() {
     local sites=($(ls -d $SITES_DIR/*/ | xargs -n 1 basename))
 
-    # Nếu không tìm thấy website nào
+    # If no websites found
     if [[ ${#sites[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ Không tìm thấy website nào trong $SITES_DIR${NC}"
+        echo -e "${RED}❌ No websites found in $SITES_DIR${NC}"
         return 1
     fi
 
-    # Sử dụng get_input_or_test_value để chọn website
-    SELECTED_WEBSITE=$(get_input_or_test_value "🔹 Chọn một website:" "${sites[0]}")
+    # Use get_input_or_test_value to select website
+    SELECTED_WEBSITE=$(get_input_or_test_value "🔹 Select a website:" "${sites[0]}")
 
-    # Kiểm tra xem người dùng có chọn website hợp lệ không
+    # Check if user selected a valid website
     if [[ ! " ${sites[@]} " =~ " ${SELECTED_WEBSITE} " ]]; then
-        echo -e "${RED}❌ Lựa chọn không hợp lệ!${NC}"
+        echo -e "${RED}❌ Invalid selection!${NC}"
         return 1
     fi
 
-    echo -e "${GREEN}✅ Đã chọn: $SELECTED_WEBSITE${NC}"
+    echo -e "${GREEN}✅ Selected: $SELECTED_WEBSITE${NC}"
 }
 
-
-# 🔍 Quét danh sách site từ thư mục sites
+# 🔍 Scan site list from sites directory
 get_site_list() {
   find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
 }
 
 # =====================================
-# ♻️ website_restore_from_archive – Khôi phục website từ thư mục archive
+# ♻️ website_restore_from_archive – Restore Website from Archive Directory
 # =====================================
 
 website_restore_from_archive() {
   ARCHIVE_DIR="$BASE_DIR/archives/old_website"
 
   if [[ ! -d "$ARCHIVE_DIR" ]]; then
-    echo -e "${RED}❌ Không tìm thấy thư mục lưu trữ: $ARCHIVE_DIR${NC}"
+    echo -e "${RED}❌ Archive directory not found: $ARCHIVE_DIR${NC}"
     return 1
   fi
 
-  echo -e "${YELLOW}📦 Danh sách website đã lưu trữ:${NC}"
+  echo -e "${YELLOW}📦 List of archived websites:${NC}"
   archive_list=( $(ls -1 "$ARCHIVE_DIR") )
 
   if [ ${#archive_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào để khôi phục.${NC}"
+    echo -e "${RED}❌ No websites available to restore.${NC}"
     return 1
   fi
 
@@ -51,7 +50,7 @@ website_restore_from_archive() {
   done
 
   echo ""
-  read -p "Chọn site cần khôi phục (số): " archive_index
+  read -p "Select site to restore (number): " archive_index
   selected_folder="${archive_list[$archive_index]}"
   archive_path="$ARCHIVE_DIR/$selected_folder"
 
@@ -59,24 +58,24 @@ website_restore_from_archive() {
   restore_target="$SITES_DIR/$site_name"
 
   if [[ -d "$restore_target" ]]; then
-    echo -e "${RED}❌ Thư mục $restore_target đã tồn tại. Không thể ghi đè.${NC}"
+    echo -e "${RED}❌ Directory $restore_target already exists. Cannot overwrite.${NC}"
     return 1
   fi
 
   mkdir -p "$restore_target/wordpress" "$restore_target/logs" "$restore_target/backups" "$restore_target/php" "$restore_target/mariadb"
 
-  echo -e "${YELLOW}📂 Đang giải nén mã nguồn WordPress...${NC}"
+  echo -e "${YELLOW}📂 Extracting WordPress source code...${NC}"
   tar -xzf "$archive_path/${site_name}_wordpress.tar.gz" -C "$restore_target/wordpress"
 
-  echo -e "${YELLOW}🛠️ Đang khôi phục database...${NC}"
+  echo -e "${YELLOW}🛠️ Restoring database...${NC}"
   cp "$archive_path/${site_name}_db.sql" "$restore_target/backups/${site_name}_db.sql"
 
-  echo -e "${GREEN}✅ Khôi phục mã nguồn và database thành công.${NC}"
-  echo -e "${YELLOW}👉 Hãy tạo lại file .env và cấu hình docker-compose để chạy lại site.${NC}"
+  echo -e "${GREEN}✅ Successfully restored source code and database.${NC}"
+  echo -e "${YELLOW}👉 Please recreate the .env file and configure docker-compose to run the site.${NC}"
 
-  read -p "Bạn có muốn mở thư mục site mới khôi phục không? (y/N): " open_choice
+  read -p "Would you like to open the newly restored site directory? (y/N): " open_choice
   if [[ "$open_choice" =~ ^[Yy]$ ]]; then
-    echo -e "${CYAN}📁 Đường dẫn: $restore_target${NC}"
+    echo -e "${CYAN}📁 Path: $restore_target${NC}"
     ls -al "$restore_target"
   fi
 }

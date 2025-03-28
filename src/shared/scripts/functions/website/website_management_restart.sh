@@ -1,13 +1,13 @@
 # =====================================
-# 🔄 website_management_restart – Restart website WordPress
+# 🔄 website_management_restart – Restart WordPress Website
 # =====================================
 
 website_management_restart() {
-  echo -e "${YELLOW}📋 Danh sách các website có thể restart:${NC}"
+  echo -e "${YELLOW}📋 List of websites that can be restarted:${NC}"
   site_list=($(ls -1 "$SITES_DIR"))
 
   if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào để restart.${NC}"
+    echo -e "${RED}❌ No websites available to restart.${NC}"
     return 1
   fi
 
@@ -16,15 +16,15 @@ website_management_restart() {
   done
 
   echo ""
-  read -p "Nhập số tương ứng với website cần restart: " site_index
+  read -p "Enter the number corresponding to the website to restart: " site_index
   site_name="${site_list[$site_index]}"
 
   if [ -z "$site_name" ]; then
-    echo -e "${RED}❌ Lựa chọn không hợp lệ.${NC}"
+    echo -e "${RED}❌ Invalid selection.${NC}"
     return 1
   fi
 
-  echo -e "${YELLOW}🔄 Đang restart website: $site_name...${NC}"
+  echo -e "${YELLOW}🔄 Restarting website: $site_name...${NC}"
   docker compose -f "$SITES_DIR/$site_name/docker-compose.yml" restart
-  echo -e "${GREEN}✅ Website '$site_name' đã được restart.${NC}"
+  echo -e "${GREEN}✅ Website '$site_name' has been restarted.${NC}"
 }

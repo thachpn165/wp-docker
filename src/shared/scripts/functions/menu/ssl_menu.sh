@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Load cấu hình
+# Load configuration
 CONFIG_FILE="shared/config/config.sh"
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
     if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
+        echo "❌ Error: config.sh not found!" >&2
         exit 1
     fi
 done
@@ -19,54 +19,54 @@ source "$FUNCTIONS_DIR/ssl/ssl_check_cert_status.sh"
 # Header menu
 print_ssl_menu_header() {
     echo -e "\n${MAGENTA}===========================================${NC}"
-    echo -e "         🔐 QUẢN LÝ CHỨNG CHỈ SSL"
+    echo -e "         🔐 SSL CERTIFICATE MANAGEMENT"
     echo -e "${MAGENTA}===========================================${NC}"
 }
 
-# Hiển thị menu
+# Display menu
 ssl_menu() {
     while true; do
         print_ssl_menu_header
-        echo -e "${GREEN}1)${NC} Tạo chứng chỉ tự ký (Self-signed)"
-        echo -e "${GREEN}2)${NC} Cài đặt chứng chỉ thủ công (.crt/.key)"
-        echo -e "${GREEN}3)${NC} Sửa chứng chỉ SSL hiện tại"
-        echo -e "${GREEN}4)${NC} Cài chứng chỉ Let's Encrypt (miễn phí)"
-        echo -e "${GREEN}5)${NC} Kiểm tra trạng thái chứng chỉ SSL"
-        echo -e "${GREEN}6)${NC} Danh sách domain đã có SSL"
-        echo -e "${GREEN}7)${NC} Quay lại menu chính"
+        echo -e "${GREEN}1)${NC} Generate self-signed certificate"
+        echo -e "${GREEN}2)${NC} Install manual certificate (.crt/.key)"
+        echo -e "${GREEN}3)${NC} Edit current SSL certificate"
+        echo -e "${GREEN}4)${NC} Install Let's Encrypt certificate (free)"
+        echo -e "${GREEN}5)${NC} Check SSL certificate status"
+        echo -e "${GREEN}6)${NC} List domains with SSL"
+        echo -e "${GREEN}7)${NC} Back to main menu"
         echo ""
 
-        read -p "🔹 Chọn một tùy chọn (1-7): " choice
+        read -p "🔹 Select an option (1-7): " choice
         case "$choice" in
             1)
                 ssl_generate_self_signed
-                read -p "Nhấn Enter để tiếp tục..."
+                read -p "Press Enter to continue..."
                 ;;
             2)
                 ssl_install_manual_cert
-                read -p "Nhấn Enter để tiếp tục..."
+                read -p "Press Enter to continue..."
                 ;;
             3)
                 ssl_edit_certificate
-                read -p "Nhấn Enter để tiếp tục..."
+                read -p "Press Enter to continue..."
                 ;;
             4)
                 ssl_install_lets_encrypt
-                read -p "Nhấn Enter để tiếp tục..."
+                read -p "Press Enter to continue..."
                 ;;
             5)
                 ssl_check_certificate_status
-                read -p "Nhấn Enter để tiếp tục..."
+                read -p "Press Enter to continue..."
                 ;;
             6)
-                echo -e "\n🛠️ [ĐANG PHÁT TRIỂN] Danh sách domain có SSL"
-                read -p "Nhấn Enter để tiếp tục..."
+                echo -e "\n🛠️ [IN DEVELOPMENT] List of domains with SSL"
+                read -p "Press Enter to continue..."
                 ;;
             7)
                 break
                 ;;
             *)
-                echo -e "${RED}⚠️ Lựa chọn không hợp lệ. Vui lòng thử lại.${NC}"
+                echo -e "${RED}⚠️ Invalid option. Please try again.${NC}"
                 sleep 1
                 ;;
         esac
