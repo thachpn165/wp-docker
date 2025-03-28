@@ -7,12 +7,17 @@ backup_database() {
     local backup_filename="db-${site_name}-$(date +%Y%m%d-%H%M%S).sql"
     local backup_path="$SITES_DIR/$site_name/backups/${backup_filename}"
 
-    #Debug
+    # Debug
     echo "📦 DEBUG: site_name=$site_name, db_name=$db_name, db_user=$db_user"
 
     is_directory_exist "$SITES_DIR/$site_name/backups"
     is_directory_exist "$SITES_DIR/$site_name/logs"
     
+    # Kiểm tra trạng thái container MariaDB trước khi sao lưu
+    if ! docker ps --filter "name=${container_name}" --filter "status=running" | grep -q "${container_name}"; then
+        echo "❌ The container ${container_name} is not running. Backup cannot proceed."
+        return 1
+    fi
 
     echo "🔹 Đang sao lưu database của ${site_name} trong container ${container_name}..."
 

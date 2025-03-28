@@ -11,9 +11,9 @@ backup_restore_web() {
 
   # ✅ Chọn website
   select_website || return 1
+  echo "DEBUG: SITE_NAME=$SITE_NAME"  # Debugging line
   SITE_DIR="$SITES_DIR/$SITE_NAME"
   DB_CONTAINER="${SITE_NAME}-mariadb"
-
 
   if ! is_directory_exist "$SITE_DIR"; then
     echo -e "${RED}❌ Thư mục website không tồn tại: $SITE_DIR${NC}"
@@ -88,5 +88,3 @@ backup_restore_web() {
 
   echo -e "${GREEN}✅ Hoàn tất khôi phục website '$SITE_NAME'.${NC}"
 }
-
-# Ghi nhớ: Nên sử dụng run_unless_test khi gọi docker hoặc thay đổi hệ thống trong test
