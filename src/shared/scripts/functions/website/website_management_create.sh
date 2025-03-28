@@ -29,6 +29,7 @@ source "$FUNCTIONS_DIR/website/website_create_env.sh"
 # =====================================
 # 🐋 website_management_create – Tạo website WordPress mới
 # =====================================
+
 website_management_create() {
   
   echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚi =====${NC}"
@@ -39,6 +40,7 @@ website_management_create() {
   site_name="$(get_input_or_test_value "Tên site (mặc định: $suggested_site_name): " "${TEST_SITE_NAME:-$suggested_site_name}")"
   site_name=${site_name:-$suggested_site_name}
 
+  # Kiểm tra phiên bản PHP
   php_choose_version || return 1
   php_version="$REPLY"
 
@@ -65,22 +67,25 @@ website_management_create() {
   chmod 666 "$SITE_DIR/logs/"*.log
 
   # 🔧 Cấu hình NGINX
-  update_nginx_override_mounts "$site_name"
+  if ! update_nginx_override_mounts "$site_name"; then
+    echo -e "${RED}❌ Không thể cập nhật cấu hình NGINX.${NC}"
+    return 1
+  fi
   export site_name domain php_version
-  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh"
+  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh" || return 1
 
   # ⚙️ Tạo cấu hình
-  copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
-  apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf"
-  create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf"
-  website_create_env "$SITE_DIR" "$site_name" "$domain" "$php_version"
+  copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini" || return 1
+  apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf" || return 1
+  create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf" || return 1
+  website_create_env "$SITE_DIR" "$site_name" "$domain" "$php_version" || return 1
 
   # 🛠️ Tạo docker-compose.yml
   TEMPLATE_FILE="$TEMPLATES_DIR/docker-compose.yml.template"
   TARGET_FILE="$SITE_DIR/docker-compose.yml"
   if is_file_exist "$TEMPLATE_FILE"; then
     set -o allexport && source "$SITE_DIR/.env" && set +o allexport
-    envsubst < "$TEMPLATE_FILE" > "$TARGET_FILE"
+    envsubst < "$TEMPLATE_FILE" > "$TARGET_FILE" || return 1
     echo -e "${GREEN}✅ Đã tạo docker-compose.yml${NC}"
   else
     echo -e "${RED}❌ Không tìm thấy template docker-compose.yml${NC}"
@@ -88,7 +93,7 @@ website_management_create() {
   fi
 
   # 🚀 Khởi động container
-  run_unless_test run_in_dir "$SITE_DIR" docker compose up -d
+  run_unless_test run_in_dir "$SITE_DIR" docker compose up -d || return 1
 
   echo -e "${YELLOW}⏳ Đang kiểm tra container khởi động...${NC}"
   for i in {1..30}; do
@@ -105,8 +110,8 @@ website_management_create() {
   fi
 
   # 🔐 Cài đặt SSL + WordPress
-  generate_ssl_cert "$domain" "$SSL_DIR"
-  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name"
+  generate_ssl_cert "$domain" "$SSL_DIR" || return 1
+  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name" || return 1
 
   # 📦 Hiển thị thông tin
   WP_INFO_FILE="$SITE_DIR/.wp-info"
@@ -117,11 +122,11 @@ website_management_create() {
   fi
 
   # 🔁 Restart NGINX
-  nginx_restart
+  nginx_restart || return 1
 
   # 🧑‍🔧 Phân quyền
   if is_container_running "$CONTAINER_PHP"; then
-    run_unless_test docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/
+    run_unless_test docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/ || return 1
   else
     echo -e "${YELLOW}⚠️ Container PHP chưa chạy, bỏ qua phân quyền.${NC}"
   fi

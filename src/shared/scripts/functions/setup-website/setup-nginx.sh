@@ -29,13 +29,14 @@ if is_file_exist "$NGINX_CONF"; then
     rm -f "$NGINX_CONF"
 fi
 
-if is_file_exist "$NGINX_TEMPLATE"; then
-    cp "$NGINX_TEMPLATE" "$NGINX_CONF"
-    sedi "s|\\\${SITE_NAME}|$site_name|g" "$NGINX_CONF"
-    sedi "s|\\\${DOMAIN}|$domain|g" "$NGINX_CONF"
-    sedi "s|\\\${PHP_CONTAINER}|$site_name-php|g" "$NGINX_CONF"
-    echo -e "${GREEN}✅ Đã tạo file NGINX: $NGINX_CONF${NC}"
-else
-    echo -e "${RED}❌ Không tìm thấy template NGINX.${NC}"
-    exit 1
-fi
+    if is_file_exist "$NGINX_TEMPLATE"; then
+
+        cp "$NGINX_TEMPLATE" "$NGINX_CONF"
+        sedi "s|\\\${SITE_NAME}|$site_name|g" "$NGINX_CONF"
+        sedi "s|\\\${DOMAIN}|$domain|g" "$NGINX_CONF"
+        sedi "s|\\\${PHP_CONTAINER}|$site_name-php|g" "$NGINX_CONF"
+        echo -e "${GREEN}✅ Đã tạo file NGINX: $NGINX_CONF${NC}"
+    else
+        echo -e "${RED}❌ Không tìm thấy template NGINX.${NC}"
+        exit 1
+    fi

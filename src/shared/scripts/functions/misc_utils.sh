@@ -61,3 +61,27 @@ get_input_or_test_value() {
     echo "${input:-$fallback}"
   fi
 }
+
+
+# =========================================
+# Hàm khác
+# =========================================
+
+# Hàm hiển thị hiệu ứng loading
+show_loading() {
+    local message="$1"
+    local delay="$2"  # Thời gian trễ giữa các vòng quay (tính bằng giây)
+    
+    # Tạo mảng chứa các dấu hiệu loading
+    local symbols=("/" "-" "\\" "|")
+    
+    # Vòng lặp hiển thị loading
+    echo -n "$message "
+    while true; do
+        for symbol in "${symbols[@]}"; do
+            echo -n "$symbol"
+            sleep "$delay"
+            echo -ne "\b"  # Di chuyển con trỏ về vị trí trước đó (backspace)
+        done
+    done
+}
