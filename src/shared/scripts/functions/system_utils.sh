@@ -31,7 +31,7 @@ setup_timezone() {
         current_tz=$(timedatectl | grep "Time zone" | awk '{print $3}')
         if [[ "$current_tz" != "Asia/Ho_Chi_Minh" ]]; then
             echo -e "${YELLOW}🌏 Setting system timezone to Asia/Ho_Chi_Minh...${NC}"
-            sudo timedatectl set-timezone Asia/Ho_Chi_Minh
+            timedatectl set-timezone Asia/Ho_Chi_Minh
             echo -e "${GREEN}✅ System timezone has been changed.${NC}"
         fi
     fi
@@ -126,11 +126,11 @@ check_required_commands() {
 
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
                 if command -v apt &> /dev/null; then
-                    sudo apt update -y && sudo apt install -y $(echo "$cmd" | awk '{print $1}')
+                    apt update -y && apt install -y $(echo "$cmd" | awk '{print $1}')
                 elif command -v yum &> /dev/null; then
-                    sudo yum install -y $(echo "$cmd" | awk '{print $1}')
+                    yum install -y $(echo "$cmd" | awk '{print $1}')
                 elif command -v dnf &> /dev/null; then
-                    sudo dnf install -y $(echo "$cmd" | awk '{print $1}')
+                    dnf install -y $(echo "$cmd" | awk '{print $1}')
                 else
                     echo -e "${RED}❌ No suitable package manager found to install '$cmd'.${NC}"
                 fi

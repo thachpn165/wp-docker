@@ -56,22 +56,22 @@ remove_volume() {
 install_docker() {
     echo -e "${YELLOW}🔧 Installing Docker...${NC}"
     if [ -x "$(command -v apt-get)" ]; then
-        sudo apt-get update
-        sudo apt-get install -y ca-certificates curl gnupg lsb-release
-        sudo mkdir -p /etc/apt/keyrings
+         apt-get update
+         apt-get install -y ca-certificates curl gnupg lsb-release
+         mkdir -p /etc/apt/keyrings
         curl -fsSL https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg | \
-            sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+             gpg --dearmor -o /etc/apt/keyrings/docker.gpg
         echo \
           "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
           https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") \
           $(lsb_release -cs) stable" | \
-          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        sudo apt-get update
-        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+           tee /etc/apt/sources.list.d/docker.list > /dev/null
+         apt-get update
+         apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     elif [ -x "$(command -v yum)" ]; then
-        sudo yum install -y yum-utils
-        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-        sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+         yum install -y yum-utils
+         yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+         yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     else
         echo -e "${RED}❌ This operating system is not supported for automatic Docker installation.${NC}"
         exit 1
@@ -121,7 +121,7 @@ start_docker_if_needed() {
             done
             echo " ✅"
         else
-            sudo systemctl start docker
+             systemctl start docker
         fi
     else
         echo -e "${GREEN}✅ Docker is running.${NC}"
@@ -138,7 +138,7 @@ check_docker_group() {
         # Linux - check and add user to docker group if needed
         if ! groups "$USER" | grep -q docker; then
             echo -e "${YELLOW}➕ Adding user '$USER' to docker group...${NC}"
-            sudo usermod -aG docker "$USER"
+             usermod -aG docker "$USER"
             echo -e "${GREEN}✅ User has been added to docker group. Please logout/login for changes to take effect.${NC}"
         fi
     fi
