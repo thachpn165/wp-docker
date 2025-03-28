@@ -91,6 +91,13 @@ core_check_for_update() {
   # Lấy phiên bản mới nhất từ cache hoặc GitHub
   LATEST_VERSION=$(core_version_cache)
 
+  # Nếu không có cache hoặc phiên bản cache là mới nhất, chỉ hiển thị thông báo
+  if [[ "$LATEST_VERSION" == "❌ No cache found. Fetching version from GitHub..." ]]; then
+    echo "⚠️ Không tìm thấy cache, đang tải phiên bản mới từ GitHub..."
+    echo "👉 Bạn có thể chạy tính năng cập nhật để nâng cấp hệ thống."
+    return
+  fi
+
   # So sánh các phiên bản
   if [[ "$CURRENT_VERSION" != "$LATEST_VERSION" ]]; then
     echo "⚠️ Có phiên bản mới! Phiên bản hiện tại là $CURRENT_VERSION và phiên bản mới nhất là $LATEST_VERSION."
@@ -99,4 +106,3 @@ core_check_for_update() {
     echo "✅ Bạn đang sử dụng phiên bản mới nhất: $CURRENT_VERSION"
   fi
 }
-
