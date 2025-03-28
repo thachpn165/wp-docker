@@ -1,9 +1,9 @@
 # =====================================
-# 🐋 website_management_create – Tạo website WordPress mới
+# 🐋 website_management_create – Create New WordPress Website
 # =====================================
 
 
-# === 🧠 Tự động xác định PROJECT_DIR (gốc mã nguồn) ===
+# === 🧠 Auto-detect PROJECT_DIR (source code root) ===
 if [[ -z "$PROJECT_DIR" ]]; then
   SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
   while [[ "$SCRIPT_PATH" != "/" ]]; do
@@ -15,30 +15,32 @@ if [[ -z "$PROJECT_DIR" ]]; then
   done
 fi
 
-# === ✅ Load config.sh từ PROJECT_DIR ===
+# === ✅ Load config.sh from PROJECT_DIR ===
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Không tìm thấy config.sh tại: $CONFIG_FILE" >&2
+  echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
 
-# Load config và các hàm phụ thuộc
+# Load config and dependent functions
 source "$FUNCTIONS_DIR/website/website_create_env.sh"
 
 # =====================================
-# 🐋 website_management_create – Tạo website WordPress mới
+# 🐋 website_management_create – Create New WordPress Website
 # =====================================
+
 website_management_create() {
   
-  echo -e "${BLUE}===== TẠO WEBSITE WORDPRESS MỚi =====${NC}"
+  echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
 
-  # 📥 Nhập domain và tên site
-  domain="$(get_input_or_test_value "Tên miền (ví dụ: example.com): " "${TEST_DOMAIN:-example.com}")"
+  # 📥 Input domain and site name
+  domain="$(get_input_or_test_value "Domain name (e.g., example.com): " "${TEST_DOMAIN:-example.com}")"
   suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
-  site_name="$(get_input_or_test_value "Tên site (mặc định: $suggested_site_name): " "${TEST_SITE_NAME:-$suggested_site_name}")"
+  site_name="$(get_input_or_test_value "Site name (default: $suggested_site_name): " "${TEST_SITE_NAME:-$suggested_site_name}")"
   site_name=${site_name:-$suggested_site_name}
 
+  # Check PHP version
   php_choose_version || return 1
   php_version="$REPLY"
 
@@ -46,85 +48,88 @@ website_management_create() {
   CONTAINER_PHP="${site_name}-php"
   CONTAINER_DB="${site_name}-mariadb"
 
-  # ❌ Kiểm tra site đã tồn tại
+  # ❌ Check if site already exists
   if is_directory_exist "$SITE_DIR" false; then
-    echo -e "${RED}❌ Website '$site_name' đã tồn tại.${NC}"
+    echo -e "${RED}❌ Website '$site_name' already exists.${NC}"
     return 1
   fi
 
-  # 📝 Tạo log
+  # 📝 Create log
   mkdir -p "$LOGS_DIR"
   LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
   run_unless_test exec > >(tee -a "$LOG_FILE") 2>&1
-  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] BẮT ĐẦU TẠO SITE: $site_name =====" >> "$LOG_FILE"
+  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] STARTING SITE CREATION: $site_name =====" >> "$LOG_FILE"
 
-  # 🧱 Tạo cấu trúc thư mục
+  # 🧱 Create directory structure
   mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs,backups}
   touch "$SITE_DIR/logs/access.log" "$SITE_DIR/logs/error.log"
   chmod 666 "$SITE_DIR/logs/"*.log
 
-  # 🔧 Cấu hình NGINX
-  update_nginx_override_mounts "$site_name"
+  # 🔧 Configure NGINX
+  if ! update_nginx_override_mounts "$site_name"; then
+    echo -e "${RED}❌ Unable to update NGINX configuration.${NC}"
+    return 1
+  fi
   export site_name domain php_version
-  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh"
+  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh" || return 1
 
-  # ⚙️ Tạo cấu hình
-  copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
-  apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf"
-  create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf"
-  website_create_env "$SITE_DIR" "$site_name" "$domain" "$php_version"
+  # ⚙️ Create configurations
+  copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini" || return 1
+  apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf" || return 1
+  create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf" || return 1
+  website_create_env "$SITE_DIR" "$site_name" "$domain" "$php_version" || return 1
 
-  # 🛠️ Tạo docker-compose.yml
+  # 🛠️ Create docker-compose.yml
   TEMPLATE_FILE="$TEMPLATES_DIR/docker-compose.yml.template"
   TARGET_FILE="$SITE_DIR/docker-compose.yml"
   if is_file_exist "$TEMPLATE_FILE"; then
     set -o allexport && source "$SITE_DIR/.env" && set +o allexport
-    envsubst < "$TEMPLATE_FILE" > "$TARGET_FILE"
-    echo -e "${GREEN}✅ Đã tạo docker-compose.yml${NC}"
+    envsubst < "$TEMPLATE_FILE" > "$TARGET_FILE" || return 1
+    echo -e "${GREEN}✅ Created docker-compose.yml${NC}"
   else
-    echo -e "${RED}❌ Không tìm thấy template docker-compose.yml${NC}"
+    echo -e "${RED}❌ docker-compose.yml template not found${NC}"
     return 1
   fi
 
-  # 🚀 Khởi động container
-  run_unless_test run_in_dir "$SITE_DIR" docker compose up -d
+  # 🚀 Start containers
+  run_unless_test run_in_dir "$SITE_DIR" docker compose up -d || return 1
 
-  echo -e "${YELLOW}⏳ Đang kiểm tra container khởi động...${NC}"
+  echo -e "${YELLOW}⏳ Checking container startup...${NC}"
   for i in {1..30}; do
     if is_container_running "$CONTAINER_PHP" && is_container_running "$CONTAINER_DB"; then
-      echo -e "${GREEN}✅ Container đã sẵn sàng.${NC}"
+      echo -e "${GREEN}✅ Container is ready.${NC}"
       break
     fi
     run_unless_test sleep 1
   done
 
   if ! is_container_running "$CONTAINER_PHP" || ! is_container_running "$CONTAINER_DB"; then
-    echo -e "${RED}❌ Container chưa sẵn sàng sau 30 giây.${NC}"
+    echo -e "${RED}❌ Container not ready after 30 seconds.${NC}"
     return 1
   fi
 
-  # 🔐 Cài đặt SSL + WordPress
-  generate_ssl_cert "$domain" "$SSL_DIR"
-  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name"
+  # 🔐 Install SSL + WordPress
+  generate_ssl_cert "$domain" "$SSL_DIR" || return 1
+  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name" || return 1
 
-  # 📦 Hiển thị thông tin
+  # 📦 Display information
   WP_INFO_FILE="$SITE_DIR/.wp-info"
   if [ -f "$WP_INFO_FILE" ]; then
-    echo -e "${GREEN}\n🎉 WordPress đã được cài đặt thành công cho $site_name${NC}"
+    echo -e "${GREEN}\n🎉 WordPress installed successfully for $site_name${NC}"
     cat "$WP_INFO_FILE"
     rm -f "$WP_INFO_FILE"
   fi
 
   # 🔁 Restart NGINX
-  nginx_restart
+  nginx_restart || return 1
 
-  # 🧑‍🔧 Phân quyền
+  # 🧑‍🔧 Permissions
   if is_container_running "$CONTAINER_PHP"; then
-    run_unless_test docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/
+    run_unless_test docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/ || return 1
   else
-    echo -e "${YELLOW}⚠️ Container PHP chưa chạy, bỏ qua phân quyền.${NC}"
+    echo -e "${YELLOW}⚠️ Container PHP not running, skipping permissions.${NC}"
   fi
 
-  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ✅ HOÀN TẤT: $site_name =====" >> "$LOG_FILE"
+  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ✅ COMPLETED: $site_name =====" >> "$LOG_FILE"
 }

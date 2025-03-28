@@ -15,7 +15,10 @@ setup_env() {
   export LOGS_DIR="$BASE_DIR/logs"
   export SSL_DIR="$BASE_DIR/nginx-proxy/ssl"
   export TMP_DIR="$BASE_DIR/tmp"
-
+  export ZIP_NAME="mock-wp-docker.zip"
+  export TMP_DIR="$BASE_DIR/tmp"
+  export LOG_FILE="$BASE_DIR/update.log"
+  export REPO_URL="https://example.com"
   export DEV_MODE=true
   export PHP_USER="nobody"
   export DOCKER_NETWORK="proxy_network"
@@ -26,6 +29,8 @@ setup_env() {
   export RCLONE_CONFIG_DIR="$CONFIG_DIR/rclone"
   export RCLONE_CONFIG_FILE="$RCLONE_CONFIG_DIR/rclone.conf"
 mkdir -p "$FUNCTIONS_DIR" "$FUNCTIONS_DIR/php"
+mkdir -p "$FUNCTIONS_DIR/core"
+mkdir -p "$FUNCTIONS_DIR/backup-manager"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/system_utils.sh"         "$FUNCTIONS_DIR/"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/docker_utils.sh"         "$FUNCTIONS_DIR/"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/file_utils.sh"           "$FUNCTIONS_DIR/"
@@ -36,6 +41,66 @@ cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/php/php_utils.sh"     
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/db_utils.sh"             "$FUNCTIONS_DIR/"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/website_utils.sh"        "$FUNCTIONS_DIR/"
 cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/misc_utils.sh"           "$FUNCTIONS_DIR/"
-cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/nginx_utils.sh"          "$FUNCTIONS_DIR/"
+cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/nginx/nginx_utils.sh"          "$FUNCTIONS_DIR/"
+cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/core/core_update.sh" \
+   "$FUNCTIONS_DIR/core/"
+cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/core/core_version_management.sh" \
+   "$FUNCTIONS_DIR/core/"
+cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/backup-manager/backup_restore_web.sh" \
+   "$FUNCTIONS_DIR/backup-manager/"
+
+cp "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/backup-manager/backup_restore_functions.sh" \
+   "$FUNCTIONS_DIR/backup-manager/"
+
+# Import các file utils từ thư mục tạm
+source "$FUNCTIONS_DIR/system_utils.sh"
+source "$FUNCTIONS_DIR/docker_utils.sh"
+source "$FUNCTIONS_DIR/file_utils.sh"
+source "$FUNCTIONS_DIR/network_utils.sh"
+source "$FUNCTIONS_DIR/ssl_utils.sh"
+source "$FUNCTIONS_DIR/wp_utils.sh"
+source "$FUNCTIONS_DIR/php/php_utils.sh"
+source "$FUNCTIONS_DIR/db_utils.sh"
+source "$FUNCTIONS_DIR/website_utils.sh"
+source "$FUNCTIONS_DIR/misc_utils.sh"
+source "$FUNCTIONS_DIR/nginx_utils.sh"
+#source "$FUNCTIONS_DIR/core/core_update.sh"
+source "$FUNCTIONS_DIR/core/core_version_management.sh"
+source "$FUNCTIONS_DIR/backup-manager/backup_restore_web.sh"
+source "$FUNCTIONS_DIR/backup-manager/backup_restore_functions.sh"
+
+# Tạo file config.sh giả tại đúng vị trí mà core_update.sh cần
+mkdir -p "$PROJECT_DIR/shared/config"
+cat > "$PROJECT_DIR/shared/config/config.sh" <<'EOF'
+# ========== Fake config.sh for test ==========
+
+BASE_DIR="${BASE_DIR:-$PROJECT_DIR}"
+INSTALL_DIR="${INSTALL_DIR:-$BASE_DIR}"
+TMP_DIR="${TMP_DIR:-$BASE_DIR/tmp}"
+REPO_URL="${REPO_URL:-https://example.com}"
+ZIP_NAME="${ZIP_NAME:-wp-docker.zip}"
+LOG_FILE="${LOG_FILE:-$BASE_DIR/update.log}"
+CORE_VERSION_FILE="${CORE_VERSION_FILE:-version.txt}"
+CORE_LATEST_VERSION="${CORE_LATEST_VERSION:-file://$BASE_DIR/latest_version.txt}"
+
+SITES_DIR="${SITES_DIR:-$BASE_DIR/sites}"
+TEMPLATES_DIR="${TEMPLATES_DIR:-$BASE_DIR/shared/templates}"
+CONFIG_DIR="${CONFIG_DIR:-$BASE_DIR/shared/config}"
+SCRIPTS_DIR="${SCRIPTS_DIR:-$BASE_DIR/shared/scripts}"
+FUNCTIONS_DIR="${FUNCTIONS_DIR:-$SCRIPTS_DIR/functions}"
+SCRIPTS_FUNCTIONS_DIR="${SCRIPTS_FUNCTIONS_DIR:-$FUNCTIONS_DIR}"
+
+RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$CONFIG_DIR/rclone}"
+RCLONE_CONFIG_FILE="${RCLONE_CONFIG_FILE:-$RCLONE_CONFIG_DIR/rclone.conf}"
+
+PHP_USER="nobody"
+DOCKER_NETWORK="proxy_network"
+NGINX_PROXY_CONTAINER="nginx-proxy"
+
+RED="" GREEN="" YELLOW="" BLUE="" MAGENTA="" CYAN="" WHITE="" NC=""
+CHECKMARK="✅"
+CROSSMARK="❌"
+# Avoid sourcing actual functions again during tests
+EOF
 
 }

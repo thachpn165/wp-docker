@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 🛠️ Cấu hình wp-config.php
+# 🛠️ Configure wp-config.php
 wp_set_wpconfig() {
     local container_php="$1"
     local db_name="$2"
@@ -8,7 +8,7 @@ wp_set_wpconfig() {
     local db_pass="$4"
     local container_db="$5"
 
-    echo -e "${YELLOW}⚙️ Đang cấu hình wp-config.php trong container $container_php...${NC}"
+    echo -e "${YELLOW}⚙️ Configuring wp-config.php in container $container_php...${NC}"
 
     docker exec -i "$container_php" sh -c "
         cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php && \
@@ -18,7 +18,7 @@ wp_set_wpconfig() {
         sed -i 's/localhost/$container_db/' /var/www/html/wp-config.php && \
         cat <<'EOF' | tee -a /var/www/html/wp-config.php
 
-// 🚀 Tăng cường bảo mật SSL cho WordPress
+// 🚀 Enhance SSL security for WordPress
 if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos(\$_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
     \$_SERVER['HTTPS'] = 'on';
 }
@@ -26,14 +26,14 @@ EOF
     "
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ wp-config.php đã được cấu hình thành công.${NC}"
+        echo -e "${GREEN}✅ wp-config.php has been configured successfully.${NC}"
     else
-        echo -e "${RED}❌ Lỗi khi cấu hình wp-config.php.${NC}"
+        echo -e "${RED}❌ Error configuring wp-config.php.${NC}"
         exit 1
     fi
 }
 
-# 🚀 Cài đặt WordPress
+# 🚀 Install WordPress
 wp_install() {
     local container="$1"
     local site_url="$2"
@@ -42,68 +42,68 @@ wp_install() {
     local admin_pass="$5"
     local admin_email="$6"
 
-    echo "🚀 Đang cài đặt WordPress..."
+    echo "🚀 Installing WordPress..."
     docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -i "$container" sh -c "
         wp core install --url='$site_url' --title='$title' --admin_user='$admin_user' \
         --admin_password='$admin_pass' --admin_email='$admin_email' --skip-email --path=/var/www/html --allow-root
     "
-    echo "✅ WordPress đã được cài đặt."
+    echo "✅ WordPress has been installed."
 }
 
-# 📋 Lấy giá trị biến môi trường từ tệp .env
+# 📋 Get environment variable value from .env file
 fetch_env_variable() {
     local env_file="$1"
     local var_name="$2"
     if [ -f "$env_file" ]; then
         grep -E "^${var_name}=" "$env_file" | cut -d'=' -f2 | tr -d '\r'
     else
-        echo -e "${RED}❌ Lỗi: Tệp .env không tồn tại: $env_file${NC}" >&2
+        echo -e "${RED}❌ Error: .env file does not exist: $env_file${NC}" >&2
         return 1
     fi
 }
 
-# 📌 **Thiết lập Permalinks**
+# 📌 **Set up Permalinks**
 wp_set_permalinks() {
     local container="$1"
     local site_url="$2"
 
-    echo -e "${YELLOW}🔗 Đang thiết lập permalinks cho WordPress...${NC}"
+    echo -e "${YELLOW}🔗 Setting up WordPress permalinks...${NC}"
     docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp option update permalink_structure '/%postname%/' --path=/var/www/html"
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Permalinks đã được thiết lập thành công.${NC}"
+        echo -e "${GREEN}✅ Permalinks have been set up successfully.${NC}"
     else
-        echo -e "${RED}❌ Lỗi khi thiết lập permalinks.${NC}"
+        echo -e "${RED}❌ Error setting up permalinks.${NC}"
         exit 1
     fi
 }
 
-# 📌 **Cài đặt và kích hoạt plugin bảo mật**
+# 📌 **Install and activate security plugin**
 wp_plugin_install_security_plugin() {
     local container="$1"
 
-    echo -e "${YELLOW}🔒 Đang cài đặt plugin bảo mật WordPress...${NC}"
+    echo -e "${YELLOW}🔒 Installing WordPress security plugin...${NC}"
     docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp plugin install limit-login-attempts-reloaded --activate --path=/var/www/html"
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Plugin bảo mật đã được cài đặt và kích hoạt.${NC}"
+        echo -e "${GREEN}✅ Security plugin has been installed and activated.${NC}"
     else
-        echo -e "${RED}❌ Lỗi khi cài đặt plugin bảo mật.${NC}"
+        echo -e "${RED}❌ Error installing security plugin.${NC}"
         exit 1
     fi
 }
 
-# 📌 **Cài đặt và kích hoạt plugin Performance Lab**
+# 📌 **Install and activate Performance Lab plugin**
 wp_plugin_install_performance_lab() {
     local container="$1"
 
-    echo -e "${YELLOW}🔧 Đang cài đặt và kích hoạt plugin Performance Lab...${NC}"
+    echo -e "${YELLOW}🔧 Installing and activating Performance Lab plugin...${NC}"
     docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp plugin install performance-lab --activate --path=/var/www/html"
 
-    echo -e "${GREEN}✅ Plugin Performance Lab đã được cài đặt và module WebP Uploads đã được kích hoạt.${NC}"
+    echo -e "${GREEN}✅ Performance Lab plugin has been installed and WebP Uploads module has been activated.${NC}"
 }
 
-# Kiểm tra và cập nhật WP-CLI
+# Check and update WP-CLI
 check_and_update_wp_cli() {
     local wp_cli_path="shared/bin/wp"
     local current_version
@@ -112,15 +112,15 @@ check_and_update_wp_cli() {
 
     if [ -f "$wp_cli_path" ]; then
         current_version=$("$wp_cli_path" --version 2>/dev/null | awk '{print $2}')
-        echo -e "${GREEN}🔍 WP-CLI hiện tại: v$current_version${NC}"
-        echo -e "${YELLOW}🔄 Kiểm tra & cập nhật WP-CLI...${NC}"
+        echo -e "${GREEN}🔍 Current WP-CLI: v$current_version${NC}"
+        echo -e "${YELLOW}🔄 Checking & updating WP-CLI...${NC}"
     else
-        echo -e "${YELLOW}⚠️ WP-CLI chưa tồn tại. Đang tải bản mới nhất...${NC}"
+        echo -e "${YELLOW}⚠️ WP-CLI does not exist. Downloading latest version...${NC}"
     fi
 
     curl -sSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o "$wp_cli_path"
     chmod +x "$wp_cli_path"
 
     new_version=$("$wp_cli_path" --version 2>/dev/null | awk '{print $2}')
-    echo -e "${GREEN}✅ WP-CLI hiện đang là phiên bản: v$new_version${NC}"
+    echo -e "${GREEN}✅ WP-CLI is now version: v$new_version${NC}"
 }

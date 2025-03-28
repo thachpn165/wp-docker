@@ -1,15 +1,15 @@
 # 📌 WordPress Tools Menu
 wordpress_tools_menu() {
     echo -e "${BLUE}===== WordPress Tools =====${NC}"
-    echo -e "  ${GREEN}[1]${NC} Reset mật khẩu Admin"
-    echo -e "  ${GREEN}[2]${NC} Sửa quyền thành viên"
-    echo -e "  ${GREEN}[3]${NC} Bật/tắt tự cập nhật toàn bộ Plugins"
-    echo -e "  ${GREEN}[4]${NC} Bảo vệ wp-login.php"
-    echo -e "  ${GREEN}[5]${NC} Reset WordPress Database (Nguy hiểm)"
-    echo -e "  ${GREEN}[6]${NC} Xoá toàn bộ comment Spam"
-    echo -e "  ${GREEN}[7]${NC} Update/Downgrade WordPress core"
+    echo -e "  ${GREEN}[1]${NC} Reset Admin Password"
+    echo -e "  ${GREEN}[2]${NC} Edit User Roles"
+    echo -e "  ${GREEN}[3]${NC} Enable/Disable Auto-update for All Plugins"
+    echo -e "  ${GREEN}[4]${NC} Protect wp-login.php"
+    echo -e "  ${GREEN}[5]${NC} Reset WordPress Database (Dangerous)"
+    echo -e "  ${GREEN}[6]${NC} Delete All Spam Comments"
+    echo -e "  ${GREEN}[7]${NC} Update/Downgrade WordPress Core"
     echo ""
-    read -p "Chọn chức năng (hoặc nhấn Enter để thoát): " wp_tool_choice
+    read -p "Select function (or press Enter to exit): " wp_tool_choice
 
     case $wp_tool_choice in
         1)
@@ -28,13 +28,13 @@ wordpress_tools_menu() {
             source "$WORDPRESS_TOOLS_DIR/reset-wp-database.sh"
             ;;
         6)
-            echo -e "${YELLOW}🚀 Chức năng Xoá toàn bộ comment Spam chưa được triển khai.${NC}"
+            echo -e "${YELLOW}🚀 Delete All Spam Comments feature not implemented yet.${NC}"
             ;;
         7)
-            echo -e "${YELLOW}🚀 Chức năng Update/Downgrade WordPress core chưa được triển khai.${NC}"
+            echo -e "${YELLOW}🚀 Update/Downgrade WordPress Core feature not implemented yet.${NC}"
             ;;
         *)
-            echo -e "${RED}❌ Lựa chọn không hợp lệ hoặc bạn đã thoát.${NC}"
+            echo -e "${RED}❌ Invalid option or you have exited.${NC}"
             ;;
     esac
 }

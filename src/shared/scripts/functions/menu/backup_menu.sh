@@ -1,38 +1,44 @@
 #!/bin/bash
 
-CONFIG_FILE="shared/config/config.sh"
+# === 🧠 Auto-detect PROJECT_DIR (source code root) ===
 
-# Xác định đường dẫn tuyệt đối của `config.sh`
-while [ ! -f "$CONFIG_FILE" ]; do
-    CONFIG_FILE="../$CONFIG_FILE"
-    if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
-        exit 1
-    fi
-done
+if [[ -z "$PROJECT_DIR" ]]; then
+    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+    while [[ "$SCRIPT_PATH" != "/" && ! -f "$SCRIPT_PATH/shared/config/config.sh" ]]; do
+        SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+    done
+    PROJECT_DIR="$SCRIPT_PATH"
+fi
 
+CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "❌ Config file not found at: $CONFIG_FILE" >&2
+    exit 1
+fi
 source "$CONFIG_FILE"
 
-# Import các hàm backup
+# Import backup functions
 source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_actions.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_restore_web.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-scheduler/schedule_backup.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-scheduler/manage_cron.sh"
 
-# Hàm hiển thị menu quản lý backup
+# Function to display backup management menu
 backup_menu() {
     while true; do
         echo -e "${BLUE}============================${NC}"
-        echo -e "${BLUE}   🛠️ QUẢN LÝ BACKUP WEBSITE   ${NC}"
+        echo -e "${BLUE}   🛠️ WEBSITE BACKUP MANAGEMENT   ${NC}"
         echo -e "${BLUE}============================${NC}"
-        echo -e "  ${GREEN}[1]${NC} 🔄 Sao lưu website ngay"
-        echo -e "  ${GREEN}[2]${NC} 🗑️ Xóa backup cũ"
-        echo -e "  ${GREEN}[3]${NC} 📂 Xem danh sách backup"
-        echo -e "  ${GREEN}[4]${NC} ⏳ Lên lịch backup tự động"
-        echo -e "  ${GREEN}[5]${NC} ⚙️ Quản lý lịch backup (Crontab)"
-        echo -e "  ${GREEN}[6]${NC} ❌ Thoát"
+        echo -e "  ${GREEN}[1]${NC} Backup website now"
+        echo -e "  ${GREEN}[2]${NC} Delete old backups"
+        echo -e "  ${GREEN}[3]${NC} View backup list"
+        echo -e "  ${GREEN}[4]${NC} Schedule automatic backup"
+        echo -e "  ${GREEN}[5]${NC} Manage backup schedule (Crontab)"
+        echo -e "  ${GREEN}[6]${NC} Restore website from backup"
+        echo -e "  ${GREEN}[7]${NC} ❌ Exit"
         echo -e "${BLUE}============================${NC}"
         
-        read -p "🔹 Chọn một tùy chọn (1-6): " choice
+        read -p "🔹 Select an option (1-6): " choice
 
         case "$choice" in
             1) backup_website ;;
@@ -40,12 +46,13 @@ backup_menu() {
             3) list_backup_files ;;
             4) schedule_backup_create ;;
             5) manage_cron_menu ;;
-            6) 
-                echo -e "${GREEN}👋 Thoát khỏi menu Backup!${NC}"
+            6) backup_restore_web ;;
+            7) 
+                echo -e "${GREEN}👋 Exiting Backup menu!${NC}"
                 break
                 ;;
             *)
-                echo -e "${RED}❌ Lựa chọn không hợp lệ, vui lòng nhập lại!${NC}"
+                echo -e "${RED}❌ Invalid option, please try again!${NC}"
                 ;;
         esac
     done

@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# Kiểm tra xem một port có đang được sử dụng không
+# Check if a port is in use
 is_port_in_use() {
     local port="$1"
     netstat -tuln | grep -q ":$port "
 }
 
-# Kiểm tra kết nối Internet
+# Check Internet connection
 is_internet_connected() {
     ping -c 1 8.8.8.8 &> /dev/null
 }
 
-# Kiểm tra xem một domain có thể truy cập không
+# Check if a domain is resolvable
 is_domain_resolvable() {
     local domain="$1"
     if command -v timeout &>/dev/null; then
@@ -19,28 +19,27 @@ is_domain_resolvable() {
     else
     nslookup "$domain" | grep -q "Name:"
     fi
-
 }
 
-# Hàm kiểm tra một mạng Docker có tồn tại không
+# Function to check if a Docker network exists
 is_network_exists() {
     local network_name="$1"
     if docker network ls --format '{{.Name}}' | grep -q "^${network_name}$"; then
-        return 0  # Network tồn tại
+        return 0  # Network exists
     else
-        return 1  # Network không tồn tại
+        return 1  # Network does not exist
     fi
 }
 
-# Thiết lập network Docker
+# Set up Docker network
 create_docker_network() {
     local network_name="$1"
     if ! docker network ls | grep -q "$network_name"; then
-        echo -e "${YELLOW}🔧 Đang tạo mạng $network_name...${NC}"
+        echo -e "${YELLOW}🔧 Creating network $network_name...${NC}"
         docker network create "$network_name"
-        echo -e "${GREEN}✅ Mạng $network_name đã được tạo.${NC}"
+        echo -e "${GREEN}✅ Network $network_name has been created.${NC}"
     else
-        echo -e "${GREEN}✅ Mạng $network_name đã tồn tại.${NC}"
+        echo -e "${GREEN}✅ Network $network_name already exists.${NC}"
     fi
 }
 

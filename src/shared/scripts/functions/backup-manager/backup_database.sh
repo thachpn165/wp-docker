@@ -7,25 +7,30 @@ backup_database() {
     local backup_filename="db-${site_name}-$(date +%Y%m%d-%H%M%S).sql"
     local backup_path="$SITES_DIR/$site_name/backups/${backup_filename}"
 
-    #Debug
+    # Debug
     echo "📦 DEBUG: site_name=$site_name, db_name=$db_name, db_user=$db_user"
 
     is_directory_exist "$SITES_DIR/$site_name/backups"
     is_directory_exist "$SITES_DIR/$site_name/logs"
     
+    # Check MariaDB container status before backup
+    if ! docker ps --filter "name=${container_name}" --filter "status=running" | grep -q "${container_name}"; then
+        echo "❌ The container ${container_name} is not running. Backup cannot proceed."
+        return 1
+    fi
 
-    echo "🔹 Đang sao lưu database của ${site_name} trong container ${container_name}..."
+    echo "🔹 Backing up database for ${site_name} in container ${container_name}..."
 
-    # Thực hiện backup database bên trong container và lưu vào /backups/
+    # Perform database backup inside container and save to /backups/
     docker exec -e MYSQL_PWD="${db_pass}" "${container_name}" \
         mysqldump --skip-lock-tables -u "${db_user}" "${db_name}" > "${backup_path}"
 
-    # Kiểm tra kết quả và trả về đường dẫn tập tin
+    # Check result and return file path
     if [[ $? -eq 0 ]]; then
-        echo "✅ Database được sao lưu thành công: $backup_path"
-        echo -n "$backup_path"  # Chỉ trả về đường dẫn, không có log
+        echo "✅ Database backup successful: $backup_path"
+        echo -n "$backup_path"  # Return only the path, no log
     else
-        echo "❌ Lỗi khi sao lưu database!"
+        echo "❌ Error during database backup!"
         return 1
     fi
 }

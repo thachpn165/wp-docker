@@ -1,5 +1,5 @@
 # =====================================
-# 📝 website_create_env – Tạo file .env cho website
+# 📝 website_create_env – Create .env file for website
 # =====================================
 
 website_create_env() {
@@ -8,9 +8,9 @@ website_create_env() {
   local domain="$3"
   local php_version="$4"
 
-  # Kiểm tra đầu vào
+  # Check input parameters
   if [[ -z "$output_dir" || -z "$site_name" || -z "$domain" || -z "$php_version" ]]; then
-    echo -e "${RED}❌ Thiếu tham số khi gọi website_create_env().${NC}"
+    echo -e "${RED}❌ Missing parameters when calling website_create_env().${NC}"
     echo "Usage: website_create_env <output_dir> <site_name> <domain> <php_version>"
     return 1
   fi
@@ -32,5 +32,5 @@ MYSQL_USER=wpuser
 MYSQL_PASSWORD=$MYSQL_PASSWORD
 EOF
 
-  echo -e "${GREEN}✅ Đã tạo file .env tại $env_file${NC}"
+  echo -e "${GREEN}✅ Created .env file at $env_file${NC}"
 }

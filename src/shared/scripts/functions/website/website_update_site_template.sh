@@ -4,7 +4,7 @@ website_update_site_template() {
   source "$BASE_DIR/shared/config/config.sh"
   TEMPLATE_VERSION_NEW=$(cat "$BASE_DIR/shared/templates/.template_version" 2>/dev/null || echo "unknown")
 
-  echo -e "${YELLOW}🔍 Đang tìm các site có template cũ...${NC}"
+  echo -e "${YELLOW}🔍 Searching for sites with old templates...${NC}"
   outdated_sites=()
 
   for site_path in "$SITES_DIR/"*/; do
@@ -19,16 +19,16 @@ website_update_site_template() {
   done
 
   if [[ ${#outdated_sites[@]} -eq 0 ]]; then
-    echo -e "${GREEN}✅ Không có site nào dùng template cũ.${NC}"
+    echo -e "${GREEN}✅ No sites using old templates.${NC}"
     return 0
   fi
 
-  echo -e "${CYAN}🔧 Danh sách site cần cập nhật:${NC}"
+  echo -e "${CYAN}🔧 List of sites needing update:${NC}"
   for i in "${!outdated_sites[@]}"; do
     echo "  [$i] ${outdated_sites[$i]}"
   done
 
-  read -rp "👉 Nhập chỉ số site bạn muốn cập nhật (cách nhau bằng dấu cách): " indexes
+  read -rp "👉 Enter the indices of sites you want to update (separated by spaces): " indexes
   selected_sites=()
 
   for idx in $indexes; do
@@ -36,25 +36,25 @@ website_update_site_template() {
   done
 
   for site in "${selected_sites[@]}"; do
-    echo -e "\n${YELLOW}♻️ Đang cập nhật cấu hình cho site: $site${NC}"
+    echo -e "\n${YELLOW}♻️ Updating configuration for site: $site${NC}"
     site_path="$SITES_DIR/$site"
 
-    # Backup file cũ
+    # Backup old files
     cp "$site_path/docker-compose.yml" "$site_path/docker-compose.yml.bak" 2>/dev/null || true
     cp "$NGINX_CONF_DIR/$site.conf" "$NGINX_CONF_DIR/$site.conf.bak" 2>/dev/null || true
 
-    # Ghi đè docker-compose
+    # Override docker-compose
     cp "$TEMPLATE_DIR/docker-compose.yml.template" "$site_path/docker-compose.yml"
 
-    # Ghi đè NGINX config
+    # Override NGINX config
     cp "$TEMPLATE_DIR/nginx-proxy.conf.template" "$NGINX_CONF_DIR/$site.conf"
     sed -i "s|__DOMAIN__|$site|g" "$NGINX_CONF_DIR/$site.conf"
 
-    # Cập nhật version
+    # Update version
     echo "$TEMPLATE_VERSION_NEW" > "$site_path/.template_version"
 
-    echo -e "${GREEN}✅ Đã cập nhật site '$site' lên template $TEMPLATE_VERSION_NEW${NC}"
+    echo -e "${GREEN}✅ Updated site '$site' to template version $TEMPLATE_VERSION_NEW${NC}"
   done
 
-  echo -e "\n${GREEN}✨ Hoàn tất cập nhật cấu hình cho các site đã chọn.${NC}"
+  echo -e "\n${GREEN}✨ Completed configuration update for selected sites.${NC}"
 }

@@ -60,7 +60,8 @@ yarn.lock
 *.pem
 .wp-login-auth-*
 tmp/
-
+latest_version.txt
+.cursorignore
 # ☁️ RCLONE CONFIG
 src/shared/config/rclone/rclone.conf
 

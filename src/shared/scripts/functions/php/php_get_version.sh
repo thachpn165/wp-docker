@@ -5,9 +5,9 @@ php_get_version() {
     local temp_file="/tmp/php_tags_all.tmp"
     local next_url="$base_url"
 
-    echo -e "${CYAN}🌐 Đang kiểm tra danh sách phiên bản PHP...${NC}"
+    echo -e "${CYAN}🌐 Checking PHP version list...${NC}"
 
-    # Kiểm tra cache
+    # Check cache
     if [[ -f "$output_file" ]]; then
         local file_age
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -17,31 +17,31 @@ php_get_version() {
         fi
 
         if (( file_age < max_age_hours )); then
-            echo -e "${GREEN}✅ Danh sách PHP đã có sẵn (cache < ${max_age_hours}h).${NC}"
+            echo -e "${GREEN}✅ PHP list is available (cache < ${max_age_hours}h).${NC}"
             return 0
         fi
     fi
 
-    echo -e "${YELLOW}🔁 Đang tải nhiều trang từ Docker Hub...${NC}"
+    echo -e "${YELLOW}🔁 Downloading multiple pages from Docker Hub...${NC}"
     : > "$temp_file"
 
-    # Đệ quy tải các trang đến khi đủ dữ liệu
+    # Recursively download pages until enough data
     while [[ -n "$next_url" ]]; do
         page_data=$(curl -s --max-time 15 "$next_url")
         tags=$(echo "$page_data" | grep -oE '"name":"[0-9]+\.[0-9]+\.[0-9]+"' | cut -d':' -f2 | tr -d '"')
         echo "$tags" >> "$temp_file"
 
-        # Dừng sớm nếu đủ >30 tag (giảm số lần gọi)
+        # Early stop if >30 tags (reduce API calls)
         if [[ $(wc -l < "$temp_file") -gt 50 ]]; then
             break
         fi
 
-        # Lấy trang kế tiếp
+        # Get next page
         next_url=$(echo "$page_data" | grep -oE '"next":"[^"]+"' | cut -d':' -f2- | tr -d '"')
         next_url=${next_url//\\u0026/&} # decode URL
     done
 
-    # Gom theo prefix major.minor và chọn 2 tag mới nhất cho mỗi nhóm
+    # Group by major.minor prefix and select 2 latest tags for each group
     : > "$output_file"
     used_prefixes=""
     while read -r tag; do
@@ -57,5 +57,5 @@ php_get_version() {
     done < <(sort -Vr "$temp_file")
 
     rm -f "$temp_file"
-    echo -e "${GREEN}✅ Đã lưu danh sách PHP vào: $output_file${NC}"
+    echo -e "${GREEN}✅ PHP list has been saved to: $output_file${NC}"
 }

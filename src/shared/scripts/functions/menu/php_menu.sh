@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # =====================================
-# 💡 php_menu.sh – Menu quản lý PHP cho website WordPress
+# 💡 php_menu.sh – PHP Management Menu for WordPress Websites
 # =====================================
 
 CONFIG_FILE="shared/config/config.sh"
 
-# Xác định đường dẫn tuyệt đối của `config.sh`
+# Determine absolute path of `config.sh`
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
     if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
+        echo "❌ Error: config.sh not found!" >&2
         exit 1
     fi
 done
@@ -24,26 +24,26 @@ source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
 source "$FUNCTIONS_DIR/php/php_rebuild.sh"
 
 
-# 📋 Menu chính quản lý PHP
+# 📋 Main PHP Management Menu
 php_menu() {
   while true; do
     clear
-    echo -e "${CYAN}===== QUẢN LÝ PHIÊN BẢN PHP =====${NC}"
-    echo -e "${GREEN}[1]${NC} 🔀 Thay đổi phiên bản PHP"
-    echo -e "${GREEN}[2]${NC} 🔁 Rebuild container PHP"
-    echo -e "${GREEN}[3]${NC} ⚙️  Sửa file php-fpm.conf"
-    echo -e "${GREEN}[4]${NC} 🛠️  Sửa file php.ini"
-    echo -e "${GREEN}[5]${NC} ⬅️ Quay lại"
+    echo -e "${CYAN}===== PHP VERSION MANAGEMENT =====${NC}"
+    echo -e "${GREEN}[1]${NC} 🔀 Change PHP Version"
+    echo -e "${GREEN}[2]${NC} 🔁 Rebuild PHP Container"
+    echo -e "${GREEN}[3]${NC} ⚙️  Edit php-fpm.conf"
+    echo -e "${GREEN}[4]${NC} 🛠️  Edit php.ini"
+    echo -e "${GREEN}[5]${NC} ⬅️ Back"
     echo ""
 
-    read -p "Chọn một chức năng (1-5): " choice
+    read -p "Select a function (1-5): " choice
     case $choice in
-      1) php_change_version; read -p "Nhấn Enter để tiếp tục..." ;;
-      2) rebuild_php_container; read -p "Nhấn Enter để tiếp tục..." ;;
-      3) edit_php_fpm_conf; read -p "Nhấn Enter để tiếp tục..." ;;
-      4) edit_php_ini; read -p "Nhấn Enter để tiếp tục..." ;;
+      1) php_change_version; read -p "Press Enter to continue..." ;;
+      2) rebuild_php_container; read -p "Press Enter to continue..." ;;
+      3) edit_php_fpm_conf; read -p "Press Enter to continue..." ;;
+      4) edit_php_ini; read -p "Press Enter to continue..." ;;
       5) break ;;
-      *) echo -e "${RED}⚠️ Lựa chọn không hợp lệ!${NC}"; sleep 2 ;;
+      *) echo -e "${RED}⚠️ Invalid option!${NC}"; sleep 2 ;;
     esac
   done
 }
