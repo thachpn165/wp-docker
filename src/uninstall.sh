@@ -114,7 +114,6 @@ remove_all_except_backup() {
 remove_symlink() {
   if [ -L "/usr/local/bin/wpdocker" ]; then
     echo -e "${YELLOW}🗑️ Removing symlink /usr/local/bin/wpdocker...${NC}"
-# ⚠️ Removed `sudo` – script should be run as root
     rm -f /usr/local/bin/wpdocker
   fi
 }
