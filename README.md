@@ -1,4 +1,4 @@
-# WP Docker LEMP Stack
+# WP Docker
 
 [![Version](https://img.shields.io/badge/version-v1.1.0--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
@@ -12,9 +12,21 @@
 
 ## Introduction
 
-**WP Docker LEMP Stack** is a comprehensive solution for managing multiple WordPress installations through Docker, featuring an intuitive terminal-based interface. The system automates WordPress setup, SSL certificate generation, backup procedures, WP-CLI integration, and cloud synchronisation, among other essential functionalities.
+**WP Docker** is a specialized containerization platform designed for WordPress environments, offering an intuitive, terminal-based interface for developers and system administrators.
 
-This solution combines Linux, NGINX, MySQL, and PHP (LEMP) in a containerized environment, providing isolation, scalability, and simplified development workflows. Compared to traditional WordPress installations, this approach offers enhanced security, easy environment replication, and simplified maintenance.
+This enterprise-grade toolkit provides a security-hardened, performance-optimized infrastructure with key features such as:
+- Automated WordPress provisioning
+- SSL certificate management (including Let's Encrypt and custom certs)
+- Modular backup orchestration with local and cloud (Rclone) support
+- Full WP-CLI integration
+- Seamless cloud synchronization
+
+The platform adopts a modular architecture supporting interchangeable web servers such as OpenResty (NGINX + Lua), Caddy Server, and OpenLiteSpeed. This flexibility allows seamless switching between stacks with automatic configuration adaptation.
+
+Unlike conventional WordPress setups, WP Docker embraces infrastructure-as-code (IaC) principles to eliminate vendor lock-in. Its isolated containerized environment—combining Linux, PHP, and database services—ensures maximum portability, scalability, and operational consistency.
+
+By simplifying multi-stage environment replication (dev → staging → prod), WP Docker enhances security posture, accelerates deployment workflows, and ensures consistent performance across different infrastructures.
+
 
 Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
@@ -57,14 +69,7 @@ After installation, you **must add `/opt`** to Docker → Settings → Resources
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/thachpn165/wp-docker.git
-
-# Navigate to the project directory
-cd wp-docker
-
-# Run the installation script
-./install.sh
+curl -fsSL https://github.com/thachpn165/wp-docker/blob/main/src/install.sh | bash
 ```
 
 ## Usage
@@ -114,6 +119,47 @@ For advanced users requiring custom configurations, the following files can be m
 
 After modifying configuration files, restart the affected services through the system menu.
 
+## 🚀 WP Docker Roadmap (2025)
+
+### ✅ Current Version: `v1.1.1` (Beta)
+- Planned release of the first stable version: 2025-04-01
+
+### Core Features Completed:
+- Create WordPress websites with Docker
+- PHP version management (ARM compatibility warning included)
+- SSL certificate management (self-signed, Let's Encrypt, manual)
+- Backup system (local + Rclone support)
+- Scheduled automated backups
+- Website restoration (source + database)
+- Integrated WAF (OpenResty + Lua-based rules)
+- Auto-update WP-CLI and system version checker
+- Clean command-line interface optimized for macOS and Linux
+
+---
+
+### 🗓️ Upcoming Milestones
+
+```
+#### v1.3.0
+- Refactor to support multiple web servers (OpenResty, Caddy, OpenLiteSpeed, LiteSpeed Enterprise, etc.)
+- Integrate Caddy Server with WordPress using Caddy Route Cache.
+
+#### v1.4.0
+- Add command-line support for common tasks such as site creation, enabling/disabling cache configuration, and updating WP Docker.
+- Integrate Fail2Ban for server security.
+
+#### v1.5.0
+- Full CLI support for all available features
+- IP blocking for DDoS attacks based on access_log analysis (using Lua for OpenResty and Go for Caddy).
+
+#### v1.6.0
+- Integrate Telegram notifications for events like backups, Fail2Ban triggers, DDoS detection, updates, SSL expiration, and health checks.
+- Add Webhook support to receive similar notifications.
+
+#### v1.7.0
+- Isolated sFTP/SSH access per website
+- Automatically transfer site data to another server proactively
+```
 ## Acknowledgments
 
 I would like to extend my sincere appreciation to **[@sonpython](https://github.com/sonpython)** for his valuable contributions to this project. My heartfelt thanks also go to my colleagues at **[AZDIGI](https://azdigi.com)**: **[@dotrungquan](https://github.com/dotrungquan)** , **[@BamBo355](https://github.com/BamBo355)** , **[@phongdh262](https://github.com/phongdh262)**, and **[@RakunFatalis](https://github.com/RakunFatalis)** for their unwavering support throughout the development process.
