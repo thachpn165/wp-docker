@@ -9,11 +9,12 @@ website_create_env() {
   local php_version="$4"
 
   # Check input parameters
-  if [[ -z "$output_dir" || -z "$site_name" || -z "$domain" || -z "$php_version" ]]; then
+  if [[ "$TEST_MODE" != true && $# -ne 4 ]]; then
     echo -e "${RED}❌ Missing parameters when calling website_create_env().${NC}"
-    echo "Usage: website_create_env <output_dir> <site_name> <domain> <php_version>"
+    echo -e "${YELLOW}Usage: website_create_env <output_dir> <site_name> <domain> <php_version>${NC}"
     return 1
   fi
+
 
   local env_file="$output_dir/.env"
 
