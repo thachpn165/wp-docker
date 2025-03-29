@@ -62,6 +62,43 @@ get_input_or_test_value() {
   fi
 }
 
+# Select an item from a list, supports entering a number or choosing a default (used for website, storage, etc.)
+# Function: select_from_list
+# Arguments:
+#   1. prompt (string): The message to display when prompting the user to select an option.
+#   2. options (array): A list of options for the user to choose from.
+# Behavior:
+#   - If TEST_MODE is enabled, the function will automatically select the first item in the list
+#     or the value of TEST_SELECTED_OPTION if it is set.
+#   - If TEST_MODE is not enabled, the function will prompt the user to select an option by entering
+#     a number corresponding to the desired item in the list.
+#   - If the user enters a valid number within the range of the list, the function will return the
+#     selected option.
+#   - If the input is invalid, the function will return an empty string and exit with a status of 1.
+# Select an item from a list, hỗ trợ nhập số hoặc chọn mặc định (dùng cho website, storage,...)
+select_from_list() {
+    local prompt="$1"
+    shift
+    local options=("$@")
+
+    if [[ "$TEST_MODE" == true ]]; then
+        local test_value="${TEST_SELECTED_OPTION:-${options[0]}}"
+        echo "$test_value"
+        return 0
+    fi
+
+    local choice
+    read -p "$prompt [1-${#options[@]}]: " choice
+    if [[ "$choice" =~ ^[0-9]+$ && "$choice" -ge 1 && "$choice" -le ${#options[@]} ]]; then
+        echo "${options[$((choice - 1))]}"
+        return 0
+    else
+        echo ""
+        return 1
+    fi
+}
+
+
 # =========================================
 # Other Functions
 # =========================================
