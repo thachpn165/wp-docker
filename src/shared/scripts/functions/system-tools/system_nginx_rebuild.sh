@@ -18,7 +18,7 @@ system_nginx_rebuild() {
 
   # Start NGINX container
   echo -e "${YELLOW}🔄 Starting NGINX container...${NC}"
-  run_in_dir "$NGINX_PROXY_DIR" docker-compose up -d nginx-proxy
+  run_in_dir "$NGINX_PROXY_DIR" docker compose up -d nginx-proxy
 
   # Check if NGINX container is running
   echo -e "${YELLOW}⏳ Checking if NGINX container is running...${NC}"
