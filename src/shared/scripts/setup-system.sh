@@ -17,6 +17,7 @@ done
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wp_utils.sh"
 source "$FUNCTIONS_DIR/php/php_get_version.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/website/website_check_and_up.sh"
 
 # ✅ Set system timezone (if needed)
 clear
@@ -86,9 +87,9 @@ if [[ "$status" != "running" ]]; then
 fi
 '
 
-# ✅ Check and create Docker network if not available
-echo -e "${YELLOW}🌐 Checking Docker network '${DOCKER_NETWORK}'...${NC}"
+# Check network & website, etc.
 create_docker_network "$DOCKER_NETWORK"
+website_check_and_up
 
 # ✅ Fetch the latest PHP tags from Docker Hub
 php_get_version
