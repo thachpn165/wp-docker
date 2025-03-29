@@ -1,4 +1,4 @@
-# 📦 CHANGELOG – WP Docker LEMP
+# 📦 CHANGELOG – WP Docker
 
 ## [v1.1.0-beta] - 2025-03-28
 

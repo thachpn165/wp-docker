@@ -1,24 +1,44 @@
 # Display list of websites for selection
 select_website() {
-    local sites=($(ls -d $SITES_DIR/*/ | xargs -n 1 basename))
+    if [[ -z "$SITES_DIR" ]]; then
+        echo -e "${RED}❌ SITES_DIR is not defined.${NC}"
+        return 1
+    fi
 
-    # If no websites found
+    local sites=()
+    while IFS= read -r -d '' dir; do
+        sites+=("$(basename "$dir")")
+    done < <(find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -print0)
+
     if [[ ${#sites[@]} -eq 0 ]]; then
         echo -e "${RED}❌ No websites found in $SITES_DIR${NC}"
         return 1
     fi
 
-    # Use get_input_or_test_value to select website
-    SELECTED_WEBSITE=$(get_input_or_test_value "🔹 Select a website:" "${sites[0]}")
+    if [[ "$TEST_MODE" == true ]]; then
+        SITE_NAME="${TEST_SITE_NAME:-${sites[0]}}"
+        echo -e "${YELLOW}🧪 TEST_MODE: auto-selecting $SITE_NAME${NC}"
+    else
+        echo -e "\n📄 Available websites:"
+        for i in "${!sites[@]}"; do
+            echo "  $((i+1)). ${sites[$i]}"
+        done
 
-    # Check if user selected a valid website
-    if [[ ! " ${sites[@]} " =~ " ${SELECTED_WEBSITE} " ]]; then
-        echo -e "${RED}❌ Invalid selection!${NC}"
-        return 1
+        SELECTED_WEBSITE=$(select_from_list "🔹 Select a website:" "${sites[@]}")
+        if [[ -z "$SELECTED_WEBSITE" ]]; then
+            echo -e "${RED}❌ Invalid selection!${NC}"
+            return 1
+        fi
+
+        SITE_NAME="$SELECTED_WEBSITE"
     fi
 
-    echo -e "${GREEN}✅ Selected: $SELECTED_WEBSITE${NC}"
+    echo -e "${GREEN}✅ Selected: $SITE_NAME${NC}"
 }
+
+
+
+
 
 # 🔍 Scan site list from sites directory
 get_site_list() {

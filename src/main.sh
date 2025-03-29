@@ -47,7 +47,7 @@ print_header() {
     echo -e "\n\n\n"
     get_system_info
     echo -e "${MAGENTA}==============================================${NC}"
-    echo -e "${MAGENTA}        🚀 ${CYAN}WordPress Docker LEMP Stack 🚀        ${NC}"
+    echo -e "${MAGENTA}        ${CYAN}WordPress Docker 🐳            ${NC}"
     echo -e "${MAGENTA}==============================================${NC}"
     echo ""
     echo -e "${BLUE}🐳 Docker Status:${NC}"

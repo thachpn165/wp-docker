@@ -32,9 +32,9 @@ ssl_install_lets_encrypt() {
         echo -e "${YELLOW}⚠️ certbot is not installed. Proceeding with installation...${NC}"
         if [[ "$(uname -s)" == "Linux" ]]; then
             if [ -f /etc/debian_version ]; then
-                sudo apt update && sudo apt install -y certbot
+                 apt update &&  apt install -y certbot
             elif [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]; then
-                sudo yum install epel-release -y && sudo yum install -y certbot
+                 yum install epel-release -y &&  yum install -y certbot
             else
                 echo -e "${RED}❌ This operating system is not supported for automatic certbot installation.${NC}"
                 return 1
@@ -46,7 +46,7 @@ ssl_install_lets_encrypt() {
     fi
 
     echo -e "${YELLOW}📦 Requesting certificate from Let's Encrypt using webroot method...${NC}"
-    sudo certbot certonly --webroot -w "$WEBROOT" -d "$DOMAIN" --non-interactive --agree-tos -m "admin@$DOMAIN"
+     certbot certonly --webroot -w "$WEBROOT" -d "$DOMAIN" --non-interactive --agree-tos -m "admin@$DOMAIN"
 
     local CERT_PATH="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
     local KEY_PATH="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
@@ -61,8 +61,8 @@ ssl_install_lets_encrypt() {
     
     mkdir -p "$SSL_DIR"
 
-    sudo cp "$CERT_PATH" "$SSL_DIR/$DOMAIN.crt"
-    sudo cp "$KEY_PATH" "$SSL_DIR/$DOMAIN.key"
+     cp "$CERT_PATH" "$SSL_DIR/$DOMAIN.crt"
+     cp "$KEY_PATH" "$SSL_DIR/$DOMAIN.key"
 
     echo -e "${YELLOW}🔄 Reloading NGINX Proxy to apply new certificate...${NC}"
     docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload

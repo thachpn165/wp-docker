@@ -1,3 +1,8 @@
+if [ "$EUID" -ne 0 ]; then
+  echo "⚠️ Please run this script as root or with sudo."
+  exit 1
+fi
+
 #!/bin/bash
 
 INSTALL_DIR="/opt/wp-docker"
@@ -25,25 +30,25 @@ if [[ -d "$INSTALL_DIR" ]]; then
     echo "❌ Installation cancelled."
     exit 0
   fi
-  sudo rm -rf "$INSTALL_DIR"
+  rm -rf "$INSTALL_DIR"
 fi
 
 # ========================
 # 📥 Download and extract release
 # ========================
 echo "📦 Downloading source code from GitHub Release..."
-curl -L "$REPO_URL/releases/latest/download/wp-docker.zip" -o "$ZIP_NAME"
+curl -L "$REPO_URL/releases/latest/download/wp-docker.zip" -o "$ZIP_NAME" || { echo "❌ Command failed at line 35"; exit 1; }
 
 echo "📁 Extracting to $INSTALL_DIR..."
-sudo mkdir -p "$INSTALL_DIR"
-sudo unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
-rm "$ZIP_NAME"
+mkdir -p "$INSTALL_DIR"
+unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
+rm "$ZIP_NAME" || { echo "❌ Command failed at line 40"; exit 1; }
 
 # ========================
 # ✅ Set permissions for current user
 # ========================
 echo "🔐 Setting permissions for user: $USER"
-sudo chown -R "$USER" "$INSTALL_DIR"
+chown -R "$USER" "$INSTALL_DIR"
 
 # ========================
 # 🔗 Create global alias if not in dev mode
@@ -51,7 +56,7 @@ sudo chown -R "$USER" "$INSTALL_DIR"
 chmod +x "$INSTALL_DIR/shared/bin/$BIN_NAME.sh"
 
 if [[ "$DEV_MODE" != true ]]; then
-  sudo ln -sf "$INSTALL_DIR/shared/bin/$BIN_NAME.sh" "$BIN_LINK"
+  ln -sf "$INSTALL_DIR/shared/bin/$BIN_NAME.sh" "$BIN_LINK"
   echo "✅ Created '$BIN_NAME' command for running from anywhere."
 fi
 

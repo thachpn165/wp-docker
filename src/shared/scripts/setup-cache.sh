@@ -71,7 +71,7 @@ if [[ "$cache_type" == "no-cache" ]]; then
     if grep -q "include /etc/nginx/cache/" "$NGINX_CONF_FILE"; then
         sedi "s|include /etc/nginx/cache/.*;|include /etc/nginx/cache/no-cache.conf;|" "$NGINX_CONF_FILE"
     fi
-    docker exec nginx-proxy nginx -s reload
+    docker exec nginx-proxy nginx -s reload || { echo "❌ Command failed at line 74"; exit 1; }
     echo -e "${GREEN}✅ Đã tắt cache và reload NGINX.${NC}"
     exit 0
 fi
@@ -87,7 +87,7 @@ fi
 
 # ✅ Cài plugin cache mới
 docker_exec_php "wp plugin install $plugin_slug --activate --path=/var/www/html"
-docker exec -u root -i "$PHP_CONTAINER" chown -R nobody:nogroup /var/www/html/wp-content
+docker exec -u root -i "$PHP_CONTAINER" chown -R nobody:nogroup /var/www/html/wp-content || { echo "❌ Command failed at line 90"; exit 1; }
 
 # ✅ **Kiểm tra `<?php` trong `wp-config.php` trước khi chèn**
 if ! grep -q "<?php" "$WP_CONFIG_FILE"; then
@@ -98,7 +98,7 @@ fi
 # ✅ Nếu cần, cấu hình FastCGI Cache trong nginx.conf
 if [[ "$cache_choice" == "2" || "$cache_choice" == "3" ]]; then
     if ! docker exec nginx-proxy grep -q "fastcgi_cache_path" "$NGINX_MAIN_CONF"; then
-        docker exec nginx-proxy sed -i "/http {/a\\
+        docker exec nginx-proxy sed -i "/http {/a\\ || { echo "❌ Command failed at line 101"; exit 1; }
         fastcgi_cache_path /var/cache/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS:100m inactive=60m use_temp_path=off;" "$NGINX_MAIN_CONF"
     fi
     echo -e "${GREEN}✅ FastCGI Cache đã được cấu hình.${NC}"
@@ -125,7 +125,7 @@ if [[ "$cache_choice" == "2" ]]; then
     echo -e "${GREEN}✅ Redis Object Cache đã cấu hình xong.${NC}"
 fi
 
-docker exec nginx-proxy nginx -s reload
+docker exec nginx-proxy nginx -s reload || { echo "❌ Command failed at line 128"; exit 1; }
 
 echo -e "${GREEN}✅ NGINX đã được reload để áp dụng cache mới.${NC}"
 
