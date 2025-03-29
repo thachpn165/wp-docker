@@ -1,5 +1,5 @@
 #!/bin/bash
-
+source "$FUNCTIONS_DIR/core/core_update.sh"
 # Function to check and cache the latest version with 6-hour expiration
 core_version_cache() {
   CACHE_FILE="$BASE_DIR/latest_version.txt"
@@ -73,7 +73,7 @@ core_check_version_update() {
     echo "New version available ($latest_version). Do you want to update? [y/n]"
     read -p "Enter choice: " choice
     if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-      core_update_script  # Call update.sh script
+      core_update_system
     fi
   else
     echo "You are using the latest version: $current_version"
