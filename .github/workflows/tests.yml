@@ -1,5 +1,5 @@
 
-name: Test
+name: Feature Tests
 
 on:
   push:
@@ -15,11 +15,8 @@ jobs:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
-          - os: macos-latest
-            runner: macos-latest
           - os: azdigi-almalinux-222.145
             runner: [self-hosted, linux, azdigi-almalinux-222.145]
-
 
     steps:
       - uses: actions/checkout@v4
@@ -69,16 +66,6 @@ jobs:
             sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
             sudo systemctl start docker
 
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            echo "🍎 Installing Docker for macOS..."
-
-            brew install --cask docker || true
-            open -a Docker || true
-
-            echo "⏳ Waiting for Docker to be available..."
-            while ! docker system info > /dev/null 2>&1; do sleep 1; done
-
-            echo "✅ Docker is now available on macOS runner."
           else
             echo "❌ Unsupported OS: ${{ matrix.os }}"
             exit 1
