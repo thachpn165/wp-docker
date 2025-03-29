@@ -1,9 +1,8 @@
+#!/bin/bash
 if [ "$EUID" -ne 0 ]; then
   echo "⚠️ Please run this script as root or with sudo."
   exit 1
 fi
-
-#!/bin/bash
 
 INSTALL_DIR="/opt/wp-docker"
 BIN_NAME="wpdocker"
