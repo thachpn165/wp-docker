@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, azdigi-almalinux-222.145]
 
     steps:
       - uses: actions/checkout@v4
@@ -21,32 +21,20 @@ jobs:
           git clone https://github.com/bats-core/bats-core.git
           sudo ./bats-core/install.sh /usr/local
 
-      - name: 🐳 Install Docker (Linux or macOS)
+      - name: 🐳 Install Docker (Linux or macOS or Self-hosted AlmaLinux)
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]]; then
             echo "📦 Installing Docker for Linux..."
 
-            sudo apt-get remove -y containerd containerd.io || true
-            sudo apt-get autoremove -y
+            sudo dnf remove -y containerd containerd.io || true
+            sudo dnf autoremove -y
 
-            sudo apt-get update
-            sudo apt-get install -y \
-              apt-transport-https \
-              ca-certificates \
-              curl \
-              gnupg \
-              lsb-release
+            sudo dnf install -y dnf-plugins-core
+            sudo dnf config-manager \
+              --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-              sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-            echo \
-              "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
-              https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
-              sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-            sudo apt-get update
-            sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+            sudo systemctl start docker
 
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             echo "🍎 Installing Docker for macOS..."
