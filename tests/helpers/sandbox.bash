@@ -53,12 +53,26 @@ create_test_sandbox() {
 
   # Tạo config mock
   mkdir -p "$CONFIG_DIR"
-  cat > "$CONFIG_FILE" <<EOF
+  cp "$PROJECT_ROOT/src/shared/config/config.sh" "$CONFIG_FILE"
+
+    # Append biến override cho sandbox vào cuối
+cat >> "$CONFIG_FILE" <<EOF
+
+# === Override for test sandbox ===
 BASE_DIR="$BASE_DIR"
+PROJECT_DIR="$BASE_DIR"
+CONFIG_DIR="$CONFIG_DIR"
 FUNCTIONS_DIR="$FUNCTIONS_DIR"
 SCRIPTS_FUNCTIONS_DIR="$FUNCTIONS_DIR"
 SITES_DIR="$SITES_DIR"
+TEMPLATES_DIR="$TEMPLATES_DIR"
+LOGS_DIR="$LOGS_DIR"
+SSL_DIR="$SSL_DIR"
+NGINX_PROXY_DIR="$NGINX_PROXY_DIR"
 EOF
+
+
+
 }
 
 # === Xoá sandbox sau khi test xong ===

@@ -54,16 +54,18 @@ is_directory_exist() {
 
 # Ask user to confirm action
 confirm_action() {
-    local message="$1"
-    
-    while true; do
-        read -rp "$message (y/n): " response
-        case "$response" in
-            [Yy]*) return 0 ;;  # Confirm action
-            [Nn]*) return 1 ;;  # Cancel action
-            *) echo -e "${RED}⚠️ Please enter 'y' or 'n'.${NC}" ;;
-        esac
-    done
+  local message="$1"
+
+  if [[ "$TEST_MODE" == true ]]; then
+    echo "[TEST_MODE] Auto-confirm: $message"
+    return 0
+  fi
+
+  read -rp "$message (y/n): " confirm
+  case "$confirm" in
+    [yY][eE][sS]|[yY]) return 0 ;;
+    *) return 1 ;;
+  esac
 }
 
 # Function to write log with timestamp, avoid duplicate logs
