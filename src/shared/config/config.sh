@@ -3,17 +3,18 @@
 # =====================================
 
 # ==== Automatically determine BASE_DIR (root of the source code) ====
-SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
-CONFIG_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+CONFIG_DIR="$(dirname "$SCRIPT_PATH")"
 
-# If in DEV environment (src/ folder exists): BASE_DIR will be /.../wp-docker-lemp/src
+# If in DEV environment (src/ folder exists): BASE_DIR will be /.../wp-docker/src
 if [[ "$CONFIG_DIR" == */src/shared/config ]]; then
-  BASE_DIR="${BASE_DIR:-$(cd "$CONFIG_DIR/../../.." && pwd)/src}"
+  BASE_DIR="$(cd "$CONFIG_DIR/../../.." && pwd)/src"
   DEV_MODE=true
 else
-  BASE_DIR="${BASE_DIR:-$(cd "$CONFIG_DIR/../.." && pwd)}"
+  BASE_DIR="$(cd "$CONFIG_DIR/../.." && pwd)"
   DEV_MODE=false
 fi
+
 
 # By default, TEST_MODE is false, only set to true when running tests
 # When writing tests, set TEST_MODE=true to skip Docker checks
