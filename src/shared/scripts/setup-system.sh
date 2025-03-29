@@ -48,11 +48,11 @@ if [[ ! -f "$WP_CLI_PATH" ]]; then
     echo -e "${YELLOW}⚠️ WP-CLI is not installed. Installing WP-CLI...${NC}"
     
     # Download the latest WP-CLI from GitHub
-    curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar || { echo "❌ Command failed at line 51"; exit 1; }
 
     # Grant execution permission and move to shared/bin directory
     chmod +x wp-cli.phar
-    mv wp-cli.phar "$WP_CLI_PATH"
+    mv wp-cli.phar "$WP_CLI_PATH" || { echo "❌ Command failed at line 55"; exit 1; }
 
     echo -e "${GREEN}✅ WP-CLI has been successfully installed.${NC}"
 else
@@ -63,7 +63,7 @@ fi
 run_in_dir "$NGINX_PROXY_DIR" bash -c '
 if ! docker compose ps | grep -q "nginx-proxy.*Up"; then
     echo -e "${YELLOW}🌀 nginx-proxy container is not running. Starting...${NC}"
-    docker compose up -d
+    docker compose up -d || { echo "❌ Command failed at line 66"; exit 1; }
 fi
 
 # ⏳ Wait for nginx-proxy container to fully start
@@ -80,7 +80,7 @@ done
 if [[ "$status" != "running" ]]; then
     echo -e "${RED}❌ nginx-proxy container FAILED to start.${NC}"
     echo -e "${YELLOW}📋 Below is the most recent startup log of the container:${NC}\n"
-    docker logs nginx-proxy 2>&1 | tail -n 30
+    docker logs nginx-proxy 2>&1 | tail -n 30 || { echo "❌ Command failed at line 83"; exit 1; }
     echo -e "\n${RED}💥 Please check the configuration file, volume mount, or port usage.${NC}"
     exit 1
 fi

@@ -55,7 +55,12 @@ backup_all_sites() {
     DB_NAME=$(grep '^MYSQL_DATABASE=' "$env_file" | cut -d '=' -f2)
     DB_USER=$(grep '^MYSQL_USER=' "$env_file" | cut -d '=' -f2)
     DB_PASS=$(grep '^MYSQL_PASSWORD=' "$env_file" | cut -d '=' -f2)
-
+    # fallback to prompt if not found
+    if [ -z "$DB_PASS" ]; then
+        echo "🔐 Database password not found in $env_file"
+        read -s -p "Please enter database password: " DB_PASS
+        echo ""
+    fi
     if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
       echo -e "${RED}❌ Unable to get database information from .env, skipping site '$site'${NC}"
       continue
@@ -101,7 +106,7 @@ remove_all_except_backup() {
   for item in "$BASE_DIR"/*; do
     [[ "$item" == "$BACKUP_DIR" ]] && continue
     [[ "$item" == "$BASE_DIR/.git" || "$item" == "$BASE_DIR/.github" ]] && continue
-    rm -rf "$item"
+    rm -rf "$item" || { echo "❌ Command failed at line 104"; exit 1; }
   done
 }
 
@@ -109,7 +114,7 @@ remove_all_except_backup() {
 remove_symlink() {
   if [ -L "/usr/local/bin/wpdocker" ]; then
     echo -e "${YELLOW}🗑️ Removing symlink /usr/local/bin/wpdocker...${NC}"
-    sudo rm -f /usr/local/bin/wpdocker
+    rm -f /usr/local/bin/wpdocker
   fi
 }
 
@@ -126,7 +131,7 @@ show_remaining_containers() {
   if [[ -z "$remaining" ]]; then
     echo -e "${GREEN}✅ No Docker containers remaining.${NC}"
   else
-    docker ps -a
+    docker ps -a || { echo "❌ Command failed at line 129"; exit 1; }
     echo -e "\n${YELLOW}💡 If you want to remove all remaining containers, run these commands:${NC}"
     echo "$remaining" | while read -r name; do
       echo "docker stop $name && docker rm $name"

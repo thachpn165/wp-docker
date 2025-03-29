@@ -61,10 +61,10 @@ fi
 # 📂 Kiểm tra và tải mã nguồn WordPress
 if [ ! -f "$SITE_DIR/wordpress/index.php" ]; then
     echo -e "${YELLOW}📥 Đang tải WordPress...${NC}"
-    docker exec -i "$CONTAINER_PHP" sh -c "
+    docker exec -i "$CONTAINER_PHP" sh -c " || { echo "❌ Command failed at line 64"; exit 1; }
         curl -o wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
         tar -xzf wordpress.tar.gz --strip-components=1 -C /var/www/html && \
-        rm wordpress.tar.gz
+        rm wordpress.tar.gz || { echo "❌ Command failed at line 67"; exit 1; }
     "
 
     if [ $? -eq 0 ]; then
