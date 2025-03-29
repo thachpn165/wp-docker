@@ -132,7 +132,7 @@ manage_cron_menu() {
         echo -e "  ${GREEN}[3]${NC} 🔙 Back"
         echo -e "${BLUE}============================${NC}"
 
-        read -p "🔹 Select an option (1-3): " choice
+        [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-3): " choice
         case "$choice" in
             1) schedule_backup_list ;;
             2) schedule_backup_remove ;;

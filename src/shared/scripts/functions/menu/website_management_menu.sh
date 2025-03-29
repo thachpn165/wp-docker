@@ -3,7 +3,7 @@
 # =====================================
 
 # Load website management functions
-source "$CLI_DIR/website_create.sh"
+source "$FUNCTIONS_DIR/website/website_management_create.sh"
 source "$FUNCTIONS_DIR/website/website_management_delete.sh"
 source "$FUNCTIONS_DIR/website/website_management_list.sh"
 source "$FUNCTIONS_DIR/website/website_management_restart.sh"
@@ -26,7 +26,7 @@ website_management_menu() {
     echo -e "${GREEN}[8]${NC} ⬅️ Back"
     echo ""
 
-    read -p "Select a function (1-7): " sub_choice
+    [[ "$TEST_MODE" != true ]] && read -p "Select a function (1-7): " sub_choice
     case $sub_choice in
       1) website_management_create; read -p "Press Enter to continue..." ;;
       2) website_management_delete; read -p "Press Enter to continue..." ;;

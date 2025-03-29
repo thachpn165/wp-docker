@@ -21,7 +21,7 @@ backup_restore_web() {
   fi
 
   # ========== ♻ Restore Source Code ==========
-  read -p "📦 Do you want to restore SOURCE CODE? [y/N]: " confirm_code
+  [[ "$TEST_MODE" != true ]] && read -p "📦 Do you want to restore SOURCE CODE? [y/N]: " confirm_code
   confirm_code=$(echo "$confirm_code" | tr '[:upper:]' '[:lower:]')
   if [[ "$confirm_code" == "y" ]]; then
     echo -e "\n📄 List of source code backup files (.tar.gz):"
@@ -32,7 +32,7 @@ backup_restore_web() {
     echo -e "$file_name\t$file_time"
     done | nl -s ". "
 
-    read -p "📝 Enter source code backup filename or paste path: " CODE_BACKUP_FILE
+    [[ "$TEST_MODE" != true ]] && read -p "📝 Enter source code backup filename or paste path: " CODE_BACKUP_FILE
 
     # Check if filename has relative path, convert to absolute path
     if [[ ! "$CODE_BACKUP_FILE" =~ ^/ ]]; then
@@ -51,7 +51,7 @@ backup_restore_web() {
   fi
 
   # ========== 🔄 Restore Database ==========
-  read -p "🛢  Do you want to restore DATABASE? [y/N]: " confirm_db
+  [[ "$TEST_MODE" != true ]] && read -p "🛢  Do you want to restore DATABASE? [y/N]: " confirm_db
   confirm_db=$(echo "$confirm_db" | tr '[:upper:]' '[:lower:]')
   if [[ "$confirm_db" == "y" ]]; then
     echo -e "\n📄 List of database backup files (.sql):"
@@ -62,7 +62,7 @@ backup_restore_web() {
     echo -e "$file_name\t$file_time"
     done | nl -s ". "
 
-    read -p "📝 Enter database backup filename or paste path: " DB_BACKUP_FILE
+    [[ "$TEST_MODE" != true ]] && read -p "📝 Enter database backup filename or paste path: " DB_BACKUP_FILE
 
     # Check if filename has relative path, convert to absolute path
     if [[ ! "$DB_BACKUP_FILE" =~ ^/ ]]; then

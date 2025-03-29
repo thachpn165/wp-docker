@@ -16,7 +16,7 @@ website_management_restart() {
   done
 
   echo ""
-  read -p "Enter the number corresponding to the website to restart: " site_index
+  [[ "$TEST_MODE" != true ]] && read -p "Enter the number corresponding to the website to restart: " site_index
   site_name="${site_list[$site_index]}"
 
   if [ -z "$site_name" ]; then

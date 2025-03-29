@@ -42,7 +42,7 @@ for i in "${!site_list[@]}"; do
 done
 
 echo ""
-read -p "Nhập số tương ứng với website cần sửa quyền thành viên: " site_index
+[[ "$TEST_MODE" != true ]] && read -p "Nhập số tương ứng với website cần sửa quyền thành viên: " site_index
 site_name="${site_list[$site_index]}"
 
 SITE_DIR="$SITES_DIR/$site_name"
@@ -54,4 +54,4 @@ docker exec -u root "$PHP_CONTAINER" wp role reset --all --allow-root --path=/va
 
 echo -e "${GREEN}✅ Quyền Administrator trên website '$site_name' đã được thiết lập lại thành công.${NC}"
 
-read -p "Nhấn Enter để quay lại menu..."
+[[ "$TEST_MODE" != true ]] && read -p "Nhấn Enter để quay lại menu..."

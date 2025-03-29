@@ -37,7 +37,7 @@ for i in "${!site_list[@]}"; do
 done
 
 echo ""
-read -p "Nhập số tương ứng với website cần bật/tắt tự cập nhật plugin: " site_index
+[[ "$TEST_MODE" != true ]] && read -p "Nhập số tương ứng với website cần bật/tắt tự cập nhật plugin: " site_index
 site_name="${site_list[$site_index]}"
 
 SITE_DIR="$SITES_DIR/$site_name"
@@ -48,7 +48,7 @@ echo -e "${YELLOW}📋 Danh sách plugin trên website '$site_name':${NC}"
 docker exec -u root "$PHP_CONTAINER" wp plugin list --field=name --allow-root --path=/var/www/html
 
 echo ""
-read -p "Bạn có muốn bật (y) hay tắt (n) tự động cập nhật plugin? (y/n): " enable_update
+[[ "$TEST_MODE" != true ]] && read -p "Bạn có muốn bật (y) hay tắt (n) tự động cập nhật plugin? (y/n): " enable_update
 
 if [[ "$enable_update" == "y" ]]; then
     echo -e "${YELLOW}🔄 Đang bật tự động cập nhật cho toàn bộ plugin...${NC}"
@@ -63,4 +63,4 @@ else
     exit 1
 fi
 
-read -p "Nhấn Enter để quay lại menu..."
+[[ "$TEST_MODE" != true ]] && read -p "Nhấn Enter để quay lại menu..."

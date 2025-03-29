@@ -61,15 +61,15 @@ DB_CONTAINER="${site_name}-mariadb"
 SITE_URL="https://$DOMAIN"
 
 # 🔐 Input admin information
-read -p "👤 Would you like the system to automatically generate a strong admin account? [Y/n]: " auto_gen
+[[ "$TEST_MODE" != true ]] && read -p "👤 Would you like the system to automatically generate a strong admin account? [Y/n]: " auto_gen
 auto_gen="${auto_gen:-Y}"
 auto_gen="$(echo "$auto_gen" | tr '[:upper:]' '[:lower:]')"
 
 if [[ "$auto_gen" == "n" ]]; then
-  read -p "👤 Enter admin username: " ADMIN_USER
+  [[ "$TEST_MODE" != true ]] && read -p "👤 Enter admin username: " ADMIN_USER
   while [[ -z "$ADMIN_USER" ]]; do
     echo "⚠️ Cannot be empty."
-    read -p "👤 Enter admin username: " ADMIN_USER
+    [[ "$TEST_MODE" != true ]] && read -p "👤 Enter admin username: " ADMIN_USER
   done
   read -s -p "🔐 Enter admin password: " ADMIN_PASSWORD; echo
   read -s -p "🔐 Confirm password: " CONFIRM_PASSWORD; echo
@@ -78,7 +78,7 @@ if [[ "$auto_gen" == "n" ]]; then
     read -s -p "🔐 Enter admin password: " ADMIN_PASSWORD; echo
     read -s -p "🔐 Confirm password: " CONFIRM_PASSWORD; echo
   done
-  read -p "📧 Enter admin email (ENTER to use admin@$site_name.local): " ADMIN_EMAIL
+  [[ "$TEST_MODE" != true ]] && read -p "📧 Enter admin email (ENTER to use admin@$site_name.local): " ADMIN_EMAIL
   ADMIN_EMAIL="${ADMIN_EMAIL:-admin@$site_name.local}"
 else
   ADMIN_USER="admin-$(openssl rand -base64 6 | tr -dc 'a-zA-Z0-9' | head -c 8)"

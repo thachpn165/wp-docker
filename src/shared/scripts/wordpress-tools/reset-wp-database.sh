@@ -27,7 +27,7 @@ for i in "${!site_list[@]}"; do
 done
 
 echo ""
-read -p "Nhập số tương ứng với website cần reset database: " site_index
+[[ "$TEST_MODE" != true ]] && read -p "Nhập số tương ứng với website cần reset database: " site_index
 site_name="${site_list[$site_index]}"
 
 SITE_DIR="$SITES_DIR/$site_name"
@@ -39,7 +39,7 @@ echo -e "${RED}${BOLD}🚨 CẢNH BÁO QUAN TRỌNG 🚨${NC}"
 echo -e "${RED}❗ Việc reset database sẽ xóa toàn bộ dữ liệu và không thể khôi phục! ❗${NC}"
 echo -e "${YELLOW}📌 Vui lòng sao lưu đầy đủ trước khi tiếp tục.${NC}"
 echo ""
-read -p "Bạn có chắc chắn muốn tiếp tục reset database? (gõ 'RESET' để xác nhận): " confirm_reset
+[[ "$TEST_MODE" != true ]] && read -p "Bạn có chắc chắn muốn tiếp tục reset database? (gõ 'RESET' để xác nhận): " confirm_reset
 
 if [[ "$confirm_reset" != "RESET" ]]; then
     echo -e "${YELLOW}⚠️ Hủy thao tác reset database.${NC}"

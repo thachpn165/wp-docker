@@ -9,7 +9,7 @@ wordpress_tools_menu() {
     echo -e "  ${GREEN}[6]${NC} Delete All Spam Comments"
     echo -e "  ${GREEN}[7]${NC} Update/Downgrade WordPress Core"
     echo ""
-    read -p "Select function (or press Enter to exit): " wp_tool_choice
+    [[ "$TEST_MODE" != true ]] && read -p "Select function (or press Enter to exit): " wp_tool_choice
 
     case $wp_tool_choice in
         1)

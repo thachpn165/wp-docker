@@ -36,7 +36,7 @@ php_choose_version() {
   echo -e "     ${WHITE}Then use the Restart website feature to restart"
   sleep 0.2
   echo ""
-  read -p "🔹 Enter the number corresponding to the PHP version you want to select: " php_index
+  [[ "$TEST_MODE" != true ]] && read -p "🔹 Enter the number corresponding to the PHP version you want to select: " php_index
 
   if ! [[ "$php_index" =~ ^[0-9]+$ ]] || (( php_index < 0 || php_index >= ${#PHP_VERSIONS[@]} )); then
     echo -e "${RED}❌ Invalid selection.${NC}"

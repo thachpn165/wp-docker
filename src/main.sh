@@ -79,7 +79,7 @@ while true; do
     echo -e "  ${GREEN}[9]${NC} System Update                   ${GREEN}[10]${NC} ❌ Exit"
     echo ""
 
-    read -p "🔹 Select an option (1-10): " choice
+    [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-10): " choice
     case "$choice" in
         1) website_management_menu ;;
         2) ssl_menu ;;

@@ -16,7 +16,7 @@ website_management_logs() {
   done
 
   echo ""
-  read -p "Enter the number corresponding to the website to view logs: " site_index
+  [[ "$TEST_MODE" != true ]] && read -p "Enter the number corresponding to the website to view logs: " site_index
   site_name="${site_list[$site_index]}"
 
   log_file="$SITES_DIR/$site_name/logs/access.log"
@@ -25,7 +25,7 @@ website_management_logs() {
   echo -e "${CYAN}📂 Which type of log would you like to view?${NC}"
   echo -e "  ${GREEN}[1]${NC} 📜 Access Log"
   echo -e "  ${GREEN}[2]${NC} 📛 Error Log"
-  read -p "Select an option (1-2): " log_choice
+  [[ "$TEST_MODE" != true ]] && read -p "Select an option (1-2): " log_choice
 
   echo -ne "${YELLOW}⏳ Loading log"; for i in {1..5}; do echo -n "."; sleep 0.2; done; echo "${NC}"
 

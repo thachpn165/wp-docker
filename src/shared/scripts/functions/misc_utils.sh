@@ -39,13 +39,15 @@ run_if_not_test() {
 # Usage:
 #   run_unless_test docker compose up -d
 run_unless_test() {
-  if [[ "$TEST_MODE" == true || "$DEV_MODE" == true ]]; then
+  if [[ "$TEST_MODE" == true && "$BATS_TEST_FILENAME" != "" ]]; then
     echo "[MOCK run_unless_test] $*"
     return 0
   else
     "$@"
   fi
 }
+
+
 
 
 # ✅ Get input from user, or use test value if in TEST_MODE
@@ -59,7 +61,7 @@ get_input_or_test_value() {
   if is_test_mode; then
     echo "$fallback"
   else
-    read -p "$prompt" input
+    [[ "$TEST_MODE" != true ]] && read -p "$prompt" input
     echo "${input:-$fallback}"
   fi
 }
@@ -90,7 +92,7 @@ select_from_list() {
     fi
 
     local choice
-    read -p "$prompt [1-${#options[@]}]: " choice
+    [[ "$TEST_MODE" != true ]] && read -p "$prompt [1-${#options[@]}]: " choice
     if [[ "$choice" =~ ^[0-9]+$ && "$choice" -ge 1 && "$choice" -le ${#options[@]} ]]; then
         echo "${options[$((choice - 1))]}"
         return 0

@@ -15,7 +15,7 @@ website_management_delete() {
     echo -e "  ${GREEN}[$i]${NC} ${site_list[$i]}"
   done
 
-  read -p "Enter the number corresponding to the website to delete: " site_index
+  [[ "$TEST_MODE" != true ]] && read -p "Enter the number corresponding to the website to delete: " site_index
   site_name="${site_list[$site_index]}"
   SITE_DIR="$SITES_DIR/$site_name"
   ENV_FILE="$SITE_DIR/.env"

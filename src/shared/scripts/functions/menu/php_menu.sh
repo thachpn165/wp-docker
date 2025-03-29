@@ -36,7 +36,7 @@ php_menu() {
     echo -e "${GREEN}[5]${NC} ⬅️ Back"
     echo ""
 
-    read -p "Select a function (1-5): " choice
+    [[ "$TEST_MODE" != true ]] && read -p "Select a function (1-5): " choice
     case $choice in
       1) php_change_version; read -p "Press Enter to continue..." ;;
       2) rebuild_php_container; read -p "Press Enter to continue..." ;;

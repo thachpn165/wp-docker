@@ -70,7 +70,7 @@ website_restore_from_archive() {
   done
 
   echo ""
-  read -p "Select site to restore (number): " archive_index
+  [[ "$TEST_MODE" != true ]] && read -p "Select site to restore (number): " archive_index
   selected_folder="${archive_list[$archive_index]}"
   archive_path="$ARCHIVE_DIR/$selected_folder"
 
@@ -93,7 +93,7 @@ website_restore_from_archive() {
   echo -e "${GREEN}✅ Successfully restored source code and database.${NC}"
   echo -e "${YELLOW}👉 Please recreate the .env file and configure docker-compose to run the site.${NC}"
 
-  read -p "Would you like to open the newly restored site directory? (y/N): " open_choice
+  [[ "$TEST_MODE" != true ]] && read -p "Would you like to open the newly restored site directory? (y/N): " open_choice
   if [[ "$open_choice" =~ ^[Yy]$ ]]; then
     echo -e "${CYAN}📁 Path: $restore_target${NC}"
     ls -al "$restore_target"
