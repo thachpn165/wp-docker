@@ -1,35 +1,6 @@
 # =====================================
 # 🐋 website_management_create – Create New WordPress Website
 # =====================================
-
-
-# === 🧠 Auto-detect PROJECT_DIR (source code root) ===
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-fi
-
-# === ✅ Load config.sh from PROJECT_DIR ===
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-source "$CONFIG_FILE"
-
-# Load config and dependent functions
-source "$FUNCTIONS_DIR/website/website_create_env.sh"
-
-# =====================================
-# 🐋 website_management_create – Create New WordPress Website
-# =====================================
-
 website_management_create() {
   
   echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
@@ -58,7 +29,7 @@ website_management_create() {
   mkdir -p "$LOGS_DIR"
   LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
-  run_unless_test exec > >(tee -a "$LOG_FILE") 2>&1
+  run_unless_test bash -c "exec > >(tee -a \"$LOG_FILE\") 2>&1"
   echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] STARTING SITE CREATION: $site_name =====" >> "$LOG_FILE"
 
   # 🧱 Create directory structure
@@ -132,4 +103,5 @@ website_management_create() {
   fi
 
   echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ✅ COMPLETED: $site_name =====" >> "$LOG_FILE"
+  echo "✅ DONE_CREATE_WEBSITE: $site_name"
 }

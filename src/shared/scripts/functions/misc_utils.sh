@@ -39,12 +39,14 @@ run_if_not_test() {
 # Usage:
 #   run_unless_test docker compose up -d
 run_unless_test() {
-  if ! is_test_mode; then
-    "$@"
+  if [[ "$TEST_MODE" == true || "$DEV_MODE" == true ]]; then
+    echo "[MOCK run_unless_test] $*"
+    return 0
   else
-    echo "🧪 Skipping in TEST_MODE: $*" >&2
+    "$@"
   fi
 }
+
 
 # ✅ Get input from user, or use test value if in TEST_MODE
 # Usage:

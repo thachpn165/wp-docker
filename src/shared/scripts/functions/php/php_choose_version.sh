@@ -17,7 +17,13 @@ php_choose_version() {
     return 1
   fi
 
-  echo -e "${YELLOW}📦 Supported PHP versions (Bitnami):${NC}"
+  if [[ "$TEST_MODE" == true ]]; then
+    REPLY="${TEST_PHP_VERSION:-${PHP_VERSIONS[0]}}"
+    echo "[TEST_MODE] Selected PHP version: $REPLY"
+    return 0
+  fi
+
+  echo -e "${YELLOW}Supported PHP versions (Bitnami):${NC}"
   for i in "${!PHP_VERSIONS[@]}"; do
     echo -e "  ${GREEN}[$i]${NC} ${PHP_VERSIONS[$i]}"
   done
