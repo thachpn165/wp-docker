@@ -31,7 +31,7 @@ rclone_menu() {
         echo -e "  ${GREEN}[5]${NC} ❌ Exit"
         echo -e "${BLUE}============================${NC}"
         
-        read -p "🔹 Select an option (1-5): " choice
+        [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-5): " choice
 
         case "$choice" in
             1) rclone_setup ;;

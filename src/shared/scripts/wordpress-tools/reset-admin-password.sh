@@ -37,7 +37,7 @@ for i in "${!site_list[@]}"; do
 done
 
 echo ""
-read -p "Nhập số tương ứng với website cần reset mật khẩu: " site_index
+[[ "$TEST_MODE" != true ]] && read -p "Nhập số tương ứng với website cần reset mật khẩu: " site_index
 site_name="${site_list[$site_index]}"
 
 SITE_DIR="$SITES_DIR/$site_name"
@@ -48,7 +48,7 @@ echo -e "${YELLOW}📋 Danh sách tài khoản Admin:${NC}"
 docker exec -u root "$PHP_CONTAINER" wp user list --role=administrator --fields=ID,user_login --format=table --allow-root --path=/var/www/html
 
 echo ""
-read -p "Nhập ID của tài khoản cần reset mật khẩu: " user_id
+[[ "$TEST_MODE" != true ]] && read -p "Nhập ID của tài khoản cần reset mật khẩu: " user_id
 
 # **Tạo mật khẩu ngẫu nhiên 18 ký tự không có ký tự đặc biệt**
 new_password=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 18)
@@ -60,4 +60,4 @@ echo -e "${GREEN}✅ Mật khẩu mới của tài khoản ID $user_id: $new_pas
 
 echo -e "${YELLOW}⚠️ Hãy lưu mật khẩu này ở nơi an toàn!${NC}"
 
-read -p "Nhấn Enter để quay lại menu..."
+[[ "$TEST_MODE" != true ]] && read -p "Nhấn Enter để quay lại menu..."

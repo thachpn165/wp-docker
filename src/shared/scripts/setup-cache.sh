@@ -12,7 +12,7 @@ done
 echo ""
 
 # ✅ Người dùng chọn website
-read -p "Nhập số tương ứng với website bạn muốn cài đặt cache: " site_index
+[[ "$TEST_MODE" != true ]] && read -p "Nhập số tương ứng với website bạn muốn cài đặt cache: " site_index
 site_name="${site_list[$site_index]}"
 
 # ✅ Xác định thư mục & tập tin cần thao tác
@@ -38,7 +38,7 @@ echo -e "  ${GREEN}[4]${NC} WP Fastest Cache"
 echo -e "  ${GREEN}[5]${NC} Không có cache (Tắt tất cả)"
 echo ""
 
-read -p "Chọn loại cache (1-5): " cache_choice
+[[ "$TEST_MODE" != true ]] && read -p "Chọn loại cache (1-5): " cache_choice
 case $cache_choice in
     1) cache_type="wp-super-cache"; plugin_slug="wp-super-cache" ;;
     2) cache_type="fastcgi-cache"; plugin_slug="nginx-helper" ;;

@@ -37,7 +37,7 @@ for i in "${!site_list[@]}"; do
 done
 
 echo ""
-read -p "Nhập số tương ứng với website cần quản lý bảo vệ wp-login.php: " site_index
+[[ "$TEST_MODE" != true ]] && read -p "Nhập số tương ứng với website cần quản lý bảo vệ wp-login.php: " site_index
 site_name="${site_list[$site_index]}"
 
 SITE_DIR="$SITES_DIR/$site_name"
@@ -50,7 +50,7 @@ echo -e "${YELLOW}🔧 Chọn hành động cho bảo vệ wp-login.php...${NC}"
 echo -e "  ${GREEN}[1]${NC} Bật bảo vệ wp-login.php"
 echo -e "  ${GREEN}[2]${NC} Tắt bảo vệ wp-login.php"
 echo ""
-read -p "Nhập lựa chọn của bạn: " action_choice
+[[ "$TEST_MODE" != true ]] && read -p "Nhập lựa chọn của bạn: " action_choice
 
 if [[ "$action_choice" == "1" ]]; then
     USERNAME=$(openssl rand -hex 4)

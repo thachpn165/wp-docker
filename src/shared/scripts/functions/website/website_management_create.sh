@@ -2,7 +2,8 @@
 # 🐋 website_management_create – Create New WordPress Website
 # =====================================
 website_management_create() {
-  
+  source "$FUNCTIONS_DIR/website/website_create_env.sh"
+
   echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
 
   # 📥 Input domain and site name

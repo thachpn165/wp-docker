@@ -11,7 +11,7 @@ show_docker_menu() {
         echo -e "${GREEN}5.${NC} Access PHP container shell"
         echo -e "${GREEN}0.${NC} Return to main menu"
         echo "--------------------------------------"
-        read -p "Select function: " choice
+        [[ "$TEST_MODE" != true ]] && read -p "Select function: " choice
 
         case "$choice" in
             1) docker_rebuild_nginx ;;

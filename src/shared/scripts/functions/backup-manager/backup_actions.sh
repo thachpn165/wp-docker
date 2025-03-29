@@ -44,7 +44,7 @@ backup_website() {
     echo -e "${BLUE}📂 Select backup storage location:${NC}"
     echo -e "  ${GREEN}[1]${NC} 💾 Save to server (local)"
     echo -e "  ${GREEN}[2]${NC} ☁️  Save to configured Storage"
-    read -p "🔹 Select an option (1-2): " storage_choice
+    [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-2): " storage_choice
 
     if [[ "$storage_choice" == "2" ]]; then
         echo -e "${BLUE}📂 Getting Storage list from rclone.conf...${NC}"
@@ -68,7 +68,7 @@ backup_website() {
 
         echo -e "${YELLOW}💡 Please enter the exact Storage name from the list above.${NC}"
         while true; do
-            read -p "🔹 Enter Storage name to use: " selected_storage
+            [[ "$TEST_MODE" != true ]] && read -p "🔹 Enter Storage name to use: " selected_storage
             selected_storage=$(echo "$selected_storage" | xargs)  # Remove extra spaces
 
             # Check if storage exists in list
@@ -132,7 +132,7 @@ backup_website() {
 cleanup_old_backups() {
     select_website || return
 
-    read -p "Keep backups for how many days? (e.g., 7): " RETENTION_DAYS
+    [[ "$TEST_MODE" != true ]] && read -p "Keep backups for how many days? (e.g., 7): " RETENTION_DAYS
     cleanup_backups "$SITE_NAME" "$RETENTION_DAYS"
 }
 

@@ -16,7 +16,7 @@ website_management_info() {
   done
 
   echo ""
-  read -p "Enter the number corresponding to the website to view information: " site_index
+  [[ "$TEST_MODE" != true ]] && read -p "Enter the number corresponding to the website to view information: " site_index
   site_name="${site_list[$site_index]}"
 
   SITE_DIR="$SITES_DIR/$site_name"

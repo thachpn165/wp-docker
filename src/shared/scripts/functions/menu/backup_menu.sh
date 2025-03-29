@@ -38,7 +38,7 @@ backup_menu() {
         echo -e "  ${GREEN}[7]${NC} ❌ Exit"
         echo -e "${BLUE}============================${NC}"
         
-        read -p "🔹 Select an option (1-6): " choice
+        [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-6): " choice
 
         case "$choice" in
             1) backup_website ;;

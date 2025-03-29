@@ -23,7 +23,7 @@ website_management_list() {
 
   echo -e "${GREEN}✅ Website list display completed.${NC}"
   if [[ "$TEST_MODE" != true ]]; then
-    read -p "Press Enter to return to menu..."
+    [[ "$TEST_MODE" != true ]] && read -p "Press Enter to return to menu..."
   fi
 
 }

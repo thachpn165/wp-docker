@@ -36,31 +36,31 @@ ssl_menu() {
         echo -e "${GREEN}7)${NC} Back to main menu"
         echo ""
 
-        read -p "🔹 Select an option (1-7): " choice
+        [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-7): " choice
         case "$choice" in
             1)
                 ssl_generate_self_signed
-                read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
                 ;;
             2)
                 ssl_install_manual_cert
-                read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
                 ;;
             3)
                 ssl_edit_certificate
-                read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
                 ;;
             4)
                 ssl_install_lets_encrypt
-                read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
                 ;;
             5)
                 ssl_check_certificate_status
-                read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
                 ;;
             6)
                 echo -e "\n🛠️ [IN DEVELOPMENT] List of domains with SSL"
-                read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
                 ;;
             7)
                 break

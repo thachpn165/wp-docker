@@ -58,7 +58,7 @@ choose_editor() {
     echo -e "  ${GREEN}[$i]${NC} ${AVAILABLE_EDITORS[$i]}"
   done
 
-  read -p "🔹 Select number corresponding to text editor: " editor_index
+  [[ "$TEST_MODE" != true ]] && read -p "🔹 Select number corresponding to text editor: " editor_index
 
   if ! [[ "$editor_index" =~ ^[0-9]+$ ]] || (( editor_index < 0 || editor_index >= ${#AVAILABLE_EDITORS[@]} )); then
     echo -e "${RED}⚠️ Invalid selection! Defaulting to nano if available.${NC}"
@@ -92,7 +92,7 @@ choose_editor() {
   esac
 
   echo ""
-  read -p "❓ Would you like to start editing with ${EDITOR_CMD}? [Y/n]: " confirm
+  [[ "$TEST_MODE" != true ]] && read -p "❓ Would you like to start editing with ${EDITOR_CMD}? [Y/n]: " confirm
   if [[ "$confirm" =~ ^[Nn]$ ]]; then
     echo -e "${YELLOW}⏩ Edit operation cancelled.${NC}"
     return 1

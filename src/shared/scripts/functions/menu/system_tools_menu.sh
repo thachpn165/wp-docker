@@ -10,7 +10,7 @@ system_tools_menu() {
     echo -e "  ${GREEN}[3]${NC} Cleanup Docker System"
     echo -e "  ${GREEN}[4]${NC} Rebuild NGINX"
     echo ""
-    read -p "Select function (or press Enter to exit): " sys_tool_choice
+    [[ "$TEST_MODE" != true ]] && read -p "Select function (or press Enter to exit): " sys_tool_choice
 
     case $sys_tool_choice in
         1)
