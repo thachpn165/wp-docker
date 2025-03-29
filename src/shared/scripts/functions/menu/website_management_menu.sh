@@ -3,7 +3,7 @@
 # =====================================
 
 # Load website management functions
-source "$FUNCTIONS_DIR/website/website_management_create.sh"
+source "$CLI_DIR/website_create.sh"
 source "$FUNCTIONS_DIR/website/website_management_delete.sh"
 source "$FUNCTIONS_DIR/website/website_management_list.sh"
 source "$FUNCTIONS_DIR/website/website_management_restart.sh"
