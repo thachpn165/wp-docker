@@ -9,10 +9,17 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, azdigi-almalinux-222.145]
+        include:
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+          - os: macos-latest
+            runner: macos-latest
+          - os: azdigi-almalinux-222.145
+            runner: [self-hosted, linux, azdigi-almalinux-222.145]
+
 
     steps:
       - uses: actions/checkout@v4
