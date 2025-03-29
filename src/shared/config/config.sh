@@ -79,7 +79,7 @@ CHECKMARK="${GREEN}✅${NC}"
 CROSSMARK="${RED}❌${NC}"
 
 # ==== Rclone configuration ====
-RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$CONFIG_DIR/rclone}"  # Rclone config directory
+RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$BASE_DIR/shared/config/rclone}"  # Rclone config directory
 RCLONE_CONFIG_FILE="${RCLONE_CONFIG_FILE:-$RCLONE_CONFIG_DIR/rclone.conf}"  # Rclone config file
 
 # ==== Import utility functions ====

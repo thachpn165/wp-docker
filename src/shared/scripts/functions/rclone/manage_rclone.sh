@@ -1,7 +1,6 @@
 # Function to display list of configured storages
 rclone_storage_list() {
-    local rclone_config="${RCLONE_CONFIG_FILE:-shared/config/rclone/rclone.conf}"
-
+    local rclone_config=$BASE_DIR/$RCLONE_CONFIG_FILE
 
     if ! is_file_exist "$rclone_config"; then
         echo -e "${RED}❌ Rclone configuration file not found.${NC}"
@@ -16,7 +15,7 @@ rclone_storage_list() {
 
 # Function to delete configured storage
 rclone_storage_delete() {
-    local rclone_config="${RCLONE_CONFIG_FILE:-shared/config/rclone/rclone.conf}"
+    local rclone_config=$RCLONE_CONFIG_FILE
 
 
     if ! is_file_exist "$rclone_config"; then
