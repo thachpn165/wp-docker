@@ -8,41 +8,64 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Bats
         run: |
-          sudo apt-get update
-          sudo apt-get install -y bats
+          git clone https://github.com/bats-core/bats-core.git
+          sudo ./bats-core/install.sh /usr/local
 
-      - name: Install Docker
-        run: |
-          # Remove any existing containerd packages to avoid conflicts
-          sudo apt-get remove -y containerd containerd.io || true
-          sudo apt-get autoremove -y
-          
-          # Install Docker dependencies
-          sudo apt-get update
-          sudo apt-get install -y \
-            apt-transport-https \
-            ca-certificates \
-            curl \
-            gnupg \
-            lsb-release
-
-          # Add Docker's official GPG key
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-          # Set up the Docker repository
-          echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-          # Install Docker Engine
-          sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+          - name: 🐳 Install Docker (Linux or macOS)
+          run: |
+            if [[ "$RUNNER_OS" == "Linux" ]]; then
+              echo "📦 Installing Docker for Linux..."
+        
+              sudo apt-get remove -y containerd containerd.io || true
+              sudo apt-get autoremove -y
+        
+              sudo apt-get update
+              sudo apt-get install -y \
+                apt-transport-https \
+                ca-certificates \
+                curl \
+                gnupg \
+                lsb-release
+        
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+                sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        
+              echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+                https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
+                sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        
+              sudo apt-get update
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        
+            elif [[ "$RUNNER_OS" == "macOS" ]]; then
+              echo "🍎 Installing Docker for macOS..."
+        
+              # GitHub macOS runners đã có Docker Desktop cài sẵn nhưng không khởi động sẵn
+              # Cài lại bằng brew (nếu cần)
+              brew install --cask docker || true
+        
+              # Start Docker Desktop in background (nếu chưa chạy)
+              open -a Docker || true
+        
+              echo "⏳ Waiting for Docker to be available..."
+              while ! docker system info > /dev/null 2>&1; do sleep 1; done
+        
+              echo "✅ Docker is now available on macOS runner."
+            else
+              echo "❌ Unsupported OS: $RUNNER_OS"
+              exit 1
+            fi
+        
 
       - name: Run Tests
         run: |
