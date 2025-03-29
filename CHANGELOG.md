@@ -1,5 +1,23 @@
 # 📦 CHANGELOG – WP Docker LEMP
 
+## [v1.1.2-beta] - 2025-03-29
+
+### 🐛 Bug Fixes
+- Fixed a bug where `select_website` did not return the selected website correctly.
+- Ensured compatibility of `select_website` with `TEST_MODE`, auto-selecting the test site when defined.
+- Improved fallback logic to use `select` shell keyword to ensure `SITE_NAME` is always exported correctly.
+
+### 🛠 Improvements
+- Refactored `select_website` function for better testability and CLI experience.
+  - Displays list of available websites with clear prompts.
+  - Supports test automation with `$TEST_MODE` and `$TEST_SITE_NAME`.
+
+### 🧪 CI/CD Enhancements
+- Added support for GitHub Actions self-hosted runner (AlmaLinux 9.3) to test compatibility on RHEL-like systems.
+  - Ensured compatibility for bash scripts and BATS test environment.
+
+---
+
 ## [v1.1.0-beta] - 2025-03-28
 
 ### Added
