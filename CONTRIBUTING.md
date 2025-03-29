@@ -26,8 +26,10 @@ Thanks for your interest in contributing to **WP Docker**! We welcome all kinds 
 
 - Run the project using symlink for development:
   ```bash
+  cd wp-docker
+  bash src/install.sh
   sudo rm -rf /opt/wp-docker
-  sudo ln -s ~/wp-docker-lemp/src /opt/wp-docker
+  sudo ln -s ~/wp-docker/src /opt/wp-docker
   wpdocker  # to launch the main menu
   ```
 
