@@ -43,6 +43,14 @@ website_setup_wordpress() {
 
   # 🔐 Tạo tài khoản admin
   local ADMIN_USER ADMIN_PASSWORD ADMIN_EMAIL
+  if [[ "$TEST_MODE" == true ]]; then
+    ADMIN_USER="${admin_user:-admin-test}"
+    ADMIN_PASSWORD="${admin_password:-testpass}"
+    ADMIN_EMAIL="${admin_email:-admin@test.local}"
+    website_print_wp_info "$SITE_URL" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+    return 0
+  fi
+
   if [[ "$auto_generate" == true ]]; then
     ADMIN_USER="admin-$(openssl rand -base64 6 | tr -dc 'a-zA-Z0-9' | head -c 8)"
     ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
@@ -112,10 +120,18 @@ website_setup_wordpress() {
   # wp_plugin_install_performance_lab "$PHP_CONTAINER" # Optional
 
   echo -e "${YELLOW}✅ WordPress installation completed.${NC}"
-    echo -e "${YELLOW}🌐 Site URL: $SITE_URL${NC}"
-    echo -e "${YELLOW}👤 Admin URL: $SITE_URL/wp-admin${NC}"
-    echo -e "${YELLOW}👤 Admin User: $ADMIN_USER${NC}"
-    echo -e "${YELLOW}🔐 Admin Password: $ADMIN_PASSWORD${NC}"
-    echo -e "${YELLOW}📧 Admin Email: $ADMIN_EMAIL${NC}"
-  echo -e "${WHITE}WordPress source code: $SITE_DIR/wordpress${NC}"  
+  website_print_wp_info "$SITE_URL" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+}
+
+website_print_wp_info() {
+  local site_url="$1"
+  local admin_user="$2"
+  local admin_password="$3"
+  local admin_email="$4"
+  
+  echo -e "${YELLOW}🌐 Site URL: $site_url${NC}"
+  echo -e "${YELLOW}👤 Admin URL: $site_url/wp-admin${NC}"
+  echo -e "${YELLOW}👤 Admin User: $admin_user${NC}"
+  echo -e "${YELLOW}🔐 Admin Password: $admin_password${NC}"
+  echo -e "${YELLOW}📧 Admin Email: $admin_email${NC}"
 }
