@@ -51,7 +51,7 @@ is_directory_exist() {
         fi
     fi
 }
-
+``
 # Ask user to confirm action
 confirm_action() {
   local message="$1"

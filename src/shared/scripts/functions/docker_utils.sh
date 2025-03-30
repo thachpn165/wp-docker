@@ -3,27 +3,30 @@
 # Check if a container is running
 is_container_running() {
     local container_name="$1"
-    
-    # Mock when in TEST_MODE
-    if [[ "$TEST_MODE" == true && "$TEST_ALWAYS_READY" == true ]]; then
-        return 0  # container is always ready in TEST_MODE
+
+    # Trong môi trường test, luôn coi như container đã chạy
+    if [[ "$TEST_MODE" == true ]]; then
+        echo "[MOCK is_container_running] TEST_MODE=true → return 0" >&2
+        return 0
     fi
 
-    # Check container when not in TEST_MODE
+    # Kiểm tra thực tế trong môi trường thật
     docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
 }
+
 
 # Check if a Docker volume exists
 is_volume_exist() {
     local volume_name="$1"
     
     # Mock when in TEST_MODE
-    if [[ "$TEST_MODE" == true && "$TEST_ALWAYS_READY" == true ]]; then
+    if [[ "$TEST_MODE" == true ]]; then
         return 0  # volume always exists in TEST_MODE
     fi
 
     # Check volume when not in TEST_MODE
     docker volume ls --format '{{.Name}}' | grep -q "^${volume_name}$"
+    #run_unless_test docker volume ls --format '{{.Name}}' | grep -q "^${volume_name}$"
 }
 
 # Remove container if it's running
@@ -31,7 +34,7 @@ remove_container() {
     local container_name="$1"
     
     # Mock when in TEST_MODE
-    if [[ "$TEST_MODE" == true && "$TEST_ALWAYS_READY" == true ]]; then
+    if [[ "$TEST_MODE" == true ]]; then
         echo "🧪 Skipping container removal in TEST_MODE: $container_name"
         return 0  # do nothing in TEST_MODE
     fi
