@@ -26,7 +26,7 @@ website_management_menu() {
       2) bash "$MENU_DIR/website/website_delete_menu.sh"; read -p "Press Enter to continue..." ;;
       3) bash "$MENU_DIR/website/website_list_menu.sh"; read -p "Press Enter to continue..." ;;
       4) bash "$MENU_DIR/website/website_restart_menu.sh"; read -p "Press Enter to continue..." ;;
-      5) website_management_logs; read -p "Press Enter to continue..." ;;
+      5) bash "$MENU_DIR/website/website_logs_menu.sh"; read -p "Press Enter to continue..." ;;
       6) website_management_info; read -p "Press Enter to continue..." ;;
       7) website_update_site_template; read -p "Press Enter to continue..." ;;
       8) break ;;

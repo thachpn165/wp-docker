@@ -4,10 +4,16 @@
 update_nginx_override_mounts() {
     local site_name="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
+
+    # Nếu đang trong TEST_MODE, sử dụng file mock
+    if [[ "$TEST_MODE" == true ]]; then
+        OVERRIDE_FILE="/tmp/mock-docker-compose.override.yml"
+    fi
+
     local MOUNT_ENTRY="      - ../../sites/$site_name/wordpress:/var/www/$site_name"
     local MOUNT_LOGS="      - ../../sites/$site_name/logs:/var/www/logs/$site_name"
 
-    # If file doesn't exist, create new one
+    # Nếu file không tồn tại, tạo file mới
     if [ ! -f "$OVERRIDE_FILE" ]; then
         echo -e "${YELLOW}📄 Creating new docker-compose.override.yml...${NC}"
         cat > "$OVERRIDE_FILE" <<EOF
@@ -21,7 +27,7 @@ EOF
         return
     fi
 
-    # Check and add MOUNT_ENTRY if needed
+    # Kiểm tra và thêm MOUNT_ENTRY nếu cần
     if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
         echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null
         echo -e "${GREEN}➕ Added mount source: $MOUNT_ENTRY${NC}"
@@ -29,7 +35,7 @@ EOF
         echo -e "${YELLOW}⚠️ Mount source already exists: $MOUNT_ENTRY${NC}"
     fi
 
-    # Check and add MOUNT_LOGS if needed
+    # Kiểm tra và thêm MOUNT_LOGS nếu cần
     if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
         echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null
         echo -e "${GREEN}➕ Added mount logs: $MOUNT_LOGS${NC}"
@@ -37,7 +43,6 @@ EOF
         echo -e "${YELLOW}⚠️ Mount logs already exists: $MOUNT_LOGS${NC}"
     fi
 }
-
 
 # 🔁 Restart NGINX Proxy (use when changing docker-compose, mount volume, etc.)
 nginx_restart() {

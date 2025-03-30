@@ -89,5 +89,15 @@ EOF
 
   chmod +x "$TEST_MOCK_BIN_DIR/wp"
 
+  # Mock docker-compose.override.yml for NGINX
+  cat > "$PROJECT_DIR_TEST/mocks/docker-compose.override.yml" <<'EOF'
+version: "3"
+services:
+  nginx-proxy:
+    volumes:
+      - ../../sites/$site_name/wordpress:/var/www/$site_name
+      - ../../sites/$site_name/logs:/var/www/logs/$site_name
+EOF
+
   export PATH="$TEST_MOCK_BIN_DIR:$PATH"
 fi
