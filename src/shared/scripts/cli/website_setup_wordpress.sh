@@ -38,6 +38,6 @@ if [[ -z "$site_name" || -z "$admin_user" || -z "$admin_password" || -z "$admin_
   exit 1
 fi
 
-# === Call function ===
+# === Call function === 
 source "$FUNCTIONS_DIR/website/website_setup_wordpress.sh"
 website_setup_wordpress_logic "$site_name" "$admin_user" "$admin_password" "$admin_email"
