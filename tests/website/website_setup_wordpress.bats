@@ -39,7 +39,7 @@ teardown() {
   ADMIN_EMAIL="admin@example.com"
 
   run bash "$PROJECT_DIR_ORIGINAL/shared/scripts/cli/website_setup_wordpress.sh" \
-    --site="$TEST_SITE_NAME" \
+    --site_name="$TEST_SITE_NAME" \
     --user="$ADMIN_USER" \
     --pass="$ADMIN_PASS" \
     --email="$ADMIN_EMAIL"

@@ -38,7 +38,7 @@ teardown() {
 
 @test "website_delete CLI should delete a WordPress website" {
   run bash "$PROJECT_DIR_ORIGINAL/shared/scripts/cli/website_delete.sh" \
-    --site="$TEST_SITE_NAME" \
+    --site_name="$TEST_SITE_NAME" \
     --backup=false
 
   echo "=== OUTPUT START ==="

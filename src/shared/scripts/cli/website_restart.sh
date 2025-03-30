@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==========================================
-# 🗑️ website_delete.sh – Delete a WordPress Website via CLI
+# 🔄 website_restart.sh – Restart a WordPress Website via CLI
 # ==========================================
 
 # === Auto-detect PROJECT_DIR (source code root) ===
@@ -37,5 +37,19 @@ if [[ -z "$SITE_NAME" ]]; then
   exit 1
 fi
 
-# === Run deletion logic ===
-website_management_delete_logic "$SITE_NAME"
+# === Restart Website Logic ===
+echo "🔄 Restarting WordPress website: $SITE_NAME"
+
+# Stop and remove containers related to the site
+docker-compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" down || {
+  echo "❌ Failed to stop containers for $SITE_NAME"
+  exit 1
+}
+
+# Restart containers
+docker-compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" up -d || {
+  echo "❌ Failed to restart containers for $SITE_NAME"
+  exit 1
+}
+
+echo "✅ Website $SITE_NAME has been restarted successfully."
