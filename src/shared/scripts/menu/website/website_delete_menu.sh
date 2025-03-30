@@ -53,7 +53,7 @@ fi
 
 # === Run deletion logic ===
 if [[ -n "$site_name" && -n "$backup_enabled" ]]; then
-  bash "$SCRIPTS_DIR/cli/website_delete.sh" --site="$site_name" --backup="$backup_enabled"
+  bash "$SCRIPTS_DIR/cli/website_delete.sh" --site_name="$site_name" --backup="$backup_enabled"
 else
   echo "❌ Missing required parameters to delete website." >&2
   exit 1
