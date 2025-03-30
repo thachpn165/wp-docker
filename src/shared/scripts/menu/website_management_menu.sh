@@ -24,7 +24,7 @@ website_management_menu() {
     case $sub_choice in
       1) bash "$MENU_DIR/website/website_create_menu.sh"; read -p "Press Enter to continue..." ;;
       2) bash "$MENU_DIR/website/website_delete_menu.sh"; read -p "Press Enter to continue..." ;;
-      3) website_management_list; read -p "Press Enter to continue..." ;;
+      3) bash "$MENU_DIR/website/website_list_menu.sh"; read -p "Press Enter to continue..." ;;
       4) website_management_restart; read -p "Press Enter to continue..." ;;
       5) website_management_logs; read -p "Press Enter to continue..." ;;
       6) website_management_info; read -p "Press Enter to continue..." ;;
