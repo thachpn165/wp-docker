@@ -27,7 +27,7 @@ website_management_menu() {
       3) bash "$MENU_DIR/website/website_list_menu.sh"; read -p "Press Enter to continue..." ;;
       4) bash "$MENU_DIR/website/website_restart_menu.sh"; read -p "Press Enter to continue..." ;;
       5) bash "$MENU_DIR/website/website_logs_menu.sh"; read -p "Press Enter to continue..." ;;
-      6) website_management_info; read -p "Press Enter to continue..." ;;
+      6) bash "$MENU_DIR/website/website_info_menu.sh"; read -p "Press Enter to continue..." ;;
       7) website_update_site_template; read -p "Press Enter to continue..." ;;
       8) break ;;
       *) echo -e "${RED}⚠️ Invalid option! Please select from [1-7].${NC}"; sleep 2 ;;
