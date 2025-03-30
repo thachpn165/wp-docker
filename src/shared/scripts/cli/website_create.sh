@@ -1,8 +1,4 @@
-#!/bin/bash
-# =====================================
-# 🐋 website_management_create – Create New WordPress Website
-# =====================================
-
+#!/usr/bin/env bash
 
 # === Auto-detect PROJECT_DIR (source code root) ===
 if [[ -z "$PROJECT_DIR" ]]; then
@@ -16,22 +12,29 @@ if [[ -z "$PROJECT_DIR" ]]; then
   done
 fi
 
-# === ✅ Load config.sh from PROJECT_DIR ===
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
+source "$FUNCTIONS_DIR/website_loader.sh"
 
-# Load config and dependent functions
-source "$SCRIPTS_FUNCTIONS_DIR/website/website_management_create.sh"
-source "$FUNCTIONS_DIR/website/website_create_env.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/php/php_choose_version.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/nginx/nginx_utils.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/file_utils.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/misc_utils.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/website/website_update_site_template.sh"
+# === Input handling ===
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --site_name=*) site_name="${1#*=}" ; shift ;;
+    --domain=*) domain="${1#*=}" ; shift ;;
+    --php=*) php_version="${1#*=}" ; shift ;;
+    *) echo "❌ Unknown option: $1" ; exit 1 ;;
+  esac
+done
 
-# Run main function
-website_management_create
+if [[ -z "$site_name" || -z "$domain" || -z "$php_version" ]]; then
+  echo "❌ Missing parameters. Usage:"
+  echo "  $0 --site_name=abc --domain=abc.com --php=8.2"
+  exit 1
+fi
+
+website_management_create "$site_name" "$domain" "$php_version"
+website_setup_wordpress "$site_name" true

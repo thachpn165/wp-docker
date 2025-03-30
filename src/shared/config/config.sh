@@ -38,6 +38,7 @@ TEMPLATES_DIR="${TEMPLATES_DIR:-$BASE_DIR/shared/templates}"  # Templates direct
 CONFIG_DIR="${CONFIG_DIR:-$BASE_DIR/shared/config}"  # Configuration directory
 SCRIPTS_DIR="${SCRIPTS_DIR:-$BASE_DIR/shared/scripts}"  # Scripts directory
 CLI_DIR="${CLI_DIR:-$SCRIPTS_DIR/cli}"  # CLI scripts directory
+MENU_DIR="$SCRIPTS_DIR/menu"
 FUNCTIONS_DIR="${FUNCTIONS_DIR:-$SCRIPTS_DIR/functions}"  # Functions directory
 WP_SCRIPTS_DIR="${WP_SCRIPTS_DIR:-$SCRIPTS_DIR/wp-scripts}"  # WP scripts directory
 WEBSITE_MGMT_DIR="${WEBSITE_MGMT_DIR:-$SCRIPTS_DIR/website-management}"  # Website management scripts directory
