@@ -2,7 +2,7 @@
 # 📋 website_management_list – Display List of Existing Websites
 # =====================================
 
-website_management_list() {
+website_management_list_logic() {
   if [[ ! -d "$SITES_DIR" ]]; then
     echo -e "${RED}❌ Directory $SITES_DIR does not exist.${NC}"
     return 1
@@ -22,8 +22,12 @@ website_management_list() {
   done
 
   echo -e "${GREEN}✅ Website list display completed.${NC}"
-  if [[ "$TEST_MODE" != true ]]; then
-    [[ "$TEST_MODE" != true ]] && read -p "Press Enter to return to menu..."
-  fi
+}
 
+website_management_list() {
+  website_management_list_logic
+
+  if [[ "$TEST_MODE" != true ]]; then
+    read -p "Press Enter to return to menu..."
+  fi
 }
