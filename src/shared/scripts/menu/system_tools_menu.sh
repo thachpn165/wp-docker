@@ -1,8 +1,5 @@
-source "$SYSTEM_TOOLS_FUNC_DIR/system-check-resources.sh"
-source "$SYSTEM_TOOLS_FUNC_DIR/system_manage_docker.sh"
-source "$SYSTEM_TOOLS_FUNC_DIR/system_cleanup_docker.sh"
-source "$SYSTEM_TOOLS_FUNC_DIR/system_nginx_rebuild.sh"
-
+#!/bin/bash
+source "$FUNCTIONS_DIR/system_loader.sh"
 system_tools_menu() {
     echo -e "${BLUE}===== System Tools =====${NC}"
     echo -e "  ${GREEN}[1]${NC} Check System Resources"
@@ -14,10 +11,10 @@ system_tools_menu() {
 
     case $sys_tool_choice in
         1)
-            system_check_resources
+            bash "$MENU_DIR/system-tools/system_check_resources_menu.sh"
             ;;
         2)
-            system_manage_docker
+            bash "$MENU_DIR/system-tools/system_manage_docker_menu.sh"
             ;;
         3)
             system_cleanup_docker
