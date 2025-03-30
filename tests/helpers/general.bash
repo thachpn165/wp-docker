@@ -2,58 +2,47 @@
 
 # ============================
 # 🧪 general.bash – For Bats
-# Load config + override to test paths
+# Load config + override for test paths
 # ============================
 
-# === Auto-detect PROJECT_DIR ===
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/src/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-fi
+# === Hard-code đường dẫn gốc đến source code ===
+export PROJECT_DIR_ORIGINAL="$(realpath "$BATS_TEST_DIRNAME/../../src")"
+export PROJECT_DIR="$PROJECT_DIR_ORIGINAL"
 
-# ✅ Lưu lại đường dẫn thật của dự án để dùng cho các file gốc
-export PROJECT_DIR_ORIGINAL="$PROJECT_DIR"
-
-# === Load original config.sh ===
-CONFIG_FILE="$PROJECT_DIR/src/shared/config/config.sh"
+# ✅ Load config gốc
+CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
 
-# === Override paths for test ===
-TEST_SANDBOX_DIR="/tmp/wp-docker-test-$RANDOM"
-mkdir -p "$TEST_SANDBOX_DIR"
+# === Override thư mục test sandbox (chỉ ảnh hưởng dữ liệu) ===
+export PROJECT_DIR_TEST="/tmp/wp-docker-test-$RANDOM"
+mkdir -p "$PROJECT_DIR_TEST"
 
-export PROJECT_DIR="$TEST_SANDBOX_DIR"
-export SITES_DIR="$PROJECT_DIR/sites"
-export TMP_DIR="$PROJECT_DIR/tmp"
-export LOGS_DIR="$PROJECT_DIR/logs"
+export SITES_DIR="$PROJECT_DIR_TEST/sites"
+export TMP_DIR="$PROJECT_DIR_TEST/tmp"
+export LOGS_DIR="$PROJECT_DIR_TEST/logs"
 
-export TEMPLATES_DIR="$(realpath "$PROJECT_DIR_ORIGINAL/src/shared/templates")"
-export FUNCTIONS_DIR="$(realpath "$PROJECT_DIR_ORIGINAL/src/shared/scripts/functions")"
-export SCRIPTS_DIR="$(realpath "$PROJECT_DIR_ORIGINAL/src/shared/scripts")"
+# === Giữ nguyên các thư mục templates/functions/scripts từ project thật ===
+export TEMPLATES_DIR="$PROJECT_DIR/shared/templates"
+export FUNCTIONS_DIR="$PROJECT_DIR/shared/scripts/functions"
+export SCRIPTS_DIR="$PROJECT_DIR/shared/scripts"
 
-# === Flags ===
+# === Cờ test mode ===
 export TEST_MODE=true
 export TEST_ALWAYS_READY=true
 
-# === Load all website-related logic ===
+# ✅ Load toàn bộ logic quản lý website
 source "$FUNCTIONS_DIR/website_loader.sh"
 
-# === Helper: create random site name ===
+# === Helper: tạo site name random ===
 generate_test_site_name() {
   echo "testsite-$(openssl rand -hex 3 | tr '[:lower:]' '[:upper:]')"
 }
 
-# === Assert helper ===
+# === Helper: assert output chứa text ===
 assert_output_contains() {
   local expected="$1"
   [[ "$output" == *"$expected"* ]] || {
@@ -62,3 +51,43 @@ assert_output_contains() {
     return 1
   }
 }
+
+# === ✅ Mocks for Docker CLI when TEST_MODE ===
+if [[ "$TEST_MODE" == true ]]; then
+  TEST_MOCK_BIN_DIR="$PROJECT_DIR_TEST/mocks"
+  mkdir -p "$TEST_MOCK_BIN_DIR"
+
+  # Mock docker exec (giả lập chạy thành công)
+  cat > "$TEST_MOCK_BIN_DIR/docker" <<'EOF'
+#!/bin/bash
+if [[ "$1" == "exec" ]]; then
+  echo "[MOCK] docker exec $@"
+  exit 0
+elif [[ "$1" == "volume" && "$2" == "rm" ]]; then
+  echo "[MOCK] docker volume rm $@"
+  exit 0
+elif [[ "$1" == "ps" ]]; then
+  echo "[MOCK] docker ps"
+  exit 0
+elif [[ "$1" == "restart" ]]; then
+  echo "[MOCK] docker restart $@"
+  exit 0
+else
+  echo "[MOCK] docker $@"
+  exit 0
+fi
+EOF
+
+  chmod +x "$TEST_MOCK_BIN_DIR/docker"
+
+  # Mock wp CLI (giả lập chạy thành công)
+  cat > "$TEST_MOCK_BIN_DIR/wp" <<'EOF'
+#!/bin/bash
+echo "[MOCK] wp $@"
+exit 0
+EOF
+
+  chmod +x "$TEST_MOCK_BIN_DIR/wp"
+
+  export PATH="$TEST_MOCK_BIN_DIR:$PATH"
+fi

@@ -8,10 +8,10 @@
 load "${BATS_TEST_DIRNAME}/../helpers/general.bash"
 
 setup() {
-  load_env_if_exists
   TEST_SITE_NAME="$(generate_test_site_name)"
   TEST_DOMAIN="${TEST_SITE_NAME}.local"
   TEST_PHP_VERSION="8.2"
+  
 }
 
 teardown() {
@@ -27,19 +27,17 @@ teardown() {
   fi
 }
 
-@test "echo debug" {
-  echo "✅ PROJECT_DIR_ORIGINAL=$PROJECT_DIR_ORIGINAL"
-  echo "✅ PROJECT_DIR=$PROJECT_DIR"
-  echo "✅ SITES_DIR=$SITES_DIR"
-}
+@test "website_create CLI should create a WordPress site successfully" {
+  run bash "$PROJECT_DIR_ORIGINAL/shared/scripts/cli/website_create.sh" \
+    --site_name="$TEST_SITE_NAME" \
+    --domain="$TEST_DOMAIN" \
+    --php="$TEST_PHP_VERSION"
 
-#@test "website_create CLI should create a WordPress site successfully" {
-#  run bash "$PROJECT_DIR_ORIGINAL/src/shared/scripts/cli/website_create.sh" \
-#    --site_name="$TEST_SITE_NAME" \
-#    --domain="$TEST_DOMAIN" \
-#    --php="$TEST_PHP_VERSION"
-#
-#  [ "$status" -eq 0 ]
-#  [[ "$output" == *"✅ DONE_CREATE_WEBSITE: $TEST_SITE_NAME"* ]]
-#}
+  echo "=== OUTPUT START ==="
+  echo "$output"
+  echo "=== OUTPUT END ==="
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"✅ DONE_CREATE_WEBSITE: $TEST_SITE_NAME"* ]]
+}
 

@@ -38,3 +38,5 @@ fi
 
 website_management_create "$site_name" "$domain" "$php_version"
 website_setup_wordpress "$site_name" true
+
+echo "✅ DONE_CREATE_WEBSITE: $site_name"
