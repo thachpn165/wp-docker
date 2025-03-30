@@ -13,19 +13,19 @@ wordpress_tools_menu() {
 
     case $wp_tool_choice in
         1)
-            source "$WORDPRESS_TOOLS_DIR/reset-admin-password.sh"
+            bash "$MENU_DIR/wordpress/wordpress_reset_admin_passwd_menu.sh"; read -p "Press Enter to continue..."
             ;;
         2)
-            source "$WORDPRESS_TOOLS_DIR/reset-user-role.sh"
+            source "$WORDPRESS_TOOLS_DIR/reset-user-role.sh" ; read -p "Press Enter to continue..."
             ;;
         3)
-            source "$WORDPRESS_TOOLS_DIR/plugin-auto-update.sh"
+            source "$WORDPRESS_TOOLS_DIR/plugin-auto-update.sh" ; read -p "Press Enter to continue..."
             ;;
         4)
-            source "$WORDPRESS_TOOLS_DIR/protect-wp-login.sh"
+            source "$WORDPRESS_TOOLS_DIR/protect-wp-login.sh" ; read -p "Press Enter to continue..."
             ;;
         5)
-            source "$WORDPRESS_TOOLS_DIR/reset-wp-database.sh"
+            source "$WORDPRESS_TOOLS_DIR/reset-wp-database.sh" ; read -p "Press Enter to continue..."
             ;;
         6)
             echo -e "${YELLOW}🚀 Delete All Spam Comments feature not implemented yet.${NC}"
