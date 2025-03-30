@@ -4,7 +4,7 @@
 
 website_management_delete_logic() {
   local site_name="$1"
-  local backup_enabled="${2:-true}"
+  local backup_enabled="${2:-false}"  # Tham số backup_enabled mặc định là false
 
   if [[ "$TEST_MODE" == true ]]; then
     backup_enabled=false
@@ -32,6 +32,7 @@ website_management_delete_logic() {
   MARIADB_VOLUME="${site_name}_mariadb_data"
   SITE_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$site_name.conf"
 
+  # Nếu backup_enabled=true thì tiến hành backup
   if [[ "$backup_enabled" == true ]]; then
     echo -e "${YELLOW}📦 Creating backup before deletion...${NC}"
     ARCHIVE_DIR="$ARCHIVES_DIR/old_website/${site_name}-$(date +%Y%m%d-%H%M%S)"

@@ -1,5 +1,3 @@
-### ✅ shared/scripts/functions/website/website_management_create_logic.sh
-
 # =====================================
 # 🐋 website_management_create_logic – Main Logic (used by menu & CLI)
 # =====================================
@@ -36,6 +34,15 @@ website_management_create_logic() {
   mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs,backups}
   touch "$SITE_DIR/logs/access.log" "$SITE_DIR/logs/error.log"
   chmod 666 "$SITE_DIR/logs/"*.log
+
+  # Copy .template_version file if exists
+  TEMPLATE_VERSION_FILE="$TEMPLATES_DIR/.template_version"
+  if is_file_exist "$TEMPLATE_VERSION_FILE"; then
+    cp "$TEMPLATE_VERSION_FILE" "$SITE_DIR/.template_version"
+    echo -e "${GREEN}✅ Copied .template_version to $SITE_DIR${NC}"
+  else
+    echo -e "${YELLOW}⚠️ No .template_version file found in shared/templates.${NC}"
+  fi
 
   # 🔧 Configure NGINX
   update_nginx_override_mounts "$site_name" || return 1
