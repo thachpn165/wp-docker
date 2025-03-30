@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# =====================================
-# 🗑️ CLI: Delete a WordPress Website
-# =====================================
+# ==========================================
+# 🗑️ website_delete.sh – Delete a WordPress Website via CLI
+# ==========================================
 
 # === Auto-detect PROJECT_DIR (source code root) ===
 if [[ -z "$PROJECT_DIR" ]]; then
@@ -16,13 +16,26 @@ if [[ -z "$PROJECT_DIR" ]]; then
   done
 fi
 
-# === ✅ Load config.sh from PROJECT_DIR ===
+# === Load config & logic ===
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
-source "$FUNCTIONS_DIR/website/website_management_delete.sh"
-# === Run the function ===
-website_management_delete
+source "$FUNCTIONS_DIR/website_loader.sh"
+
+# === Parse argument ===
+for arg in "$@"; do
+  case $arg in
+    --site=*) SITE_NAME="${arg#*=}" ;;
+  esac
+done
+
+if [[ -z "$SITE_NAME" ]]; then
+  echo "❌ Missing required --site=SITE_NAME parameter"
+  exit 1
+fi
+
+# === Run deletion logic ===
+website_management_delete_logic "$SITE_NAME"

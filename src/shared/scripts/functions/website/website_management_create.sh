@@ -1,9 +1,9 @@
-### ✅ shared/scripts/functions/website/website_management_create.sh
+### ✅ shared/scripts/functions/website/website_management_create_logic.sh
 
 # =====================================
-# 🐋 website_management_create – Main Logic (used by menu & CLI)
+# 🐋 website_management_create_logic – Main Logic (used by menu & CLI)
 # =====================================
-website_management_create() {
+website_management_create_logic() {
   local site_name="$1"
   local domain="$2"
   local php_version="$3"
@@ -47,7 +47,7 @@ website_management_create() {
   apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf" || return 1
   create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf" || return 1
   website_create_env "$SITE_DIR" "$site_name" "$domain" "$php_version" || return 1
-  
+
   # SSL
   generate_ssl_cert "$domain" "$SSL_DIR" || return 1
   # 🛠️ Create docker-compose.yml
@@ -90,5 +90,4 @@ website_management_create() {
   fi
 
   echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ✅ COMPLETED: $site_name =====" >> "$LOG_FILE"
-  echo "✅ DONE_CREATE_WEBSITE: $site_name"
 }
