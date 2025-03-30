@@ -40,7 +40,7 @@ run_if_not_test() {
 #   run_unless_test docker compose up -d
 run_unless_test() {
   if [[ "$TEST_MODE" == true && "$BATS_TEST_FILENAME" != "" ]]; then
-    echo "[MOCK run_unless_test] $*"
+    #echo "[MOCK run_unless_test] $*"
     return 0
   else
     "$@"
