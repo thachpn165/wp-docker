@@ -1,35 +1,41 @@
-# =====================================
-# 🔍 website_management_info – View website configuration information
-# =====================================
+#!/usr/bin/env bash
 
-website_management_info() {
-  echo -e "${YELLOW}📋 List of available websites:${NC}"
-  site_list=($(ls -1 "$SITES_DIR"))
+# ============================================
+# 📝 website_management_info.sh – Show Website Information Logic
+# ============================================
 
-  if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ No websites available to view information.${NC}"
-    return 1
-  fi
+# === website_management_info_logic ===
+website_management_info_logic() {
+    local site_name="$1"
+    local site_dir="$SITES_DIR/$site_name"
+    local env_file="$site_dir/.env"
+    local domain
+    local db_name
+    local db_user
+    local db_pass
 
-  for i in "${!site_list[@]}"; do
-    echo -e "  ${GREEN}[$i]${NC} ${site_list[$i]}"
-  done
+    # Check if website exists
+    if ! is_directory_exist "$site_dir"; then
+        echo -e "${RED}❌ Website '$site_name' does not exist.${NC}"
+        return 1
+    fi
 
-  echo ""
-  [[ "$TEST_MODE" != true ]] && read -p "Enter the number corresponding to the website to view information: " site_index
-  site_name="${site_list[$site_index]}"
+    # Check if .env file exists
+    if ! is_file_exist "$env_file"; then
+        echo -e "${RED}❌ .env file for website '$site_name' not found!${NC}"
+        return 1
+    fi
 
-  SITE_DIR="$SITES_DIR/$site_name"
-  ENV_FILE="$SITE_DIR/.env"
+    # Fetch website information from .env
+    domain=$(fetch_env_variable "$env_file" "DOMAIN")
+    db_name=$(fetch_env_variable "$env_file" "MYSQL_DATABASE")
+    db_user=$(fetch_env_variable "$env_file" "MYSQL_USER")
+    db_pass=$(fetch_env_variable "$env_file" "MYSQL_PASSWORD")
 
-  if [ ! -f "$ENV_FILE" ]; then
-    echo -e "${RED}❌ .env file not found for site '$site_name'!${NC}"
-    return 1
-  fi
-
-  echo -e "${CYAN}🔎 Website information: $site_name${NC}"
-  echo -e "-------------------------------------------"
-  grep -E '^(DOMAIN|PHP_VERSION|MYSQL_DATABASE|MYSQL_USER)' "$ENV_FILE" \
-    | sed 's/^/  🔹 /'
-  echo -e "-------------------------------------------"
+    # Display website information
+    echo -e "${GREEN}Website Information for '$site_name':${NC}"
+    echo -e "  ${YELLOW}Domain:${NC} $domain"
+    echo -e "  ${YELLOW}Database Name:${NC} $db_name"
+    echo -e "  ${YELLOW}Database User:${NC} $db_user"
+    echo -e "  ${YELLOW}Database Password:${NC} $db_pass"
 }
