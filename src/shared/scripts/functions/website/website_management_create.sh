@@ -1,24 +1,17 @@
+### ✅ shared/scripts/functions/website/website_management_create.sh
+
 # =====================================
-# 🐋 website_management_create – Create New WordPress Website
+# 🐋 website_management_create – Main Logic (used by menu & CLI)
 # =====================================
 website_management_create() {
-  source "$FUNCTIONS_DIR/website/website_create_env.sh"
-
-  echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
-
-  # 📥 Input domain and site name
-  domain="$(get_input_or_test_value "Domain name (e.g., example.com): " "${TEST_DOMAIN:-example.com}")"
-  suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
-  site_name="$(get_input_or_test_value "Site name (default: $suggested_site_name): " "${TEST_SITE_NAME:-$suggested_site_name}")"
-  site_name=${site_name:-$suggested_site_name}
-
-  # Check PHP version
-  php_choose_version || return 1
-  php_version="$REPLY"
+  local site_name="$1"
+  local domain="$2"
+  local php_version="$3"
 
   SITE_DIR="$SITES_DIR/$site_name"
   CONTAINER_PHP="${site_name}-php"
   CONTAINER_DB="${site_name}-mariadb"
+  MARIADB_VOLUME="${site_name}_mariadb_data"
 
   # ❌ Check if site already exists
   if is_directory_exist "$SITE_DIR" false; then
@@ -26,7 +19,13 @@ website_management_create() {
     return 1
   fi
 
-  # 📝 Create log
+  # 🧹 Remove existing volume if exists
+  if docker volume ls --format '{{.Name}}' | grep -q "^$MARIADB_VOLUME$"; then
+    echo -e "${YELLOW}⚠️ Existing MariaDB volume '$MARIADB_VOLUME' found. Removing to ensure clean setup...${NC}"
+    run_unless_test docker volume rm "$MARIADB_VOLUME"
+  fi
+
+  # 🗘️ Create log
   mkdir -p "$LOGS_DIR"
   LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
   touch "$LOG_FILE"
@@ -39,10 +38,7 @@ website_management_create() {
   chmod 666 "$SITE_DIR/logs/"*.log
 
   # 🔧 Configure NGINX
-  if ! update_nginx_override_mounts "$site_name"; then
-    echo -e "${RED}❌ Unable to update NGINX configuration.${NC}"
-    return 1
-  fi
+  update_nginx_override_mounts "$site_name" || return 1
   export site_name domain php_version
   run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh" || return 1
 
@@ -51,7 +47,9 @@ website_management_create() {
   apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf" || return 1
   create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf" || return 1
   website_create_env "$SITE_DIR" "$site_name" "$domain" "$php_version" || return 1
-
+  
+  # SSL
+  generate_ssl_cert "$domain" "$SSL_DIR" || return 1
   # 🛠️ Create docker-compose.yml
   TEMPLATE_FILE="$TEMPLATES_DIR/docker-compose.yml.template"
   TARGET_FILE="$SITE_DIR/docker-compose.yml"
@@ -81,22 +79,10 @@ website_management_create() {
     return 1
   fi
 
-  # 🔐 Install SSL + WordPress
-  generate_ssl_cert "$domain" "$SSL_DIR" || return 1
-  run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-wordpress.sh" "$site_name" || return 1
-
-  # 📦 Display information
-  WP_INFO_FILE="$SITE_DIR/.wp-info"
-  if [ -f "$WP_INFO_FILE" ]; then
-    echo -e "${GREEN}\n🎉 WordPress installed successfully for $site_name${NC}"
-    cat "$WP_INFO_FILE"
-    rm -f "$WP_INFO_FILE"
-  fi
-
   # 🔁 Restart NGINX
   nginx_restart || return 1
 
-  # 🧑‍🔧 Permissions
+  # 🧑‍💻 Permissions
   if is_container_running "$CONTAINER_PHP"; then
     run_unless_test docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/ || return 1
   else

@@ -26,15 +26,15 @@ fi
 source "$CONFIG_FILE"
 
 # Import menu functions
-source "$(dirname "$0")/shared/scripts/functions/menu/menu_utils.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/website_management_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/wordpress_tools_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/system_tools_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/backup_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/rclone_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/ssl_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/php_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/core/core_version_management.sh"
+source "$MENU_DIR/menu_utils.sh"
+source "$MENU_DIR/website_management_menu.sh"
+source "$MENU_DIR/wordpress_tools_menu.sh"
+source "$MENU_DIR/system_tools_menu.sh"
+source "$MENU_DIR/backup_menu.sh"
+source "$MENU_DIR/rclone_menu.sh"
+source "$MENU_DIR/ssl_menu.sh"
+source "$MENU_DIR/php_menu.sh"
+source "$FUNCTIONS_DIR/core/core_version_management.sh"
 # **Run system setup before displaying menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
 
