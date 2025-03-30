@@ -29,9 +29,6 @@ site_name="$(get_input_or_test_value "Enter site name (default: $suggested_site_
 php_choose_version || exit 1
 php_version="$REPLY"
 
-echo "🔧 Creating WordPress site..."
-website_management_create "$site_name" "$domain" "$php_version" || exit 1
-
 echo ""
 read -p "🔐 Auto-generate random admin account? [Y/n]: " choice
 choice="${choice:-Y}"
@@ -40,5 +37,9 @@ choice="$(echo "$choice" | tr '[:upper:]' '[:lower:]')"
 auto_generate=true
 [[ "$choice" == "n" ]] && auto_generate=false
 
-echo "🔐 Installing WordPress..."
-website_setup_wordpress "$site_name" "$auto_generate"
+echo "🔧 Creating WordPress site..."
+bash "$SCRIPTS_DIR/cli/website_create.sh" \
+  --site_name="$site_name" \
+  --domain="$domain" \
+  --php="$php_version" \
+  --auto_generate="$auto_generate" || exit 1

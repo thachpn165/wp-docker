@@ -11,7 +11,8 @@ setup() {
   TEST_SITE_NAME="$(generate_test_site_name)"
   TEST_DOMAIN="${TEST_SITE_NAME}.local"
   TEST_PHP_VERSION="8.2"
-  
+  export SITES_DIR="/tmp/wp-docker-test-sites"
+  mkdir -p "$SITES_DIR"
 }
 
 teardown() {
@@ -40,4 +41,3 @@ teardown() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"✅ DONE_CREATE_WEBSITE: $TEST_SITE_NAME"* ]]
 }
-

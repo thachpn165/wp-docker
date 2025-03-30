@@ -1,7 +1,7 @@
 # =====================================
 # 🌀 website_setup_wordpress – Install WordPress with provided or auto admin
 # =====================================
-website_setup_wordpress() {
+website_setup_wordpress_logic() {
   local site_name="$1"
   local auto_generate="${2:-true}"
 
