@@ -33,6 +33,7 @@ if [[ -z "$site_name" ]]; then
   exit 1
 fi
 
+# Prompt the user for backup confirmation
 backup_enabled=true
 if [[ "$TEST_MODE" != true ]]; then
   echo -e "\n💾 Do you want to backup the website before deletion?"
@@ -52,8 +53,12 @@ if [[ "$confirm" != "yes" ]]; then
 fi
 
 # === Run deletion logic ===
-if [[ -n "$site_name" && -n "$backup_enabled" ]]; then
-  bash "$SCRIPTS_DIR/cli/website_delete.sh" --site_name="$site_name" --backup="$backup_enabled"
+if [[ -n "$site_name" ]]; then
+  if [[ "$backup_enabled" == true ]]; then
+    bash "$SCRIPTS_DIR/cli/website_delete.sh" --site_name="$site_name" --backup_enabled=true
+  else
+    bash "$SCRIPTS_DIR/cli/website_delete.sh" --site_name="$site_name"
+  fi
 else
   echo "❌ Missing required parameters to delete website." >&2
   exit 1
