@@ -1,38 +1,56 @@
 #!/usr/bin/env bash
+# -----------------------------------------------------------------------------
+# Script Name: website_create.sh
+# Description: This script automates the creation of a website, including 
+#              setting up the necessary configurations and optionally 
+#              installing WordPress.
+#
+# Prerequisites:
+#   - Must be run in a Bash shell.
+#   - The environment variable PROJECT_DIR must be set or determinable from
+#     the script's directory structure.
+#   - A valid configuration file (config.sh) must exist in the shared/config
+#     directory relative to PROJECT_DIR.
+#
+# Usage:
+#   ./website_create.sh --site_name=<site_name> --domain=<domain> --php=<php_version> [--auto_generate=<true|false>]
+#
+# Options:
+#   --site_name=<site_name>       Name of the website to be created.
+#   --domain=<domain>             Domain name for the website.
+#   --php=<php_version>           PHP version to be used for the website.
+#   --auto_generate=<true|false>  (Optional) Whether to auto-generate additional
+#                                 configurations. Default is true.
+#
+# Exit Codes:
+#   1 - Script not run in a Bash shell.
+#   1 - PROJECT_DIR could not be determined.
+#   1 - Config file not found.
+#   1 - Missing required parameters or unknown options.
+#
+# Dependencies:
+#   - The script sources the following files:
+#       - $PROJECT_DIR/shared/config/config.sh
+#       - $FUNCTIONS_DIR/website_loader.sh
+#
+# Functions:
+#   - website_management_create_logic: Handles the creation of the website.
+#   - website_setup_wordpress_logic: Handles the setup of WordPress for the website.
+#
+# Example:
+#   ./website_create.sh --site_name=mywebsite --domain=mywebsite.com --php=8.2 --auto_generate=true
+#
+# -----------------------------------------------------------------------------
+if [ -z "$BASH_VERSION" ]; then
+  echo "❌ This script must be run in a Bash shell." >&2
+  exit 1
+fi
 
-# This script is used to create a new website and optionally set up WordPress.
-# It auto-detects the project directory, loads configuration files, and processes input parameters.
-
-# === Script Overview ===
-# 1. Auto-detects the PROJECT_DIR (source code root) by traversing up the directory tree.
-# 2. Loads the configuration file and required functions.
-# 3. Handles input parameters for website creation.
-# 4. Invokes logic to create the website and optionally set up WordPress.
-
-# === Input Parameters ===
-# --site_name=<name>       : (Required) The name of the site to be created.
-# --domain=<domain>        : (Required) The domain name for the site.
-# --php=<version>          : (Required) The PHP version to be used for the site.
-# --auto_generate=<true|false> : (Optional) Whether to auto-generate WordPress setup. Default is true.
-
-# === Usage Example ===
-# ./website_create.sh --site_name=example --domain=example.com --php=8.2 --auto_generate=true
-
-# === Exit Codes ===
-# 1 : Config file not found or missing required parameters.
-# 0 : Script executed successfully.
-
-# === Dependencies ===
-# - Requires the configuration file at $PROJECT_DIR/shared/config/config.sh.
-# - Requires the function definitions in $FUNCTIONS_DIR/website_loader.sh.
-
-# === Notes ===
-# - Ensure the PROJECT_DIR environment variable is set or the script can auto-detect it.
-# - The script outputs error messages to stderr for missing parameters or unknown options.
-
-# === Auto-detect PROJECT_DIR (source code root) ===
+# Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
   SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+  
+  # Iterate upwards from the current script directory to find 'config.sh'
   while [[ "$SCRIPT_PATH" != "/" ]]; do
     if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
       PROJECT_DIR="$SCRIPT_PATH"
@@ -40,13 +58,22 @@ if [[ -z "$PROJECT_DIR" ]]; then
     fi
     SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
   done
+
+  # Handle error if config file is not found
+  if [[ -z "$PROJECT_DIR" ]]; then
+    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    exit 1
+  fi
 fi
 
+# Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
+
+# Source the config file
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/website_loader.sh"
 
