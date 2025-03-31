@@ -29,24 +29,22 @@ backup_menu() {
         echo -e "${BLUE}   🛠️ WEBSITE BACKUP MANAGEMENT   ${NC}"
         echo -e "${BLUE}============================${NC}"
         echo -e "  ${GREEN}[1]${NC} Backup website now"
-        echo -e "  ${GREEN}[2]${NC} Delete old backups"
-        echo -e "  ${GREEN}[3]${NC} View backup list"
-        echo -e "  ${GREEN}[4]${NC} Schedule automatic backup"
-        echo -e "  ${GREEN}[5]${NC} Manage backup schedule (Crontab)"
-        echo -e "  ${GREEN}[6]${NC} Restore website from backup"
-        echo -e "  ${GREEN}[7]${NC} ❌ Exit"
+        echo -e "  ${GREEN}[2]${NC} Manage Backup (Cleanup, List)"
+        echo -e "  ${GREEN}[3]${NC} Schedule automatic backup"
+        echo -e "  ${GREEN}[4]${NC} Manage backup schedule (Crontab)"
+        echo -e "  ${GREEN}[5]${NC} Restore website from backup"
+        echo -e "  ${GREEN}[6]${NC} ❌ Exit"
         echo -e "${BLUE}============================${NC}"
         
         [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-6): " choice
 
         case "$choice" in
             1) bash "$MENU_DIR/backup/backup_website_menu.sh" ;;
-            2) cleanup_old_backups ;;
-            3) list_backup_files ;;
-            4) schedule_backup_create ;;
-            5) manage_cron_menu ;;
-            6) backup_restore_web ;;
-            7) 
+            2) bash "$MENU_DIR/backup/backup_manage_menu.sh" ;;
+            3) schedule_backup_create ;;
+            4) manage_cron_menu ;;
+            5) backup_restore_web ;;
+            6) 
                 echo -e "${GREEN}👋 Exiting Backup menu!${NC}"
                 break
                 ;;
