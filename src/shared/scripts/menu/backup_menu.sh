@@ -18,9 +18,7 @@ fi
 source "$CONFIG_FILE"
 
 # Import backup functions
-source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_restore_web.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/backup-scheduler/schedule_backup.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/backup-scheduler/manage_cron.sh"
+source "$SCRIPTS_FUNCTIONS_DIR/backup/manage_cron.sh"
 
 # Function to display backup management menu
 backup_menu() {
@@ -41,9 +39,9 @@ backup_menu() {
         case "$choice" in
             1) bash "$MENU_DIR/backup/backup_website_menu.sh" ;;
             2) bash "$MENU_DIR/backup/backup_manage_menu.sh" ;;
-            3) schedule_backup_create ;;
+            3) bash "$MENU_DIR/backup/backup_scheduler_create_menu.sh" ;;
             4) manage_cron_menu ;;
-            5) backup_restore_web ;;
+            5) bash "$MENU_DIR/backup/backup_restore_web_menu.sh" ;;
             6) 
                 echo -e "${GREEN}👋 Exiting Backup menu!${NC}"
                 break

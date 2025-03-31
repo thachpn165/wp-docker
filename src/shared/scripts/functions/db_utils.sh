@@ -118,3 +118,26 @@ db_import_database() {
     docker exec -i ${site_name}-mariadb mysql -u$db_user -p$db_password $db_name < "$backup_file"
     echo "✅ Database import completed!"
 }
+
+# Function to fetch database variable from .env file
+db_fetch_env() {
+    local site_name="$1"
+    local env_file="$SITES_DIR/$site_name/.env"
+
+    if [[ ! -f "$env_file" ]]; then
+        echo "❌ .env file not found for $site_name at $env_file"
+        return 1
+    fi
+
+    local db_name=$(fetch_env_variable "$env_file" "MYSQL_DATABASE")
+    local db_user=$(fetch_env_variable "$env_file" "MYSQL_USER")
+    local db_pass=$(fetch_env_variable "$env_file" "MYSQL_PASSWORD")
+
+    if [[ -z "$db_name" || -z "$db_user" || -z "$db_pass" ]]; then
+        echo "❌ Missing database credentials in .env for $site_name"
+        return 1
+    fi
+
+    # Return the values
+    echo "$db_name $db_user $db_pass"
+}

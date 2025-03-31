@@ -27,6 +27,18 @@ while [[ "$#" -gt 0 ]]; do
       site_name="${1#*=}"
       shift
       ;;
+    --code_backup_file=*)
+      code_backup_file="${1#*=}"
+      shift
+      ;;
+    --db_backup_file=*)
+      db_backup_file="${1#*=}"
+      shift
+      ;;
+    --test_mode=*)
+      test_mode="${1#*=}"
+      shift
+      ;;
     *)
       echo "Unknown parameter: $1"
       exit 1
@@ -34,11 +46,11 @@ while [[ "$#" -gt 0 ]]; do
   esac
 done
 
-# Ensure valid parameters are passed
-if [ -z "$site_name" ]; then
-  echo "❌ Missing required parameter: --site_name"
+# Ensure site_name is passed, but code_backup_file and db_backup_file can be optional
+if [[ -z "$site_name" ]]; then
+  echo "❌ Missing site_name parameter."
   exit 1
 fi
 
-# === Call the logic function to backup files ===
-backup_file_logic "$site_name"
+# Call the logic function to restore the website, passing the necessary parameters
+backup_restore_web_logic "$site_name" "$code_backup_file" "$db_backup_file" "$test_mode"
