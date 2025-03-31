@@ -22,7 +22,7 @@ wordpress_tools_menu() {
             bash "$MENU_DIR/wordpress/wordpress_auto_update_plugin_menu.sh" ; read -p "Press Enter to continue..."
             ;;
         4)
-            source "$WORDPRESS_TOOLS_DIR/protect-wp-login.sh" ; read -p "Press Enter to continue..."
+            bash "$MENU_DIR/wordpress/wordpress_protect_wp_login_menu.sh" ; read -p "Press Enter to continue..."
             ;;
         5)
             source "$WORDPRESS_TOOLS_DIR/reset-wp-database.sh" ; read -p "Press Enter to continue..."
