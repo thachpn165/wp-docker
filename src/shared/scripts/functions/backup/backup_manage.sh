@@ -3,7 +3,7 @@ backup_manage() {
     local site_name="$1"
     local backup_dir="$SITES_DIR/$site_name/backups"
     local action="$2"
-    local max_age_days="$3"
+    local max_age_days="${3:-7}" 
 
     # Kiểm tra thư mục backup tồn tại
     if [[ ! -d "$backup_dir" ]]; then
@@ -15,12 +15,30 @@ backup_manage() {
         "list")
             # Liệt kê các file backup
             echo "Listing backups for $site_name in $backup_dir:"
-            find "$backup_dir" -type f -name "*.tar.gz" -print
-            if [[ $? -eq 0 ]]; then
-                echo "✅ Backup listing completed."
+
+            # Determine operating system (macOS or Linux)
+            if [[ "$(uname)" == "Darwin" ]]; then
+                FIND_CMD="ls -lt $backup_dir | awk '{print \$6, \$7, \$8, \$9}'"
             else
-                echo "❌ Error listing backups."
-                return 1
+                FIND_CMD="find $backup_dir -type f -printf '%TY-%Tm-%Td %TH:%TM %p\n' | sort -r"
+            fi
+
+            # Liệt kê FILE BACKUP (tập tin .tar.gz)
+            echo -e "${YELLOW}📂 FILE BACKUP (tar.gz files):${NC}"
+            eval $FIND_CMD | grep ".tar.gz"
+            if [[ $? -eq 0 ]]; then
+                echo "✅ File backup listing completed."
+            else
+                echo "❌ Error listing file backups."
+            fi
+            
+            # Liệt kê DATABASE BACKUP (tập tin .sql)
+            echo -e "${YELLOW}📂 DATABASE BACKUP (sql files):${NC}"
+            eval $FIND_CMD | grep ".sql"
+            if [[ $? -eq 0 ]]; then
+                echo "✅ Database backup listing completed."
+            else
+                echo "❌ Error listing database backups."
             fi
             ;;
         "clean")
