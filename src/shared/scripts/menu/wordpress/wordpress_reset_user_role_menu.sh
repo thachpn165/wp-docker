@@ -19,13 +19,14 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-
 # 📋 **Hiển thị danh sách website để chọn**
-echo -e "${YELLOW}📋 Danh sách các website có thể reset mật khẩu Admin:${NC}"
+echo -e "${YELLOW}⚠️ Tính năng này sẽ thiết lập lại quyền Administrator trên website về mặc định.${NC}"
+echo -e "${YELLOW}⚠️ Được dùng trong trường hợp website bị lỗi tài khoản Admin bị thiếu/mất quyền.${NC}"
+echo -e "${BLUE}📋 Danh sách các website có thể reset quyền Admin:${NC}"
 site_list=($(ls -1 "$SITES_DIR"))
 
 if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào để reset mật khẩu.${NC}"
+    echo -e "${RED}❌ Không có website nào để reset quyền Admin.${NC}"
     exit 1
 fi
 
@@ -34,18 +35,11 @@ for i in "${!site_list[@]}"; do
 done
 
 echo ""
-read -p "Nhập số tương ứng với website cần reset mật khẩu: " site_index
+read -p "Nhập số tương ứng với website cần reset quyền Admin: " site_index
 site_name="${site_list[$site_index]}"
 
 SITE_DIR="$SITES_DIR/$site_name"
 PHP_CONTAINER="$site_name-php"
 
-# **Lấy danh sách tài khoản Admin**
-echo -e "${YELLOW}📋 Danh sách tài khoản Admin:${NC}"
-docker exec -u "$PHP_USER" "$PHP_CONTAINER" wp user list --role=administrator --fields=ID,user_login --format=table --path=/var/www/html
-
-echo ""
-read -p "Nhập ID của tài khoản cần reset mật khẩu: " user_id
-
 # Truyền tham số vào CLI
-bash "$SCRIPTS_DIR/cli/wordpress_reset_admin_passwd.sh" --site_name="$site_name" --user_id="$user_id"
+bash "$SCRIPTS_DIR/cli/wordpress_reset_user_role.sh" --site_name="$site_name"
