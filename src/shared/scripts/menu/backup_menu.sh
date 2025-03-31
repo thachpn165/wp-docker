@@ -18,7 +18,6 @@ fi
 source "$CONFIG_FILE"
 
 # Import backup functions
-source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_actions.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_restore_web.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-scheduler/schedule_backup.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/backup-scheduler/manage_cron.sh"
@@ -41,7 +40,7 @@ backup_menu() {
         [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-6): " choice
 
         case "$choice" in
-            1) backup_website ;;
+            1) bash "$MENU_DIR/backup/backup_website_menu.sh" ;;
             2) cleanup_old_backups ;;
             3) list_backup_files ;;
             4) schedule_backup_create ;;

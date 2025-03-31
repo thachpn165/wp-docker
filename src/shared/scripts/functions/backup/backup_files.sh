@@ -1,4 +1,4 @@
-backup_files() {
+backup_file_logic() {
     local site_name="$1"
     local web_root="$2"
     local backup_dir="$SITES_DIR/${site_name}/backups"

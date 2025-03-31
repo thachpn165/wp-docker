@@ -1,4 +1,4 @@
-backup_database() {
+backup_database_logic() {
     local site_name="$1"
     local db_name="$2"
     local db_user="$3"
@@ -7,9 +7,7 @@ backup_database() {
     local backup_filename="db-${site_name}-$(date +%Y%m%d-%H%M%S).sql"
     local backup_path="$SITES_DIR/$site_name/backups/${backup_filename}"
 
-    # Debug
-    echo "📦 DEBUG: site_name=$site_name, db_name=$db_name, db_user=$db_user"
-
+    
     is_directory_exist "$SITES_DIR/$site_name/backups"
     is_directory_exist "$SITES_DIR/$site_name/logs"
     
