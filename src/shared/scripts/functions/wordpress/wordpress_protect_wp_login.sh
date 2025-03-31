@@ -1,6 +1,6 @@
 #!/bin/bash
 
-protect_wp_login_logic() {
+wordpress_protect_wp_login_logic() {
 
     site_name="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
 
