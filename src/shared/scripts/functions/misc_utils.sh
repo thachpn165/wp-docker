@@ -13,6 +13,26 @@ check_required_envs() {
   done
 }
 
+
+# Exit if the last command failed
+# Usage:
+#   exit_if_error $? "An error occurred while executing the command."
+# Arguments:
+#   1. result (int): The exit status of the last command.
+#   2. error_message (string): The error message to display if the command failed.
+# Behavior:
+#   - If the result is not 0, it prints the error message in red and returns 1.
+#   - If the result is 0, it does nothing and returns 0.
+#   - This function is useful for error handling in scripts, allowing you to check the success
+#     or failure of a command and take appropriate action.
+exit_if_error() { 
+    local result=$1
+    local error_message=$2
+    if [[ $result -ne 0 ]]; then
+        echo -e "${RED}${error_message}${NC}"
+        return 1
+    fi
+}
 # =========================================
 # 🧪 TEST_MODE Support Functions
 # =========================================
@@ -46,8 +66,6 @@ run_unless_test() {
     "$@"
   fi
 }
-
-
 
 
 # ✅ Get input from user, or use test value if in TEST_MODE

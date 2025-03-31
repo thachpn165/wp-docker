@@ -1,6 +1,6 @@
 backup_file_logic() {
     local site_name="$1"
-    local web_root="$2"
+    local web_root="$SITES_DIR/${site_name}/wordpress"  # Automatically determine web root
     local backup_dir="$SITES_DIR/${site_name}/backups"
     local backup_file="${backup_dir}/files-${site_name}-$(date +%Y%m%d-%H%M%S).tar.gz"
 

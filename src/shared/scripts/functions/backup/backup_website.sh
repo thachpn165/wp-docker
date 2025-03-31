@@ -1,76 +1,68 @@
 backup_website_logic() {
     # Kiểm tra xem SITE_NAME đã được gán chưa
     if [[ -z "$SITE_NAME" ]]; then
-        echo -e "${RED}❌ Error: SITE_NAME is not set!${NC}"
+        log_with_time "${RED}❌ Error: SITE_NAME is not set!${NC}"
         return 1
     fi
 
-    local web_root="$SITES_DIR/$SITE_NAME/wordpress"
-    local backup_dir="$(realpath "$SITES_DIR/$SITE_NAME/backups")"
-    local log_dir="$(realpath "$SITES_DIR/$SITE_NAME/logs")"
-    local db_backup_file=""
-    local files_backup_file=""
     local site_name="$1"  # Get site name from argument
     local storage="$2"  # Get storage option (local or cloud)
     local rclone_storage="$3"  # Get rclone storage from argument
 
+    # Define backup and log directories
+    local backup_dir="$(realpath "$SITES_DIR/$SITE_NAME/backups")"
+    local log_dir="$(realpath "$SITES_DIR/$SITE_NAME/logs")"
+    local log_file="$log_dir/wp-backup.log"
+
+    # Ensure backup and logs directories exist
     is_directory_exist "$backup_dir"
     is_directory_exist "$log_dir"
 
-    # Get database information from the .env file of the selected site
-    local env_file="$SITES_DIR/$SITE_NAME/.env"
-    local DB_NAME=$(fetch_env_variable "$env_file" "MYSQL_DATABASE")
-    local DB_USER=$(fetch_env_variable "$env_file" "MYSQL_USER")
-    local DB_PASS=$(fetch_env_variable "$env_file" "MYSQL_PASSWORD")
+    # Log start of backup process
+    log_with_time "${GREEN}✅ Starting backup process for site: $site_name${NC}"
 
-    # Ensure valid database parameters are extracted
-    if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-        echo -e "${RED}❌ Missing database information in .env file for site $SITE_NAME.${NC}"
+    # Fetch database details using the db_fetch_env function
+    local db_info=$(db_fetch_env "$site_name")
+    if [[ -z "$db_info" ]]; then
+        log_with_time "${RED}❌ Error: Missing database information for site $site_name!${NC}"
         return 1
     fi
+    local DB_NAME=$(echo "$db_info" | awk '{print $1}')
+    local DB_USER=$(echo "$db_info" | awk '{print $2}')
+    local DB_PASS=$(echo "$db_info" | awk '{print $3}')
 
-    echo -e "${GREEN}✅ Preparing to backup website: $SITE_NAME${NC}"
-    echo -e "📂 Source code: $web_root"
-    echo -e "🗄️ Database: $DB_NAME (User: $DB_USER)"
+    # Perform backup for the database and files
+    log_with_time "🔄 Backing up database..."
+    db_backup_file=$(bash "$CLI_DIR/backup_database.sh" --site_name="$site_name" --db_name="$DB_NAME" --db_user="$DB_USER" --db_pass="$DB_PASS" | tail -n 1)
 
-    # Set paths for CLI files
-    local backup_files_cli="$CLI_DIR/backup_file.sh"
-    local backup_database_cli="$CLI_DIR/backup_database.sh"
-
-    # Call the CLI for database backup
-    db_backup_file=$(bash "$backup_database_cli" --site_name="$SITE_NAME" --db_name="$DB_NAME" --db_user="$DB_USER" --db_pass="$DB_PASS" | tail -n 1)
-
-    # Call the CLI for files backup
-    files_backup_file=$(bash "$backup_files_cli" --site_name="$SITE_NAME" | tail -n 1)
+    log_with_time "🔄 Backing up source code..."
+    files_backup_file=$(bash "$CLI_DIR/backup_file.sh" --site_name="$site_name" | tail -n 1)
 
     # Check if backup files exist
     if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then
-        echo -e "${RED}❌ Error: Could not find backup files!${NC}"
-        echo -e "${RED}🛑 Check paths:${NC}"
-        echo -e "📂 Database: $db_backup_file"
-        echo -e "📂 Files: $files_backup_file"
+        log_with_time "${RED}❌ Error: Could not find backup files!${NC}"
         return 1
     fi
 
-    echo -e "${YELLOW}🔹 Backup completed: Database and files saved.${NC}"
+    log_with_time "${YELLOW}🔹 Backup completed: Database and files saved.${NC}"
 
-    # Ensure storage is provided and valid
+    # Ensure valid storage option
     if [[ "$storage" != "local" && "$storage" != "cloud" ]]; then
-        echo -e "${RED}❌ Invalid storage choice! Please use 'local' or 'cloud'.${NC}"
+        log_with_time "${RED}❌ Invalid storage choice! Please use 'local' or 'cloud'.${NC}"
         return 1
     fi
 
     if [[ "$storage" == "cloud" && -z "$rclone_storage" ]]; then
-        echo -e "${RED}❌ rclone storage is required for cloud backup!${NC}"
+        log_with_time "${RED}❌ rclone storage is required for cloud backup!${NC}"
         return 1
     fi
 
     if [[ "$storage" == "cloud" ]]; then
-        echo -e "${BLUE}📂 Uploading backup to Storage: $rclone_storage${NC}"
+        log_with_time "${BLUE}📂 Uploading backup to Storage: $rclone_storage${NC}"
 
         # Check if storage exists in rclone.conf
         if ! grep -q "^\[$rclone_storage\]" "$RCLONE_CONFIG_FILE"; then
-            echo -e "${RED}❌ Error: Storage '$rclone_storage' does not exist in rclone.conf!${NC}"
+            log_with_time "${RED}❌ Error: Storage '$rclone_storage' does not exist in rclone.conf!${NC}"
             return 1
         fi
 
@@ -78,22 +70,22 @@ backup_website_logic() {
         bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" "$rclone_storage" "$db_backup_file" "$files_backup_file"
 
         if [[ $? -eq 0 ]]; then
-            echo -e "${GREEN}✅ Backup and upload to Storage completed!${NC}"
-            
+            log_with_time "${GREEN}✅ Backup and upload to Storage completed!${NC}"
+
             # Delete backup files after successful upload
-            echo -e "${YELLOW}🗑️ Deleting backup files after successful upload...${NC}"
+            log_with_time "🗑️ Deleting backup files after successful upload..."
             rm -f "$db_backup_file" "$files_backup_file"
 
             # Check if files were deleted
             if [[ ! -f "$db_backup_file" && ! -f "$files_backup_file" ]]; then
-                echo -e "${GREEN}✅ Backup files have been deleted from backups directory.${NC}"
+                log_with_time "${GREEN}✅ Backup files have been deleted from backups directory.${NC}"
             else
-                echo -e "${RED}❌ Error: Could not delete backup files!${NC}"
+                log_with_time "${RED}❌ Error: Could not delete backup files!${NC}"
             fi
         else
-            echo -e "${RED}❌ Error uploading backup to Storage!${NC}"
+            log_with_time "${RED}❌ Error uploading backup to Storage!${NC}"
         fi
     elif [[ "$storage" == "local" ]]; then
-        echo -e "${GREEN}💾 Backup completed and saved to: $backup_dir${NC}"
+        log_with_time "${GREEN}💾 Backup completed and saved to: $backup_dir${NC}"
     fi
 }

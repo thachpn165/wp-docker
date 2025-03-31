@@ -1,21 +1,5 @@
 #!/bin/bash
 
-CONFIG_FILE="shared/config/config.sh"
-
-# Determine absolute path of `config.sh`
-while [ ! -f "$CONFIG_FILE" ]; do
-    CONFIG_FILE="../$CONFIG_FILE"
-    if [ "$(pwd)" = "/" ]; then
-        echo "❌ Error: config.sh not found!" >&2
-        exit 1
-    fi
-done
-
-source "$CONFIG_FILE"
-
-# Define backup runner file
-BACKUP_RUNNER="$SCRIPTS_FUNCTIONS_DIR/backup-manager/backup_runner.sh"
-
 # Convert cron time to human-readable format
 cron_translate() {
     local cron_exp="$1"
@@ -63,7 +47,7 @@ schedule_backup_list() {
     echo -e "${BLUE}📅 List of websites with backup schedules:${NC}"
 
     # Get website list from crontab
-    local websites=($(crontab -l 2>/dev/null | grep "backup_runner.sh" | awk -F 'backup_runner.sh ' '{print $2}' | awk '{print $1}' | sort -u))
+    local websites=($(crontab -l 2>/dev/null | grep "backup_website.sh" | awk -F '--site_name=' '{print $2}' | awk '{print $1}' | sort -u))
 
     if [[ ${#websites[@]} -eq 0 ]]; then
         echo -e "${RED}❌ No websites have backup schedules.${NC}"
@@ -81,12 +65,8 @@ schedule_backup_list() {
         fi
     done
 
-    # Determine operating system (macOS or Linux)
-    if [[ "$(uname)" == "Darwin" ]]; then
-        cron_jobs=$(crontab -l 2>/dev/null | grep "backup_runner.sh $SITE_NAME")
-    else
-        cron_jobs=$(crontab -l 2>/dev/null | grep "$SCRIPTS_FUNCTIONS_DIR/backup-scheduler/backup_runner.sh $SITE_NAME")
-    fi
+    # Fetch cron jobs related to the selected website
+    cron_jobs=$(crontab -l 2>/dev/null | grep "backup_website.sh --site_name=$SITE_NAME")
 
     if [[ -z "$cron_jobs" ]]; then
         echo -e "${RED}❌ No backup schedule found for website: $SITE_NAME${NC}"
@@ -99,7 +79,7 @@ schedule_backup_list() {
         while IFS= read -r line; do
             cron_exp=$(echo "$line" | awk '{print $1, $2, $3, $4, $5}')
             schedule=$(cron_translate "$cron_exp")
-            website=$(echo "$line" | awk -F 'backup_runner.sh ' '{print $2}' | awk '{print $1}')   # Get exact website name
+            website=$(echo "$line" | awk -F '--site_name=' '{print $2}' | awk '{print $1}')   # Get exact website name
             log_path=$(echo "$line" | awk -F '>> ' '{print $2}' | awk '{print $1}')               # Get exact log path
             
             echo -e "⏰ $schedule | 🌐 $website | 📝 $log_path"
