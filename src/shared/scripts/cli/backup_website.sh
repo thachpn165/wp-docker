@@ -1,8 +1,49 @@
 #!/bin/bash
+# backup_website.sh
+#
+# This script is used to back up a website, supporting both local and cloud storage options.
+#
+# Prerequisites:
+# - The script must be run in a Bash shell.
+# - The environment variable PROJECT_DIR must be set or determinable from the script's directory structure.
+# - A valid configuration file (config.sh) must exist in the shared/config directory.
+# - The backup_loader.sh script must be available in the FUNCTIONS_DIR.
+#
+# Usage:
+#   ./backup_website.sh --site_name=<site_name> --storage=<local|cloud> [--rclone_storage=<rclone_storage_name>]
+#
+# Parameters:
+#   --site_name         (Required) The name of the site to back up.
+#   --storage           (Required) The storage type for the backup. Valid values are "local" or "cloud".
+#   --rclone_storage    (Optional) The name of the rclone storage configuration. Required if --storage is "cloud".
+#
+# Behavior:
+# - Validates that the script is run in a Bash shell.
+# - Determines the PROJECT_DIR by searching for the config.sh file in the script's directory structure.
+# - Loads the configuration file and backup loader script.
+# - Parses command-line arguments to extract the site name, storage type, and optional rclone storage name.
+# - Validates the provided parameters.
+# - Calls the `backup_website_logic` function to perform the backup operation.
+#
+# Exit Codes:
+# - 1: General error, such as missing dependencies, invalid parameters, or configuration issues.
+#
+# Examples:
+#   Backup to local storage:
+#     ./backup_website.sh --site_name=mywebsite --storage=local
+#
+#   Backup to cloud storage:
+#     ./backup_website.sh --site_name=mywebsite --storage=cloud --rclone_storage=mycloud
+if [ -z "$BASH_VERSION" ]; then
+  echo "❌ This script must be run in a Bash shell." >&2
+  exit 1
+fi
 
-# === Load config & system_loader.sh ===
+# Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
   SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+  
+  # Iterate upwards from the current script directory to find 'config.sh'
   while [[ "$SCRIPT_PATH" != "/" ]]; do
     if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
       PROJECT_DIR="$SCRIPT_PATH"
@@ -10,13 +51,22 @@ if [[ -z "$PROJECT_DIR" ]]; then
     fi
     SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
   done
+
+  # Handle error if config file is not found
+  if [[ -z "$PROJECT_DIR" ]]; then
+    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    exit 1
+  fi
 fi
 
+# Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
+
+# Source the config file
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/backup_loader.sh"
 

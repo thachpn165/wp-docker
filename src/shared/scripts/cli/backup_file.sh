@@ -1,17 +1,57 @@
 #!/bin/bash
-# Ensure the script is executed in a Bash shell
+# backup_file.sh
+#
+# This script is used to back up files for a specific site within a project directory.
+# It ensures the script is executed in a Bash shell, validates the project directory,
+# loads necessary configuration and functions, and processes command-line arguments
+# to perform the backup operation.
+#
+# Usage:
+#   ./backup_file.sh --site_name=<site_name>
+#
+# Parameters:
+#   --site_name=<site_name> : (Required) The name of the site to back up.
+#
+# Behavior:
+#   - Ensures the script is executed directly in a Bash shell.
+#   - Determines the PROJECT_DIR by traversing the directory structure.
+#   - Validates the presence of the configuration file and functions directory.
+#   - Loads the configuration file and backup-related functions.
+#   - Parses the command-line arguments to extract the site name.
+#   - Calls the `backup_file_logic` function to perform the backup operation.
+#
+# Prerequisites:
+#   - The script must be executed directly, not sourced.
+#   - The PROJECT_DIR must contain the `shared/config/config.sh` file.
+#   - The `shared/scripts/functions/backup_loader.sh` script must exist and be valid.
+#
+# Exit Codes:
+#   1 : If the script is not executed in a Bash shell.
+#   1 : If the script is sourced instead of executed directly.
+#   1 : If the PROJECT_DIR cannot be determined.
+#   1 : If the configuration file is missing.
+#   1 : If the functions directory is missing.
+#   1 : If an unknown parameter is passed.
+#   1 : If the required `--site_name` parameter is missing.
+#
+# Example:
+#   ./backup_file.sh --site_name=my_site
+#
+# Notes:
+#   - Ensure the directory structure and required files are correctly set up
+#     before executing this script.
+#   - The `backup_file_logic` function must be defined in the loaded functions
+#     to handle the actual backup process.
 if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
+  echo "❌ This script must be run in a Bash shell." >&2
+  exit 1
 fi
 
-# Ensure PROJECT_DIR is set and find it if necessary
+# Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
-  if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-    echo "❌ This script is being sourced. Please execute it directly." >&2
-    return 1
-  fi
-  SCRIPT_PATH="$(realpath "$0")"
+  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+  
+  # Iterate upwards from the current script directory to find 'config.sh'
   while [[ "$SCRIPT_PATH" != "/" ]]; do
     if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
       PROJECT_DIR="$SCRIPT_PATH"
@@ -19,27 +59,23 @@ if [[ -z "$PROJECT_DIR" ]]; then
     fi
     SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
   done
+
+  # Handle error if config file is not found
+  if [[ -z "$PROJECT_DIR" ]]; then
+    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    exit 1
+  fi
 fi
 
-if [[ -z "$PROJECT_DIR" ]]; then
-  echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-  exit 1
-fi
-
-# === Ensure config and functions paths are correct ===
+# Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
+# Source the config file
 source "$CONFIG_FILE"
-
-FUNCTIONS_DIR="$PROJECT_DIR/shared/scripts/functions"
-if [[ ! -d "$FUNCTIONS_DIR" ]]; then
-  echo "❌ FUNCTIONS_DIR is not set or does not point to a valid directory." >&2
-  exit 1
-fi
 
 # Load backup-related scripts
 source "$FUNCTIONS_DIR/backup_loader.sh"
