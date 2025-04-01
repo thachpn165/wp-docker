@@ -15,7 +15,7 @@ while [ ! -f "$CONFIG_FILE" ]; do
 done
 
 source "$CONFIG_FILE"
-source "$FUNCTIONS_DIR/wp_utils.sh"
+source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 source "$FUNCTIONS_DIR/php/php_get_version.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/website/website_check_and_up.sh"
 

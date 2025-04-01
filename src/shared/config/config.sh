@@ -87,14 +87,14 @@ RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$BASE_DIR/shared/config/rclone}"  # Rclo
 RCLONE_CONFIG_FILE="${RCLONE_CONFIG_FILE:-$RCLONE_CONFIG_DIR/rclone.conf}"  # Rclone config file
 
 # ==== Import utility functions ====
-source "${FUNCTIONS_DIR}/system_utils.sh"  # System utilities
-source "${FUNCTIONS_DIR}/docker_utils.sh"  # Docker utilities
-source "${FUNCTIONS_DIR}/file_utils.sh"  # File utilities
-source "${FUNCTIONS_DIR}/network_utils.sh"  # Network utilities
-source "${FUNCTIONS_DIR}/ssl_utils.sh"  # SSL utilities
-source "${FUNCTIONS_DIR}/wp_utils.sh"  # WordPress utilities
-source "${FUNCTIONS_DIR}/php/php_utils.sh"  # PHP utilities
-source "${FUNCTIONS_DIR}/db_utils.sh"  # Database utilities
-source "${FUNCTIONS_DIR}/website_utils.sh"  # Website utilities
-source "${FUNCTIONS_DIR}/misc_utils.sh"  # Miscellaneous utilities
-source "${FUNCTIONS_DIR}/nginx/nginx_utils.sh"  # NGINX utilities
+source "${FUNCTIONS_DIR}/utils/system_utils.sh"  # System utilities
+source "${FUNCTIONS_DIR}/utils/docker_utils.sh"  # Docker utilities
+source "${FUNCTIONS_DIR}/utils/file_utils.sh"  # File utilities
+source "${FUNCTIONS_DIR}/utils/network_utils.sh"  # Network utilities
+source "${FUNCTIONS_DIR}/utils/ssl_utils.sh"  # SSL utilities
+source "${FUNCTIONS_DIR}/utils/wp_utils.sh"  # WordPress utilities
+source "${FUNCTIONS_DIR}/utils//php_utils.sh"  # PHP utilities
+source "${FUNCTIONS_DIR}/utils/db_utils.sh"  # Database utilities
+source "${FUNCTIONS_DIR}/utils/website_utils.sh"  # Website utilities
+source "${FUNCTIONS_DIR}/utils/misc_utils.sh"  # Miscellaneous utilities
+source "${FUNCTIONS_DIR}/utils/nginx_utils.sh"  # NGINX utilities
