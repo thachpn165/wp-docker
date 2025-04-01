@@ -1,3 +1,30 @@
+# Function: php_change_version_logic
+# Description:
+#   This function updates the PHP version for a specified website by modifying the `.env` file
+#   and the `docker-compose.yml` file in the site's directory. It also restarts the PHP container
+#   to apply the changes.
+#
+# Parameters:
+#   1. site_name (string): The name of the site whose PHP version needs to be updated.
+#   2. php_version (string): The new PHP version to set (passed from the CLI).
+#
+# Behavior:
+#   - Ensures the `.env` file exists in the site's directory.
+#   - Validates that a PHP version is provided.
+#   - Updates the `PHP_VERSION` value in the `.env` file.
+#   - Updates the PHP image version in the `docker-compose.yml` file if it exists.
+#   - Restarts the PHP container to apply the changes.
+#
+# Outputs:
+#   - Displays success or error messages for each step of the process.
+#
+# Notes:
+#   - The function assumes the existence of `$SITES_DIR` as the base directory for sites.
+#   - Uses `sed` to perform in-place updates to `.env` and `docker-compose.yml` files.
+#   - Relies on the `run_in_dir` function to execute Docker commands in the site's directory.
+#
+# Exit Codes:
+#   - Returns 1 if the `.env` file is missing or if no PHP version is provided.
 php_change_version_logic() {
   local site_name="$1"
   local php_version="$2"  # This will be passed from CLI
