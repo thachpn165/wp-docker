@@ -139,6 +139,27 @@ show_remaining_containers() {
   fi
 }
 
+# 🧹 Remove alias for wpdocker in .bashrc or .zshrc if exists
+remove_alias() {
+  local shell_config
+  local alias_line="alias wpdocker=\"bash \$CLI_DIR/wp-docker-lemp/bin/wp-docker\""
+
+  # Check if using Zsh or Bash
+  if [[ "$SHELL" == *"zsh"* ]]; then
+    shell_config="$HOME/.zshrc"
+  else
+    shell_config="$HOME/.bashrc"
+  fi
+
+  # Check if the alias is present and remove it
+  if grep -q "$alias_line" "$shell_config"; then
+    echo "✅ Removing alias for wpdocker from $shell_config..."
+    sed -i "/$alias_line/d" "$shell_config"
+  else
+    echo "⚠️ Alias 'wpdocker' not found in $shell_config"
+  fi
+}
+
 # ================================
 # 🚀 Main Process
 # ================================
@@ -161,5 +182,5 @@ remove_all_except_backup
 echo -e "\n${GREEN}✅ System completely uninstalled. Backup (if any) is located in: $BACKUP_DIR${NC}"
 echo -e "${CYAN}📦 You can restore sites from the backup directory: $BACKUP_DIR${NC}"
 echo -e "${CYAN}👉 Use the 'Restore website from backup' menu after reinstallation to restore.${NC}"
-
+remove_alias
 show_remaining_containers
