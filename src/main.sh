@@ -26,15 +26,15 @@ fi
 source "$CONFIG_FILE"
 
 # Import menu functions
-source "$(dirname "$0")/shared/scripts/functions/menu/menu_utils.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/website_management_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/wordpress_tools_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/system_tools_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/backup_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/rclone_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/ssl_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/menu/php_menu.sh"
-source "$(dirname "$0")/shared/scripts/functions/core/core_version_management.sh"
+source "$MENU_DIR/menu_utils.sh"
+source "$MENU_DIR/website_management_menu.sh"
+source "$MENU_DIR/wordpress_tools_menu.sh"
+source "$MENU_DIR/system_tools_menu.sh"
+source "$MENU_DIR/backup_menu.sh"
+source "$MENU_DIR/rclone_menu.sh"
+source "$MENU_DIR/ssl_menu.sh"
+source "$MENU_DIR/php_menu.sh"
+source "$FUNCTIONS_DIR/core/core_version_management.sh"
 # **Run system setup before displaying menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
 
@@ -72,14 +72,14 @@ while true; do
     core_check_for_update
     print_header
     echo -e "${BLUE}MAIN MENU:${NC}"
-    echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[5]${NC} WordPress Tools"
-    echo -e "  ${GREEN}[2]${NC} SSL Certificate Management      ${GREEN}[6]${NC} Website Backup Management"
-    echo -e "  ${GREEN}[3]${NC} System Tools                    ${GREEN}[7]${NC} WordPress Cache Management"
-    echo -e "  ${GREEN}[4]${NC} Rclone Management               ${GREEN}[8]${NC} PHP Management"
-    echo -e "  ${GREEN}[9]${NC} System Update                   ${GREEN}[10]${NC} ❌ Exit"
+    echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[6]${NC} Website Backup Management"
+    echo -e "  ${GREEN}[2]${NC} SSL Certificate Management      ${GREEN}[7]${NC} WordPress Cache Management"
+    echo -e "  ${GREEN}[3]${NC} System Tools                    ${GREEN}[8]${NC} PHP Management"
+    echo -e "  ${GREEN}[4]${NC} Rclone Management               ${GREEN}[9]${NC} System Update"
+    echo -e "  ${GREEN}[5]${NC} WordPress Tools                 ${GREEN}[10]${NC} ❌ Exit"
     echo ""
 
-    read -p "🔹 Select an option (1-10): " choice
+    [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-10): " choice
     case "$choice" in
         1) website_management_menu ;;
         2) ssl_menu ;;
@@ -87,7 +87,7 @@ while true; do
         4) rclone_menu ;;
         5) wordpress_tools_menu ;;
         6) backup_menu ;;
-        7) bash "$SCRIPTS_DIR/setup-cache.sh"; read -p "Press Enter to continue..." ;;
+        7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "Press Enter to continue..." ;;
         8) php_menu ;;
         9) core_check_version_update ;;  # Call function to display version and update
         10) echo -e "${GREEN}❌ Exiting program.${NC}" && exit 0 ;;

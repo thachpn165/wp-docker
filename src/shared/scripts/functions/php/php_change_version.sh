@@ -1,30 +1,61 @@
-php_change_version() {
-  source "$CONFIG_FILE"
+# Function: php_change_version_logic
+# Description:
+#   This function updates the PHP version for a specified website by modifying the `.env` file
+#   and the `docker-compose.yml` file in the site's directory. It also restarts the PHP container
+#   to apply the changes.
+#
+# Parameters:
+#   1. site_name (string): The name of the site whose PHP version needs to be updated.
+#   2. php_version (string): The new PHP version to set (passed from the CLI).
+#
+# Behavior:
+#   - Ensures the `.env` file exists in the site's directory.
+#   - Validates that a PHP version is provided.
+#   - Updates the `PHP_VERSION` value in the `.env` file.
+#   - Updates the PHP image version in the `docker-compose.yml` file if it exists.
+#   - Restarts the PHP container to apply the changes.
+#
+# Outputs:
+#   - Displays success or error messages for each step of the process.
+#
+# Notes:
+#   - The function assumes the existence of `$SITES_DIR` as the base directory for sites.
+#   - Uses `sed` to perform in-place updates to `.env` and `docker-compose.yml` files.
+#   - Relies on the `run_in_dir` function to execute Docker commands in the site's directory.
+#
+# Exit Codes:
+#   - Returns 1 if the `.env` file is missing or if no PHP version is provided.
+php_change_version_logic() {
+  local site_name="$1"
+  local php_version="$2"  # This will be passed from CLI
 
-  select_website || return 1
+  # Set paths
+  local site_dir="$SITES_DIR/$site_name"
+  local env_file="$site_dir/.env"
+  local docker_compose_file="$site_dir/docker-compose.yml"
 
-  SITE_DIR="$SITES_DIR/$SITE_NAME"
-  ENV_FILE="$SITE_DIR/.env"
-  DOCKER_COMPOSE_FILE="$SITE_DIR/docker-compose.yml"
-
-  if [[ ! -f "$ENV_FILE" ]]; then
-    echo -e "${RED}❌ .env file not found in website ${SITE_NAME}!${NC}"
+  # Ensure .env exists
+  if [[ ! -f "$env_file" ]]; then
+    echo -e "${RED}❌ .env file not found for website ${site_name}!${NC}"
     return 1
   fi
 
-  php_choose_version || return 1
-  selected_php="$REPLY"
+  # Check if PHP version was provided
+  if [[ -z "$php_version" ]]; then
+    echo -e "${RED}❌ No PHP version provided! Please provide a PHP version in the CLI input.${NC}"
+    return 1
+  fi
 
-  # ✅ Update .env
-  sed -i.bak "s/^PHP_VERSION=.*/PHP_VERSION=$selected_php/" "$ENV_FILE"
-  echo -e "${GREEN}✅ Updated PHP version in .env: $selected_php${NC}"
+  # Update .env file
+  echo -e "${YELLOW}🔧 Updating .env with new PHP version...${NC}"
+  sed -i.bak "s/^PHP_VERSION=.*/PHP_VERSION=$php_version/" "$env_file"
+  echo -e "${GREEN}✅ Updated PHP version in .env: $php_version${NC}"
 
-  # ✅ Update docker-compose.yml (if exists)
-  if [[ -f "$DOCKER_COMPOSE_FILE" ]]; then
+  # Update docker-compose.yml if it exists
+  if [[ -f "$docker_compose_file" ]]; then
     echo -e "${YELLOW}🔧 Updating docker-compose.yml with new PHP version...${NC}"
-    sed -i.bak -E "s|^( *image: *bitnami/php-fpm:)[^ ]+|\1${selected_php}|" "$DOCKER_COMPOSE_FILE"
-    
-    if grep -q "bitnami/php-fpm:$selected_php" "$DOCKER_COMPOSE_FILE"; then
+    sed -i.bak -E "s|^( *image: *bitnami/php-fpm:)[^ ]+|\1${php_version}|" "$docker_compose_file"
+    if grep -q "bitnami/php-fpm:$php_version" "$docker_compose_file"; then
       echo -e "${GREEN}✅ docker-compose.yml has been updated successfully.${NC}"
     else
       echo -e "${RED}❌ Image line not found for update. Please check manually.${NC}"
@@ -33,13 +64,11 @@ php_change_version() {
     echo -e "${RED}❌ docker-compose.yml not found for update!${NC}"
   fi
 
+  # Restart PHP container
+  echo -e "${YELLOW}🔄 Restarting PHP container to apply changes...${NC}"
+  run_in_dir "$site_dir" docker compose stop php
+  run_in_dir "$site_dir" docker rm -f "${site_name}-php" 2>/dev/null || true
+  run_in_dir "$site_dir" docker compose up -d php
 
-  # ✅ Restart PHP container
-  echo -e "${YELLOW}🔄 Restarting website to apply changes...${NC}"
-
-run_in_dir "$SITE_DIR" docker compose stop php
-run_in_dir "$SITE_DIR" docker rm -f "${SITE_NAME}-php" 2>/dev/null || true
-run_in_dir "$SITE_DIR" docker compose up -d php
-
-  echo -e "${GREEN}✅ Website $SITE_NAME is now running with PHP: $selected_php${NC}"
+  echo -e "${GREEN}✅ Website $site_name is now running with PHP: $php_version${NC}"
 }

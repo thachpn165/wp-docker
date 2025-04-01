@@ -1,22 +1,20 @@
 # =====================================
-# 🗑️ website_management_delete – Delete a WordPress Website
+# 🗑️ website_management_delete_logic – Delete a WordPress Website (Logic only)
 # =====================================
 
-website_management_delete() {
-  echo -e "${YELLOW}📋 List of websites that can be deleted:${NC}"
-  site_list=( $(ls -1 "$SITES_DIR") )
+website_management_delete_logic() {
+  local site_name="$1"
+  local backup_enabled="${2:-false}"  # Tham số backup_enabled mặc định là false
 
-  if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ No websites available to delete.${NC}"
+  if [[ "$TEST_MODE" == true ]]; then
+    backup_enabled=false
+  fi
+
+  if [[ -z "$site_name" ]]; then
+    echo -e "${RED}❌ Missing site name parameter.${NC}"
     return 1
   fi
 
-  for i in "${!site_list[@]}"; do
-    echo -e "  ${GREEN}[$i]${NC} ${site_list[$i]}"
-  done
-
-  read -p "Enter the number corresponding to the website to delete: " site_index
-  site_name="${site_list[$site_index]}"
   SITE_DIR="$SITES_DIR/$site_name"
   ENV_FILE="$SITE_DIR/.env"
 
@@ -34,17 +32,9 @@ website_management_delete() {
   MARIADB_VOLUME="${site_name}_mariadb_data"
   SITE_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$site_name.conf"
 
-  echo -e "${RED}${BOLD}🚨 IMPORTANT WARNING 🚨${NC}"
-  echo -e "${RED}❗ Website deletion is IRREVERSIBLE ❗${NC}"
-  echo -e "${YELLOW}📌 Please backup your data before proceeding.${NC}"
-
-  if ! confirm_action "⚠️ Are you sure you want to delete website '$site_name' ($DOMAIN)?"; then
-    echo -e "${YELLOW}⚠️ Deletion cancelled.${NC}"
-    return 1
-  fi
-
-  # 🧰 Suggest backup if needed
-  if confirm_action "💾 Would you like to backup source code and database before deletion?"; then
+  # Nếu backup_enabled=true thì tiến hành backup
+  if [[ "$backup_enabled" == true ]]; then
+    echo -e "${YELLOW}📦 Creating backup before deletion...${NC}"
     ARCHIVE_DIR="$ARCHIVES_DIR/old_website/${site_name}-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$ARCHIVE_DIR"
 

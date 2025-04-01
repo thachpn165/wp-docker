@@ -71,7 +71,7 @@ core_check_version_update() {
   
   if [[ "$current_version" != "$latest_version" ]]; then
     echo "New version available ($latest_version). Do you want to update? [y/n]"
-    read -p "Enter choice: " choice
+    [[ "$TEST_MODE" != true ]] && read -p "Enter choice: " choice
     if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
       core_update_system
     fi

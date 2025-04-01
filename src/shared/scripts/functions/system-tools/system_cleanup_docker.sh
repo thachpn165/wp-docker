@@ -1,10 +1,25 @@
-# 🛠️ Clean up Docker system
-system_cleanup_docker() {
-    echo -e "${YELLOW}🗑️ Cleaning up Docker system...${NC}"
-    docker system prune -a -f
-    docker volume prune -f
-    echo -e "${GREEN}✅ Cleanup completed.${NC}"
-    echo ""
-    echo -e "${YELLOW}🔚 Press Enter to return to menu...${NC}"
-    read -r
+system_cleanup_docker_logic() {
+  # Check if Docker is installed
+  if ! command -v docker &> /dev/null; then
+    echo "❌ Docker is not installed. Please install Docker first."
+    exit 1
+  fi
+
+  # Clean up unused Docker resources
+  echo -e "${YELLOW}🧹 Cleaning up unused Docker resources...${NC}"
+  docker system prune -af --volumes
+
+  # Check for dangling images and remove them
+  #echo -e "${YELLOW}🧹 Removing dangling images...${NC}"
+  #docker rmi $(docker images -f "dangling=true" -q) || true
+
+  # Check for stopped containers and remove them
+  #echo -e "${YELLOW}🧹 Removing stopped containers...${NC}"
+  #docker rm $(docker ps -a -q --filter "status=exited") || true
+
+  # Check for unused networks and remove them
+  echo -e "${YELLOW}🧹 Removing unused networks...${NC}"
+  docker network prune -f
+
+  echo -e "${GREEN}✅ Docker cleanup completed successfully!${NC}"
 }
