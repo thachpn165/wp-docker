@@ -72,11 +72,11 @@ while true; do
     core_check_for_update
     print_header
     echo -e "${BLUE}MAIN MENU:${NC}"
-    echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[5]${NC} WordPress Tools"
-    echo -e "  ${GREEN}[2]${NC} SSL Certificate Management      ${GREEN}[6]${NC} Website Backup Management"
-    echo -e "  ${GREEN}[3]${NC} System Tools                    ${GREEN}[7]${NC} WordPress Cache Management"
-    echo -e "  ${GREEN}[4]${NC} Rclone Management               ${GREEN}[8]${NC} PHP Management"
-    echo -e "  ${GREEN}[9]${NC} System Update                   ${GREEN}[10]${NC} ❌ Exit"
+    echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[6]${NC} Website Backup Management"
+    echo -e "  ${GREEN}[2]${NC} SSL Certificate Management      ${GREEN}[7]${NC} WordPress Cache Management"
+    echo -e "  ${GREEN}[3]${NC} System Tools                    ${GREEN}[8]${NC} PHP Management"
+    echo -e "  ${GREEN}[4]${NC} Rclone Management               ${GREEN}[9]${NC} System Update"
+    echo -e "  ${GREEN}[5]${NC} WordPress Tools                 ${GREEN}[10]${NC} ❌ Exit"
     echo ""
 
     [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-10): " choice
