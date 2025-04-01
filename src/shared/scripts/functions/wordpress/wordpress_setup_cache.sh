@@ -1,3 +1,45 @@
+# -----------------------------------------------------------------------------
+# Function: wordpress_cache_setup_logic
+# Purpose: Configures caching for a WordPress site, including plugin management,
+#          NGINX configuration, and cache type setup.
+#
+# Parameters:
+#   1. site_name (string): The name of the WordPress site.
+#   2. cache_type (string): The type of cache to configure. Supported values:
+#      - "no-cache": Disables caching and removes cache plugins.
+#      - "wp-super-cache": Configures WP Super Cache plugin.
+#      - "fastcgi-cache": Configures FastCGI caching with NGINX Helper plugin.
+#      - "w3-total-cache": Configures W3 Total Cache plugin.
+#      - "wp-fastest-cache": Configures WP Fastest Cache plugin.
+#
+# Description:
+#   - Ensures the site directory exists.
+#   - Deactivates any active cache plugins.
+#   - Handles "no-cache" option by removing cache plugins, disabling WP_CACHE,
+#     and updating NGINX configuration.
+#   - Updates NGINX configuration to include the appropriate cache settings.
+#   - Installs and activates the specified cache plugin.
+#   - Configures additional settings for FastCGI and Redis caching if applicable.
+#   - Reloads NGINX to apply changes.
+#   - Provides instructions for completing the setup of specific cache plugins.
+#
+# Dependencies:
+#   - Requires Docker and WordPress CLI (wp-cli) to be installed and accessible.
+#   - Assumes specific environment variables are set:
+#     - SITES_DIR: Base directory for WordPress sites.
+#     - NGINX_PROXY_DIR: Directory for NGINX proxy configurations.
+#     - PHP_CONTAINER: Name of the PHP container for the site.
+#     - PHP_CONTAINER_WP_PATH: Path to WordPress installation in the PHP container.
+#     - NGINX_MAIN_CONF: Path to the main NGINX configuration file.
+#     - PHP_USER: User owning the WordPress files in the PHP container.
+#
+# Returns:
+#   - 0 on success.
+#   - 1 on failure, with an appropriate error message.
+#
+# Example Usage:
+#   wordpress_cache_setup_logic "example-site" "wp-super-cache"
+# -----------------------------------------------------------------------------
 wordpress_cache_setup_logic() {
     local site_name="$1"
     local cache_type="$2"
@@ -39,35 +81,41 @@ wordpress_cache_setup_logic() {
         for plugin in "${cache_plugins[@]}"; do
             # Check if the plugin is active
             if echo "$active_plugins" | grep -q "$plugin"; then
-                echo -e "${YELLOW}⚠️ Plugin $plugin is active, it will be deactivated and deleted.${NC}"
+                echo -e "${YELLOW}⚠️ Plugin $plugin is active, deactivating and deleting...${NC}"
 
-                # Deactivate the plugin if it is active
-                if docker_exec_php "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH"; then
-                    echo -e "${GREEN}✅ Plugin $plugin deactivated successfully.${NC}"
+                # Deactivate and delete the plugin in one block
+                if docker_exec_php "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH" && \
+                   docker_exec_php "wp plugin delete $plugin --path=$PHP_CONTAINER_WP_PATH"; then
+                    echo -e "${GREEN}✅ Plugin $plugin deactivated and deleted successfully.${NC}"
                 else
-                    echo -e "${RED}❌ An error occurred while deactivating the plugin: $plugin${NC}"
-                    return 1
-                fi
-
-                # Delete the plugin after deactivating
-                if docker_exec_php "wp plugin delete $plugin --path=$PHP_CONTAINER_WP_PATH"; then
-                    echo -e "${GREEN}✅ Plugin $plugin deleted successfully.${NC}"
-                else
-                    echo -e "${RED}❌ An error occurred while deleting the plugin: $plugin${NC}"
+                    echo -e "${RED}❌ Error occurred while deactivating or deleting plugin: $plugin${NC}"
                     return 1
                 fi
             else
                 echo -e "${GREEN}Plugin $plugin is not active, skipping deactivation and deletion.${NC}"
             fi
         done
-        sedi "/define('WP_CACHE', true);/d" "$wp_config_file"
-        exit_if_error $? "❌ An error occurred while removing WP_CACHE from wp-config.php"
-        if grep -q "include /etc/nginx/cache/" "$nginx_conf_file"; then
-            sedi "s|include /etc/nginx/cache/.*;|include /etc/nginx/cache/no-cache.conf;|" "$nginx_conf_file"
-            exit_if_error $? "❌ An error occurred while updating NGINX configuration for no-cache."
+
+        # Remove WP_CACHE definition from wp-config.php
+        if ! sedi "/define('WP_CACHE', true);/d" "$wp_config_file"; then
+            echo -e "${RED}❌ Error occurred while removing WP_CACHE from wp-config.php.${NC}"
+            return 1
         fi
-        nginx_reload
-        exit_if_error $? "❌ An error occurred while reloading NGINX."
+
+        # Update NGINX configuration for no-cache
+        if grep -q "include /etc/nginx/cache/" "$nginx_conf_file"; then
+            if ! sedi "s|include /etc/nginx/cache/.*;|include /etc/nginx/cache/no-cache.conf;|" "$nginx_conf_file"; then
+                echo -e "${RED}❌ Error occurred while updating NGINX configuration for no-cache.${NC}"
+                return 1
+            fi
+        fi
+
+        # Reload NGINX
+        if ! nginx_reload; then
+            echo -e "${RED}❌ Error occurred while reloading NGINX.${NC}"
+            return 1
+        fi
+
         echo -e "${GREEN}✅ Cache has been disabled and NGINX reloaded.${NC}"
         return 0
     fi
