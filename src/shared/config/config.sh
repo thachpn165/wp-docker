@@ -58,11 +58,12 @@ NGINX_PROXY_DIR="${NGINX_PROXY_DIR:-$BASE_DIR/webserver/nginx}"  # NGINX proxy d
 PROXY_CONF_DIR="${PROXY_CONF_DIR:-$NGINX_PROXY_DIR/conf.d}"  # NGINX configuration directory
 NGINX_SCRIPTS_DIR="${NGINX_SCRIPTS_DIR:-$NGINX_PROXY_DIR/scripts}"  # NGINX scripts directory
 SSL_DIR="${SSL_DIR:-$NGINX_PROXY_DIR/ssl}"  # SSL directory for NGINX
+NGINX_MAIN_CONF="${NGINX_MAIN_CONF:-$NGINX_PROXY_DIR/globals/nginx.conf}"  # NGINX main configuration file
 
 # ==== Utility scripts ====
 SETUP_WORDPRESS_SCRIPT="${SETUP_WORDPRESS_SCRIPT:-$WP_SCRIPTS_DIR/wp-setup.sh}"  # WordPress setup script
 PHP_USER="${PHP_USER:-nobody}"  # PHP user
-
+PHP_CONTAINER_WP_PATH="${PHP_CONTAINER_WP_PATH:-/var/www/html}"  # PHP container WordPress path
 # ==== Network & container configuration ====
 DOCKER_NETWORK="${DOCKER_NETWORK:-proxy_network}"  # Docker network name
 NGINX_PROXY_CONTAINER="${NGINX_PROXY_CONTAINER:-nginx-proxy}"  # NGINX proxy container name
