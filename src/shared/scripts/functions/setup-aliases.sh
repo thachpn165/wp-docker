@@ -20,7 +20,18 @@ check_and_add_alias() {
   else
     echo "⚠️ Alias 'wpdocker' already exists in $shell_config"
   fi
-
+  
   # Reload the shell configuration file to apply changes
-  exec $SHELL -l
+  if [[ "$SHELL" == *"zsh"* ]]; then
+      # If the current shell is zsh, source .zshrc
+      echo "✅ Sourcing .zshrc to reload Zsh configuration..."
+      source "$HOME/.zshrc"
+  elif [[ "$SHELL" == *"bash"* ]]; then
+      # If the current shell is bash, source .bashrc
+      echo "✅ Sourcing .bashrc to reload Bash configuration..."
+      source "$HOME/.bashrc"
+  else
+      echo "❌ Unsupported shell: $SHELL. Please reload your shell configuration manually."
+  fi
+
 }

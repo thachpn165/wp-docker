@@ -1,4 +1,3 @@
-#!/bin/bash
 # Ensure the script is executed in a Bash shell
 if [ -z "$BASH_VERSION" ]; then
     echo "❌ This script must be run in a Bash shell." >&2

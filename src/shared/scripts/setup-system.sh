@@ -43,7 +43,7 @@ source "$FUNCTIONS_DIR/setup-aliases.sh"
 # ✅ Set system timezone (if needed)
 clear
 setup_timezone
-
+check_and_add_alias
 # ✅ Check Docker
 if ! command -v docker &> /dev/null; then
     install_docker
