@@ -1,4 +1,3 @@
-#!/bin/bash
 wordpress_cache_setup_logic() {
     local site_name="$1"
     local cache_type="$2"
@@ -18,21 +17,21 @@ wordpress_cache_setup_logic() {
     local active_plugins
     active_plugins=$(docker_exec_php "wp plugin list --status=active --field=name --path=$PHP_CONTAINER_WP_PATH")
 
-for plugin in "${cache_plugins[@]}"; do
-    # Check if the plugin is active
-    if echo "$active_plugins" | grep -q "$plugin"; then
-        echo -e "${YELLOW}⚠️ Plugin $plugin is active, it will be deactivated.${NC}"
-        # Only deactivate if the plugin is active
-        if docker_exec_php "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH"; then
-            echo -e "${GREEN}✅ Plugin $plugin deactivated successfully.${NC}"
+    for plugin in "${cache_plugins[@]}"; do
+        # Check if the plugin is active
+        if echo "$active_plugins" | grep -q "$plugin"; then
+            echo -e "${YELLOW}⚠️ Plugin $plugin is active, it will be deactivated.${NC}"
+            # Only deactivate if the plugin is active
+            if docker_exec_php "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH"; then
+                echo -e "${GREEN}✅ Plugin $plugin deactivated successfully.${NC}"
+            else
+                echo -e "${RED}❌ An error occurred while deactivating the plugin: $plugin${NC}"
+            fi
         else
-            echo -e "${RED}❌ An error occurred while deactivating the plugin: $plugin${NC}"
+            # If the plugin is not active, skip deactivation
+            echo -e "Plugin $plugin is not active, skipping deactivation."
         fi
-    else
-        # If the plugin is not active, skip deactivation
-        echo -e "Plugin $plugin is not active, skipping deactivation."
-    fi
-done
+    done
 
     # Handle "no-cache" option
     if [[ "$cache_type" == "no-cache" ]]; then
@@ -98,16 +97,16 @@ done
 
     # Handle FastCGI cache and Redis options
     if [[ "$cache_type" == "fastcgi-cache" || "$cache_type" == "w3-total-cache" ]]; then
-        # Kiểm tra nếu cấu hình fastcgi_cache_path chưa có trong nginx.conf
+        # Check if fastcgi_cache_path is configured in nginx.conf
         if ! grep -q "fastcgi_cache_path" "$NGINX_MAIN_CONF"; then
-            # Thêm cấu hình fastcgi_cache_path vào trong nginx.conf trực tiếp trên host
+            # Add fastcgi_cache_path configuration to nginx.conf directly on host
             sedi "/http {/a\\
             fastcgi_cache_path /var/cache/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS:100m inactive=60m use_temp_path=off;" "$NGINX_MAIN_CONF"
             exit_if_error $? "❌ An error occurred while adding fastcgi_cache_path to NGINX main configuration."
             echo -e "${GREEN}✅ FastCGI Cache configuration added to NGINX.${NC}"
         fi
 
-        # Cập nhật các tùy chọn cho Nginx Helper Plugin
+        # Update options for Nginx Helper Plugin
         docker_exec_php "wp option update rt_wp_nginx_helper_options '{\"enable_purge\":true}' --format=json --path=$PHP_CONTAINER_WP_PATH"
     fi
 
@@ -126,6 +125,29 @@ done
     # Reload NGINX to apply new cache settings
     nginx_reload
     exit_if_error $? "❌ An error occurred while reloading NGINX."
-
     echo -e "${GREEN}✅ NGINX reloaded to apply new cache settings.${NC}"
+
+    # Provide the instructions based on cache type
+    if [[ "$cache_type" == "wp-super-cache" ]]; then
+        echo -e "${YELLOW}⚠️ Instructions to complete WP Super Cache setup:${NC}"
+        echo -e "  1️⃣ Go to WordPress Admin -> Settings -> WP Super Cache."
+        echo -e "  2️⃣ Enable 'Caching On' to activate caching."
+        echo -e "  3️⃣ Select 'Expert' in 'Cache Delivery Method'."
+        echo -e "  4️⃣ Save the settings and verify cache is working."
+    fi
+
+    if [[ "$cache_type" == "w3-total-cache" ]]; then
+        echo -e "${YELLOW}⚠️ Instructions to complete W3 Total Cache setup:${NC}"
+        echo -e "  1️⃣ Go to WordPress Admin -> Performance -> General Settings."
+        echo -e "  2️⃣ Enable all relevant caching options (Page Cache, Object Cache, Database Cache)."
+        echo -e "  3️⃣ Save the settings and verify cache is working."
+    fi
+
+    if [[ "$cache_type" == "wp-fastest-cache" ]]; then
+        echo -e "${YELLOW}⚠️ Instructions to complete WP Fastest Cache setup:${NC}"
+        echo -e "  1️⃣ Go to WordPress Admin -> WP Fastest Cache."
+        echo -e "  2️⃣ Enable the 'Enable Cache' option."
+        echo -e "  3️⃣ Choose the appropriate 'Cache System'."
+        echo -e "  4️⃣ Save the settings and verify cache is working."
+    fi
 }
