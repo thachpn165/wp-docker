@@ -1,29 +1,27 @@
 #!/bin/bash
 
-# === 🧠 Auto-detect PROJECT_DIR (source code root) ===
-
-if [[ -z "$PROJECT_DIR" ]]; then
-SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-while [[ "$SCRIPT_PATH" != "/" ]]; do
-if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-PROJECT_DIR="$SCRIPT_PATH"
-
-break
-fi
-SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-done
+# Ensure the script is executed in a Bash shell
+if [ -z "$BASH_VERSION" ]; then
+    echo "❌ This script must be run in a Bash shell." >&2
+    exit 1
 fi
 
-  
+# Get the root directory of the project (assuming the directory structure doesn't change)
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.."; pwd)"
 
-# === ✅ Load config.sh from PROJECT_DIR ===
-
+# Define the path to config.sh
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
+
+# Check if config.sh exists
 if [[ ! -f "$CONFIG_FILE" ]]; then
-echo "❌ Config file not found at: $CONFIG_FILE" >&2
-exit 1
+    echo "❌ Config file not found at: $CONFIG_FILE" >&2
+    exit 1
 fi
+
+# Source the config file
 source "$CONFIG_FILE"
+
+# Your menu functions and logic go here
 
 # Import menu functions
 source "$MENU_DIR/menu_utils.sh"
