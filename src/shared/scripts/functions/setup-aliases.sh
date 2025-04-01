@@ -1,8 +1,11 @@
 # Check if alias is already set in ~/.bashrc or ~/.zshrc
 check_and_add_alias() {
   local shell_config
-  local alias_line="alias wpdocker=\"bash \$CLI_DIR/wp-docker-lemp/bin/wp-docker\""
-  
+  local alias_line
+  # Get the absolute path of the bin directory
+  local cli_dir_abs=$(realpath "$PROJECT_DIR/shared/bin")
+  alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
+
   # Check if using Zsh or Bash
   if [[ "$SHELL" == *"zsh"* ]]; then
     shell_config="$HOME/.zshrc"
@@ -25,6 +28,3 @@ check_and_add_alias() {
     source "$HOME/.bashrc"
   fi
 }
-
-# Call the function to check and add alias
-
