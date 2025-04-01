@@ -38,12 +38,12 @@ fi
 # Source the config file
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/utils/wp_utils.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/website/website_check_and_up.sh"
-
+source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
+source "$FUNCTIONS_DIR/setup-aliases.sh"
 # ✅ Set system timezone (if needed)
 clear
 setup_timezone
-
+check_and_add_alias
 # ✅ Check Docker
 if ! command -v docker &> /dev/null; then
     install_docker

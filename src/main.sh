@@ -1,27 +1,37 @@
-#!/bin/bash
+# Ensure the script is executed in a Bash shell
+if [ -z "$BASH_VERSION" ]; then
+    echo "❌ This script must be run in a Bash shell." >&2
+    exit 1
+fi
 
 # === 🧠 Auto-detect PROJECT_DIR (source code root) ===
 
+# If PROJECT_DIR is not set, attempt to find the project root (from anywhere)
 if [[ -z "$PROJECT_DIR" ]]; then
-SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-while [[ "$SCRIPT_PATH" != "/" ]]; do
-if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-PROJECT_DIR="$SCRIPT_PATH"
+    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 
-break
+    # Go upwards from the script location to find 'config.sh'
+    while [[ "$SCRIPT_PATH" != "/" ]]; do
+        if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
+            PROJECT_DIR="$SCRIPT_PATH"
+            break
+        fi
+        SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+    done
 fi
-SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-done
-fi
-
-  
 
 # === ✅ Load config.sh from PROJECT_DIR ===
 
+# Check if we found the project directory and config file
+if [[ -z "$PROJECT_DIR" ]]; then
+    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    exit 1
+fi
+
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-echo "❌ Config file not found at: $CONFIG_FILE" >&2
-exit 1
+    echo "❌ Config file not found at: $CONFIG_FILE" >&2
+    exit 1
 fi
 source "$CONFIG_FILE"
 
