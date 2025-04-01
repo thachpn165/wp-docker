@@ -143,7 +143,7 @@ After modifying configuration files, restart the affected services through the s
 
 ## 🚀 WP Docker Roadmap (2025)
 
-### ✅ Current Version: `v1.1.2` (Beta)
+### ✅ Current Version: `v1.1.4` (Beta)
 - Planned release of the first stable version (v1.2.0-stable): 2025-04-01
 
 ### Core Features Completed:
