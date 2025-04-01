@@ -23,6 +23,8 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
     exit 1
 fi
 source "$CONFIG_FILE"
+cd "$PROJECT_DIR" || exit 1
+
 
 # Load necessary functions
 source "$FUNCTIONS_DIR/rclone/setup_rclone.sh"
@@ -93,7 +95,7 @@ else
         php) handle_php "$2" "${@:3}" ;;
         *)
             echo "❌ Unknown subcommand: $1"
-            bash "$INSTALL_DIR/main.sh"
+            #bash "$INSTALL_DIR/main.sh"
             ;;
     esac
 fi
