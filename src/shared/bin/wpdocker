@@ -1,0 +1,101 @@
+#!/bin/bash
+if [ -z "$BASH_VERSION" ]; then
+    echo "❌ This script must be run in a Bash shell." >&2
+    exit 1
+fi
+
+# Ensure PROJECT_DIR is set
+if [[ -z "$PROJECT_DIR" ]]; then
+    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+    while [[ "$SCRIPT_PATH" != "/" ]]; do
+        if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
+            PROJECT_DIR="$SCRIPT_PATH"
+            break
+        fi
+        SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+    done
+fi
+
+# Load config file
+CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "❌ Config file not found at: $CONFIG_FILE" >&2
+    exit 1
+fi
+source "$CONFIG_FILE"
+cd "$PROJECT_DIR" || exit 1
+
+
+# Load necessary functions
+source "$FUNCTIONS_DIR/rclone/setup_rclone.sh"
+source "$FUNCTIONS_DIR/rclone/upload_backup.sh"
+source "$FUNCTIONS_DIR/rclone/manage_rclone.sh"
+source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
+source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
+source "$FUNCTIONS_DIR/core/core_version_management.sh"
+
+# Define subcommands handlers
+handle_website() {
+    case "$1" in
+        create) bash "$CLI_DIR/website_create.sh" "${@:2}" ;;
+        delete) bash "$CLI_DIR/website_delete.sh" "${@:2}" ;;
+        list) bash "$CLI_DIR/website_list.sh" "${@:2}" ;;
+        restart) bash "$CLI_DIR/website_restart.sh" "${@:2}" ;;
+        logs) bash "$CLI_DIR/website_logs.sh" "${@:2}" ;;
+        info) bash "$CLI_DIR/website_info.sh" "${@:2}" ;;
+        update_template) bash "$CLI_DIR/website_update_template.sh" "${@:2}" ;;
+        *) echo "❌ Unknown subcommand for website: $1" ;;
+    esac
+}
+
+handle_ssl() {
+    case "$1" in
+        selfsigned) bash "$CLI_DIR/ssl_create.sh" "${@:2}" ;;
+        letsencrypt) bash "$CLI_DIR/ssl_create.sh" "${@:2}" ;;
+        check) bash "$CLI_DIR/ssl_check_status.sh" "${@:2}" ;;
+        *) echo "❌ Unknown subcommand for ssl: $1" ;;
+    esac
+}
+
+handle_backup() {
+    case "$1" in
+        website) bash "$FUNCTIONS_DIR/backup/backup_website.sh" "${@:2}" ;;
+        database) bash "$FUNCTIONS_DIR/backup/backup_database.sh" "${@:2}" ;;
+        file) bash "$FUNCTIONS_DIR/backup/backup_file.sh" "${@:2}" ;;
+        *) echo "❌ Unknown subcommand for backup: $1" ;;
+    esac
+}
+
+handle_php() {
+    case "$1" in
+        change) bash "$CLI_DIR/php_change_version.sh" "${@:2}" ;;
+        get) bash "$CLI_DIR/php_get_version.sh" "${@:2}" ;;
+        rebuild) bash "$CLI_DIR/php_rebuild_container.sh" "${@:2}" ;;
+        edit)
+            case "$2" in
+                conf) edit_php_fpm_conf "${@:3}" ;;
+                ini) edit_php_ini "${@:3}" ;;
+                *) echo "❌ Unknown subcommand for php edit: $2" ;;
+            esac
+            ;;
+        *) echo "❌ Unknown subcommand for php: $1" ;;
+    esac
+}
+
+# Main subcommands handler
+if [[ -z "$1" ]]; then
+    # If no subcommand is provided, call the main menu
+    echo "💡 No subcommand provided. Running the main menu..."
+    bash "$INSTALL_DIR/main.sh"
+else
+    case "$1" in
+        website) handle_website "$2" "${@:3}" ;;
+        ssl) handle_ssl "$2" "${@:3}" ;;
+        backup) handle_backup "$2" "${@:3}" ;;
+        php) handle_php "$2" "${@:3}" ;;
+        *)
+            echo "❌ Unknown subcommand: $1"
+            #bash "$INSTALL_DIR/main.sh"
+            ;;
+    esac
+fi
