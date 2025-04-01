@@ -106,7 +106,7 @@ check_required_commands() {
     echo -e "${YELLOW}🔍 Checking required commands...${NC}"
 
     # List of required commands
-    required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab dialog)
+    required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab)
 
     for cmd in "${required_cmds[@]}"; do
         # Special case: check if docker compose is a plugin

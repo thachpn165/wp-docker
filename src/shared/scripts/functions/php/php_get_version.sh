@@ -1,6 +1,6 @@
 php_get_version() {
     local output_file="$BASE_DIR/php_versions.txt"
-    local max_age_hours=6
+    local max_age_hours=168 # 7 days
     local base_url="https://hub.docker.com/v2/repositories/bitnami/php-fpm/tags?page_size=100"
     local temp_file="/tmp/php_tags_all.tmp"
     local next_url="$base_url"
