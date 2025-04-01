@@ -1,7 +1,7 @@
 # 🚀 WP Docker Roadmap (2025)
 
-## ✅ Current Version: `v1.1.2` (Beta)
-- Planned release of the first stable version: 2025-04-01
+## ✅ Current Version: `v1.1.4` (Beta)
+- Planned release of the first stable version (v1.2.0-stable): 2025-04-10
 
 ### Core Features Completed:
 - Create WordPress websites with Docker

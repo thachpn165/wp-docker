@@ -1,5 +1,47 @@
 # 📦 CHANGELOG – WP Docker LEMP
 
+## [v1.1.4-beta] - 2025-04-02
+
+### 🚀 Added
+- **Refactored core functions** to adhere to the 3-step standard. This allows for better maintainability and cleaner code.
+  - **Three-step structure**:
+    1. **Logic functions** that contain the core functionality of each action.
+    2. **CLI wrapper** that calls the logic functions and handles input parameters.
+    3. **Menu functions** to interact with the user and display options.
+  - This refactoring applies to various system functions such as website management, SSL management, backup management, and PHP version management.
+
+- **Support for `wpdocker` with subcommands**:
+  - Introduced subcommands for managing WordPress sites, SSL, backups, PHP versions, and more.
+  - New `wpdocker` command structure:
+    - **wpdocker website**: Manage WordPress websites.
+      - `create`, `delete`, `list`, `restart`, `logs`, `info`, `update_template`.
+    - **wpdocker ssl**: Manage SSL certificates.
+      - `selfsigned`, `letsencrypt`, `check`.
+    - **wpdocker backup**: Manage website backups.
+      - `website`, `database`, `file`.
+    - **wpdocker php**: Manage PHP configurations.
+      - `change`, `get`, `rebuild`, `edit` (edit PHP config or PHP ini).
+
+- **Alias feature** for easier command execution:
+  - Created an alias for the `wpdocker` command, allowing users to use commands like `wpdocker website create`, `wpdocker ssl letsencrypt`, etc.
+  - The aliases are added to the appropriate shell configuration files (`~/.bashrc` or `~/.zshrc`).
+  - A helper function `check_and_add_alias` was added to check for and add aliases if they don't already exist.
+
+### 🐞 Fixed
+- **Bug fix** in handling shell configurations (alias issue):
+  - Corrected the behavior when adding aliases in shell configuration files.
+  - Resolved issues related to alias duplication and ensured smooth execution after reload.
+
+### ♻️ Changed
+- **Menu structure** refactor to make it more modular and user-friendly.
+  - Subcommands are now managed with individual functions for clarity and ease of maintenance.
+  - Centralized subcommand handling for website, SSL, backup, and PHP management under the `wpdocker` command.
+  
+- **Shell environment detection**:
+  - Improved shell detection logic to ensure compatibility with both Bash and Zsh environments, providing more accurate behavior when modifying the shell configuration.
+
+---
+
 ## [v1.1.3-beta] - 2025-03-29
 
 ### 🐞 Bug Fixes
@@ -20,6 +62,8 @@
 ---
 
 > **Note:** This version focuses on fixing technical foundation issues in preparation for test automation restructuring and improving reliability when running automated jobs.
+
+---
 
 ## [v1.1.2-beta] - 2025-03-29
 
@@ -158,4 +202,3 @@
   ```bash
   sudo rm -rf /opt/wp-docker
   sudo ln -s ~/wp-docker-lemp/src /opt/wp-docker
-  ```
