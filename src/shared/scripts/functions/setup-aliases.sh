@@ -22,9 +22,5 @@ check_and_add_alias() {
   fi
 
   # Reload the shell configuration file to apply changes
-  if [[ "$SHELL" == *"zsh"* ]]; then
-    source "$HOME/.zshrc"
-  else
-    source "$HOME/.bashrc"
-  fi
+  exec $SHELL -l
 }
