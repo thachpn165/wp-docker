@@ -50,18 +50,6 @@ wp_install() {
     echo "✅ WordPress has been installed."
 }
 
-# 📋 Get environment variable value from .env file
-fetch_env_variable() {
-    local env_file="$1"
-    local var_name="$2"
-    if [ -f "$env_file" ]; then
-        grep -E "^${var_name}=" "$env_file" | cut -d'=' -f2 | tr -d '\r'
-    else
-        echo -e "${RED}❌ Error: .env file does not exist: $env_file${NC}" >&2
-        return 1
-    fi
-}
-
 # 📌 **Set up Permalinks**
 wp_set_permalinks() {
     local container="$1"
