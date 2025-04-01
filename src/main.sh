@@ -87,7 +87,7 @@ while true; do
         4) rclone_menu ;;
         5) wordpress_tools_menu ;;
         6) backup_menu ;;
-        7) bash "$SCRIPTS_DIR/setup-cache.sh"; read -p "Press Enter to continue..." ;;
+        7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "Press Enter to continue..." ;;
         8) php_menu ;;
         9) core_check_version_update ;;  # Call function to display version and update
         10) echo -e "${GREEN}❌ Exiting program.${NC}" && exit 0 ;;

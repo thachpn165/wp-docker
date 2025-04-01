@@ -149,7 +149,8 @@ check_docker_group() {
 
 # 🧩 Quick docker exec function
 docker_exec_php() {
-    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "$1"
+    docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "mkdir -p /tmp/wp-cli-cache && export WP_CLI_CACHE_DIR='/tmp/wp-cli-cache' && $1"
+    exit_if_error $? "❌ An error occurred while executing command: $1"
 }
 
 # If this script is called directly, execute the corresponding function
