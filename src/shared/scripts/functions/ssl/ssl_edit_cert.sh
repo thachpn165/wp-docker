@@ -1,6 +1,6 @@
 ssl_edit_certificate_logic() {
     if [ -z "$SITE_NAME" ]; then
-        echo -e "${RED}❌ No website selected.${NC}"
+        echo -e "${RED}${CROSSMARK} No website selected.${NC}"
         return 1
     fi
 
@@ -9,7 +9,7 @@ ssl_edit_certificate_logic() {
 
     # Check if the SSL files exist
     if [[ ! -f "$target_crt" || ! -f "$target_key" ]]; then
-        echo -e "${RED}❌ SSL certificate files not found for $SITE_NAME.${NC}"
+        echo -e "${RED}${CROSSMARK} SSL certificate files not found for $SITE_NAME.${NC}"
         return 1
     fi
 
@@ -26,11 +26,11 @@ ssl_edit_certificate_logic() {
     echo "$new_cert" > "$target_crt"
     echo "$new_key" > "$target_key"
 
-    echo -e "${GREEN}✅ Certificate for $SITE_NAME has been updated successfully.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Certificate for $SITE_NAME has been updated successfully.${NC}"
 
     # Reload NGINX Proxy to apply new certificate
     echo -e "${YELLOW}🔄 Reloading NGINX Proxy to apply new certificate...${NC}"
     nginx_reload
 
-    echo -e "${GREEN}✅ NGINX Proxy has been reloaded successfully.${NC}"
+    echo -e "${GREEN}${CHECKMARK} NGINX Proxy has been reloaded successfully.${NC}"
 }

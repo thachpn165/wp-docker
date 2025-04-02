@@ -8,7 +8,7 @@ wordpress_reset_wp_database_logic() {
     if [ -f "$ENV_FILE" ]; then
         source "$ENV_FILE"
     else
-        echo -e "${RED}❌ Không tìm thấy file .env cho site '$site_name'!${NC}"
+        echo -e "${RED}${CROSSMARK} Không tìm thấy file .env cho site '$site_name'!${NC}"
         exit 1
     fi
 

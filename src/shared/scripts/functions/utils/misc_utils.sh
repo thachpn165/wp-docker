@@ -7,7 +7,7 @@
 check_required_envs() {
   for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
-      echo -e "${RED}❌ Error: Variable '$var' is not defined in config.sh${NC}"
+      echo -e "${RED}${CROSSMARK} Error: Variable '$var' is not defined in config.sh${NC}"
       exit 1
     fi
   done
@@ -37,12 +37,12 @@ exit_if_error() {
 # 🧪 TEST_MODE Support Functions
 # =========================================
 
-# ✅ Check if running in test mode
+# ${CHECKMARK} Check if running in test mode
 is_test_mode() {
   [[ "$TEST_MODE" == true ]]
 }
 
-# ✅ Execute command if not in test mode, return fallback value if in test mode
+# ${CHECKMARK} Execute command if not in test mode, return fallback value if in test mode
 # Usage:
 #   domain=$(run_if_not_test "example.com" get_input_domain)
 run_if_not_test() {
@@ -55,7 +55,7 @@ run_if_not_test() {
   fi
 }
 
-# ✅ Run a command (or function) only when not in TEST_MODE
+# ${CHECKMARK} Run a command (or function) only when not in TEST_MODE
 # Usage:
 #   run_unless_test docker compose up -d
 run_unless_test() {
@@ -68,7 +68,7 @@ run_unless_test() {
 }
 
 
-# ✅ Get input from user, or use test value if in TEST_MODE
+# ${CHECKMARK} Get input from user, or use test value if in TEST_MODE
 # Usage:
 #   domain=$(get_input_or_test_value "Enter domain: " "example.com")
 
@@ -151,7 +151,9 @@ fetch_env_variable() {
     if [ -f "$env_file" ]; then
         grep -E "^${var_name}=" "$env_file" | cut -d'=' -f2 | tr -d '\r'
     else
-        echo -e "${RED}❌ Error: .env file does not exist: $env_file${NC}" >&2
+        echo -e "${RED}${CROSSMARK} Error: .env file does not exist: $env_file${NC}" >&2
         return 1
     fi
 }
+
+random_string=$(date +%s)

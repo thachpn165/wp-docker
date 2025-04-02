@@ -15,23 +15,23 @@ check_and_add_alias() {
 
   # Check if the alias is already present
   if ! grep -q "$alias_line" "$shell_config"; then
-    echo "✅ Adding alias for wpdocker to $shell_config..."
+    echo "${CHECKMARK} Adding alias for wpdocker to $shell_config..."
     echo "$alias_line" >> "$shell_config"
   else
-    echo "⚠️ Alias 'wpdocker' already exists in $shell_config"
+    echo "${WARNING} Alias 'wpdocker' already exists in $shell_config"
   fi
   
   # Reload the shell configuration file to apply changes
   if [[ "$SHELL" == *"zsh"* ]]; then
       # If the current shell is zsh, source .zshrc
-      echo "✅ Sourcing .zshrc to reload Zsh configuration..."
+      echo "${CHECKMARK} Sourcing .zshrc to reload Zsh configuration..."
       source "$HOME/.zshrc"
   elif [[ "$SHELL" == *"bash"* ]]; then
       # If the current shell is bash, source .bashrc
-      echo "✅ Sourcing .bashrc to reload Bash configuration..."
+      echo "${CHECKMARK} Sourcing .bashrc to reload Bash configuration..."
       source "$HOME/.bashrc"
   else
-      echo "❌ Unsupported shell: $SHELL. Please reload your shell configuration manually."
+      echo "${CROSSMARK} Unsupported shell: $SHELL. Please reload your shell configuration manually."
   fi
 
 }

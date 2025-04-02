@@ -12,20 +12,20 @@ ssl_generate_self_signed_logic() {
     local KEY_PATH="$SSL_DIR/$SITE_NAME.key"
 
     if [ -z "$SITE_NAME" ]; then
-        echo -e "${RED}❌ No website selected.${NC}"
+        echo -e "${RED}${CROSSMARK} No website selected.${NC}"
         return 1
     fi
 
     # Skip checking website directory in TEST_MODE
     if [[ "$TEST_MODE" != true ]]; then
         if [ ! -d "$PROJECT_DIR/sites/$SITE_NAME" ]; then
-            echo -e "${RED}❌ Website '$SITE_NAME' does not exist.${NC}"
+            echo -e "${RED}${CROSSMARK} Website '$SITE_NAME' does not exist.${NC}"
             return 1
         fi
     fi
 
     if [ ! -d "$SSL_DIR" ]; then
-        echo -e "${RED}❌ SSL directory not found: $SSL_DIR${NC}"
+        echo -e "${RED}${CROSSMARK} SSL directory not found: $SSL_DIR${NC}"
         return 1
     fi
 
@@ -37,15 +37,15 @@ ssl_generate_self_signed_logic() {
         -subj "/C=VN/ST=HCM/L=HCM/O=WP-Docker/OU=Dev/CN=$SITE_NAME"
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Self-signed SSL certificate has been regenerated successfully for $SITE_NAME.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Self-signed SSL certificate has been regenerated successfully for $SITE_NAME.${NC}"
         echo -e "${YELLOW}🔄 Reloading nginx-proxy container...${NC}"
         nginx_reload
         echo ""
-        echo -e "${GREEN}✅ NGINX Proxy has been reloaded successfully.${NC}"
+        echo -e "${GREEN}${CHECKMARK} NGINX Proxy has been reloaded successfully.${NC}"
         echo -e "Your SSL certification: $CERT_PATH"
         echo -e "Your SSL key: $KEY_PATH"
     else
-        echo -e "${RED}❌ Failed to generate SSL certificate.${NC}"
+        echo -e "${RED}${CROSSMARK} Failed to generate SSL certificate.${NC}"
         return 1
     fi
 }

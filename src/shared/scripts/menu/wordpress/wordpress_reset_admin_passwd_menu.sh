@@ -13,7 +13,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -25,7 +25,7 @@ echo -e "${YELLOW}📋 Danh sách các website có thể reset mật khẩu Admi
 site_list=($(ls -1 "$SITES_DIR"))
 
 if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào để reset mật khẩu.${NC}"
+    echo -e "${RED}${CROSSMARK} Không có website nào để reset mật khẩu.${NC}"
     exit 1
 fi
 

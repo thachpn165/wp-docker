@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =====================================
-# ❌ uninstall.sh – Completely remove WP Docker from the system
+# ${CROSSMARK} uninstall.sh – Completely remove WP Docker from the system
 # =====================================
 
 set -euo pipefail
@@ -11,7 +11,7 @@ CONFIG_FILE="shared/config/config.sh"
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
     if [ "$(pwd)" = "/" ]; then
-        echo "❌ Error: config.sh not found!" >&2
+        echo "${CROSSMARK} Error: config.sh not found!" >&2
         exit 1
     fi
 done
@@ -32,9 +32,9 @@ get_site_list() {
   find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
 }
 
-# 💾 Manually backup all sites to backup_before_remove
+# ${SAVE} Manually backup all sites to backup_before_remove
 backup_all_sites() {
-  echo -e "${CYAN}💾 Backing up all sites to $BACKUP_DIR...${NC}"
+  echo -e "${CYAN}${SAVE} Backing up all sites to $BACKUP_DIR...${NC}"
   mkdir -p "$BACKUP_DIR"
 
   for site in $(get_site_list); do
@@ -47,7 +47,7 @@ backup_all_sites() {
     mkdir -p "$backup_target_dir"
 
     if [[ ! -f "$env_file" ]]; then
-      echo -e "${RED}❌ Skipping site '$site': .env file not found${NC}"
+      echo -e "${RED}${CROSSMARK} Skipping site '$site': .env file not found${NC}"
       continue
     fi
 
@@ -62,7 +62,7 @@ backup_all_sites() {
         echo ""
     fi
     if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-      echo -e "${RED}❌ Unable to get database information from .env, skipping site '$site'${NC}"
+      echo -e "${RED}${CROSSMARK} Unable to get database information from .env, skipping site '$site'${NC}"
       continue
     fi
 
@@ -70,18 +70,18 @@ backup_all_sites() {
     db_backup_file="$backup_target_dir/${site}_db.sql"
     echo -e "${YELLOW}📦 Backing up database: $DB_NAME${NC}"
     docker exec "${site}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" > "$db_backup_file" || {
-      echo -e "${RED}❌ Error backing up database for site '$site'${NC}"
+      echo -e "${RED}${CROSSMARK} Error backing up database for site '$site'${NC}"
       continue
     }
 
     # Backup source code
     echo -e "${YELLOW}📦 Compressing WordPress source code...${NC}"
     tar -czf "$backup_target_dir/${site}_wordpress.tar.gz" -C "$wordpress_dir" . || {
-      echo -e "${RED}❌ Error compressing source code for site '$site'${NC}"
+      echo -e "${RED}${CROSSMARK} Error compressing source code for site '$site'${NC}"
       continue
     }
 
-    echo -e "${GREEN}✅ Backup completed for site '$site' at: $backup_target_dir${NC}"
+    echo -e "${GREEN}${CHECKMARK} Backup completed for site '$site' at: $backup_target_dir${NC}"
   done
 }
 
@@ -106,7 +106,7 @@ remove_all_except_backup() {
   for item in "$BASE_DIR"/*; do
     [[ "$item" == "$BACKUP_DIR" ]] && continue
     [[ "$item" == "$BASE_DIR/.git" || "$item" == "$BASE_DIR/.github" ]] && continue
-    rm -rf "$item" || { echo "❌ Command failed at line 104"; exit 1; }
+    rm -rf "$item" || { echo "${CROSSMARK} Command failed at line 104"; exit 1; }
   done
 }
 
@@ -129,9 +129,9 @@ show_remaining_containers() {
   echo -e "\n${CYAN}📋 List of remaining containers after uninstallation:${NC}"
   remaining=$(docker ps -a --format '{{.Names}}')
   if [[ -z "$remaining" ]]; then
-    echo -e "${GREEN}✅ No Docker containers remaining.${NC}"
+    echo -e "${GREEN}${CHECKMARK} No Docker containers remaining.${NC}"
   else
-    docker ps -a || { echo "❌ Command failed at line 129"; exit 1; }
+    docker ps -a || { echo "${CROSSMARK} Command failed at line 129"; exit 1; }
     echo -e "\n${YELLOW}💡 If you want to remove all remaining containers, run these commands:${NC}"
     echo "$remaining" | while read -r name; do
       echo "docker stop $name && docker rm $name"
@@ -153,10 +153,10 @@ remove_alias() {
 
   # Check if the alias is present and remove it
   if grep -q "$alias_line" "$shell_config"; then
-    echo "✅ Removing alias for wpdocker from $shell_config..."
+    echo "${CHECKMARK} Removing alias for wpdocker from $shell_config..."
     sed -i "/$alias_line/d" "$shell_config"
   else
-    echo "⚠️ Alias 'wpdocker' not found in $shell_config"
+    echo "${WARNING} Alias 'wpdocker' not found in $shell_config"
   fi
 }
 
@@ -164,7 +164,7 @@ remove_alias() {
 # 🚀 Main Process
 # ================================
 
-echo -e "${RED}⚠️ WARNING: This script will remove the entire WP Docker system!${NC}"
+echo -e "${RED}${WARNING} WARNING: This script will remove the entire WP Docker system!${NC}"
 echo "Including all sites, containers, volumes, source code, SSL, and configurations."
 
 if confirm_action; then
@@ -179,7 +179,7 @@ remove_cronjobs
 remove_symlink
 remove_all_except_backup
 
-echo -e "\n${GREEN}✅ System completely uninstalled. Backup (if any) is located in: $BACKUP_DIR${NC}"
+echo -e "\n${GREEN}${CHECKMARK} System completely uninstalled. Backup (if any) is located in: $BACKUP_DIR${NC}"
 echo -e "${CYAN}📦 You can restore sites from the backup directory: $BACKUP_DIR${NC}"
 echo -e "${CYAN}👉 Use the 'Restore website from backup' menu after reinstallation to restore.${NC}"
 remove_alias

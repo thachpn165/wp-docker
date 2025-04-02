@@ -13,7 +13,7 @@ backup_database_logic() {
     
     # Check MariaDB container status before backup
     if ! docker ps --filter "name=${container_name}" --filter "status=running" | grep -q "${container_name}"; then
-        echo "❌ The container ${container_name} is not running. Backup cannot proceed."
+        echo "${CROSSMARK} The container ${container_name} is not running. Backup cannot proceed."
         return 1
     fi
 
@@ -25,10 +25,10 @@ backup_database_logic() {
 
     # Check result and return file path
     if [[ $? -eq 0 ]]; then
-        echo "✅ Database backup successful: $backup_path"
+        echo "${CHECKMARK} Database backup successful: $backup_path"
         echo -n "$backup_path"  # Return only the path, no log
     else
-        echo "❌ Error during database backup!"
+        echo "${CROSSMARK} Error during database backup!"
         return 1
     fi
 }

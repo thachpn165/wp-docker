@@ -17,7 +17,7 @@ php_get_version() {
         fi
 
         if (( file_age < max_age_hours )); then
-            echo -e "${GREEN}✅ PHP list is available (cache < ${max_age_hours}h).${NC}"
+            echo -e "${GREEN}${CHECKMARK} PHP list is available (cache < ${max_age_hours}h).${NC}"
             return 0
         fi
     fi
@@ -57,5 +57,5 @@ php_get_version() {
     done < <(sort -Vr "$temp_file")
 
     rm -f "$temp_file"
-    echo -e "${GREEN}✅ PHP list has been saved to: $output_file${NC}"
+    echo -e "${GREEN}${CHECKMARK} PHP list has been saved to: $output_file${NC}"
 }

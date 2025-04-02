@@ -11,15 +11,15 @@ website_management_create_logic() {
   CONTAINER_DB="${site_name}-mariadb"
   MARIADB_VOLUME="${site_name}_mariadb_data"
 
-  # ❌ Check if site already exists
+  # ${CROSSMARK} Check if site already exists
   if is_directory_exist "$SITE_DIR" false; then
-    echo -e "${RED}❌ Website '$site_name' already exists.${NC}"
+    echo -e "${RED}${CROSSMARK} Website '$site_name' already exists.${NC}"
     return 1
   fi
 
   # 🧹 Remove existing volume if exists
   if docker volume ls --format '{{.Name}}' | grep -q "^$MARIADB_VOLUME$"; then
-    echo -e "${YELLOW}⚠️ Existing MariaDB volume '$MARIADB_VOLUME' found. Removing to ensure clean setup...${NC}"
+    echo -e "${YELLOW}${WARNING} Existing MariaDB volume '$MARIADB_VOLUME' found. Removing to ensure clean setup...${NC}"
     run_unless_test docker volume rm "$MARIADB_VOLUME"
   fi
 
@@ -39,9 +39,9 @@ website_management_create_logic() {
   TEMPLATE_VERSION_FILE="$TEMPLATES_DIR/.template_version"
   if is_file_exist "$TEMPLATE_VERSION_FILE"; then
     cp "$TEMPLATE_VERSION_FILE" "$SITE_DIR/.template_version"
-    echo -e "${GREEN}✅ Copied .template_version to $SITE_DIR${NC}"
+    echo -e "${GREEN}${CHECKMARK} Copied .template_version to $SITE_DIR${NC}"
   else
-    echo -e "${YELLOW}⚠️ No .template_version file found in shared/templates.${NC}"
+    echo -e "${YELLOW}${WARNING} No .template_version file found in shared/templates.${NC}"
   fi
 
   # 🔧 Configure NGINX
@@ -63,9 +63,9 @@ website_management_create_logic() {
   if is_file_exist "$TEMPLATE_FILE"; then
     set -o allexport && source "$SITE_DIR/.env" && set +o allexport
     envsubst < "$TEMPLATE_FILE" > "$TARGET_FILE" || return 1
-    echo -e "${GREEN}✅ Created docker-compose.yml${NC}"
+    echo -e "${GREEN}${CHECKMARK} Created docker-compose.yml${NC}"
   else
-    echo -e "${RED}❌ docker-compose.yml template not found${NC}"
+    echo -e "${RED}${CROSSMARK} docker-compose.yml template not found${NC}"
     return 1
   fi
 
@@ -75,14 +75,14 @@ website_management_create_logic() {
   echo -e "${YELLOW}⏳ Checking container startup...${NC}"
   for i in {1..30}; do
     if is_container_running "$CONTAINER_PHP" && is_container_running "$CONTAINER_DB"; then
-      echo -e "${GREEN}✅ Container is ready.${NC}"
+      echo -e "${GREEN}${CHECKMARK} Container is ready.${NC}"
       break
     fi
     run_unless_test sleep 1
   done
 
   if ! is_container_running "$CONTAINER_PHP" || ! is_container_running "$CONTAINER_DB"; then
-    echo -e "${RED}❌ Container not ready after 30 seconds.${NC}"
+    echo -e "${RED}${CROSSMARK} Container not ready after 30 seconds.${NC}"
     return 1
   fi
 
@@ -93,8 +93,8 @@ website_management_create_logic() {
   if is_container_running "$CONTAINER_PHP"; then
     run_unless_test docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/ || return 1
   else
-    echo -e "${YELLOW}⚠️ Container PHP not running, skipping permissions.${NC}"
+    echo -e "${YELLOW}${WARNING} Container PHP not running, skipping permissions.${NC}"
   fi
 
-  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ✅ COMPLETED: $site_name =====" >> "$LOG_FILE"
+  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ${CHECKMARK} COMPLETED: $site_name =====" >> "$LOG_FILE"
 }

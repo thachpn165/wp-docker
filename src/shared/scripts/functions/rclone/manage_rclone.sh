@@ -3,7 +3,7 @@ rclone_storage_list() {
     local rclone_config=$BASE_DIR/$RCLONE_CONFIG_FILE
 
     if ! is_file_exist "$rclone_config"; then
-        echo -e "${RED}❌ Rclone configuration file not found.${NC}"
+        echo -e "${RED}${CROSSMARK} Rclone configuration file not found.${NC}"
         return 1
     fi
 
@@ -17,14 +17,14 @@ rclone_storage_delete() {
 
 
     if ! is_file_exist "$rclone_config"; then
-        echo -e "${RED}❌ Rclone configuration file not found.${NC}"
+        echo -e "${RED}${CROSSMARK} Rclone configuration file not found.${NC}"
         return 1
     fi
 
     local storages=($(grep '^\[' "$rclone_config" | tr -d '[]'))
 
     if [[ ${#storages[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ No storages available to delete.${NC}"
+        echo -e "${RED}${CROSSMARK} No storages available to delete.${NC}"
         return 1
     fi
 
@@ -32,10 +32,10 @@ rclone_storage_delete() {
     select storage in "${storages[@]}"; do
         if [[ -n "$storage" ]]; then
             sed -i "/^\[$storage\]/,/^$/d" "$rclone_config"
-            echo -e "${GREEN}✅ Storage '$storage' has been removed from configuration.${NC}"
+            echo -e "${GREEN}${CHECKMARK} Storage '$storage' has been removed from configuration.${NC}"
             break
         else
-            echo -e "${RED}❌ Invalid selection.${NC}"
+            echo -e "${RED}${CROSSMARK} Invalid selection.${NC}"
         fi
     done
 }

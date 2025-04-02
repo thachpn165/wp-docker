@@ -45,7 +45,7 @@ ssl_menu() {
                 break
                 ;;
             *)
-                echo -e "${RED}⚠️ Invalid option. Please try again.${NC}"
+                echo -e "${RED}${WARNING} Invalid option. Please try again.${NC}"
                 sleep 1
                 ;;
         esac

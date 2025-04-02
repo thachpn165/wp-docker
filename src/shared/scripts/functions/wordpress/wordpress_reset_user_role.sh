@@ -11,5 +11,5 @@ reset_user_role_logic() {
     echo -e "${YELLOW}🔄 Đang thiết lập lại quyền Administrator về mặc định...${NC}"
     docker exec -u root "$PHP_CONTAINER" wp role reset --all --allow-root --path=/var/www/html
 
-    echo -e "${GREEN}✅ Quyền Administrator trên website '$site_name' đã được thiết lập lại thành công.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Quyền Administrator trên website '$site_name' đã được thiết lập lại thành công.${NC}"
 }

@@ -20,7 +20,7 @@ show_docker_menu() {
             4) docker_fix_permissions ;;
             5) docker_shell_php ;;
             0) break ;;
-            *) echo "❌ Invalid selection!" && sleep 1 ;;
+            *) echo "${CROSSMARK} Invalid selection!" && sleep 1 ;;
         esac
     done
 }

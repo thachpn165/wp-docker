@@ -10,7 +10,7 @@ website_management_logs_logic() {
   local log_type="$2"
   
   if [[ -z "$site_name" ]]; then
-    echo -e "${RED}❌ site_name is not set. Please provide a valid site name.${NC}"
+    echo -e "${RED}${CROSSMARK} site_name is not set. Please provide a valid site name.${NC}"
     return 1
   fi
 
@@ -35,7 +35,7 @@ website_management_logs_logic() {
       tail -f "$error_log"
     fi
   else
-    echo -e "${RED}❌ log_type is required. Please specify access or error log.${NC}"
+    echo -e "${RED}${CROSSMARK} log_type is required. Please specify access or error log.${NC}"
     return 1
   fi
 }

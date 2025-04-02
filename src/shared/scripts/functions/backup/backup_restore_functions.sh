@@ -9,13 +9,13 @@ backup_restore_files() {
   SITE_DIR="$2"     # Directory containing website to restore
 
   if [[ -z "$BACKUP_FILE" || -z "$SITE_DIR" ]]; then
-    echo "❌ Missing parameters: Invalid backup file path or website directory!"
+    echo "${CROSSMARK} Missing parameters: Invalid backup file path or website directory!"
     return 1
   fi
 
   # Check if backup file exists
   if [[ ! -f "$BACKUP_FILE" ]]; then
-    echo "❌ Backup file not found: $BACKUP_FILE"
+    echo "${CROSSMARK} Backup file not found: $BACKUP_FILE"
     return 1
   fi
 
@@ -24,9 +24,9 @@ backup_restore_files() {
   tar -xzf "$BACKUP_FILE" -C "$SITE_DIR/wordpress"
   
   if [[ $? -eq 0 ]]; then
-    echo "✅ Source code has been successfully restored from backup."
+    echo "${CHECKMARK} Source code has been successfully restored from backup."
   else
-    echo "❌ An error occurred while restoring source code from backup."
+    echo "${CROSSMARK} An error occurred while restoring source code from backup."
     return 1
   fi
 }
@@ -41,7 +41,7 @@ backup_restore_database() {
   SITE_NAME="$3"          # Website name to find .env and other details
 
   if [[ -z "$DB_BACKUP" || -z "$DB_CONTAINER" || -z "$SITE_NAME" ]]; then
-    echo "❌ Missing parameters: Invalid database backup file path, container, or site name!"
+    echo "${CROSSMARK} Missing parameters: Invalid database backup file path, container, or site name!"
     return 1
   fi
 
@@ -49,13 +49,13 @@ backup_restore_database() {
   DB_NAME=$(fetch_env_variable "$SITES_DIR/$SITE_NAME/.env" "MYSQL_DATABASE")
   
   if [[ -z "$DB_NAME" ]]; then
-    echo "❌ Could not get database name from .env"
+    echo "${CROSSMARK} Could not get database name from .env"
     return 1
   fi
 
   # Check if database backup file exists
   if [[ ! -f "$DB_BACKUP" ]]; then
-    echo "❌ Database backup file not found: $DB_BACKUP"
+    echo "${CROSSMARK} Database backup file not found: $DB_BACKUP"
     return 1
   fi
 
@@ -63,7 +63,7 @@ backup_restore_database() {
   MYSQL_ROOT_PASSWORD=$(fetch_env_variable "$SITES_DIR/$SITE_NAME/.env" "MYSQL_ROOT_PASSWORD")
   
   if [[ -z "$MYSQL_ROOT_PASSWORD" ]]; then
-    echo "❌ Missing MySQL root password. Cannot restore database."
+    echo "${CROSSMARK} Missing MySQL root password. Cannot restore database."
     return 1
   fi
 
@@ -77,9 +77,9 @@ backup_restore_database() {
   docker exec -i "$DB_CONTAINER" mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$DB_NAME" < "$DB_BACKUP"
 
   if [[ $? -eq 0 ]]; then
-    echo "✅ Database has been successfully restored from backup to database '$DB_NAME'."
+    echo "${CHECKMARK} Database has been successfully restored from backup to database '$DB_NAME'."
   else
-    echo "❌ An error occurred while restoring database from backup."
+    echo "${CROSSMARK} An error occurred while restoring database from backup."
     return 1
   fi
 }

@@ -5,9 +5,6 @@ wordpress_tools_menu() {
     echo -e "  ${GREEN}[2]${NC} Edit User Roles"
     echo -e "  ${GREEN}[3]${NC} Enable/Disable Auto-update for All Plugins"
     echo -e "  ${GREEN}[4]${NC} Protect wp-login.php"
-    echo -e "  ${GREEN}[5]${NC} Reset WordPress Database (Dangerous)"
-    echo -e "  ${GREEN}[6]${NC} Delete All Spam Comments"
-    echo -e "  ${GREEN}[7]${NC} Update/Downgrade WordPress Core"
     echo ""
     [[ "$TEST_MODE" != true ]] && read -p "Select function (or press Enter to exit): " wp_tool_choice
 
@@ -24,17 +21,8 @@ wordpress_tools_menu() {
         4)
             bash "$MENU_DIR/wordpress/wordpress_protect_wp_login_menu.sh" ; read -p "Press Enter to continue..."
             ;;
-        5)
-            source "$WORDPRESS_TOOLS_DIR/reset-wp-database.sh" ; read -p "Press Enter to continue..."
-            ;;
-        6)
-            echo -e "${YELLOW}🚀 Delete All Spam Comments feature not implemented yet.${NC}"
-            ;;
-        7)
-            echo -e "${YELLOW}🚀 Update/Downgrade WordPress Core feature not implemented yet.${NC}"
-            ;;
         *)
-            echo -e "${RED}❌ Invalid option or you have exited.${NC}"
+            echo -e "${RED}${CROSSMARK} Invalid option or you have exited.${NC}"
             ;;
     esac
 }

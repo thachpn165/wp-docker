@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -z "$BASH_VERSION" ]; then
-    echo "❌ This script must be run in a Bash shell." >&2
+    echo "${CROSSMARK} This script must be run in a Bash shell." >&2
     exit 1
 fi
 
@@ -19,7 +19,7 @@ fi
 # Load config file
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "❌ Config file not found at: $CONFIG_FILE" >&2
+    echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
     exit 1
 fi
 source "$CONFIG_FILE"
@@ -44,7 +44,7 @@ handle_website() {
         logs) bash "$CLI_DIR/website_logs.sh" "${@:2}" ;;
         info) bash "$CLI_DIR/website_info.sh" "${@:2}" ;;
         update_template) bash "$CLI_DIR/website_update_template.sh" "${@:2}" ;;
-        *) echo "❌ Unknown subcommand for website: $1" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for website: $1" ;;
     esac
 }
 
@@ -53,7 +53,7 @@ handle_ssl() {
         selfsigned) bash "$CLI_DIR/ssl_create.sh" "${@:2}" ;;
         letsencrypt) bash "$CLI_DIR/ssl_create.sh" "${@:2}" ;;
         check) bash "$CLI_DIR/ssl_check_status.sh" "${@:2}" ;;
-        *) echo "❌ Unknown subcommand for ssl: $1" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for ssl: $1" ;;
     esac
 }
 
@@ -62,7 +62,7 @@ handle_backup() {
         website) bash "$FUNCTIONS_DIR/backup/backup_website.sh" "${@:2}" ;;
         database) bash "$FUNCTIONS_DIR/backup/backup_database.sh" "${@:2}" ;;
         file) bash "$FUNCTIONS_DIR/backup/backup_file.sh" "${@:2}" ;;
-        *) echo "❌ Unknown subcommand for backup: $1" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for backup: $1" ;;
     esac
 }
 
@@ -75,10 +75,10 @@ handle_php() {
             case "$2" in
                 conf) edit_php_fpm_conf "${@:3}" ;;
                 ini) edit_php_ini "${@:3}" ;;
-                *) echo "❌ Unknown subcommand for php edit: $2" ;;
+                *) echo "${CROSSMARK} Unknown subcommand for php edit: $2" ;;
             esac
             ;;
-        *) echo "❌ Unknown subcommand for php: $1" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for php: $1" ;;
     esac
 }
 
@@ -94,7 +94,7 @@ else
         backup) handle_backup "$2" "${@:3}" ;;
         php) handle_php "$2" "${@:3}" ;;
         *)
-            echo "❌ Unknown subcommand: $1"
+            echo "${CROSSMARK} Unknown subcommand: $1"
             #bash "$INSTALL_DIR/main.sh"
             ;;
     esac

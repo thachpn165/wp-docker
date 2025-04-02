@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ============================================
-# ✅ website_restart_menu.sh – Restart a WordPress website via Menu
+# ${CHECKMARK} website_restart_menu.sh – Restart a WordPress website via Menu
 # ============================================
 
 # === Load config & website_loader.sh ===
@@ -18,7 +18,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -28,7 +28,7 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 select_website
 site_name="$SITE_NAME"
 if [[ -z "$site_name" ]]; then
-  echo "❌ No website selected."
+  echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
@@ -38,9 +38,9 @@ confirm_action "Do you want to proceed?"
 
 if [[ $? -eq 0 ]]; then
   # === Call the CLI for restarting the website, pass --site_name correctly ===
-  echo -e "${GREEN}✅ Restarting website '$site_name'...${NC}"
+  echo -e "${GREEN}${CHECKMARK} Restarting website '$site_name'...${NC}"
   bash "$SCRIPTS_DIR/cli/website_restart.sh" --site_name="$site_name"  # Fixed here, passing --site
-  echo -e "${GREEN}✅ Website '$site_name' has been restarted successfully.${NC}"
+  echo -e "${GREEN}${CHECKMARK} Website '$site_name' has been restarted successfully.${NC}"
 else
-  echo -e "${YELLOW}⚠️ Website restart cancelled.${NC}"
+  echo -e "${YELLOW}${WARNING} Website restart cancelled.${NC}"
 fi

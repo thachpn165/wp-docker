@@ -21,7 +21,7 @@ core_version_cache() {
 
     # If cache has expired (more than 12 hours), fetch new version from GitHub
     if [[ $FILE_AGE -gt $CACHE_EXPIRATION_TIME ]]; then
-      echo "⚠️ Cache version is outdated. Fetching new version..."
+      echo "${WARNING} Cache version is outdated. Fetching new version..."
       # Use CORE_LATEST_VERSION variable instead of hard-coding
       LATEST_VERSION=$(curl -s "$CORE_LATEST_VERSION")
       echo "$LATEST_VERSION" > "$CACHE_FILE"  # Save to cache
@@ -31,7 +31,7 @@ core_version_cache() {
     fi
   else
     # If no cache file exists, fetch new version from GitHub
-    echo "❌ No cache found. Fetching version from GitHub..."
+    echo "${CROSSMARK} No cache found. Fetching version from GitHub..."
     # Use CORE_LATEST_VERSION variable instead of hard-coding
     LATEST_VERSION=$(curl -s "$CORE_LATEST_VERSION")
     echo "$LATEST_VERSION" > "$CACHE_FILE"  # Save to cache
@@ -104,10 +104,10 @@ core_check_for_update() {
   result=$?
 
   if [[ "$result" -eq 2 ]]; then
-    echo "⚠️ New version available! Current version is $CURRENT_VERSION and latest version is $LATEST_VERSION."
+    echo "${WARNING} New version available! Current version is $CURRENT_VERSION and latest version is $LATEST_VERSION."
     echo "👉 You can run the update feature to upgrade the system."
   else
-    echo "✅ You are using the latest version: $CURRENT_VERSION"
+    echo "${CHECKMARK} You are using the latest version: $CURRENT_VERSION"
   fi
 }
 

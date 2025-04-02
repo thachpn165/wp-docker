@@ -11,7 +11,7 @@ website_management_delete_logic() {
   fi
 
   if [[ -z "$site_name" ]]; then
-    echo -e "${RED}❌ Missing site name parameter.${NC}"
+    echo -e "${RED}${CROSSMARK} Missing site name parameter.${NC}"
     return 1
   fi
 
@@ -19,12 +19,12 @@ website_management_delete_logic() {
   ENV_FILE="$SITE_DIR/.env"
 
   if ! is_directory_exist "$SITE_DIR"; then
-    echo -e "${RED}❌ Website '$site_name' does not exist.${NC}"
+    echo -e "${RED}${CROSSMARK} Website '$site_name' does not exist.${NC}"
     return 1
   fi
 
   if ! is_file_exist "$ENV_FILE"; then
-    echo -e "${RED}❌ Website .env file not found!${NC}"
+    echo -e "${RED}${CROSSMARK} Website .env file not found!${NC}"
     return 1
   fi
 
@@ -51,7 +51,7 @@ website_management_delete_logic() {
     echo -e "${YELLOW}📦 Compressing WordPress source code...${NC}"
     tar -czf "$ARCHIVE_DIR/${site_name}_wordpress.tar.gz" -C "$SITE_DIR/wordpress" . || true
 
-    echo -e "${GREEN}✅ Website backup created at: $ARCHIVE_DIR${NC}"
+    echo -e "${GREEN}${CHECKMARK} Website backup created at: $ARCHIVE_DIR${NC}"
   fi
 
   # 🛑 Stop containers
@@ -65,26 +65,26 @@ website_management_delete_logic() {
     temp_file=$(mktemp)
     grep -vF "$MOUNT_ENTRY" "$OVERRIDE_FILE" | grep -vF "$MOUNT_LOGS" > "$temp_file"
     mv "$temp_file" "$OVERRIDE_FILE"
-    echo -e "${GREEN}✅ Removed website entry from docker-compose.override.yml.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Removed website entry from docker-compose.override.yml.${NC}"
   fi
 
   # 🗂️ Delete website directory
   remove_directory "$SITE_DIR"
-  echo -e "${GREEN}✅ Deleted website directory: $SITE_DIR${NC}"
+  echo -e "${GREEN}${CHECKMARK} Deleted website directory: $SITE_DIR${NC}"
 
   # 🔐 Delete SSL certificate
   remove_file "$SSL_DIR/$DOMAIN.crt"
   remove_file "$SSL_DIR/$DOMAIN.key"
-  echo -e "${GREEN}✅ Deleted SSL certificate (if any).${NC}"
+  echo -e "${GREEN}${CHECKMARK} Deleted SSL certificate (if any).${NC}"
 
   # 🗃️ Delete DB volume
   remove_volume "$MARIADB_VOLUME"
-  echo -e "${GREEN}✅ Deleted DB volume: $MARIADB_VOLUME${NC}"
+  echo -e "${GREEN}${CHECKMARK} Deleted DB volume: $MARIADB_VOLUME${NC}"
 
   # 🧾 Delete NGINX configuration
   if is_file_exist "$SITE_CONF_FILE"; then
     remove_file "$SITE_CONF_FILE"
-    echo -e "${GREEN}✅ Deleted NGINX configuration file.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Deleted NGINX configuration file.${NC}"
   fi
 
   # 🕒 Delete cronjob if exists
@@ -93,10 +93,10 @@ website_management_delete_logic() {
     crontab -l | grep -v "$site_name" > "$tmp_cron"
     crontab "$tmp_cron"
     rm -f "$tmp_cron"
-    echo -e "${GREEN}✅ Deleted cronjob related to site.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Deleted cronjob related to site.${NC}"
   fi
 
   # 🔁 Restart NGINX Proxy
   nginx_restart
-  echo -e "${GREEN}✅ Website '$site_name' deleted successfully.${NC}"
+  echo -e "${GREEN}${CHECKMARK} Website '$site_name' deleted successfully.${NC}"
 }

@@ -52,48 +52,13 @@ thread_cache_size = $thread_cache_size
 innodb_io_capacity = $innodb_io_capacity
 EOF
 
-    echo "✅ Created optimized MariaDB configuration at $mariadb_conf_path"
+    echo "${CHECKMARK} Created optimized MariaDB configuration at $mariadb_conf_path"
 }
 
 # Function to check if database container is running
 is_mariadb_running() {
     local container_name="$1-mariadb"
     docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
-}
-
-# Function to reset (drop all tables) database
-db_reset_database() {
-    local site_name="$1"
-    local db_user="$2"
-    local db_password="$3"
-    local db_name="$4"
-    
-    if ! is_mariadb_running "$site_name"; then
-        echo "❌ MariaDB container for site '$site_name' is not running. Please check!"
-        return 1
-    fi
-    
-    echo "🚨 Resetting database: $db_name for site: $site_name..."
-    docker exec -i ${site_name}-mariadb mysql -u$db_user -p$db_password -e "DROP DATABASE $db_name; CREATE DATABASE $db_name;"
-    echo "✅ Database has been reset successfully!"
-}
-
-# Function to export database (backup)
-db_export_database() {
-    local site_name="$1"
-    local db_user="$2"
-    local db_password="$3"
-    local db_name="$4"
-    local backup_file="./sites/mariadb/data/${site_name}-backup-$(date +%F).sql"
-    
-    if ! is_mariadb_running "$site_name"; then
-        echo "❌ MariaDB container for site '$site_name' is not running. Please check!"
-        return 1
-    fi
-    
-    echo "💾 Backing up database: $db_name for site: $site_name..."
-    docker exec ${site_name}-mariadb mysqldump -u$db_user -p$db_password $db_name > "$backup_file"
-    echo "✅ Backup completed: $backup_file"
 }
 
 # Function to import database (restore from backup)
@@ -105,18 +70,18 @@ db_import_database() {
     local backup_file="$5"
     
     if ! is_mariadb_running "$site_name"; then
-        echo "❌ MariaDB container for site '$site_name' is not running. Please check!"
+        echo "${CROSSMARK} MariaDB container for site '$site_name' is not running. Please check!"
         return 1
     fi
     
     if [ ! -f "$backup_file" ]; then
-        echo "❌ Backup file does not exist: $backup_file"
+        echo "${CROSSMARK} Backup file does not exist: $backup_file"
         return 1
     fi
     
-    echo "📥 Restoring database: $db_name for site: $site_name from file: $backup_file..."
+    echo "Restoring database: $db_name for site: $site_name from file: $backup_file..."
     docker exec -i ${site_name}-mariadb mysql -u$db_user -p$db_password $db_name < "$backup_file"
-    echo "✅ Database import completed!"
+    echo "${CHECKMARK} Database import completed!"
 }
 
 # Function to fetch database variable from .env file
@@ -125,7 +90,7 @@ db_fetch_env() {
     local env_file="$SITES_DIR/$site_name/.env"
 
     if [[ ! -f "$env_file" ]]; then
-        echo "❌ .env file not found for $site_name at $env_file"
+        echo "${CROSSMARK} .env file not found for $site_name at $env_file"
         return 1
     fi
 
@@ -134,7 +99,7 @@ db_fetch_env() {
     local db_pass=$(fetch_env_variable "$env_file" "MYSQL_PASSWORD")
 
     if [[ -z "$db_name" || -z "$db_user" || -z "$db_pass" ]]; then
-        echo "❌ Missing database credentials in .env for $site_name"
+        echo "${CROSSMARK} Missing database credentials in .env for $site_name"
         return 1
     fi
 

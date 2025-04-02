@@ -12,18 +12,18 @@ if [[ -z "$PROJECT_DIR" ]]; then
   done
 fi
 
-# === ✅ Load config.sh from PROJECT_DIR ===
+# === ${CHECKMARK} Load config.sh from PROJECT_DIR ===
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
 
-# === ✅ Load update_core.sh to use update functions ===
+# === ${CHECKMARK} Load update_core.sh to use update functions ===
 UPDATE_CORE_FILE="$PROJECT_DIR/shared/scripts/functions/core/update_core.sh"
 if [[ ! -f "$UPDATE_CORE_FILE" ]]; then
-  echo "❌ Update core file not found at: $UPDATE_CORE_FILE" >&2
+  echo "${CROSSMARK} Update core file not found at: $UPDATE_CORE_FILE" >&2
   exit 1
 fi
 source "$UPDATE_CORE_FILE"

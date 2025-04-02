@@ -1,7 +1,7 @@
 backup_website_logic() {
     # Kiểm tra xem SITE_NAME đã được gán chưa
     if [[ -z "$SITE_NAME" ]]; then
-        log_with_time "${RED}❌ Error: SITE_NAME is not set!${NC}"
+        log_with_time "${RED}${CROSSMARK} Error: SITE_NAME is not set!${NC}"
         return 1
     fi
 
@@ -19,12 +19,12 @@ backup_website_logic() {
     is_directory_exist "$log_dir"
 
     # Log start of backup process
-    log_with_time "${GREEN}✅ Starting backup process for site: $site_name${NC}"
+    log_with_time "${GREEN}${CHECKMARK} Starting backup process for site: $site_name${NC}"
 
     # Fetch database details using the db_fetch_env function
     local db_info=$(db_fetch_env "$site_name")
     if [[ -z "$db_info" ]]; then
-        log_with_time "${RED}❌ Error: Missing database information for site $site_name!${NC}"
+        log_with_time "${RED}${CROSSMARK} Error: Missing database information for site $site_name!${NC}"
         return 1
     fi
     local DB_NAME=$(echo "$db_info" | awk '{print $1}')
@@ -40,7 +40,7 @@ backup_website_logic() {
 
     # Check if backup files exist
     if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then
-        log_with_time "${RED}❌ Error: Could not find backup files!${NC}"
+        log_with_time "${RED}${CROSSMARK} Error: Could not find backup files!${NC}"
         return 1
     fi
 
@@ -48,12 +48,12 @@ backup_website_logic() {
 
     # Ensure valid storage option
     if [[ "$storage" != "local" && "$storage" != "cloud" ]]; then
-        log_with_time "${RED}❌ Invalid storage choice! Please use 'local' or 'cloud'.${NC}"
+        log_with_time "${RED}${CROSSMARK} Invalid storage choice! Please use 'local' or 'cloud'.${NC}"
         return 1
     fi
 
     if [[ "$storage" == "cloud" && -z "$rclone_storage" ]]; then
-        log_with_time "${RED}❌ rclone storage is required for cloud backup!${NC}"
+        log_with_time "${RED}${CROSSMARK} rclone storage is required for cloud backup!${NC}"
         return 1
     fi
 
@@ -62,7 +62,7 @@ backup_website_logic() {
 
         # Check if storage exists in rclone.conf
         if ! grep -q "^\[$rclone_storage\]" "$RCLONE_CONFIG_FILE"; then
-            log_with_time "${RED}❌ Error: Storage '$rclone_storage' does not exist in rclone.conf!${NC}"
+            log_with_time "${RED}${CROSSMARK} Error: Storage '$rclone_storage' does not exist in rclone.conf!${NC}"
             return 1
         fi
 
@@ -70,7 +70,7 @@ backup_website_logic() {
         bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" "$rclone_storage" "$db_backup_file" "$files_backup_file"
 
         if [[ $? -eq 0 ]]; then
-            log_with_time "${GREEN}✅ Backup and upload to Storage completed!${NC}"
+            log_with_time "${GREEN}${CHECKMARK} Backup and upload to Storage completed!${NC}"
 
             # Delete backup files after successful upload
             log_with_time "🗑️ Deleting backup files after successful upload..."
@@ -78,14 +78,14 @@ backup_website_logic() {
 
             # Check if files were deleted
             if [[ ! -f "$db_backup_file" && ! -f "$files_backup_file" ]]; then
-                log_with_time "${GREEN}✅ Backup files have been deleted from backups directory.${NC}"
+                log_with_time "${GREEN}${CHECKMARK} Backup files have been deleted from backups directory.${NC}"
             else
-                log_with_time "${RED}❌ Error: Could not delete backup files!${NC}"
+                log_with_time "${RED}${CROSSMARK} Error: Could not delete backup files!${NC}"
             fi
         else
-            log_with_time "${RED}❌ Error uploading backup to Storage!${NC}"
+            log_with_time "${RED}${CROSSMARK} Error uploading backup to Storage!${NC}"
         fi
     elif [[ "$storage" == "local" ]]; then
-        log_with_time "${GREEN}💾 Backup completed and saved to: $backup_dir${NC}"
+        log_with_time "${GREEN}${SAVE} Backup completed and saved to: $backup_dir${NC}"
     fi
 }

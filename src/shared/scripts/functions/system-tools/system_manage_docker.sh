@@ -11,7 +11,7 @@ system_manage_docker_logic() {
             docker logs -f $container_name
         elif [[ "$container_action" == "2" ]]; then
             docker restart $container_name
-            echo -e "${GREEN}✅ Container has been restarted.${NC}"
+            echo -e "${GREEN}${CHECKMARK} Container has been restarted.${NC}"
         fi
     fi
 }

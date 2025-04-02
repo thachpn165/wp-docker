@@ -49,7 +49,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -57,7 +57,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -73,7 +73,7 @@ for arg in "$@"; do
 done
 
 if [[ -z "$SITE_NAME" ]]; then
-  echo "❌ Missing required --site_name=SITE_NAME parameter"
+  echo "${CROSSMARK} Missing required --site_name=SITE_NAME parameter"
   exit 1
 fi
 
@@ -82,14 +82,14 @@ echo "🔄 Restarting WordPress website: $SITE_NAME"
 
 # Stop and remove containers related to the site
 docker compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" down || {
-  echo "❌ Failed to stop containers for $SITE_NAME"
+  echo "${CROSSMARK} Failed to stop containers for $SITE_NAME"
   exit 1
 }
 
 # Restart containers
 docker compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" up -d || {
-  echo "❌ Failed to restart containers for $SITE_NAME"
+  echo "${CROSSMARK} Failed to restart containers for $SITE_NAME"
   exit 1
 }
 
-echo "✅ Website $SITE_NAME has been restarted successfully."
+echo "${CHECKMARK} Website $SITE_NAME has been restarted successfully."

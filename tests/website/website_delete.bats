@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # ============================================
-# ✅ Test: website_delete.bats
+# ${CHECKMARK} Test: website_delete.bats
 # CLI should delete a WordPress website
 # ============================================
 
@@ -45,7 +45,7 @@ teardown() {
   echo "$output"
   echo "=== OUTPUT END ==="
   [ "$status" -eq 0 ]
-  assert_output_contains "✅ Website '$TEST_SITE_NAME' deleted successfully."
+  assert_output_contains "${CHECKMARK} Website '$TEST_SITE_NAME' deleted successfully."
 
   # Đảm bảo thư mục site đã xoá
   [ ! -d "$SITES_DIR/$TEST_SITE_NAME" ]

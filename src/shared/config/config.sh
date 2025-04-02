@@ -81,6 +81,10 @@ NC="${NC:-\033[0m}"  # No color
 # ==== Emoji 🫠 ====
 CHECKMARK="${GREEN}✅${NC}"
 CROSSMARK="${RED}❌${NC}"
+SAVE="${YELLOW}💾${NC}"
+WARNING="${YELLOW}⚠️${NC}"
+INFO="${BLUE}ℹ️${NC}"
+ERROR="${RED}❗${NC}"
 
 # ==== Rclone configuration ====
 RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$BASE_DIR/shared/config/rclone}"  # Rclone config directory

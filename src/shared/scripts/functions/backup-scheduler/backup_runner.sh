@@ -14,11 +14,11 @@ fi
 
   
 
-# === ✅ Load config.sh từ PROJECT_DIR ===
+# === ${CHECKMARK} Load config.sh từ PROJECT_DIR ===
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-echo "❌ Không tìm thấy config.sh tại: $CONFIG_FILE" >&2
+echo "${CROSSMARK} Không tìm thấy config.sh tại: $CONFIG_FILE" >&2
 exit 1
 fi
 source "$CONFIG_FILE"
@@ -32,7 +32,7 @@ backup_runner() {
     local storage_option="$2"
 
     if [[ -z "$site_name" ]]; then
-        log_with_time "${RED}❌ Error: No website name found for backup!${NC}"
+        log_with_time "${RED}${CROSSMARK} Error: No website name found for backup!${NC}"
         exit 1
     fi
 
@@ -55,7 +55,7 @@ backup_runner() {
     is_directory_exist "$log_dir"
 
     if [[ ! -f "$env_file" ]]; then
-        log_with_time "${RED}❌ .env file not found in $SITES_DIR/$site_name!${NC}"
+        log_with_time "${RED}${CROSSMARK} .env file not found in $SITES_DIR/$site_name!${NC}"
         exit 1
     fi
 
@@ -65,11 +65,11 @@ backup_runner() {
     DB_PASS=$(grep "^MYSQL_PASSWORD=" "$env_file" | cut -d '=' -f2)
 
     if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-        log_with_time "${RED}❌ Error: Could not get database information from .env!${NC}"
+        log_with_time "${RED}${CROSSMARK} Error: Could not get database information from .env!${NC}"
         exit 1
     fi
 
-    log_with_time "${GREEN}✅ Starting automatic backup process for: $site_name${NC}"
+    log_with_time "${GREEN}${CHECKMARK} Starting automatic backup process for: $site_name${NC}"
     
     # Perform backup
     log_with_time "🔄 Backing up database..."
@@ -79,18 +79,18 @@ backup_runner() {
 
     # Check if backup files exist
     if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then
-        log_with_time "${RED}❌ Error: Could not find backup files!${NC}"
+        log_with_time "${RED}${CROSSMARK} Error: Could not find backup files!${NC}"
         exit 1
     fi
 
     if [[ "$storage_option" == "local" ]]; then
-        log_with_time "${GREEN}💾 Backup completed and saved to: $backup_dir${NC}"
+        log_with_time "${GREEN}${SAVE} Backup completed and saved to: $backup_dir${NC}"
     else
         log_with_time "${GREEN}☁️  Saving backup to Storage: '$storage_option'${NC}"
 
         # Check if storage exists in rclone.conf
         if ! grep -q "^\[$storage_option\]" "$RCLONE_CONFIG_FILE"; then
-            log_with_time "${RED}❌ Error: Storage '$storage_option' does not exist in rclone.conf!${NC}"
+            log_with_time "${RED}${CROSSMARK} Error: Storage '$storage_option' does not exist in rclone.conf!${NC}"
             exit 1
         fi
 
@@ -99,7 +99,7 @@ backup_runner() {
         bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" "$storage_option" "$db_backup_file" "$files_backup_file" > /dev/null 2>>"$log_file"
 
         if [[ $? -eq 0 ]]; then
-            log_with_time "${GREEN}✅ Backup and upload to Storage completed!${NC}"
+            log_with_time "${GREEN}${CHECKMARK} Backup and upload to Storage completed!${NC}"
             
             # Delete backup files after successful upload
             log_with_time "🗑️ Deleting backup files after successful upload..."
@@ -107,16 +107,16 @@ backup_runner() {
 
             # Check if files were deleted
             if [[ ! -f "$db_backup_file" && ! -f "$files_backup_file" ]]; then
-                log_with_time "${GREEN}✅ Backup files have been deleted from backups directory.${NC}"
+                log_with_time "${GREEN}${CHECKMARK} Backup files have been deleted from backups directory.${NC}"
             else
-                log_with_time "${RED}❌ Error: Could not delete backup files!${NC}"
+                log_with_time "${RED}${CROSSMARK} Error: Could not delete backup files!${NC}"
             fi
         else
-            log_with_time "${RED}❌ Error uploading backup to Storage!${NC}"
+            log_with_time "${RED}${CROSSMARK} Error uploading backup to Storage!${NC}"
         fi
     fi
 
-    log_with_time "${GREEN}✅ Completed automatic backup for: $site_name${NC}"
+    log_with_time "${GREEN}${CHECKMARK} Completed automatic backup for: $site_name${NC}"
 }
 
 # Execute if script is called from cronjob
