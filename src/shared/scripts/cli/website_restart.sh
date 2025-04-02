@@ -81,13 +81,13 @@ fi
 echo "🔄 Restarting WordPress website: $SITE_NAME"
 
 # Stop and remove containers related to the site
-docker-compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" down || {
+docker compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" down || {
   echo "❌ Failed to stop containers for $SITE_NAME"
   exit 1
 }
 
 # Restart containers
-docker-compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" up -d || {
+docker compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" up -d || {
   echo "❌ Failed to restart containers for $SITE_NAME"
   exit 1
 }
