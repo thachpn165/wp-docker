@@ -5,7 +5,6 @@ REPO_URL="https://github.com/thachpn165/wp-docker"
 ZIP_NAME="wp-docker.zip"
 DEV_MODE=false
 
-source "$FUNCTIONS_DIR/setup-aliases.sh"
 # ========================
 # ⚙️ Command Line Parameter Processing
 # ========================
