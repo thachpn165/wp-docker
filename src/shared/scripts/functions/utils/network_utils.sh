@@ -37,9 +37,9 @@ create_docker_network() {
     if ! docker network ls | grep -q "$network_name"; then
         echo -e "${YELLOW}🔧 Creating network $network_name...${NC}"
         docker network create "$network_name"
-        echo -e "${GREEN}✅ Network $network_name has been created.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Network $network_name has been created.${NC}"
     else
-        echo -e "${GREEN}✅ Network $network_name already exists.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Network $network_name already exists.${NC}"
     fi
 }
 

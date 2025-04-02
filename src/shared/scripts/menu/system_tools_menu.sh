@@ -23,7 +23,7 @@ system_tools_menu() {
             bash "$MENU_DIR/cli/system_nginx_rebuild.sh"
             ;;
         *)
-            echo -e "${RED}❌ Invalid option or you have exited.${NC}"
+            echo -e "${RED}${CROSSMARK} Invalid option or you have exited.${NC}"
             ;;
     esac
 }

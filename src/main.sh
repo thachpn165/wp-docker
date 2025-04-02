@@ -1,6 +1,6 @@
 # Ensure the script is executed in a Bash shell
 if [ -z "$BASH_VERSION" ]; then
-    echo "❌ This script must be run in a Bash shell." >&2
+    echo "${CROSSMARK} This script must be run in a Bash shell." >&2
     exit 1
 fi
 
@@ -20,17 +20,17 @@ if [[ -z "$PROJECT_DIR" ]]; then
     done
 fi
 
-# === ✅ Load config.sh from PROJECT_DIR ===
+# === ${CHECKMARK} Load config.sh from PROJECT_DIR ===
 
 # Check if we found the project directory and config file
 if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
 fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "❌ Config file not found at: $CONFIG_FILE" >&2
+    echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
     exit 1
 fi
 source "$CONFIG_FILE"
@@ -44,13 +44,14 @@ source "$MENU_DIR/backup_menu.sh"
 source "$MENU_DIR/rclone_menu.sh"
 source "$MENU_DIR/ssl_menu.sh"
 source "$MENU_DIR/php_menu.sh"
+source "$MENU_DIR/database_menu.sh"
 source "$FUNCTIONS_DIR/core/core_version_management.sh"
 # **Run system setup before displaying menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
 
-# ✔️ ❌ **Status Icons**
-CHECKMARK="${GREEN}✅${NC}"
-CROSSMARK="${RED}❌${NC}"
+# ✔️ ${CROSSMARK} **Status Icons**
+CHECKMARK="${GREEN}${CHECKMARK}${NC}"
+CROSSMARK="${RED}${CROSSMARK}${NC}"
 
 # 🏆 **Display Header**
 print_header() {
@@ -67,7 +68,7 @@ print_header() {
     echo ""
     echo -e "${BLUE}📊 System Information:${NC}"
     echo -e "  🖥  CPU: ${GREEN}${CPU_MODEL} (${TOTAL_CPU} cores)${NC}"
-    echo -e "  💾 RAM: ${YELLOW}${USED_RAM}MB / ${TOTAL_RAM}MB${NC}"
+    echo -e "  ${SAVE} RAM: ${YELLOW}${USED_RAM}MB / ${TOTAL_RAM}MB${NC}"
     echo -e "  📀 Disk: ${YELLOW}${DISK_USAGE}${NC}"
     echo -e "  🌍 IP Address: ${CYAN}${IP_ADDRESS}${NC}"
     echo ""
@@ -85,8 +86,9 @@ while true; do
     echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[6]${NC} Website Backup Management"
     echo -e "  ${GREEN}[2]${NC} SSL Certificate Management      ${GREEN}[7]${NC} WordPress Cache Management"
     echo -e "  ${GREEN}[3]${NC} System Tools                    ${GREEN}[8]${NC} PHP Management"
-    echo -e "  ${GREEN}[4]${NC} Rclone Management               ${GREEN}[9]${NC} System Update"
-    echo -e "  ${GREEN}[5]${NC} WordPress Tools                 ${GREEN}[10]${NC} ❌ Exit"
+    echo -e "  ${GREEN}[4]${NC} Rclone Management               ${GREEN}[9]${NC} Database Management"
+    echo -e "  ${GREEN}[5]${NC} WordPress Tools                 ${GREEN}[10]${NC} Check for Updates"
+    echo -e "  ${GREEN}[11]${NC} ${CROSSMARK} Exit                                                      "                                               
     echo ""
 
     [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-10): " choice
@@ -99,10 +101,11 @@ while true; do
         6) backup_menu ;;
         7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "Press Enter to continue..." ;;
         8) php_menu ;;
-        9) core_check_version_update ;;  # Call function to display version and update
-        10) echo -e "${GREEN}❌ Exiting program.${NC}" && exit 0 ;;
+        9) database_menu ;;
+        10) core_check_version_update ;;  # Call function to display version and update
+        11) echo -e "${GREEN}${CROSSMARK} Exiting program.${NC}" && exit 0 ;;
         *) 
-            echo -e "${RED}⚠️ Invalid option! Please select from [1-10].${NC}"
+            echo -e "${RED}${WARNING} Invalid option! Please select from [1-10].${NC}"
             sleep 2 
             ;;
     esac

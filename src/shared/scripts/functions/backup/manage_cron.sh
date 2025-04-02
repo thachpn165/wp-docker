@@ -50,7 +50,7 @@ schedule_backup_list() {
     local websites=($(crontab -l 2>/dev/null | grep "backup_website.sh" | awk -F '--site_name=' '{print $2}' | awk '{print $1}' | sort -u))
 
     if [[ ${#websites[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ No websites have backup schedules.${NC}"
+        echo -e "${RED}${CROSSMARK} No websites have backup schedules.${NC}"
         return 1
     fi
 
@@ -58,10 +58,10 @@ schedule_backup_list() {
     echo -e "${YELLOW}🔹 Select a website to view its backup schedule:${NC}"
     select SITE_NAME in "${websites[@]}"; do
         if [[ -n "$SITE_NAME" ]]; then
-            echo -e "${GREEN}✅ Viewing backup schedule for: $SITE_NAME${NC}"
+            echo -e "${GREEN}${CHECKMARK} Viewing backup schedule for: $SITE_NAME${NC}"
             break
         else
-            echo -e "${RED}❌ Invalid selection!${NC}"
+            echo -e "${RED}${CROSSMARK} Invalid selection!${NC}"
         fi
     done
 
@@ -69,7 +69,7 @@ schedule_backup_list() {
     cron_jobs=$(crontab -l 2>/dev/null | grep "backup_website.sh --site_name=$SITE_NAME")
 
     if [[ -z "$cron_jobs" ]]; then
-        echo -e "${RED}❌ No backup schedule found for website: $SITE_NAME${NC}"
+        echo -e "${RED}${CROSSMARK} No backup schedule found for website: $SITE_NAME${NC}"
     else
         echo -e "${GREEN}📜 Backup schedule for $SITE_NAME:${NC}"
         echo -e "${YELLOW}Frequency | Website | Log Path${NC}"
@@ -98,7 +98,7 @@ schedule_backup_remove() {
     crontab "$temp_cron"
     rm -f "$temp_cron"
 
-    echo -e "${GREEN}✅ Removed backup schedule for website: $SITE_NAME${NC}"
+    echo -e "${GREEN}${CHECKMARK} Removed backup schedule for website: $SITE_NAME${NC}"
 }
 
 # Display crontab management menu
@@ -108,7 +108,7 @@ manage_cron_menu() {
         echo -e "${BLUE}   ⚙️ BACKUP SCHEDULE MANAGEMENT (CRON)   ${NC}"
         echo -e "${BLUE}============================${NC}"
         echo -e "  ${GREEN}[1]${NC} 📜 View backup schedules"
-        echo -e "  ${GREEN}[2]${NC} ❌ Remove website backup schedule"
+        echo -e "  ${GREEN}[2]${NC} ${CROSSMARK} Remove website backup schedule"
         echo -e "  ${GREEN}[3]${NC} 🔙 Back"
         echo -e "${BLUE}============================${NC}"
 
@@ -117,7 +117,7 @@ manage_cron_menu() {
             1) schedule_backup_list ;;
             2) schedule_backup_remove ;;
             3) echo -e "${GREEN}🔙 Returning to main menu.${NC}"; break ;;
-            *) echo -e "${RED}❌ Invalid option, please try again!${NC}" ;;
+            *) echo -e "${RED}${CROSSMARK} Invalid option, please try again!${NC}" ;;
         esac
     done
 }

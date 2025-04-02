@@ -14,7 +14,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -25,7 +25,7 @@ select_website
 
 # Ensure site is selected
 if [[ -z "$SITE_NAME" ]]; then
-    echo "❌ No website selected. Exiting."
+    echo "${CROSSMARK} No website selected. Exiting."
     exit 1
 fi
 
@@ -46,7 +46,7 @@ select storage_choice in "local" "cloud"; do
             break
             ;;
         *)
-            echo "❌ Invalid option. Please select either 'local' or 'cloud'."
+            echo "${CROSSMARK} Invalid option. Please select either 'local' or 'cloud'."
             ;;
     esac
 done
@@ -60,7 +60,7 @@ if [[ "$storage" == "cloud" ]]; then
 
     # Check if there are storages available
     if [[ ${#rclone_storages[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ No storage configured in rclone.conf! Please run 'wpdocker' > 'Rclone Management' > 'Setup Rclone' to configure Rclone.${NC}"
+        echo -e "${RED}${CROSSMARK} No storage configured in rclone.conf! Please run 'wpdocker' > 'Rclone Management' > 'Setup Rclone' to configure Rclone.${NC}"
         exit 1
     fi
 
@@ -74,7 +74,7 @@ if [[ "$storage" == "cloud" ]]; then
     read -p "Select storage (number): " selected_storage_index
 
     if [[ -z "${rclone_storages[$selected_storage_index]}" ]]; then
-        echo -e "${RED}❌ Invalid selection. Exiting.${NC}"
+        echo -e "${RED}${CROSSMARK} Invalid selection. Exiting.${NC}"
         exit 1
     fi
 

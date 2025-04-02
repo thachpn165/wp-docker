@@ -6,7 +6,7 @@ website_management_restart_logic() {
   site_list=($(ls -1 "$SITES_DIR"))
 
   if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ No websites available to restart.${NC}"
+    echo -e "${RED}${CROSSMARK} No websites available to restart.${NC}"
     return 1
   fi
 
@@ -24,11 +24,11 @@ website_management_restart_logic() {
   site_name="${site_list[$site_index]}"
 
   if [ -z "$site_name" ]; then
-    echo -e "${RED}❌ Invalid selection.${NC}"
+    echo -e "${RED}${CROSSMARK} Invalid selection.${NC}"
     return 1
   fi
 
   echo -e "${YELLOW}🔄 Restarting website: $site_name...${NC}"
   docker compose -f "$SITES_DIR/$site_name/docker-compose.yml" restart
-  echo -e "${GREEN}✅ Website '$site_name' has been restarted.${NC}"
+  echo -e "${GREEN}${CHECKMARK} Website '$site_name' has been restarted.${NC}"
 }

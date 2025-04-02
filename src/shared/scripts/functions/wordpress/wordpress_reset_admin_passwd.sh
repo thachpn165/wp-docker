@@ -7,7 +7,7 @@ reset_admin_password_logic() {
     site_list=($(ls -1 "$SITES_DIR"))
 
     if [ ${#site_list[@]} -eq 0 ]; then
-        echo -e "${RED}❌ Không có website nào để reset mật khẩu.${NC}"
+        echo -e "${RED}${CROSSMARK} Không có website nào để reset mật khẩu.${NC}"
         exit 1
     fi
 
@@ -25,6 +25,6 @@ reset_admin_password_logic() {
     # Cập nhật mật khẩu
     docker exec -u root "$PHP_CONTAINER" wp user update "$user_id" --user_pass="$new_password" --allow-root --path=/var/www/html
 
-    echo -e "${GREEN}✅ Mật khẩu mới của tài khoản ID $user_id: $new_password${NC}"
-    echo -e "${YELLOW}⚠️ Hãy lưu mật khẩu này ở nơi an toàn!${NC}"
+    echo -e "${GREEN}${CHECKMARK} Mật khẩu mới của tài khoản ID $user_id: $new_password${NC}"
+    echo -e "${YELLOW}${WARNING} Hãy lưu mật khẩu này ở nơi an toàn!${NC}"
 }

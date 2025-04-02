@@ -55,7 +55,7 @@ remove_volume() {
     fi
 }
 
-# ✅ Function to automatically install Docker
+# ${CHECKMARK} Function to automatically install Docker
 install_docker() {
     echo -e "${YELLOW}🔧 Installing Docker...${NC}"
     if [ -x "$(command -v apt-get)" ]; then
@@ -76,12 +76,12 @@ install_docker() {
          yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
          yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     else
-        echo -e "${RED}❌ This operating system is not supported for automatic Docker installation.${NC}"
+        echo -e "${RED}${CROSSMARK} This operating system is not supported for automatic Docker installation.${NC}"
         exit 1
     fi
 }
 
-# ✅ Function to install Docker Compose from GitHub release
+# ${CHECKMARK} Function to install Docker Compose from GitHub release
 install_docker_compose() {
     echo -e "${YELLOW}📦 Installing Docker Compose plugin...${NC}"
 
@@ -95,7 +95,7 @@ install_docker_compose() {
     case "$ARCH" in
         x86_64) ARCH="x86_64" ;;
         aarch64 | arm64) ARCH="aarch64" ;;
-        *) echo "❌ Unsupported machine architecture: $ARCH" && return 1 ;;
+        *) echo "${CROSSMARK} Unsupported machine architecture: $ARCH" && return 1 ;;
     esac
 
     COMPOSE_URL="https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-${OS}-${ARCH}"
@@ -106,13 +106,13 @@ install_docker_compose() {
     chmod +x "$DEST"
 
     if docker compose version &>/dev/null; then
-        echo -e "${GREEN}✅ Docker Compose has been installed successfully.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Docker Compose has been installed successfully.${NC}"
     else
-        echo -e "${RED}❌ Docker Compose installation failed. Please check manually.${NC}"
+        echo -e "${RED}${CROSSMARK} Docker Compose installation failed. Please check manually.${NC}"
     fi
 }
 
-# ✅ Function to check if Docker is running
+# ${CHECKMARK} Function to check if Docker is running
 start_docker_if_needed() {
     if (! docker stats --no-stream &> /dev/null); then
         echo -e "${YELLOW}🌀 Docker is not running. Starting Docker...${NC}"
@@ -122,27 +122,27 @@ start_docker_if_needed() {
                 echo -n "."
                 sleep 1
             done
-            echo " ✅"
+            echo " ${CHECKMARK}"
         else
              systemctl start docker
         fi
     else
-        echo -e "${GREEN}✅ Docker is running.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Docker is running.${NC}"
     fi
 }
 
-# ✅ Function to check & add user to docker group if needed
+# ${CHECKMARK} Function to check & add user to docker group if needed
 check_docker_group() {
     # Check operating system
     if [[ "$(uname)" == "Darwin" ]]; then
         # macOS doesn't require user to be in docker group
-        echo -e "${GREEN}✅ On macOS, no need to add user to docker group.${NC}"
+        echo -e "${GREEN}${CHECKMARK} On macOS, no need to add user to docker group.${NC}"
     else
         # Linux - check and add user to docker group if needed
         if ! groups "$USER" | grep -q docker; then
             echo -e "${YELLOW}➕ Adding user '$USER' to docker group...${NC}"
              usermod -aG docker "$USER"
-            echo -e "${GREEN}✅ User has been added to docker group. Please logout/login for changes to take effect.${NC}"
+            echo -e "${GREEN}${CHECKMARK} User has been added to docker group. Please logout/login for changes to take effect.${NC}"
         fi
     fi
 }
@@ -150,7 +150,7 @@ check_docker_group() {
 # 🧩 Quick docker exec function
 docker_exec_php() {
     docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "mkdir -p /tmp/wp-cli-cache && export WP_CLI_CACHE_DIR='/tmp/wp-cli-cache' && $1"
-    exit_if_error $? "❌ An error occurred while executing command: $1"
+    exit_if_error $? "${CROSSMARK} An error occurred while executing command: $1"
 }
 
 # If this script is called directly, execute the corresponding function
@@ -158,7 +158,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     case "$1" in
         is_docker_running) is_docker_running ;;
         check_docker_status) check_docker_status ;;
-        *) echo -e "${RED}❌ Invalid command!${NC} Usage: $0 {is_docker_running|check_docker_status}" ;;
+        *) echo -e "${RED}${CROSSMARK} Invalid command!${NC} Usage: $0 {is_docker_running|check_docker_status}" ;;
     esac
 fi
 

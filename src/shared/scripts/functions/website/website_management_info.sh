@@ -16,13 +16,13 @@ website_management_info_logic() {
 
     # Check if website exists
     if ! is_directory_exist "$site_dir"; then
-        echo -e "${RED}❌ Website '$site_name' does not exist.${NC}"
+        echo -e "${RED}${CROSSMARK} Website '$site_name' does not exist.${NC}"
         return 1
     fi
 
     # Check if .env file exists
     if ! is_file_exist "$env_file"; then
-        echo -e "${RED}❌ .env file for website '$site_name' not found!${NC}"
+        echo -e "${RED}${CROSSMARK} .env file for website '$site_name' not found!${NC}"
         return 1
     fi
 

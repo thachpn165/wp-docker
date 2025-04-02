@@ -64,7 +64,7 @@ We follow a **Pull Request (PR)** based development process.
 
 ---
 
-## ✅ Pull Request Rules
+## ${CHECKMARK} Pull Request Rules
 
 - Follow the branching strategy above
 - PRs that change templates must be bumped via version script (see below)
@@ -81,7 +81,7 @@ src/shared/templates/
 ```
 You **must bump the template version**.
 
-### ✅ Manual Bump (Recommended):
+### ${CHECKMARK} Manual Bump (Recommended):
 ```bash
 bash src/shared/scripts/tools/template_bump_version.sh
 ```

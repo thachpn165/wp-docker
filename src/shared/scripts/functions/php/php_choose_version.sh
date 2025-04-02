@@ -2,7 +2,7 @@ php_choose_version() {
   local PHP_VERSION_FILE="$BASE_DIR/php_versions.txt"
 
   if [[ ! -f "$PHP_VERSION_FILE" ]]; then
-    echo -e "${RED}❌ PHP version list not found at: $PHP_VERSION_FILE${NC}"
+    echo -e "${RED}${CROSSMARK} PHP version list not found at: $PHP_VERSION_FILE${NC}"
     return 1
   fi
 
@@ -12,7 +12,7 @@ php_choose_version() {
   done < "$PHP_VERSION_FILE"
 
   if [[ ${#PHP_VERSIONS[@]} -eq 0 ]]; then
-    echo -e "${RED}❌ PHP version list is empty. Please run the PHP version update command again.${NC}"
+    echo -e "${RED}${CROSSMARK} PHP version list is empty. Please run the PHP version update command again.${NC}"
     echo -e "${YELLOW}👉 Tip: bash shared/scripts/setup-system.sh${NC}"
     return 1
   fi
@@ -28,7 +28,7 @@ php_choose_version() {
     echo -e "  ${GREEN}[$i]${NC} ${PHP_VERSIONS[$i]}"
   done
 
-  echo -e "\n${YELLOW}⚠️ Note:${NC}"
+  echo -e "\n${YELLOW}${WARNING} Note:${NC}"
   echo -e "${RED}- PHP 8.0 and below may NOT work on ARM operating systems such as:${NC}"
   echo -e "  ${CYAN}- Apple Silicon (M1, M2,...), Raspberry Pi, ARM64 servers...${NC}"
   echo -e "  ${WHITE}→ If you encounter \"platform mismatch\" error, add:${NC}"
@@ -39,7 +39,7 @@ php_choose_version() {
   [[ "$TEST_MODE" != true ]] && read -p "🔹 Enter the number corresponding to the PHP version you want to select: " php_index
 
   if ! [[ "$php_index" =~ ^[0-9]+$ ]] || (( php_index < 0 || php_index >= ${#PHP_VERSIONS[@]} )); then
-    echo -e "${RED}❌ Invalid selection.${NC}"
+    echo -e "${RED}${CROSSMARK} Invalid selection.${NC}"
     return 1
   fi
 

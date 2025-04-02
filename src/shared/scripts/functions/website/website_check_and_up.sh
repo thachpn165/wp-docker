@@ -18,7 +18,7 @@ website_check_and_up() {
 
     if [ "$started_any" = true ]; then
         echo ""
-        echo "✅ All stopped containers have been started (or attempted to start)."
+        echo "${CHECKMARK} All stopped containers have been started (or attempted to start)."
     fi
 }
 
@@ -53,7 +53,7 @@ _check_and_start_container() {
         fi
     done
 
-    echo "   ❌ Container $container_name failed to start after 30s."
+    echo "   ${CROSSMARK} Container $container_name failed to start after 30s."
     echo "   📄 Showing last 20 lines of logs for $container_name:"
     docker logs --tail 20 "$container_name"
 }

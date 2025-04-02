@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # =============================================
-# ✅ Test: website_wordpress_setup.bats
+# ${CHECKMARK} Test: website_wordpress_setup.bats
 # CLI should install WordPress with given admin info
 # =============================================
 

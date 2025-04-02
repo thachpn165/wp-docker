@@ -18,7 +18,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -29,14 +29,14 @@ site_name=""
 select_website
 site_name="$SITE_NAME"
 if [[ -z "$site_name" ]]; then
-  echo "❌ No website selected."
+  echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
 # Prompt the user for backup confirmation
 backup_enabled=true
 if [[ "$TEST_MODE" != true ]]; then
-  echo -e "\n💾 Do you want to backup the website before deletion?"
+  echo -e "\n${SAVE} Do you want to backup the website before deletion?"
   read -rp "Type 'yes' to backup, or anything else to skip: " backup_confirm
   if [[ "$backup_confirm" != "yes" ]]; then
     backup_enabled=false
@@ -45,10 +45,10 @@ else
   backup_enabled=false
 fi
 
-echo -e "\n⚠️  Are you sure you want to delete site '${YELLOW}$site_name${NC}'?"
+echo -e "\n${WARNING}  Are you sure you want to delete site '${YELLOW}$site_name${NC}'?"
 read -rp "Type 'yes' to confirm: " confirm
 if [[ "$confirm" != "yes" ]]; then
-  echo "❌ Cancelled."
+  echo "${CROSSMARK} Cancelled."
   exit 1
 fi
 
@@ -60,6 +60,6 @@ if [[ -n "$site_name" ]]; then
     bash "$SCRIPTS_DIR/cli/website_delete.sh" --site_name="$site_name"
   fi
 else
-  echo "❌ Missing required parameters to delete website." >&2
+  echo "${CROSSMARK} Missing required parameters to delete website." >&2
   exit 1
 fi

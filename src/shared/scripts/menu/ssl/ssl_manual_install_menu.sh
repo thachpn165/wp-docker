@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ============================================
-# ✅ ssl_manual_install_menu.sh – Menu for SSL Installation
+# ${CHECKMARK} ssl_manual_install_menu.sh – Menu for SSL Installation
 # ============================================
 
 # === Load config & logic ===
@@ -18,7 +18,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -28,7 +28,7 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 select_website
 site_name="$SITE_NAME"
 if [[ -z "$site_name" ]]; then
-  echo "❌ No website selected."
+  echo "${CROSSMARK} No website selected."
   exit 1
 fi
 

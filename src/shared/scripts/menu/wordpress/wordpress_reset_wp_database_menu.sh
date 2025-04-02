@@ -15,7 +15,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -23,7 +23,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -31,10 +31,10 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# 🚨 **Cảnh báo quan trọng**
+# ${IMPORTANT} **Cảnh báo quan trọng**
 clear
-echo -e "${RED}${BOLD}🚨 CẢNH BÁO QUAN TRỌNG 🚨${NC}"
-echo -e "${RED}❗ Việc reset database sẽ xóa toàn bộ dữ liệu và không thể khôi phục! ❗${NC}"
+echo -e "${RED}${BOLD}${IMPORTANT} CẢNH BÁO QUAN TRỌNG ${IMPORTANT}${NC}"
+echo -e "${RED}${ERROR} Việc reset database sẽ xóa toàn bộ dữ liệu và không thể khôi phục! ${ERROR}${NC}"
 echo -e "${YELLOW}📌 Vui lòng sao lưu đầy đủ trước khi tiếp tục.${NC}"
 echo ""
 
@@ -43,7 +43,7 @@ echo -e "${YELLOW}📋 Danh sách các website có thể reset database:${NC}"
 site_list=($(ls -1 "$SITES_DIR"))
 
 if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào để thực hiện thao tác này.${NC}"
+    echo -e "${RED}${CROSSMARK} Không có website nào để thực hiện thao tác này.${NC}"
     exit 1
 fi
 
@@ -64,10 +64,10 @@ read -p "Nhập số tương ứng với hành động: " confirm_choice
 if [ "$confirm_choice" == "1" ]; then
     # Truyền tham số vào CLI để thực hiện reset database
     bash "$SCRIPTS_DIR/cli/wordpress_reset_wp_database.sh" --site_name="$site_name"
-    echo -e "${GREEN}✅ Database đã được reset thành công cho website '$site_name'.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Database đã được reset thành công cho website '$site_name'.${NC}"
 elif [ "$confirm_choice" == "2" ]; then
-    echo -e "${YELLOW}⚠️ Thao tác reset database đã bị hủy.${NC}"
+    echo -e "${YELLOW}${WARNING} Thao tác reset database đã bị hủy.${NC}"
 else
-    echo -e "${RED}❌ Lựa chọn không hợp lệ.${NC}"
+    echo -e "${RED}${CROSSMARK} Lựa chọn không hợp lệ.${NC}"
     exit 1
 fi

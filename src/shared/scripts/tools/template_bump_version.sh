@@ -17,13 +17,13 @@ else
 fi
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Không tìm thấy config.sh tại: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Không tìm thấy config.sh tại: $CONFIG_FILE" >&2
   exit 1
 fi
 
 source "$CONFIG_FILE"
 
-# ✅ Đảm bảo file tồn tại
+# ${CHECKMARK} Đảm bảo file tồn tại
 mkdir -p "$(dirname "$TEMPLATE_CHANGELOG_FILE")"
 
 # 🧠 Hàm tính version tiếp theo
@@ -64,7 +64,7 @@ if [[ "$1" == "--auto" ]]; then
     echo "- 🤖 Auto bump version from CI"
   } >> "$TEMPLATE_CHANGELOG_FILE"
 
-  echo "✅ Auto bump template version: $CUR_VER → $NEXT_VER"
+  echo "${CHECKMARK} Auto bump template version: $CUR_VER → $NEXT_VER"
   exit 0
 fi
 
@@ -75,8 +75,8 @@ CUR_VER=$(cat "$TEMPLATE_VERSION_FILE" 2>/dev/null || echo "0.0.0")
 echo "🔢 Current template version: $CUR_VER"
 
 read -rp "👉 Enter new version (e.g. 1.0.7): " NEW_VER
-[[ -z "$NEW_VER" ]] && echo "❌ No version entered!" && exit 1
-[[ "$NEW_VER" == "$CUR_VER" ]] && echo "⚠️ Version unchanged." && exit 0
+[[ -z "$NEW_VER" ]] && echo "${CROSSMARK} No version entered!" && exit 1
+[[ "$NEW_VER" == "$CUR_VER" ]] && echo "${WARNING} Version unchanged." && exit 0
 
 read -rp "📝 Enter changelog message: " CHANGELOG_LINE
 DATE_NOW=$(date '+%Y-%m-%d %H:%M:%S')
@@ -90,5 +90,5 @@ sync  # Ensure file is written
   echo "- $CHANGELOG_LINE"
 } >> "$TEMPLATE_CHANGELOG_FILE"
 
-echo "✅ Updated template version to: $NEW_VER"
+echo "${CHECKMARK} Updated template version to: $NEW_VER"
 echo "📄 Changelog updated at: $TEMPLATE_CHANGELOG_FILE"

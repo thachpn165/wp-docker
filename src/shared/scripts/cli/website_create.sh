@@ -57,7 +57,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -65,7 +65,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -81,13 +81,13 @@ while [[ "$#" -gt 0 ]]; do
     --domain=*) domain="${1#*=}" ;;
     --php=*) php_version="${1#*=}" ;;
     --auto_generate=*) auto_generate="${1#*=}" ;;
-    *) echo "❌ Unknown option: $1" ; exit 1 ;;
+    *) echo "${CROSSMARK} Unknown option: $1" ; exit 1 ;;
   esac
   shift
 done
 #echo "📦 DEBUG: site=$site_name domain=$domain php=$php_version auto_generate=$auto_generate"
 if [[ -z "$site_name" || -z "$domain" || -z "$php_version" ]]; then
-  echo "❌ Missing parameters. Usage:"
+  echo "${CROSSMARK} Missing parameters. Usage:"
   echo "  $0 --site_name=abc --domain=abc.com --php=8.2"
   exit 1
 fi
@@ -95,4 +95,4 @@ fi
 website_management_create_logic "$site_name" "$domain" "$php_version"
 website_setup_wordpress_logic "$site_name" "$auto_generate"
 
-echo "✅ DONE_CREATE_WEBSITE: $site_name"
+echo "${CHECKMARK} DONE_CREATE_WEBSITE: $site_name"

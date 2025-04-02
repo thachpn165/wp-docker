@@ -34,7 +34,7 @@ function _M.run()
     ua = ua:lower()
     for _, pattern in ipairs(known_scanners) do
         if ua:find(pattern, 1, true) then
-            ngx.log(ngx.ERR, "[WAF] 🚨 Detected scanner User-Agent: ", ua)
+            ngx.log(ngx.ERR, "[WAF] ${IMPORTANT} Detected scanner User-Agent: ", ua)
             return ngx.exit(403)
         end
     end

@@ -6,7 +6,7 @@ website_setup_wordpress_logic() {
   local auto_generate="${2:-true}"
 
   if [[ -z "$site_name" ]]; then
-    echo -e "${RED}❌ Missing site name.${NC}"
+    echo -e "${RED}${CROSSMARK} Missing site name.${NC}"
     return 1
   fi
 
@@ -21,7 +21,7 @@ website_setup_wordpress_logic() {
       ENV_FILE="$tmp_env_path/.env"
       SITE_DIR="$tmp_env_path"
     else
-      echo -e "${RED}❌ .env file not found for site '$site_name'${NC}"
+      echo -e "${RED}${CROSSMARK} .env file not found for site '$site_name'${NC}"
       return 1
     fi
   fi
@@ -58,14 +58,14 @@ website_setup_wordpress_logic() {
   else
     read -p "👤 Enter admin username: " ADMIN_USER
     while [[ -z "$ADMIN_USER" ]]; do
-      echo "⚠️ Cannot be empty."
+      echo "${WARNING} Cannot be empty."
       read -p "👤 Enter admin username: " ADMIN_USER
     done
 
     read -s -p "🔐 Enter admin password: " ADMIN_PASSWORD; echo
     read -s -p "🔐 Confirm password: " CONFIRM_PASSWORD; echo
     while [[ "$ADMIN_PASSWORD" != "$CONFIRM_PASSWORD" || -z "$ADMIN_PASSWORD" ]]; do
-      echo "⚠️ Passwords do not match or are empty. Please try again."
+      echo "${WARNING} Passwords do not match or are empty. Please try again."
       read -s -p "🔐 Enter admin password: " ADMIN_PASSWORD; echo
       read -s -p "🔐 Confirm password: " CONFIRM_PASSWORD; echo
     done
@@ -82,7 +82,7 @@ website_setup_wordpress_logic() {
     sleep 1
     ((timeout--))
     if (( timeout <= 0 )); then
-      echo -e "${RED}❌ PHP container '$PHP_CONTAINER' not ready after 30s.${NC}"
+      echo -e "${RED}${CROSSMARK} PHP container '$PHP_CONTAINER' not ready after 30s.${NC}"
       return 1
     fi
     echo -ne "⏳ Waiting for PHP container... ($((30-timeout))/30)\r"
@@ -94,9 +94,9 @@ website_setup_wordpress_logic() {
     docker exec -i "$PHP_CONTAINER" sh -c "mkdir -p /var/www/html && chown -R nobody:nogroup /var/www/html"
     docker exec -i "$PHP_CONTAINER" sh -c "curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
       tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && rm /var/www/html/wordpress.tar.gz"
-    echo -e "${GREEN}✅ WordPress source code downloaded.${NC}"
+    echo -e "${GREEN}${CHECKMARK} WordPress source code downloaded.${NC}"
   else
-    echo -e "${GREEN}✅ WordPress source code already exists.${NC}"
+    echo -e "${GREEN}${CHECKMARK} WordPress source code already exists.${NC}"
   fi
 
   # ⚙️ wp-config
@@ -108,18 +108,18 @@ website_setup_wordpress_logic() {
   # 🧑‍🔧 Quyền thư mục
   if is_container_running "$PHP_CONTAINER"; then
     docker exec -u root "$PHP_CONTAINER" chown -R nobody:nogroup "/var/www/" || {
-      echo -e "${RED}❌ Permission setting failed.${NC}"
+      echo -e "${RED}${CROSSMARK} Permission setting failed.${NC}"
       return 1
     }
   else
-    echo -e "${RED}❌ Skipping chown as container is not ready.${NC}"
+    echo -e "${RED}${CROSSMARK} Skipping chown as container is not ready.${NC}"
   fi
 
   # 🔁 Permalinks
   wp_set_permalinks "$PHP_CONTAINER" "$SITE_URL"
   # wp_plugin_install_performance_lab "$PHP_CONTAINER" # Optional
 
-  echo -e "${YELLOW}✅ WordPress installation completed.${NC}"
+  echo -e "${YELLOW}${CHECKMARK} WordPress installation completed.${NC}"
   website_print_wp_info "$SITE_URL" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
 }
 

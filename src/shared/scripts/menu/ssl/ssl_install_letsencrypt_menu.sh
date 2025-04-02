@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ============================================
-# ✅ Install Let's Encrypt SSL Certificate Menu
+# ${CHECKMARK} Install Let's Encrypt SSL Certificate Menu
 # ============================================
 
 # === Load configuration and logic ===
@@ -18,7 +18,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -30,7 +30,7 @@ select_website
 SITE_NAME="$SITE_NAME"
 
 if [[ -z "$SITE_NAME" ]]; then
-  echo -e "${RED}❌ No website selected. Exiting.${NC}"
+  echo -e "${RED}${CROSSMARK} No website selected. Exiting.${NC}"
   exit 1
 fi
 
@@ -38,7 +38,7 @@ echo -e "${YELLOW}🔧 Please provide the email address for Let's Encrypt regist
 read -p "Email: " EMAIL
 
 if [[ -z "$EMAIL" ]]; then
-  echo -e "${RED}❌ Email is required for Let's Encrypt registration. Exiting.${NC}"
+  echo -e "${RED}${CROSSMARK} Email is required for Let's Encrypt registration. Exiting.${NC}"
   exit 1
 fi
 

@@ -10,7 +10,7 @@ website_create_env() {
 
   # Check input parameters
   if [[ "$TEST_MODE" != true && $# -ne 4 ]]; then
-    echo -e "${RED}❌ Missing parameters when calling website_create_env().${NC}"
+    echo -e "${RED}${CROSSMARK} Missing parameters when calling website_create_env().${NC}"
     echo -e "${YELLOW}Usage: website_create_env <output_dir> <site_name> <domain> <php_version>${NC}"
     return 1
   fi
@@ -33,5 +33,5 @@ MYSQL_USER=wpuser
 MYSQL_PASSWORD=$MYSQL_PASSWORD
 EOF
 
-  echo -e "${GREEN}✅ Created .env file at $env_file${NC}"
+  echo -e "${GREEN}${CHECKMARK} Created .env file at $env_file${NC}"
 }

@@ -52,7 +52,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -60,7 +60,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -80,7 +80,7 @@ done
 
 # === Check required ===
 if [[ -z "$site_name" || -z "$admin_user" || -z "$admin_password" || -z "$admin_email" ]]; then
-  echo "❌ Missing required parameters."
+  echo "${CROSSMARK} Missing required parameters."
   echo "Usage: $0 --site_name=SITE --user=USER --pass=PASS --email=EMAIL"
   exit 1
 fi

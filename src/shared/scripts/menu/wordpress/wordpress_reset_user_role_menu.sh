@@ -13,20 +13,20 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 # 📋 **Hiển thị danh sách website để chọn**
-echo -e "${YELLOW}⚠️ Tính năng này sẽ thiết lập lại quyền Administrator trên website về mặc định.${NC}"
-echo -e "${YELLOW}⚠️ Được dùng trong trường hợp website bị lỗi tài khoản Admin bị thiếu/mất quyền.${NC}"
+echo -e "${YELLOW}${WARNING} Tính năng này sẽ thiết lập lại quyền Administrator trên website về mặc định.${NC}"
+echo -e "${YELLOW}${WARNING} Được dùng trong trường hợp website bị lỗi tài khoản Admin bị thiếu/mất quyền.${NC}"
 echo -e "${BLUE}📋 Danh sách các website có thể reset quyền Admin:${NC}"
 site_list=($(ls -1 "$SITES_DIR"))
 
 if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào để reset quyền Admin.${NC}"
+    echo -e "${RED}${CROSSMARK} Không có website nào để reset quyền Admin.${NC}"
     exit 1
 fi
 

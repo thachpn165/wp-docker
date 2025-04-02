@@ -51,7 +51,7 @@ node_modules/
 npm-debug.log
 yarn.lock
 
-# 💾 GIT TRACKING FILES 💾
+# ${SAVE} GIT TRACKING FILES ${SAVE}
 #.gitignore
 
 # 📦 MISC

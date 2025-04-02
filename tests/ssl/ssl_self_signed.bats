@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # ============================================
-# ✅ Test for SSL Self-Signed Certificate Generation
+# ${CHECKMARK} Test for SSL Self-Signed Certificate Generation
 # ============================================
 load "${BATS_TEST_DIRNAME}/../helpers/general.bash"
 
@@ -42,7 +42,7 @@ teardown() {
   echo $output
   # Check if the SSL files are created
   [ "$status" -eq 0 ]
-  assert_output_contains "✅ Self-signed SSL certificate has been regenerated successfully"
+  assert_output_contains "${CHECKMARK} Self-signed SSL certificate has been regenerated successfully"
   echo $output
   # Check if SSL certificate files exist
   [ -f "$SSL_DIR/$TEST_SITE_NAME.crt" ]

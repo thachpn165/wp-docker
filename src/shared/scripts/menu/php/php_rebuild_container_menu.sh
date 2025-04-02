@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
+  echo "${CROSSMARK} This script must be run in a Bash shell." >&2
   exit 1
 fi
 
@@ -19,7 +19,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -27,7 +27,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -44,7 +44,7 @@ read -p "Are you sure you want to rebuild the PHP container for this site? (y/n)
 confirm_rebuild=$(echo "$confirm_rebuild" | tr '[:upper:]' '[:lower:]')
 
 if [[ "$confirm_rebuild" != "y" ]]; then
-  echo -e "${RED}❌ Operation canceled. No changes made.${NC}"
+  echo -e "${RED}${CROSSMARK} Operation canceled. No changes made.${NC}"
   exit 1
 fi
 

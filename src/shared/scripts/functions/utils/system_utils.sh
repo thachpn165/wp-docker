@@ -32,7 +32,7 @@ setup_timezone() {
         if [[ "$current_tz" != "Asia/Ho_Chi_Minh" ]]; then
             echo -e "${YELLOW}🌏 Setting system timezone to Asia/Ho_Chi_Minh...${NC}"
             timedatectl set-timezone Asia/Ho_Chi_Minh
-            echo -e "${GREEN}✅ System timezone has been changed.${NC}"
+            echo -e "${GREEN}${CHECKMARK} System timezone has been changed.${NC}"
         fi
     fi
 }
@@ -49,7 +49,7 @@ choose_editor() {
   [[ -x "$(command -v code)" ]] && AVAILABLE_EDITORS+=("code")
 
   if [[ ${#AVAILABLE_EDITORS[@]} -eq 0 ]]; then
-    echo -e "${RED}❌ No text editors found! Please install nano or vim first.${NC}"
+    echo -e "${RED}${CROSSMARK} No text editors found! Please install nano or vim first.${NC}"
     return 1
   fi
 
@@ -61,7 +61,7 @@ choose_editor() {
   [[ "$TEST_MODE" != true ]] && read -p "🔹 Select number corresponding to text editor: " editor_index
 
   if ! [[ "$editor_index" =~ ^[0-9]+$ ]] || (( editor_index < 0 || editor_index >= ${#AVAILABLE_EDITORS[@]} )); then
-    echo -e "${RED}⚠️ Invalid selection! Defaulting to nano if available.${NC}"
+    echo -e "${RED}${WARNING} Invalid selection! Defaulting to nano if available.${NC}"
     EDITOR_CMD="nano"
   else
     EDITOR_CMD="${AVAILABLE_EDITORS[$editor_index]}"
@@ -71,23 +71,23 @@ choose_editor() {
   case "$EDITOR_CMD" in
     nano)
       echo -e "  🖋️  Ctrl + O → Save file"
-      echo -e "  ❌  Ctrl + X → Exit"
+      echo -e "  ${CROSSMARK}  Ctrl + X → Exit"
       ;;
     vi|vim)
       echo -e "  🖋️  Press 'i' → Enter edit mode"
-      echo -e "  💾  ESC → Type :w to save"
-      echo -e "  ❌  ESC → Type :q to exit"
+      echo -e "  ${SAVE}  ESC → Type :w to save"
+      echo -e "  ${CROSSMARK}  ESC → Type :q to exit"
       ;;
     micro)
       echo -e "  🖋️  Ctrl + S → Save file"
-      echo -e "  ❌  Ctrl + Q → Exit"
+      echo -e "  ${CROSSMARK}  Ctrl + Q → Exit"
       ;;
     code)
       echo -e "  💡 Opens Visual Studio Code in GUI mode"
       echo -e "  🔁 Auto-saves on changes (if enabled)"
       ;;
     *)
-      echo -e "${YELLOW}⚠️ Unknown editor, you'll handle the operations yourself :)${NC}"
+      echo -e "${YELLOW}${WARNING} Unknown editor, you'll handle the operations yourself :)${NC}"
       ;;
   esac
 
@@ -112,17 +112,17 @@ check_required_commands() {
         # Special case: check if docker compose is a plugin
         if [[ "$cmd" == "docker compose" ]]; then
             if docker compose version &> /dev/null; then
-                echo -e "${GREEN}✅ 'docker compose' is available.${NC}"
+                echo -e "${GREEN}${CHECKMARK} 'docker compose' is available.${NC}"
                 continue
             else
-                echo -e "${YELLOW}⚠️ 'docker compose' is not installed. Installing...${NC}"
+                echo -e "${YELLOW}${WARNING} 'docker compose' is not installed. Installing...${NC}"
                 install_docker_compose
                 continue
             fi
         fi
 
         if ! command -v $(echo "$cmd" | awk '{print $1}') &> /dev/null; then
-            echo -e "${YELLOW}⚠️ Command '$cmd' is not installed. Installing...${NC}"
+            echo -e "${YELLOW}${WARNING} Command '$cmd' is not installed. Installing...${NC}"
 
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
                 if command -v apt &> /dev/null; then
@@ -132,7 +132,7 @@ check_required_commands() {
                 elif command -v dnf &> /dev/null; then
                     dnf install -y $(echo "$cmd" | awk '{print $1}')
                 else
-                    echo -e "${RED}❌ No suitable package manager found to install '$cmd'.${NC}"
+                    echo -e "${RED}${CROSSMARK} No suitable package manager found to install '$cmd'.${NC}"
                 fi
             elif [[ "$OSTYPE" == "darwin"* ]]; then
                 if ! command -v brew &> /dev/null; then
@@ -141,10 +141,10 @@ check_required_commands() {
                 fi
                 brew install $(echo "$cmd" | awk '{print $1}')
             else
-                echo -e "${RED}❌ Operating system not supported for installing '$cmd'.${NC}"
+                echo -e "${RED}${CROSSMARK} Operating system not supported for installing '$cmd'.${NC}"
             fi
         else
-            echo -e "${GREEN}✅ Command '$cmd' is available.${NC}"
+            echo -e "${GREEN}${CHECKMARK} Command '$cmd' is available.${NC}"
         fi
     done
 }

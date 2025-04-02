@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # ================================================
-# ✅ Test: website_create.bats
+# ${CHECKMARK} Test: website_create.bats
 # CLI should create a WordPress site successfully
 # ================================================
 
@@ -39,5 +39,5 @@ teardown() {
   echo "=== OUTPUT END ==="
 
   [ "$status" -eq 0 ]
-  [[ "$output" == *"✅ DONE_CREATE_WEBSITE: $TEST_SITE_NAME"* ]]
+  [[ "$output" == *"${CHECKMARK} DONE_CREATE_WEBSITE: $TEST_SITE_NAME"* ]]
 }

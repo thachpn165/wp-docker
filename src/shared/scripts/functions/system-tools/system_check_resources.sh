@@ -16,7 +16,7 @@ system_check_resources_logic() {
     # Return resource information
     echo -e "🔹 ${BOLD}CPU% USAGE & CONTAINER RAM:${NC}"
     echo -e "$cpu_memory_usage"
-    echo -e "💾 ${BOLD}Total RAM:${NC} $memory_usage"
+    echo -e "${SAVE} ${BOLD}Total RAM:${NC} $memory_usage"
     echo -e "🗄️  ${BOLD}Disk Usage:${NC} $disk_usage"
     echo -e "⏳ ${BOLD}Uptime:${NC} $uptime_info"
 }

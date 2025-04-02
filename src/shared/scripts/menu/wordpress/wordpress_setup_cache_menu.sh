@@ -15,7 +15,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -23,7 +23,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -39,7 +39,7 @@ site_list=($(ls -1 "$SITES_DIR"))
 
 # Check if there are any websites
 if [[ ${#site_list[@]} -eq 0 ]]; then
-  echo -e "${RED}❌ No websites found.${NC}"
+  echo -e "${RED}${CROSSMARK} No websites found.${NC}"
   exit 1
 fi
 
@@ -54,12 +54,12 @@ read -p "Website number: " site_index
 
 # Check if the selection is valid
 if [[ -z "${site_list[$site_index]}" ]]; then
-  echo -e "${RED}❌ Invalid website selection.${NC}"
+  echo -e "${RED}${CROSSMARK} Invalid website selection.${NC}"
   exit 1
 fi
 
 site_name="${site_list[$site_index]}"
-echo -e "${GREEN}✅ Selected website: $site_name${NC}"
+echo -e "${GREEN}${CHECKMARK} Selected website: $site_name${NC}"
 
 # === Cache Type Selection ===
 echo -e "${YELLOW}📋 Please choose the cache type for $site_name:${NC}"
@@ -80,10 +80,10 @@ case $cache_type_index in
     3) cache_type="w3-total-cache" ;;
     4) cache_type="wp-fastest-cache" ;;
     5) cache_type="no-cache" ;;
-    *) echo -e "${RED}❌ Invalid selection!${NC}" && exit 1 ;;
+    *) echo -e "${RED}${CROSSMARK} Invalid selection!${NC}" && exit 1 ;;
 esac
 
-echo -e "${GREEN}✅ Selected cache type: $cache_type${NC}"
+echo -e "${GREEN}${CHECKMARK} Selected cache type: $cache_type${NC}"
 
 # Call the logic function to set up the cache
 wordpress_cache_setup_logic "$site_name" "$cache_type"

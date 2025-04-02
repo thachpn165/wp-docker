@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # ================================================
-# ✅ Test: website_restart.bats
+# ${CHECKMARK} Test: website_restart.bats
 # CLI should restart the selected WordPress website
 # ================================================
 
@@ -21,7 +21,7 @@ setup() {
   # Ensure site is created before restarting
   SITE_DIR="$SITES_DIR/$TEST_SITE_NAME"
   if [ ! -d "$SITE_DIR" ]; then
-    echo "❌ Site creation failed!"
+    echo "${CROSSMARK} Site creation failed!"
     exit 1
   fi
 }

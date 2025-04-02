@@ -4,7 +4,7 @@
 
 website_management_list_logic() {
   if [[ ! -d "$SITES_DIR" ]]; then
-    echo -e "${RED}❌ Directory $SITES_DIR does not exist.${NC}"
+    echo -e "${RED}${CROSSMARK} Directory $SITES_DIR does not exist.${NC}"
     return 1
   fi
 
@@ -13,7 +13,7 @@ website_management_list_logic() {
   echo -e "${YELLOW}📋 List of Existing Websites:${NC}"
 
   if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ No websites are installed.${NC}"
+    echo -e "${RED}${CROSSMARK} No websites are installed.${NC}"
     return 0
   fi
 
@@ -21,7 +21,7 @@ website_management_list_logic() {
     echo -e "  ${GREEN}[$i]${NC} ${site_list[$i]}"
   done
 
-  echo -e "${GREEN}✅ Website list display completed.${NC}"
+  echo -e "${GREEN}${CHECKMARK} Website list display completed.${NC}"
 }
 
 website_management_list() {
