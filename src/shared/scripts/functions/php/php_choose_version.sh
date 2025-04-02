@@ -17,7 +17,13 @@ php_choose_version() {
     return 1
   fi
 
-  echo -e "${YELLOW}📦 Supported PHP versions (Bitnami):${NC}"
+  if [[ "$TEST_MODE" == true ]]; then
+    REPLY="${TEST_PHP_VERSION:-${PHP_VERSIONS[0]}}"
+    echo "[TEST_MODE] Selected PHP version: $REPLY"
+    return 0
+  fi
+
+  echo -e "${YELLOW}Supported PHP versions (Bitnami):${NC}"
   for i in "${!PHP_VERSIONS[@]}"; do
     echo -e "  ${GREEN}[$i]${NC} ${PHP_VERSIONS[$i]}"
   done
@@ -30,7 +36,7 @@ php_choose_version() {
   echo -e "     ${WHITE}Then use the Restart website feature to restart"
   sleep 0.2
   echo ""
-  read -p "🔹 Enter the number corresponding to the PHP version you want to select: " php_index
+  [[ "$TEST_MODE" != true ]] && read -p "🔹 Enter the number corresponding to the PHP version you want to select: " php_index
 
   if ! [[ "$php_index" =~ ^[0-9]+$ ]] || (( php_index < 0 || php_index >= ${#PHP_VERSIONS[@]} )); then
     echo -e "${RED}❌ Invalid selection.${NC}"

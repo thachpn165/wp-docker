@@ -52,7 +52,7 @@ rclone_setup() {
 
     # Enter storage name (no accents, no spaces, no special characters)
     while true; do
-        read -p "📌 Enter storage name (no accents, no spaces, no special characters): " STORAGE_NAME
+        [[ "$TEST_MODE" != true ]] && read -p "📌 Enter storage name (no accents, no spaces, no special characters): " STORAGE_NAME
         STORAGE_NAME=$(echo "$STORAGE_NAME" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | tr -cd '[:alnum:]_-')
 
         if grep -q "^\[$STORAGE_NAME\]" "$RCLONE_CONFIG_FILE"; then
@@ -71,7 +71,7 @@ rclone_setup() {
     echo -e "  ${GREEN}[5]${NC} Exit"
     echo ""
 
-    read -p "🔹 Select an option (1-5): " choice
+    [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-5): " choice
 
     case "$choice" in
         1) STORAGE_TYPE="drive" ;;
@@ -100,7 +100,7 @@ rclone_setup() {
         echo -e "  ${GREEN}Windows:${NC} Download from: ${CYAN}https://rclone.org/downloads/${NC}"
         echo -e "           After installation, open Command Prompt (cmd) and run: ${GREEN}rclone authorize drive${NC}"
         echo ""
-        read -p "🔑 Paste OAuth JSON token here: " AUTH_JSON
+        [[ "$TEST_MODE" != true ]] && read -p "🔑 Paste OAuth JSON token here: " AUTH_JSON
         echo "token = $AUTH_JSON" >> "$RCLONE_CONFIG_FILE"
 
         echo -e "${GREEN}✅ Google Drive has been set up successfully!${NC}"
@@ -108,9 +108,9 @@ rclone_setup() {
     elif [[ "$STORAGE_TYPE" == "dropbox" ]]; then
         echo "token = $(rclone authorize dropbox)" >> "$RCLONE_CONFIG_FILE"
     elif [[ "$STORAGE_TYPE" == "s3" ]]; then
-        read -p "🔑 Enter Access Key ID: " ACCESS_KEY
-        read -p "🔑 Enter Secret Access Key: " SECRET_KEY
-        read -p "🌍 Enter Region (e.g., us-east-1): " REGION
+        [[ "$TEST_MODE" != true ]] && read -p "🔑 Enter Access Key ID: " ACCESS_KEY
+        [[ "$TEST_MODE" != true ]] && read -p "🔑 Enter Secret Access Key: " SECRET_KEY
+        [[ "$TEST_MODE" != true ]] && read -p "🌍 Enter Region (e.g., us-east-1): " REGION
 
         {
             echo "provider = AWS"

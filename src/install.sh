@@ -1,22 +1,36 @@
 #!/bin/bash
-if [ "$EUID" -ne 0 ]; then
-  echo "⚠️ Please run this script as root or with sudo."
-  exit 1
-fi
 
 INSTALL_DIR="/opt/wp-docker"
-BIN_NAME="wpdocker"
-BIN_LINK="/usr/local/bin/$BIN_NAME"
 REPO_URL="https://github.com/thachpn165/wp-docker"
 ZIP_NAME="wp-docker.zip"
 DEV_MODE=false
 
+source "$FUNCTIONS_DIR/setup-aliases.sh"
 # ========================
 # ⚙️ Command Line Parameter Processing
 # ========================
 if [[ "$1" == "--dev" ]]; then
   DEV_MODE=true
+  ZIP_NAME="wp-docker-dev.zip"
   echo "🛠 Installing in DEV mode (no system symlink creation)"
+else
+  # Ask the user to choose version: Official or Nightly (Testing Only)
+  echo "❓ What version would you like to install?"
+  echo "1) Official"
+  echo "2) Nightly (Testing Only)"
+  
+  read -rp "Please select an option (1 or 2, default is 1): " version_choice
+
+  # Set default option to Official (1) if no input is provided
+  version_choice=${version_choice:-1}
+
+  if [[ "$version_choice" == "2" ]]; then
+    DEV_MODE=true
+    ZIP_NAME="wp-docker-dev.zip"
+    echo "🛠 Installing Nightly (Testing Only) version"
+  else
+    echo "🛠 Installing Official version"
+  fi
 fi
 
 # ========================
@@ -36,8 +50,7 @@ fi
 # 📥 Download and extract release
 # ========================
 echo "📦 Downloading source code from GitHub Release..."
-curl -L "$REPO_URL/releases/latest/download/wp-docker.zip" -o "$ZIP_NAME" || { echo "❌ Command failed at line 35"; exit 1; }
-
+curl -L "$REPO_URL/releases/latest/download/$ZIP_NAME" -o "$ZIP_NAME" || { echo "❌ Command failed at line 35"; exit 1; }
 echo "📁 Extracting to $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
 unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
@@ -52,15 +65,46 @@ chown -R "$USER" "$INSTALL_DIR"
 # ========================
 # 🔗 Create global alias if not in dev mode
 # ========================
-chmod +x "$INSTALL_DIR/shared/bin/$BIN_NAME.sh"
+# Check if alias is already set in ~/.bashrc or ~/.zshrc
+check_and_add_alias() {
+  local shell_config
+  local alias_line
+  # Get the absolute path of the bin directory
+  local cli_dir_abs=$(realpath "$INSTALL_DIR/shared/bin")
+  alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
 
-if [[ "$DEV_MODE" != true ]]; then
-  ln -sf "$INSTALL_DIR/shared/bin/$BIN_NAME.sh" "$BIN_LINK"
-  echo "✅ Created '$BIN_NAME' command for running from anywhere."
-fi
+  # Check if using Zsh or Bash
+  if [[ "$SHELL" == *"zsh"* ]]; then
+    shell_config="$HOME/.zshrc"
+  else
+    shell_config="$HOME/.bashrc"
+  fi
+
+  # Check if the alias is already present
+  if ! grep -q "$alias_line" "$shell_config"; then
+    echo "✅ Adding alias for wpdocker to $shell_config..."
+    echo "$alias_line" >> "$shell_config"
+  else
+    echo "⚠️ Alias 'wpdocker' already exists in $shell_config"
+  fi
+  
+  # Reload the shell configuration file to apply changes
+  if [[ "$SHELL" == *"zsh"* ]]; then
+      # If the current shell is zsh, source .zshrc
+      echo "✅ Sourcing .zshrc to reload Zsh configuration..."
+      source "$HOME/.zshrc"
+  elif [[ "$SHELL" == *"bash"* ]]; then
+      # If the current shell is bash, source .bashrc
+      echo "✅ Sourcing .bashrc to reload Bash configuration..."
+      source "$HOME/.bashrc"
+  else
+      echo "❌ Unsupported shell: $SHELL. Please reload your shell configuration manually."
+  fi
+
+}
+check_and_add_alias
 
 echo "✅ Installation successful at: $INSTALL_DIR"
-echo "👉 You can run the system using: $BIN_NAME"
 
 # ========================
 # 📢 Special warning for macOS (Docker Desktop)

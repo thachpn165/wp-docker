@@ -1,34 +1,36 @@
-ssl_edit_certificate() {
-    select_website
+ssl_edit_certificate_logic() {
     if [ -z "$SITE_NAME" ]; then
         echo -e "${RED}❌ No website selected.${NC}"
         return 1
     fi
 
-    
     local target_crt="$SSL_DIR/$SITE_NAME.crt"
     local target_key="$SSL_DIR/$SITE_NAME.key"
 
-    echo -e "${YELLOW}📝 Editing SSL certificate for website: $SITE_NAME${NC}"
-
-    echo -e "${BLUE}🔹 Paste new content for .crt file:${NC}"
-    echo -e "${YELLOW}👉 Press Ctrl+D (Linux/macOS) or Ctrl+Z then Enter (Windows Git Bash) when done${NC}"
-    cat > "$target_crt"
-
-    echo -e "\n${BLUE}🔹 Paste new content for .key file:${NC}"
-    echo -e "${YELLOW}👉 Press Ctrl+D (Linux/macOS) or Ctrl+Z then Enter (Windows Git Bash) when done${NC}"
-    cat > "$target_key"
-
-    # Check files after pasting
-    if [[ ! -s "$target_crt" || ! -s "$target_key" ]]; then
-        echo -e "${RED}❌ One of the new files is empty. Operation cancelled.${NC}"
+    # Check if the SSL files exist
+    if [[ ! -f "$target_crt" || ! -f "$target_key" ]]; then
+        echo -e "${RED}❌ SSL certificate files not found for $SITE_NAME.${NC}"
         return 1
     fi
 
-    echo -e "${GREEN}✅ Certificate for $SITE_NAME has been updated.${NC}"
+    # Proceed to edit the certificate (no interaction here)
+    echo -e "${YELLOW}📝 Editing SSL certificate for website: $SITE_NAME${NC}"
 
+    # Request user to input the new certificate and key
+    echo -e "${YELLOW}Please paste the new SSL certificate for $SITE_NAME:${NC}"
+    read -r new_cert
+    echo -e "${YELLOW}Please paste the new private key for $SITE_NAME:${NC}"
+    read -r new_key
+
+    # Save the new certificate and key to the appropriate files
+    echo "$new_cert" > "$target_crt"
+    echo "$new_key" > "$target_key"
+
+    echo -e "${GREEN}✅ Certificate for $SITE_NAME has been updated successfully.${NC}"
+
+    # Reload NGINX Proxy to apply new certificate
     echo -e "${YELLOW}🔄 Reloading NGINX Proxy to apply new certificate...${NC}"
-    docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload
+    nginx_reload
 
     echo -e "${GREEN}✅ NGINX Proxy has been reloaded successfully.${NC}"
 }

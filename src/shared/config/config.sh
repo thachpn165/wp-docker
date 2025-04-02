@@ -3,17 +3,18 @@
 # =====================================
 
 # ==== Automatically determine BASE_DIR (root of the source code) ====
-SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
-CONFIG_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+CONFIG_DIR="$(dirname "$SCRIPT_PATH")"
 
-# If in DEV environment (src/ folder exists): BASE_DIR will be /.../wp-docker-lemp/src
+# If in DEV environment (src/ folder exists): BASE_DIR will be /.../wp-docker/src
 if [[ "$CONFIG_DIR" == */src/shared/config ]]; then
-  BASE_DIR="${BASE_DIR:-$(cd "$CONFIG_DIR/../../.." && pwd)/src}"
+  BASE_DIR="$(cd "$CONFIG_DIR/../../.." && pwd)/src"
   DEV_MODE=true
 else
-  BASE_DIR="${BASE_DIR:-$(cd "$CONFIG_DIR/../.." && pwd)}"
+  BASE_DIR="$(cd "$CONFIG_DIR/../.." && pwd)"
   DEV_MODE=false
 fi
+
 
 # By default, TEST_MODE is false, only set to true when running tests
 # When writing tests, set TEST_MODE=true to skip Docker checks
@@ -36,6 +37,8 @@ SITES_DIR="${SITES_DIR:-$BASE_DIR/sites}"  # Sites directory
 TEMPLATES_DIR="${TEMPLATES_DIR:-$BASE_DIR/shared/templates}"  # Templates directory
 CONFIG_DIR="${CONFIG_DIR:-$BASE_DIR/shared/config}"  # Configuration directory
 SCRIPTS_DIR="${SCRIPTS_DIR:-$BASE_DIR/shared/scripts}"  # Scripts directory
+CLI_DIR="${CLI_DIR:-$SCRIPTS_DIR/cli}"  # CLI scripts directory
+MENU_DIR="$SCRIPTS_DIR/menu"
 FUNCTIONS_DIR="${FUNCTIONS_DIR:-$SCRIPTS_DIR/functions}"  # Functions directory
 WP_SCRIPTS_DIR="${WP_SCRIPTS_DIR:-$SCRIPTS_DIR/wp-scripts}"  # WP scripts directory
 WEBSITE_MGMT_DIR="${WEBSITE_MGMT_DIR:-$SCRIPTS_DIR/website-management}"  # Website management scripts directory
@@ -55,11 +58,12 @@ NGINX_PROXY_DIR="${NGINX_PROXY_DIR:-$BASE_DIR/webserver/nginx}"  # NGINX proxy d
 PROXY_CONF_DIR="${PROXY_CONF_DIR:-$NGINX_PROXY_DIR/conf.d}"  # NGINX configuration directory
 NGINX_SCRIPTS_DIR="${NGINX_SCRIPTS_DIR:-$NGINX_PROXY_DIR/scripts}"  # NGINX scripts directory
 SSL_DIR="${SSL_DIR:-$NGINX_PROXY_DIR/ssl}"  # SSL directory for NGINX
+NGINX_MAIN_CONF="${NGINX_MAIN_CONF:-$NGINX_PROXY_DIR/globals/nginx.conf}"  # NGINX main configuration file
 
 # ==== Utility scripts ====
 SETUP_WORDPRESS_SCRIPT="${SETUP_WORDPRESS_SCRIPT:-$WP_SCRIPTS_DIR/wp-setup.sh}"  # WordPress setup script
 PHP_USER="${PHP_USER:-nobody}"  # PHP user
-
+PHP_CONTAINER_WP_PATH="${PHP_CONTAINER_WP_PATH:-/var/www/html}"  # PHP container WordPress path
 # ==== Network & container configuration ====
 DOCKER_NETWORK="${DOCKER_NETWORK:-proxy_network}"  # Docker network name
 NGINX_PROXY_CONTAINER="${NGINX_PROXY_CONTAINER:-nginx-proxy}"  # NGINX proxy container name
@@ -83,14 +87,14 @@ RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$BASE_DIR/shared/config/rclone}"  # Rclo
 RCLONE_CONFIG_FILE="${RCLONE_CONFIG_FILE:-$RCLONE_CONFIG_DIR/rclone.conf}"  # Rclone config file
 
 # ==== Import utility functions ====
-source "${FUNCTIONS_DIR}/system_utils.sh"  # System utilities
-source "${FUNCTIONS_DIR}/docker_utils.sh"  # Docker utilities
-source "${FUNCTIONS_DIR}/file_utils.sh"  # File utilities
-source "${FUNCTIONS_DIR}/network_utils.sh"  # Network utilities
-source "${FUNCTIONS_DIR}/ssl_utils.sh"  # SSL utilities
-source "${FUNCTIONS_DIR}/wp_utils.sh"  # WordPress utilities
-source "${FUNCTIONS_DIR}/php/php_utils.sh"  # PHP utilities
-source "${FUNCTIONS_DIR}/db_utils.sh"  # Database utilities
-source "${FUNCTIONS_DIR}/website_utils.sh"  # Website utilities
-source "${FUNCTIONS_DIR}/misc_utils.sh"  # Miscellaneous utilities
-source "${FUNCTIONS_DIR}/nginx/nginx_utils.sh"  # NGINX utilities
+source "${FUNCTIONS_DIR}/utils/system_utils.sh"  # System utilities
+source "${FUNCTIONS_DIR}/utils/docker_utils.sh"  # Docker utilities
+source "${FUNCTIONS_DIR}/utils/file_utils.sh"  # File utilities
+source "${FUNCTIONS_DIR}/utils/network_utils.sh"  # Network utilities
+source "${FUNCTIONS_DIR}/utils/ssl_utils.sh"  # SSL utilities
+source "${FUNCTIONS_DIR}/utils/wp_utils.sh"  # WordPress utilities
+source "${FUNCTIONS_DIR}/utils//php_utils.sh"  # PHP utilities
+source "${FUNCTIONS_DIR}/utils/db_utils.sh"  # Database utilities
+source "${FUNCTIONS_DIR}/utils/website_utils.sh"  # Website utilities
+source "${FUNCTIONS_DIR}/utils/misc_utils.sh"  # Miscellaneous utilities
+source "${FUNCTIONS_DIR}/utils/nginx_utils.sh"  # NGINX utilities

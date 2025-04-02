@@ -1,12 +1,12 @@
 # WP Docker
 
-[![Version](https://img.shields.io/badge/version-v1.1.3--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Version](https://img.shields.io/badge/version-v1.1.4--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker)](./LICENSE)
 
-> **Note**: Version `v1.1.3-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
+> **Note**: Version `v1.1.4-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
 
 ![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
 
@@ -30,23 +30,45 @@ By simplifying multi-stage environment replication (dev → staging → prod), W
 
 Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
-## Latest Release - v1.1.3-beta
+## Latest Release - v1.1.4-beta
 
 ### Added
-- **NGINX Rebuild**: System tool to rebuild the NGINX proxy container with latest OpenResty image
-- **Advanced Backup Restoration**: Enhanced functionality supporting both files and database restoration
-- **Improved Menu Integration**: Streamlined access to restoration tools through the system menu
-- **Test Mode Support**: Enhanced simulation capabilities for backup and restore processes
-- **Comprehensive Logging**: Refined debug output for monitoring key operations
+- **Refactored core functions** to adhere to the 3-step standard. This allows for better maintainability and cleaner code.
+  - **Three-step structure**:
+    1. **Logic functions** that contain the core functionality of each action.
+    2. **CLI wrapper** that calls the logic functions and handles input parameters.
+    3. **Menu functions** to interact with the user and display options.
+  - This refactoring applies to various system functions such as website management, SSL management, backup management, and PHP version management.
+  
+- **Support for `wpdocker` with subcommands**:
+  - Introduced subcommands for managing WordPress sites, SSL, backups, PHP versions, and more.
+  - New `wpdocker` command structure:
+    - **wpdocker website**: Manage WordPress websites.
+      - `create`, `delete`, `list`, `restart`, `logs`, `info`, `update_template`.
+    - **wpdocker ssl**: Manage SSL certificates.
+      - `selfsigned`, `letsencrypt`, `check`.
+    - **wpdocker backup**: Manage website backups.
+      - `website`, `database`, `file`.
+    - **wpdocker php**: Manage PHP configurations.
+      - `change`, `get`, `rebuild`, `edit` (edit PHP config or PHP ini).
+
+- **Alias feature** for easier command execution:
+  - Created an alias for the `wpdocker` command, allowing users to use commands like `wpdocker website create`, `wpdocker ssl letsencrypt`, etc.
+  - The aliases are added to the appropriate shell configuration files (`~/.bashrc` or `~/.zshrc`).
+  - A helper function `check_and_add_alias` was added to check for and add aliases if they don't already exist.
 
 ### Fixed
-- **Test Environment Stability**: Resolved issues with environment variable handling in test scenarios
-- **Dynamic Container Management**: Improved handling of container names based on environment variables
+- **Bug fix** in handling shell configurations (alias issue):
+  - Corrected the behavior when adding aliases in shell configuration files.
+  - Resolved issues related to alias duplication and ensured smooth execution after reload.
 
 ### Changed
-- **Code Optimization**: Refactored backup functions for improved maintenance and readability
-- **Container Initialization**: Enhanced pre-operation container status verification
-- **Standardized Naming Conventions**: Improved organization of backup files
+- **Menu structure** refactor to make it more modular and user-friendly.
+  - Subcommands are now managed with individual functions for clarity and ease of maintenance.
+  - Centralized subcommand handling for website, SSL, backup, and PHP management under the `wpdocker` command.
+  
+- **Shell environment detection**:
+  - Improved shell detection logic to ensure compatibility with both Bash and Zsh environments, providing more accurate behavior when modifying the shell configuration.
 
 *For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
 
@@ -69,7 +91,7 @@ After installation, you **must add `/opt`** to Docker → Settings → Resources
 ## Installation
 
 ```bash
-curl -fsSL https://github.com/thachpn165/wp-docker/blob/main/src/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/src/install.sh | bash
 ```
 
 ## Usage
@@ -121,7 +143,7 @@ After modifying configuration files, restart the affected services through the s
 
 ## 🚀 WP Docker Roadmap (2025)
 
-### ✅ Current Version: `v1.1.2` (Beta)
+### ✅ Current Version: `v1.1.4` (Beta)
 - Planned release of the first stable version (v1.2.0-stable): 2025-04-01
 
 ### Core Features Completed:

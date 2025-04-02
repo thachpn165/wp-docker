@@ -119,7 +119,7 @@ core_run_upgrade_scripts() {
 core_update_system() {
   # Ask user to confirm update
   echo -e "${YELLOW}⚠️ Are you sure you want to update WP Docker to the latest version? (y/n)${NC}"
-  read -p "Enter 'y' to continue, 'n' to cancel: " choice
+  [[ "$TEST_MODE" != true ]] && read -p "Enter 'y' to continue, 'n' to cancel: " choice
   if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
     echo -e "${GREEN}✅ Update process cancelled.${NC}"
     exit 0

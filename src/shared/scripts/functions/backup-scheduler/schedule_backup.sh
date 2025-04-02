@@ -28,7 +28,7 @@ schedule_backup_create() {
     echo -e "${BLUE}📂 Select backup storage location:${NC}"
     echo -e "  ${GREEN}[1]${NC} 💾 Save to server (local)"
     echo -e "  ${GREEN}[2]${NC} ☁️  Save to configured Storage"
-    read -p "🔹 Select an option (1-2): " storage_choice
+    [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-2): " storage_choice
 
     local storage_option="local"
     local selected_storage=""
@@ -55,7 +55,7 @@ schedule_backup_create() {
 
         echo -e "${YELLOW}💡 Please enter the exact Storage name from the list above.${NC}"
         while true; do
-            read -p "🔹 Enter Storage name to use: " selected_storage
+            [[ "$TEST_MODE" != true ]] && read -p "🔹 Enter Storage name to use: " selected_storage
             selected_storage=$(echo "$selected_storage" | xargs)  # Remove extra whitespace
 
             # Check if storage exists in the list
@@ -77,14 +77,14 @@ schedule_backup_create() {
     echo -e "  ${GREEN}[5]${NC} Exit"
     echo ""
 
-    read -p "🔹 Select an option (1-5): " choice
+    [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-5): " choice
 
     case "$choice" in
         1) cron_job="0 2 * * * bash $backup_script $SITE_NAME $storage_option >> $log_file 2>&1" ;;
         2) cron_job="0 3 * * 0 bash $backup_script $SITE_NAME $storage_option >> $log_file 2>&1" ;;
         3) cron_job="0 4 1 * * bash $backup_script $SITE_NAME $storage_option >> $log_file 2>&1" ;;
         4) 
-            read -p "🔹 Enter cron schedule (e.g., '30 2 * * *'): " custom_cron
+            [[ "$TEST_MODE" != true ]] && read -p "🔹 Enter cron schedule (e.g., '30 2 * * *'): " custom_cron
             cron_job="$custom_cron bash $backup_script $SITE_NAME $storage_option >> $log_file 2>&1"
             ;;
         5) 

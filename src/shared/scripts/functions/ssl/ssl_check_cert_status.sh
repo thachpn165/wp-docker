@@ -1,13 +1,15 @@
-ssl_check_certificate_status() {
-    select_website
-    if [ -z "$SITE_NAME" ]; then
+ssl_check_certificate_status_logic() {
+    local site_name="$1"
+    local SSL_DIR="$2"
+
+    if [ -z "$site_name" ]; then
         echo -e "${RED}❌ No website selected.${NC}"
         return 1
     fi
 
-    local ENV_FILE="$SITES_DIR/$SITE_NAME/.env"
+    local ENV_FILE="$SITES_DIR/$site_name/.env"
     if [ ! -f "$ENV_FILE" ]; then
-        echo -e "${RED}❌ .env file not found for site $SITE_NAME${NC}"
+        echo -e "${RED}❌ .env file not found for site $site_name${NC}"
         return 1
     fi
 

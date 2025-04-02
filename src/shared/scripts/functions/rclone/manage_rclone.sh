@@ -11,8 +11,6 @@ rclone_storage_list() {
     sed -n 's/^\[\(.*\)\]$/\1/p' "$rclone_config"
 }
 
-
-
 # Function to delete configured storage
 rclone_storage_delete() {
     local rclone_config=$RCLONE_CONFIG_FILE

@@ -1,10 +1,4 @@
-ssl_install_lets_encrypt() {
-    select_website
-    if [ -z "$SITE_NAME" ]; then
-        echo -e "${RED}❌ No website selected.${NC}"
-        return 1
-    fi
-
+ssl_install_lets_encrypt_logic() {
     local ENV_FILE="$SITES_DIR/$SITE_NAME/.env"
     if [ ! -f "$ENV_FILE" ]; then
         echo -e "${RED}❌ .env file not found for site $SITE_NAME${NC}"
@@ -27,14 +21,14 @@ ssl_install_lets_encrypt() {
         return 1
     fi
 
-    # Check certbot
+    # Check certbot installation
     if ! command -v certbot &> /dev/null; then
         echo -e "${YELLOW}⚠️ certbot is not installed. Proceeding with installation...${NC}"
         if [[ "$(uname -s)" == "Linux" ]]; then
             if [ -f /etc/debian_version ]; then
-                 apt update &&  apt install -y certbot
+                 apt update && apt install -y certbot
             elif [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]; then
-                 yum install epel-release -y &&  yum install -y certbot
+                 yum install epel-release -y && yum install -y certbot
             else
                 echo -e "${RED}❌ This operating system is not supported for automatic certbot installation.${NC}"
                 return 1
@@ -46,7 +40,7 @@ ssl_install_lets_encrypt() {
     fi
 
     echo -e "${YELLOW}📦 Requesting certificate from Let's Encrypt using webroot method...${NC}"
-     certbot certonly --webroot -w "$WEBROOT" -d "$DOMAIN" --non-interactive --agree-tos -m "admin@$DOMAIN"
+    certbot certonly --webroot -w "$WEBROOT" -d "$DOMAIN" --non-interactive --agree-tos -m "admin@$DOMAIN"
 
     local CERT_PATH="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
     local KEY_PATH="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
@@ -58,11 +52,9 @@ ssl_install_lets_encrypt() {
 
     echo -e "${GREEN}✅ Certificate has been successfully issued by Let's Encrypt.${NC}"
 
-    
     mkdir -p "$SSL_DIR"
-
-     cp "$CERT_PATH" "$SSL_DIR/$DOMAIN.crt"
-     cp "$KEY_PATH" "$SSL_DIR/$DOMAIN.key"
+    cp "$CERT_PATH" "$SSL_DIR/$DOMAIN.crt"
+    cp "$KEY_PATH" "$SSL_DIR/$DOMAIN.key"
 
     echo -e "${YELLOW}🔄 Reloading NGINX Proxy to apply new certificate...${NC}"
     docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload
