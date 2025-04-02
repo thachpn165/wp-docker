@@ -91,7 +91,7 @@ After installation, you **must add `/opt`** to Docker → Settings → Resources
 ## Installation
 
 ```bash
-curl -fsSL https://github.com/thachpn165/wp-docker/blob/main/src/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/src/install.sh | bash
 ```
 
 ## Usage
