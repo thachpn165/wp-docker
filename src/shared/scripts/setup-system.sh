@@ -3,10 +3,6 @@
 # ========================================
 # ⚙️ setup-system.sh – Initialize WP Docker system
 # ========================================
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

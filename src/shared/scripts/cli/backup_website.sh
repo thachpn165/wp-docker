@@ -34,10 +34,6 @@
 #
 #   Backup to cloud storage:
 #     ./backup_website.sh --site_name=mywebsite --storage=cloud --rclone_storage=mycloud
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

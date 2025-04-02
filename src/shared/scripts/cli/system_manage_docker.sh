@@ -29,10 +29,6 @@
 
 # === Usage Example ===
 # ./system_manage_docker.sh --container_name=my_container --container_action=start
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

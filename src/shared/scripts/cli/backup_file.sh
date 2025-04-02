@@ -42,10 +42,6 @@
 #     before executing this script.
 #   - The `backup_file_logic` function must be defined in the loaded functions
 #     to handle the actual backup process.
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

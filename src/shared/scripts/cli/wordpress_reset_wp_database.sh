@@ -26,10 +26,6 @@
 # - Exits with an error message if the `config.sh` file is missing.
 # - Exits with an error message if the required `--site_name` parameter is not provided.
 # - Exits with an error message for unknown command-line parameters.
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

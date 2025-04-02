@@ -30,10 +30,6 @@
 # ./backup_restore_web.sh --site_name=my_site --code_backup_file=/path/to/code.tar.gz --db_backup_file=/path/to/db.sql --test_mode=true
 #!/bin/bash
 
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
