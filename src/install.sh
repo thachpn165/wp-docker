@@ -11,7 +11,26 @@ source "$FUNCTIONS_DIR/setup-aliases.sh"
 # ========================
 if [[ "$1" == "--dev" ]]; then
   DEV_MODE=true
+  ZIP_NAME="wp-docker-dev.zip"
   echo "🛠 Installing in DEV mode (no system symlink creation)"
+else
+  # Ask the user to choose version: Official or Nightly (Testing Only)
+  echo "❓ What version would you like to install?"
+  echo "1) Official"
+  echo "2) Nightly (Testing Only)"
+  
+  read -rp "Please select an option (1 or 2, default is 1): " version_choice
+
+  # Set default option to Official (1) if no input is provided
+  version_choice=${version_choice:-1}
+
+  if [[ "$version_choice" == "2" ]]; then
+    DEV_MODE=true
+    ZIP_NAME="wp-docker-dev.zip"
+    echo "🛠 Installing Nightly (Testing Only) version"
+  else
+    echo "🛠 Installing Official version"
+  fi
 fi
 
 # ========================
@@ -31,7 +50,7 @@ fi
 # 📥 Download and extract release
 # ========================
 echo "📦 Downloading source code from GitHub Release..."
-curl -L "$REPO_URL/releases/latest/download/wp-docker.zip" -o "$ZIP_NAME" || { echo "❌ Command failed at line 35"; exit 1; }
+curl -L "$REPO_URL/releases/latest/download/$ZIP_NAME" -o "$ZIP_NAME" || { echo "❌ Command failed at line 35"; exit 1; }
 echo "📁 Extracting to $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
 unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
