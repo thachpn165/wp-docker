@@ -1,5 +1,4 @@
 backup_website_logic() {
-    # Kiểm tra xem SITE_NAME đã được gán chưa
     if [[ -z "$SITE_NAME" ]]; then
         log_with_time "${RED}${CROSSMARK} Error: SITE_NAME is not set!${NC}"
         return 1
@@ -21,19 +20,9 @@ backup_website_logic() {
     # Log start of backup process
     log_with_time "${GREEN}${CHECKMARK} Starting backup process for site: $site_name${NC}"
 
-    # Fetch database details using the db_fetch_env function
-    local db_info=$(db_fetch_env "$site_name")
-    if [[ -z "$db_info" ]]; then
-        log_with_time "${RED}${CROSSMARK} Error: Missing database information for site $site_name!${NC}"
-        return 1
-    fi
-    local DB_NAME=$(echo "$db_info" | awk '{print $1}')
-    local DB_USER=$(echo "$db_info" | awk '{print $2}')
-    local DB_PASS=$(echo "$db_info" | awk '{print $3}')
-
-    # Perform backup for the database and files
+    # Backup database using the existing database_export_logic
     log_with_time "🔄 Backing up database..."
-    db_backup_file=$(bash "$CLI_DIR/backup_database.sh" --site_name="$site_name" --db_name="$DB_NAME" --db_user="$DB_USER" --db_pass="$DB_PASS" | tail -n 1)
+    db_backup_file=$(bash "$CLI_DIR/database_export.sh" --site_name="$site_name" | tail -n 1)
 
     log_with_time "🔄 Backing up source code..."
     files_backup_file=$(bash "$CLI_DIR/backup_file.sh" --site_name="$site_name" | tail -n 1)

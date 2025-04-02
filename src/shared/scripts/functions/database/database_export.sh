@@ -1,7 +1,6 @@
 # database_export_logic – Logic to export database (backup)
 
 database_export_logic() {
-
     local site_name="$1"
     local save_location="$2"  # Đã được truyền từ file cli
 
@@ -73,4 +72,7 @@ database_export_logic() {
     echo -e "${GREEN}File Size:${NC} $file_size"
     echo -e "${GREEN}File Creation Time:${NC} $file_time"
     echo -e "${GREEN}Backup file saved at:${NC} $save_location"
+
+    # Return the path of the backup file
+    echo "$save_location"
 }
