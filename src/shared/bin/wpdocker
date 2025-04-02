@@ -82,6 +82,15 @@ handle_php() {
     esac
 }
 
+handle_database() {
+    case "$1" in
+        reset) bash "$CLI_DIR/database_reset.sh" "${@:2}" ;;
+        import) bash "$CLI_DIR/database_import.sh" "${@:2}" ;;
+        export) bash "$CLI_DIR/database_export.sh" "${@:2}" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for database: $1" ;;
+    esac
+}
+
 # Main subcommands handler
 if [[ -z "$1" ]]; then
     # If no subcommand is provided, call the main menu
@@ -93,6 +102,7 @@ else
         ssl) handle_ssl "$2" "${@:3}" ;;
         backup) handle_backup "$2" "${@:3}" ;;
         php) handle_php "$2" "${@:3}" ;;
+        database) handle_database "$2" "${@:3}" ;;
         *)
             echo "${CROSSMARK} Unknown subcommand: $1"
             #bash "$INSTALL_DIR/main.sh"

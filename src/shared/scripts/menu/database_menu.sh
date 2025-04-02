@@ -26,8 +26,6 @@ database_menu() {
         echo -e "  ${GREEN}[1]${NC} Reset Database (DANGER ☢️)"
         echo -e "  ${GREEN}[2]${NC} Export Database"
         echo -e "  ${GREEN}[3]${NC} Import Database"
-        echo -e "  ${GREEN}[4]${NC} Manage backup schedule (Crontab)"
-        echo -e "  ${GREEN}[5]${NC} Restore website from backup"
         echo -e "  ${GREEN}[6]${NC} ${CROSSMARK} Exit"
         echo -e "${BLUE}============================${NC}"
         
@@ -36,9 +34,9 @@ database_menu() {
         case "$choice" in
             1) bash "$MENU_DIR/database/database_reset_menu.sh" ;;
             2) bash "$MENU_DIR/database/database_export_menu.sh" ;;
-
+            3) bash "$MENU_DIR/database/database_import_menu.sh" ;;
             6) 
-                echo -e "${GREEN}👋 Exiting Backup menu!${NC}"
+                echo -e "${GREEN}👋 Exiting Database menu!${NC}"
                 break
                 ;;
             *)

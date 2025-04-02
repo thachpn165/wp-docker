@@ -31,9 +31,9 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# 🚨 **Cảnh báo quan trọng**
+# ${IMPORTANT} **Cảnh báo quan trọng**
 clear
-echo -e "${RED}${BOLD}🚨 CẢNH BÁO QUAN TRỌNG 🚨${NC}"
+echo -e "${RED}${BOLD}${IMPORTANT} CẢNH BÁO QUAN TRỌNG ${IMPORTANT}${NC}"
 echo -e "${RED}${ERROR} Việc reset database sẽ xóa toàn bộ dữ liệu và không thể khôi phục! ${ERROR}${NC}"
 echo -e "${YELLOW}📌 Vui lòng sao lưu đầy đủ trước khi tiếp tục.${NC}"
 echo ""
