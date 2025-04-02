@@ -33,10 +33,6 @@
 # - Ensure the script has executable permissions: chmod +x website_restart.sh
 # - Run the script from a terminal with appropriate permissions.
 #!/usr/bin/env bash
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

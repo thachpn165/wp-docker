@@ -31,10 +31,6 @@
 #   ./ssl_check_status.sh --site_name=mywebsite --ssl_dir=/path/to/ssl
 #
 # -----------------------------------------------------------------------------
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

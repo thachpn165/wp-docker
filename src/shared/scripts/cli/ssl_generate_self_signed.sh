@@ -24,10 +24,6 @@
 # - Exits with an error if not run in a Bash shell.
 # - Exits with an error if PROJECT_DIR cannot be determined or the config.sh file is missing.
 # - Exits with an error if the --site_name argument is not provided.
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

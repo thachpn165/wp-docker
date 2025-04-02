@@ -1,13 +1,4 @@
 #!/bin/bash
-#if [ "$EUID" -ne 0 ]; then
-#  echo "⚠️ Please run this script as root or with sudo."
-#  exit 1
-#fi
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
-
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
   SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"

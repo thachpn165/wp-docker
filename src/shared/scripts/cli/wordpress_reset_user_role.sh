@@ -28,10 +28,6 @@
 #   ./wordpress_reset_user_role.sh --site_name=my_wordpress_site
 #
 # -----------------------------------------------------------------------------
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then

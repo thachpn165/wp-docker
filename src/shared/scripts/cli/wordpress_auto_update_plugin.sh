@@ -32,10 +32,6 @@
 # Example:
 # ./wordpress_auto_update_plugin.sh --site_name=mywebsite --action=enable
 # This command enables auto-updates for plugins on the WordPress site named "mywebsite".
-if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
-  exit 1
-fi
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
