@@ -25,7 +25,7 @@ database_reset_logic() {
     echo "${IMPORTANT} WARNING: This will RESET the database '$db_name' for site '$site_name'. All data in the database will be lost permanently!"
     read -rp "Are you sure you want to proceed? (y/n): " confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-        echo "❌ Action canceled. No changes were made."
+        echo "${CROSSMARK} Action canceled. No changes were made."
         return 0
     fi
 

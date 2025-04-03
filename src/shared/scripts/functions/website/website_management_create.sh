@@ -11,9 +11,9 @@ website_management_create_logic() {
   CONTAINER_DB="${domain}-mariadb"
   MARIADB_VOLUME="${domain}_mariadb_data"
 
-  # ❌ Check if site already exists
+  # ${CROSSMARK} Check if site already exists
  if is_directory_exist "$SITE_DIR" false; then
-    echo -e "${RED}❌ Website '$domain' already exists.${NC}"
+    echo -e "${RED}${CROSSMARK} Website '$domain' already exists.${NC}"
     return 1
   fi
 
@@ -28,7 +28,7 @@ website_management_create_logic() {
   LOG_FILE="$LOGS_DIR/${domain}-setup.log"
   touch "$LOG_FILE"
   run_unless_test bash -c "exec > >(tee -a \"$LOG_FILE\") 2>&1"
-  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] STARTING SITE CREATION: $domain =====" >> "$LOG_FILE"
+  log_with_time "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] STARTING SITE CREATION: $domain ====="
 
   # 🧱 Create directory structure
   mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs,backups}
@@ -96,5 +96,5 @@ website_management_create_logic() {
     echo -e "${YELLOW}${WARNING} Container PHP not running, skipping permissions.${NC}"
   fi
 
-  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ✅ COMPLETED: $domain =====" >> "$LOG_FILE"
+  log_with_time "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ${CHECKMARK} COMPLETED: $domain ====="
 }

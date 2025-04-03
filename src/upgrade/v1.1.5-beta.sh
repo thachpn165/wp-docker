@@ -15,7 +15,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -23,7 +23,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -32,7 +32,7 @@ source "$CONFIG_FILE"
 
 # Ensure SITES_DIR is set
 if [[ -z "$SITES_DIR" ]]; then
-  echo "❌ SITES_DIR is not set. Please check your configuration." >&2
+  echo "${CROSSMARK} SITES_DIR is not set. Please check your configuration." >&2
   exit 1
 fi
 
@@ -48,7 +48,7 @@ rename_site_to_domain() {
   # Check if .env file exists
   local env_file="$site_dir/.env"
   if [[ ! -f "$env_file" ]]; then
-    echo "❌ No .env file found in $site_dir. Skipping..."
+    echo "${CROSSMARK} No .env file found in $site_dir. Skipping..."
     return 1
   fi
 
@@ -56,13 +56,13 @@ rename_site_to_domain() {
   domain=$(grep -i "^DOMAIN=" "$env_file" | cut -d '=' -f 2 | tr -d '[:space:]')
 
   if [[ -z "$domain" ]]; then
-    echo "❌ DOMAIN not found in $env_file for $site_name. Skipping..."
+    echo "${CROSSMARK} DOMAIN not found in $env_file for $site_name. Skipping..."
     return 1
   fi
 
   # Check if the domain is already the folder name
   if [[ "$site_name" == "$domain" ]]; then
-    echo "✅ Directory $site_name already matches domain $domain. Skipping rename."
+    echo "${CHECKMARK} Directory $site_name already matches domain $domain. Skipping rename."
     return 0
   fi
 
@@ -71,9 +71,9 @@ rename_site_to_domain() {
 
   # Ensure SITES_DIR contains the site directory before renaming
   if mv "$SITES_DIR/$site_name" "$SITES_DIR/$domain"; then
-    echo "✅ Renamed directory $site_name to $domain successfully."
+    echo "${CHECKMARK} Renamed directory $site_name to $domain successfully."
   else
-    echo "❌ Failed to rename directory $site_name to $domain."
+    echo "${CROSSMARK} Failed to rename directory $site_name to $domain."
     return 1
   fi
 }
@@ -88,4 +88,4 @@ for site_dir in "$SITES_DIR"/*; do
   fi
 done
 
-echo "✅ Upgrade to v1.1.5-beta completed. All site directories have been checked and renamed if necessary."
+echo "${CHECKMARK} Upgrade to v1.1.5-beta completed. All site directories have been checked and renamed if necessary."

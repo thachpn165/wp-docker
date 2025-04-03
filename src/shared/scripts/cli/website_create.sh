@@ -85,7 +85,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 #if [[ -z "$site_name" || ]] 
 if [[ -z "$domain" || -z "$php_version" ]]; then
-  echo "❌ Missing parameters. Usage:"
+  echo "${CROSSMARK} Missing parameters. Usage:"
   echo "  $0 --domain=abc.com --php=8.2"
   exit 1
 fi
@@ -93,4 +93,4 @@ fi
 website_management_create_logic "$domain" "$php_version"
 website_setup_wordpress_logic "$domain" "$auto_generate"
 
-echo "✅ DONE_CREATE_WEBSITE: $domain"
+echo "${CHECKMARK} DONE_CREATE_WEBSITE: $domain"

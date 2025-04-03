@@ -5,19 +5,19 @@ database_import_logic() {
 
     # Ensure PROJECT_DIR is set
     if [[ -z "$SITES_DIR" ]]; then
-        echo "❌ SITES_DIR is not set. Ensure config.sh is sourced correctly."
+        echo "${CROSSMARK} SITES_DIR is not set. Ensure config.sh is sourced correctly."
         return 1
     fi
 
     # Ensure $site_name is set
     if [[ -z "$site_name" ]]; then
-        echo "❌ Missing site name parameter."
+        echo "${CROSSMARK} Missing site name parameter."
         return 1
     fi
 
     # Ensure the backup file exists
     if [[ ! -f "$backup_file" ]]; then
-        echo "❌ The backup file does not exist: $backup_file"
+        echo "${CROSSMARK} The backup file does not exist: $backup_file"
         return 1
     fi
 
@@ -27,7 +27,7 @@ database_import_logic() {
 
     # Check if fetching database credentials was successful
     if [[ $? -ne 0 ]]; then
-        echo "❌ Failed to fetch database credentials for site '$site_name'."
+        echo "${CROSSMARK} Failed to fetch database credentials for site '$site_name'."
         return 1
     fi
 
@@ -37,15 +37,15 @@ database_import_logic() {
 
     # Check if MariaDB container is running
     if ! is_mariadb_running "$site_name"; then
-        echo "❌ MariaDB container for site '$site_name' is not running. Please check!"
+        echo "${CROSSMARK} MariaDB container for site '$site_name' is not running. Please check!"
         return 1
     fi
 
     # Ask for confirmation before dropping the database
-    echo -e "\n⚠️ WARNING: The database will be completely dropped before importing the new data. Are you sure you want to proceed? (y/n)"
+    echo -e "\n${WARNING} WARNING: The database will be completely dropped before importing the new data. Are you sure you want to proceed? (y/n)"
     read -rp "Confirm (y/n): " confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-        echo "❌ Action canceled. No changes were made."
+        echo "${CROSSMARK} Action canceled. No changes were made."
         return 1
     fi
 
@@ -58,9 +58,9 @@ database_import_logic() {
 
     # Run the import command inside the container
     if ! docker exec --env MYSQL_PWD="$db_password" ${site_name}-mariadb mysql -u$db_user $db_name < "$backup_file"; then
-        echo "❌ Failed to import the database '$db_name' in container."
+        echo "${CROSSMARK} Failed to import the database '$db_name' in container."
         return 1
     fi
 
-    echo "✅ Database import completed!"
+    echo "${CHECKMARK} Database import completed!"
 }
