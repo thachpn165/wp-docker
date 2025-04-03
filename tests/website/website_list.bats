@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # =============================================
-# ✅ Test: website_list.bats
+# ${CHECKMARK} Test: website_list.bats
 # CLI should list all existing WordPress websites
 # =============================================
 
@@ -24,7 +24,7 @@ teardown() {
   bash "$PROJECT_DIR_ORIGINAL/shared/scripts/cli/website_delete.sh" \
     --site_name="$TEST_SITE_NAME" --backup=false
    if [[ -z "$TEST_SITE_NAME" ]]; then
-    echo "❌ TEST_SITE_NAME is empty!"
+    echo "${CROSSMARK} TEST_SITE_NAME is empty!"
     exit 1
    fi
 }

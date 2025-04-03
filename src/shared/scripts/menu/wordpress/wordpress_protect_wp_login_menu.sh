@@ -14,7 +14,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -25,7 +25,7 @@ echo -e "${YELLOW}📋 Danh sách các website có thể bật/tắt bảo vệ 
 site_list=($(ls -1 "$SITES_DIR"))
 
 if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ Không có website nào để thực hiện thao tác này.${NC}"
+    echo -e "${RED}${CROSSMARK} Không có website nào để thực hiện thao tác này.${NC}"
     exit 1
 fi
 
@@ -48,7 +48,7 @@ if [ "$action_choice" == "1" ]; then
 elif [ "$action_choice" == "2" ]; then
     action="disable"
 else
-    echo -e "${RED}❌ Lựa chọn không hợp lệ.${NC}"
+    echo -e "${RED}${CROSSMARK} Lựa chọn không hợp lệ.${NC}"
     exit 1
 fi
 

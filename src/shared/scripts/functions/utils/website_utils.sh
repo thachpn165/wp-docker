@@ -1,7 +1,7 @@
 # Display list of websites for selection
 select_website() {
     if [[ -z "$SITES_DIR" ]]; then
-        echo -e "${RED}❌ SITES_DIR is not defined.${NC}"
+        echo -e "${RED}${CROSSMARK} SITES_DIR is not defined.${NC}"
         return 1
     fi
 
@@ -11,7 +11,7 @@ select_website() {
     done < <(find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -print0)
 
     if [[ ${#sites[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ No websites found in $SITES_DIR${NC}"
+        echo -e "${RED}${CROSSMARK} No websites found in $SITES_DIR${NC}"
         return 1
     fi
 
@@ -26,14 +26,14 @@ select_website() {
 
         SELECTED_WEBSITE=$(select_from_list "🔹 Select a website:" "${sites[@]}")
         if [[ -z "$SELECTED_WEBSITE" ]]; then
-            echo -e "${RED}❌ Invalid selection!${NC}"
+            echo -e "${RED}${CROSSMARK} Invalid selection!${NC}"
             return 1
         fi
 
         SITE_NAME="$SELECTED_WEBSITE"
     fi
 
-    echo -e "${GREEN}✅ Selected: $SITE_NAME${NC}"
+    echo -e "${GREEN}${CHECKMARK} Selected: $SITE_NAME${NC}"
 }
 
 
@@ -53,7 +53,7 @@ website_restore_from_archive() {
   ARCHIVE_DIR="$BASE_DIR/archives/old_website"
 
   if [[ ! -d "$ARCHIVE_DIR" ]]; then
-    echo -e "${RED}❌ Archive directory not found: $ARCHIVE_DIR${NC}"
+    echo -e "${RED}${CROSSMARK} Archive directory not found: $ARCHIVE_DIR${NC}"
     return 1
   fi
 
@@ -61,7 +61,7 @@ website_restore_from_archive() {
   archive_list=( $(ls -1 "$ARCHIVE_DIR") )
 
   if [ ${#archive_list[@]} -eq 0 ]; then
-    echo -e "${RED}❌ No websites available to restore.${NC}"
+    echo -e "${RED}${CROSSMARK} No websites available to restore.${NC}"
     return 1
   fi
 
@@ -78,7 +78,7 @@ website_restore_from_archive() {
   restore_target="$SITES_DIR/$site_name"
 
   if [[ -d "$restore_target" ]]; then
-    echo -e "${RED}❌ Directory $restore_target already exists. Cannot overwrite.${NC}"
+    echo -e "${RED}${CROSSMARK} Directory $restore_target already exists. Cannot overwrite.${NC}"
     return 1
   fi
 
@@ -90,7 +90,7 @@ website_restore_from_archive() {
   echo -e "${YELLOW}🛠️ Restoring database...${NC}"
   cp "$archive_path/${site_name}_db.sql" "$restore_target/backups/${site_name}_db.sql"
 
-  echo -e "${GREEN}✅ Successfully restored source code and database.${NC}"
+  echo -e "${GREEN}${CHECKMARK} Successfully restored source code and database.${NC}"
   echo -e "${YELLOW}👉 Please recreate the .env file and configure docker-compose to run the site.${NC}"
 
   [[ "$TEST_MODE" != true ]] && read -p "Would you like to open the newly restored site directory? (y/N): " open_choice

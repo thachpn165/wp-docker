@@ -27,16 +27,16 @@ for site_path in "$SITES_DIR"/*/; do
       echo "$TEMPLATE_VERSION" > "$site_template_version_file"  # Tạo file .template_version với version "v1.0.0"
       updated_websites+=("$site_name")
     else
-      echo "⚠️ Website '$site_name' đã có template version. Bỏ qua."
+      echo "${WARNING} Website '$site_name' đã có template version. Bỏ qua."
     fi
   fi
 done
 
 # Hiển thị kết quả
 if [ ${#updated_websites[@]} -eq 0 ]; then
-  echo "✅ Không có website nào cần cập nhật template version."
+  echo "${CHECKMARK} Không có website nào cần cập nhật template version."
 else
-  echo "✅ Các website đã được cập nhật template version $TEMPLATE_VERSION:"
+  echo "${CHECKMARK} Các website đã được cập nhật template version $TEMPLATE_VERSION:"
   for site in "${updated_websites[@]}"; do
     echo "  - $site"
   done

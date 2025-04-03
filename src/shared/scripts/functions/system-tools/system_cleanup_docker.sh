@@ -1,7 +1,7 @@
 system_cleanup_docker_logic() {
   # Check if Docker is installed
   if ! command -v docker &> /dev/null; then
-    echo "❌ Docker is not installed. Please install Docker first."
+    echo "${CROSSMARK} Docker is not installed. Please install Docker first."
     exit 1
   fi
 
@@ -21,5 +21,5 @@ system_cleanup_docker_logic() {
   echo -e "${YELLOW}🧹 Removing unused networks...${NC}"
   docker network prune -f
 
-  echo -e "${GREEN}✅ Docker cleanup completed successfully!${NC}"
+  echo -e "${GREEN}${CHECKMARK} Docker cleanup completed successfully!${NC}"
 }

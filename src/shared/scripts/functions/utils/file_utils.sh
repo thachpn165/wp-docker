@@ -32,7 +32,7 @@ copy_file() {
         echo "📂 Copying file from $src -> $dest"
         cp "$src" "$dest"
     else
-        echo "❌ Error: Source file not found: $src"
+        echo "${CROSSMARK} Error: Source file not found: $src"
         return 1
     fi
 }
@@ -85,7 +85,7 @@ run_in_dir() {
   shift
 
   if [[ ! -d "$target_dir" ]]; then
-    echo -e "${RED}❌ Directory '$target_dir' does not exist!${NC}"
+    echo -e "${RED}${CROSSMARK} Directory '$target_dir' does not exist!${NC}"
     return 1
   fi
 

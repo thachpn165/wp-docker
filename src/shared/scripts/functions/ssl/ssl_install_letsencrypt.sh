@@ -1,13 +1,13 @@
 ssl_install_lets_encrypt_logic() {
     local ENV_FILE="$SITES_DIR/$SITE_NAME/.env"
     if [ ! -f "$ENV_FILE" ]; then
-        echo -e "${RED}❌ .env file not found for site $SITE_NAME${NC}"
+        echo -e "${RED}${CROSSMARK} .env file not found for site $SITE_NAME${NC}"
         return 1
     fi
 
     local DOMAIN=$(fetch_env_variable "$ENV_FILE" "DOMAIN")
     if [ -z "$DOMAIN" ]; then
-        echo -e "${RED}❌ DOMAIN variable not found in .env${NC}"
+        echo -e "${RED}${CROSSMARK} DOMAIN variable not found in .env${NC}"
         return 1
     fi
 
@@ -17,24 +17,24 @@ ssl_install_lets_encrypt_logic() {
     local WEBROOT="$SITES_DIR/$SITE_NAME/wordpress"
 
     if [ ! -d "$WEBROOT" ]; then
-        echo -e "${RED}❌ Source code directory not found: $WEBROOT${NC}"
+        echo -e "${RED}${CROSSMARK} Source code directory not found: $WEBROOT${NC}"
         return 1
     fi
 
     # Check certbot installation
     if ! command -v certbot &> /dev/null; then
-        echo -e "${YELLOW}⚠️ certbot is not installed. Proceeding with installation...${NC}"
+        echo -e "${YELLOW}${WARNING} certbot is not installed. Proceeding with installation...${NC}"
         if [[ "$(uname -s)" == "Linux" ]]; then
             if [ -f /etc/debian_version ]; then
                  apt update && apt install -y certbot
             elif [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]; then
                  yum install epel-release -y && yum install -y certbot
             else
-                echo -e "${RED}❌ This operating system is not supported for automatic certbot installation.${NC}"
+                echo -e "${RED}${CROSSMARK} This operating system is not supported for automatic certbot installation.${NC}"
                 return 1
             fi
         else
-            echo -e "${RED}❌ certbot automatic installation is only supported on Linux. Please install manually on macOS.${NC}"
+            echo -e "${RED}${CROSSMARK} certbot automatic installation is only supported on Linux. Please install manually on macOS.${NC}"
             return 1
         fi
     fi
@@ -46,11 +46,11 @@ ssl_install_lets_encrypt_logic() {
     local KEY_PATH="/etc/letsencrypt/live/$DOMAIN/privkey.pem"
 
     if [[ ! -f "$CERT_PATH" || ! -f "$KEY_PATH" ]]; then
-        echo -e "${RED}❌ Certificate not found after issuance. Please check domain and configuration.${NC}"
+        echo -e "${RED}${CROSSMARK} Certificate not found after issuance. Please check domain and configuration.${NC}"
         return 1
     fi
 
-    echo -e "${GREEN}✅ Certificate has been successfully issued by Let's Encrypt.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Certificate has been successfully issued by Let's Encrypt.${NC}"
 
     mkdir -p "$SSL_DIR"
     cp "$CERT_PATH" "$SSL_DIR/$DOMAIN.crt"
@@ -59,5 +59,5 @@ ssl_install_lets_encrypt_logic() {
     echo -e "${YELLOW}🔄 Reloading NGINX Proxy to apply new certificate...${NC}"
     docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload
 
-    echo -e "${GREEN}✅ Let's Encrypt has been successfully installed for site ${CYAN}$DOMAIN${NC}"
+    echo -e "${GREEN}${CHECKMARK} Let's Encrypt has been successfully installed for site ${CYAN}$DOMAIN${NC}"
 }

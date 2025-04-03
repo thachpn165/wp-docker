@@ -14,7 +14,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -25,7 +25,7 @@ select_website
 
 # Ensure site is selected
 if [[ -z "$SITE_NAME" ]]; then
-    echo "❌ No website selected. Exiting."
+    echo "${CROSSMARK} No website selected. Exiting."
     exit 1
 fi
 
@@ -54,10 +54,10 @@ if [[ "$confirm_code" == "y" ]]; then
 
     # Check if the file exists
     if [[ ! -f "$code_backup_file" ]]; then
-        echo "❌ Source code backup file does not exist: $code_backup_file"
+        echo "${CROSSMARK} Source code backup file does not exist: $code_backup_file"
         exit 1
     else
-        echo "✅ Found backup file: $code_backup_file"
+        echo "${CHECKMARK} Found backup file: $code_backup_file"
     fi
 else
     code_backup_file=""
@@ -87,16 +87,16 @@ if [[ "$confirm_db" == "y" ]]; then
 
     # Check if the file exists
     if [[ ! -f "$db_backup_file" ]]; then
-        echo "❌ Database backup file does not exist: $db_backup_file"
+        echo "${CROSSMARK} Database backup file does not exist: $db_backup_file"
         exit 1
     else
-        echo "✅ Found backup file: $db_backup_file"
+        echo "${CHECKMARK} Found backup file: $db_backup_file"
     fi
 
     # Fetch MYSQL_ROOT_PASSWORD from .env
     mysql_root_password=$(fetch_env_variable "$SITES_DIR/$SITE_NAME/.env" "MYSQL_ROOT_PASSWORD")
     if [[ -z "$mysql_root_password" ]]; then
-        echo -e "${RED}❌ Could not get MYSQL_ROOT_PASSWORD from .env${NC}"
+        echo -e "${RED}${CROSSMARK} Could not get MYSQL_ROOT_PASSWORD from .env${NC}"
         exit 1
     fi
 else

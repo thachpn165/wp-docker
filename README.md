@@ -91,7 +91,7 @@ After installation, you **must add `/opt`** to Docker → Settings → Resources
 ## Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/src/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/src/install.sh -o install.sh && bash -i install.sh
 ```
 
 ## Usage
@@ -143,7 +143,7 @@ After modifying configuration files, restart the affected services through the s
 
 ## 🚀 WP Docker Roadmap (2025)
 
-### ✅ Current Version: `v1.1.4` (Beta)
+### ${CHECKMARK} Current Version: `v1.1.4` (Beta)
 - Planned release of the first stable version (v1.2.0-stable): 2025-04-01
 
 ### Core Features Completed:

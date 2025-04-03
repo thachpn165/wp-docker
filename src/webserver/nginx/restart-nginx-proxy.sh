@@ -10,8 +10,8 @@ echo -e "${YELLOW}🔄 Đang reload NGINX Proxy...${NC}"
 docker exec nginx-proxy nginx -s reload
 
 if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ NGINX Proxy đã được reload thành công!${NC}"
+    echo -e "${GREEN}${CHECKMARK} NGINX Proxy đã được reload thành công!${NC}"
 else
-    echo -e "${RED}❌ Lỗi khi reload NGINX Proxy.${NC}"
+    echo -e "${RED}${CROSSMARK} Lỗi khi reload NGINX Proxy.${NC}"
     exit 1
 fi

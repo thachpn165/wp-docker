@@ -10,7 +10,7 @@ CONFIG_FILE="shared/config/config.sh"
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
     if [ "$(pwd)" = "/" ]; then
-        echo "❌ Error: config.sh not found!" >&2
+        echo "${CROSSMARK} Error: config.sh not found!" >&2
         exit 1
     fi
 done
@@ -40,7 +40,7 @@ php_menu() {
       3) edit_php_fpm_conf; read -p "Press Enter to continue..." ;;
       4) edit_php_ini; read -p "Press Enter to continue..." ;;
       5) break ;;
-      *) echo -e "${RED}⚠️ Invalid option!${NC}"; sleep 2 ;;
+      *) echo -e "${RED}${WARNING} Invalid option!${NC}"; sleep 2 ;;
     esac
   done
 }

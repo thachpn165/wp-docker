@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ============================================
-# ✅ ssl_edit_cert_menu.sh – Edit SSL Certificate via Menu
+# ${CHECKMARK} ssl_edit_cert_menu.sh – Edit SSL Certificate via Menu
 # ============================================
 
 # === Load config & website_loader.sh ===
@@ -18,7 +18,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -28,7 +28,7 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 select_website
 site_name="$SITE_NAME"
 if [[ -z "$site_name" ]]; then
-  echo "❌ No website selected."
+  echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
@@ -45,8 +45,8 @@ if [[ $? -eq 0 ]]; then
   read -r ssl_private_key
 
   # === Call the SSL edit logic directly, no need for CLI here ===
-  echo -e "${GREEN}✅ Editing SSL certificate for website '$site_name'...${NC}"
+  echo -e "${GREEN}${CHECKMARK} Editing SSL certificate for website '$site_name'...${NC}"
   ssl_edit_certificate_logic "$site_name" "$ssl_certificate" "$ssl_private_key"
 else
-  echo -e "${YELLOW}⚠️ SSL certificate update cancelled.${NC}"
+  echo -e "${YELLOW}${WARNING} SSL certificate update cancelled.${NC}"
 fi

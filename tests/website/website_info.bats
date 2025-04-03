@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # ============================================
-# ✅ website_info.bats – Test displaying website information
+# ${CHECKMARK} website_info.bats – Test displaying website information
 # ============================================
 
 load ../helpers/general.bash
@@ -41,5 +41,5 @@ teardown() {
 @test "website_info CLI should handle missing site_name" {
   run bash "$PROJECT_DIR/shared/scripts/cli/website_info.sh"
   [ "$status" -eq 1 ]
-  assert_output_contains "❌ Missing required --site_name parameter"
+  assert_output_contains "${CROSSMARK} Missing required --site_name parameter"
 }

@@ -30,7 +30,7 @@ website_management_menu() {
       6) bash "$MENU_DIR/website/website_info_menu.sh"; read -p "Press Enter to continue..." ;;
       7) bash "$MENU_DIR/website/website_update_template_menu.sh"; read -p "Press Enter to continue..." ;;
       8) break ;;
-      *) echo -e "${RED}⚠️ Invalid option! Please select from [1-7].${NC}"; sleep 2 ;;
+      *) echo -e "${RED}${WARNING} Invalid option! Please select from [1-7].${NC}"; sleep 2 ;;
     esac
   done
 }

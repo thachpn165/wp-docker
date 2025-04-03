@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # ================================================
-# ✅ Test: website_logs.bats
+# ${CHECKMARK} Test: website_logs.bats
 # CLI should display logs for the given site and log type
 # ================================================
 
@@ -20,7 +20,7 @@ setup() {
     --php="8.2"
   
   # Đảm bảo website đã được tạo thành công
-  assert_output_contains "✅ DONE_CREATE_WEBSITE: $TEST_SITE_NAME"
+  assert_output_contains "${CHECKMARK} DONE_CREATE_WEBSITE: $TEST_SITE_NAME"
 }
 
 teardown() {
@@ -48,7 +48,7 @@ teardown() {
 
   # Kiểm tra lỗi khi thiếu tham số --site_name
   [ "$status" -ne 0 ]
-  assert_output_contains "❌ site_name is not set. Please provide a valid site name."
+  assert_output_contains "${CROSSMARK} site_name is not set. Please provide a valid site name."
 }
 
 @test "website_logs CLI should handle missing log_type" {
@@ -57,5 +57,5 @@ teardown() {
 
   # Kiểm tra lỗi khi thiếu tham số --log_type
   [ "$status" -ne 0 ]
-  assert_output_contains "❌ log_type is required. Please specify access or error log."
+  assert_output_contains "${CROSSMARK} log_type is required. Please specify access or error log."
 }

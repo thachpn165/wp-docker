@@ -7,7 +7,7 @@ cleanup_backups() {
     local deleted_files=()
 
     if [[ ! -d "$backup_dir" ]]; then
-        echo "❌ Backup directory not found for $site_name!"
+        echo "${CROSSMARK} Backup directory not found for $site_name!"
         return 1
     fi
 
@@ -24,8 +24,8 @@ cleanup_backups() {
             rm -f "$file"
             echo "🗑️ Deleted: $file"
         done
-        echo "✅ Cleanup completed for $site_name backups."
+        echo "${CHECKMARK} Cleanup completed for $site_name backups."
     else
-        echo "ℹ️ No backups were deleted. All backups are within the ${retention_days} days limit."
+        echo "${INFO} No backups were deleted. All backups are within the ${retention_days} days limit."
     fi
 }

@@ -23,9 +23,9 @@ wordpress_protect_wp_login_logic() {
         echo -e "${YELLOW}📄 Đang tạo tập tin cấu hình wp-login.php...${NC}"
         if [ -f "$TEMPLATE_FILE" ]; then
             sed "s|\$site_name|$site_name|g" "$TEMPLATE_FILE" > "$INCLUDE_FILE"
-            echo -e "${GREEN}✅ Tập tin cấu hình đã được tạo: $INCLUDE_FILE${NC}"
+            echo -e "${GREEN}${CHECKMARK} Tập tin cấu hình đã được tạo: $INCLUDE_FILE${NC}"
         else
-            echo -e "${RED}❌ Không tìm thấy template wp-login-template.conf!${NC}"
+            echo -e "${RED}${CROSSMARK} Không tìm thấy template wp-login-template.conf!${NC}"
             exit 1
         fi
 
@@ -39,10 +39,10 @@ wordpress_protect_wp_login_logic() {
                 sed -i "/include \/etc\/nginx\/globals\/cloudflare.conf;/a\\
                 include /etc/nginx/globals/wp-login-$site_name.conf;" "$NGINX_CONF_FILE"
             fi
-            echo -e "${GREEN}✅ Include wp-login.php đã được thêm vào cấu hình NGINX.${NC}"
+            echo -e "${GREEN}${CHECKMARK} Include wp-login.php đã được thêm vào cấu hình NGINX.${NC}"
             # **Hiển thị thông tin đăng nhập sau khi bật bảo vệ**
-            echo -e "${GREEN}✅ wp-login.php đã được bảo vệ!${NC}"
-            echo -e "${YELLOW}⚠️ Bạn sẽ cần nhập thông tin này khi truy cập vào admin hoặc đăng nhập vào WordPress, hãy lưu lại trước khi thoát ra${NC}"
+            echo -e "${GREEN}${CHECKMARK} wp-login.php đã được bảo vệ!${NC}"
+            echo -e "${YELLOW}${WARNING} Bạn sẽ cần nhập thông tin này khi truy cập vào admin hoặc đăng nhập vào WordPress, hãy lưu lại trước khi thoát ra${NC}"
             echo -e "🔑 ${CYAN}Thông tin đăng nhập:${NC}"
             echo -e "  ${GREEN}Username:${NC} $USERNAME"
             echo -e "  ${GREEN}Password:${NC} $PASSWORD"
@@ -53,7 +53,7 @@ wordpress_protect_wp_login_logic() {
         if [ -f "$INCLUDE_FILE" ]; then
             echo -e "${YELLOW}🗑️ Đang xóa tập tin cấu hình wp-login.php...${NC}"
             rm -f "$INCLUDE_FILE"
-            echo -e "${GREEN}✅ Tập tin cấu hình wp-login.php đã được xóa.${NC}"
+            echo -e "${GREEN}${CHECKMARK} Tập tin cấu hình wp-login.php đã được xóa.${NC}"
         fi
 
         # **Gỡ dòng include trong NGINX config**
@@ -63,13 +63,13 @@ wordpress_protect_wp_login_logic() {
         else
             sed -i -e "/include \/etc\/nginx\/globals\/wp-login-$site_name.conf;/d" "$NGINX_CONF_FILE"
         fi
-        echo -e "${GREEN}✅ Dòng include đã được gỡ bỏ.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Dòng include đã được gỡ bỏ.${NC}"
 
         # **Xóa file xác thực nếu tồn tại**
         if [ -f "$AUTH_FILE" ]; then
             echo -e "${YELLOW}🗑️ Đang xóa file xác thực mật khẩu...${NC}"
             rm -f "$AUTH_FILE"
-            echo -e "${GREEN}✅ File xác thực mật khẩu đã được xóa.${NC}"
+            echo -e "${GREEN}${CHECKMARK} File xác thực mật khẩu đã được xóa.${NC}"
         fi
     fi
 
