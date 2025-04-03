@@ -8,26 +8,23 @@ DEV_MODE=false
 # ========================
 # ⚙️ Command Line Parameter Processing
 # ========================
-  # Ask the user to choose version: Official or Nightly (Testing Only)
-  echo "❓ What version would you like to install?"
-  echo "1) Official"
-  echo "2) Nightly (Testing Only)"
-  
-  read -rp "Please select an option (1 or 2, default is 1): " version_choice
+# Ask the user to choose version: Official or Nightly (Testing Only)
+echo "❓ What version would you like to install?"
+echo "1) Official"
+echo "2) Nightly (Testing Only)"
 
-  # Set default option to Official (1) if no input is provided
-  version_choice=${version_choice:-1}
+read -rp "Please select an option (1 or 2, default is 1): " version_choice
 
-  if [[ "$version_choice" == "2" ]]; then
-    DEV_MODE=true
-    ZIP_NAME="wp-docker-dev.zip"
-    DEV_REPO_TAG="dev"
-    echo "🛠 Installing Nightly (Testing Only) version"
-    DOWNLOAD_URL="$REPO_URL/releases/download/dev/$ZIP_NAME"
-  else
-    echo "🛠 Installing Official version"
-    DOWNLOAD_URL="$REPO_URL/releases/latest/download/$ZIP_NAME"
-  fi
+# Set default option to Official (1) if no input is provided
+version_choice=${version_choice:-1}
+
+if [[ "$version_choice" == "2" ]]; then
+  ZIP_NAME="wp-docker-dev.zip"
+  echo "🛠 Installing Nightly (Testing Only) version"
+  DOWNLOAD_URL="$REPO_URL/releases/download/dev/$ZIP_NAME"
+else
+  echo "🛠 Installing Official version"
+  DOWNLOAD_URL="$REPO_URL/releases/latest/download/$ZIP_NAME"
 fi
 
 # ========================
