@@ -8,7 +8,6 @@ DEV_MODE=false
 # ========================
 # ⚙️ Command Line Parameter Processing
 # ========================
-{
   # Ask the user to choose version: Official or Nightly (Testing Only)
   echo "❓ What version would you like to install?"
   echo "1) Official"
