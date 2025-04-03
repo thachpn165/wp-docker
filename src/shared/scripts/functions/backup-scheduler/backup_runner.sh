@@ -28,10 +28,10 @@ source "$SCRIPTS_FUNCTIONS_DIR/backup-manager/cleanup_backups.sh"
 source "$SCRIPTS_FUNCTIONS_DIR/rclone/manage_rclone.sh"
 
 backup_runner() {
-    local site_name="$1"
+    local domain="$1"
     local storage_option="$2"
 
-    if [[ -z "$site_name" ]]; then
+    if [[ -z "$domain" ]]; then
         log_with_time "${RED}${CROSSMARK} Error: No website name found for backup!${NC}"
         exit 1
     fi
@@ -42,20 +42,20 @@ backup_runner() {
     fi
 
     # Ensure backup and logs directories exist
-    is_directory_exist "$SITES_DIR/$site_name/backups"
-    is_directory_exist "$SITES_DIR/$site_name/logs"
+    is_directory_exist "$SITES_DIR/$domain/backups"
+    is_directory_exist "$SITES_DIR/$domain/logs"
 
-    local env_file="$SITES_DIR/$site_name/.env"
-    local web_root="$SITES_DIR/$site_name/wordpress"
-    local backup_dir="$SITES_DIR/$site_name/backups"
-    local log_dir="$(realpath "$SITES_DIR/$site_name/logs")"
+    local env_file="$SITES_DIR/$domain/.env"
+    local web_root="$SITES_DIR/$domain/wordpress"
+    local backup_dir="$SITES_DIR/$domain/backups"
+    local log_dir="$(realpath "$SITES_DIR/$domain/logs")"
     local log_file="$log_dir/wp-backup.log"
 
     is_directory_exist "$backup_dir"
     is_directory_exist "$log_dir"
 
     if [[ ! -f "$env_file" ]]; then
-        log_with_time "${RED}${CROSSMARK} .env file not found in $SITES_DIR/$site_name!${NC}"
+        log_with_time "${RED}${CROSSMARK} .env file not found in $SITES_DIR/$domain!${NC}"
         exit 1
     fi
 
@@ -69,13 +69,13 @@ backup_runner() {
         exit 1
     fi
 
-    log_with_time "${GREEN}${CHECKMARK} Starting automatic backup process for: $site_name${NC}"
+    log_with_time "${GREEN}${CHECKMARK} Starting automatic backup process for: $domain${NC}"
     
     # Perform backup
     log_with_time "🔄 Backing up database..."
-    db_backup_file=$(backup_database "$site_name" "$DB_NAME" "$DB_USER" "$DB_PASS" | tail -n 1)
+    db_backup_file=$(backup_database "$domain" "$DB_NAME" "$DB_USER" "$DB_PASS" | tail -n 1)
     log_with_time "🔄 Backing up source code..."
-    files_backup_file=$(backup_files "$site_name" "$web_root" | tail -n 1)
+    files_backup_file=$(backup_files "$domain" "$web_root" | tail -n 1)
 
     # Check if backup files exist
     if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then
@@ -116,7 +116,7 @@ backup_runner() {
         fi
     fi
 
-    log_with_time "${GREEN}${CHECKMARK} Completed automatic backup for: $site_name${NC}"
+    log_with_time "${GREEN}${CHECKMARK} Completed automatic backup for: $domain${NC}"
 }
 
 # Execute if script is called from cronjob

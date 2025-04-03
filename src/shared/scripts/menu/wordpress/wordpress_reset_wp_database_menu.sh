@@ -31,9 +31,9 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# ${IMPORTANT} **Cảnh báo quan trọng**
+# ${IMPORTANT}${NC} **Cảnh báo quan trọng**
 clear
-echo -e "${RED}${BOLD}${IMPORTANT} CẢNH BÁO QUAN TRỌNG ${IMPORTANT}${NC}"
+echo -e "${RED}${BOLD}${IMPORTANT}${NC} CẢNH BÁO QUAN TRỌNG ${IMPORTANT}${NC}${NC}"
 echo -e "${RED}${ERROR} Việc reset database sẽ xóa toàn bộ dữ liệu và không thể khôi phục! ${ERROR}${NC}"
 echo -e "${YELLOW}📌 Vui lòng sao lưu đầy đủ trước khi tiếp tục.${NC}"
 echo ""
@@ -53,18 +53,18 @@ done
 
 echo ""
 read -p "Nhập số tương ứng với website cần reset database: " site_index
-site_name="${site_list[$site_index]}"
+
 
 # 📋 **Xác nhận hành động reset database**
-echo -e "${YELLOW}📋 Bạn có chắc chắn muốn reset database cho website '$site_name'?${NC}"
+echo -e "${YELLOW}📋 Bạn có chắc chắn muốn reset database cho website '$domain'?${NC}"
 echo "1) Yes, reset database"
 echo "2) NO"
 read -p "Nhập số tương ứng với hành động: " confirm_choice
 
 if [ "$confirm_choice" == "1" ]; then
     # Truyền tham số vào CLI để thực hiện reset database
-    bash "$SCRIPTS_DIR/cli/wordpress_reset_wp_database.sh" --site_name="$site_name"
-    echo -e "${GREEN}${CHECKMARK} Database đã được reset thành công cho website '$site_name'.${NC}"
+    bash "$SCRIPTS_DIR/cli/wordpress_reset_wp_database.sh" --domain="$domain"
+    echo -e "${GREEN}${CHECKMARK} Database đã được reset thành công cho website '$domain'.${NC}"
 elif [ "$confirm_choice" == "2" ]; then
     echo -e "${YELLOW}${WARNING} Thao tác reset database đã bị hủy.${NC}"
 else

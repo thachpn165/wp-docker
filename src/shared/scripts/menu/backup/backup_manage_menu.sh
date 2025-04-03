@@ -24,12 +24,12 @@ source "$FUNCTIONS_DIR/backup_loader.sh"
 select_website
 
 # Ensure site is selected
-if [[ -z "$SITE_NAME" ]]; then
+if [[ -z "$domain" ]]; then
     echo "${CROSSMARK} No website selected. Exiting."
     exit 1
 fi
 
-echo "Selected site: $SITE_NAME"
+echo "Selected site: $domain"
 
 # === Choose action: list or clean ===
 echo -e "${YELLOW}📂 Choose action:${NC}"
@@ -59,4 +59,4 @@ if [[ "$action" == "clean" ]]; then
 fi
 
 # === Execute the backup_manage logic with selected parameters ===
-bash "$SCRIPTS_DIR/cli/backup_manage.sh" --site_name="$SITE_NAME" --action="$action" --max_age_days="$max_age_days"
+bash "$SCRIPTS_DIR/cli/backup_manage.sh" --domain="$domain" --action="$action" --max_age_days="$max_age_days"

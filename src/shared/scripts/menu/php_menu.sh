@@ -35,8 +35,8 @@ php_menu() {
 
     [[ "$TEST_MODE" != true ]] && read -p "Select a function (1-5): " choice
     case $choice in
-      1) bash "$MENU_DIR/php_change_version_menu.sh"; read -p "Press Enter to continue..." ;;
-      2) bash "$MENU_DIR/php_rebuild_container_menu.sh"; read -p "Press Enter to continue..." ;;
+      1) bash "$MENU_DIR/php/php_change_version_menu.sh"; read -p "Press Enter to continue..." ;;
+      2) bash "$MENU_DIR/php/php_rebuild_container_menu.sh"; read -p "Press Enter to continue..." ;;
       3) edit_php_fpm_conf; read -p "Press Enter to continue..." ;;
       4) edit_php_ini; read -p "Press Enter to continue..." ;;
       5) break ;;

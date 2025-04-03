@@ -7,10 +7,10 @@
 #              SSL certificates using a logic function.
 #
 # Usage:
-#   ./ssl_check_status.sh --site_name=<site_name> [--ssl_dir=<ssl_directory>]
+#   ./ssl_check_status.sh --domain=example.tld [--ssl_dir=<ssl_directory>]
 #
 # Arguments:
-#   --site_name   (Required) The name of the site for which to check the SSL status.
+#   --domain   (Required) The name of the site for which to check the SSL status.
 #   --ssl_dir     (Optional) The directory containing SSL certificates. Defaults
 #                 to "$PROJECT_DIR/shared/ssl" if not provided.
 #
@@ -25,10 +25,10 @@
 #   1 - If the script is not run in a Bash shell.
 #   1 - If PROJECT_DIR cannot be determined.
 #   1 - If the configuration file is not found.
-#   1 - If the required --site_name parameter is missing.
+#   1 - If the required --domain parameter is missing.
 #
 # Example:
-#   ./ssl_check_status.sh --site_name=mywebsite --ssl_dir=/path/to/ssl
+#   ./ssl_check_status.sh --domain=mywebsite --ssl_dir=/path/to/ssl
 #
 # -----------------------------------------------------------------------------
 
@@ -66,14 +66,14 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 # === Parse arguments ===
 for arg in "$@"; do
   case $arg in
-    --site_name=*) SITE_NAME="${arg#*=}" ;;
+    --domain=*) domain="${arg#*=}" ;;
     --ssl_dir=*) SSL_DIR="${arg#*=}" ;;
   esac
 done
 
 # === Check if site_name is provided ===
-if [[ -z "$SITE_NAME" ]]; then
-  echo "${CROSSMARK} Missing required --site_name parameter"
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} Missing required --domain parameter"
   exit 1
 fi
 
@@ -83,4 +83,4 @@ if [[ -z "$SSL_DIR" ]]; then
 fi
 
 # === Check SSL certificate status using the logic function ===
-ssl_check_certificate_status_logic "$SITE_NAME" "$SSL_DIR"
+ssl_check_certificate_status_logic "$domain" "$SSL_DIR"

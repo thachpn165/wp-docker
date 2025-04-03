@@ -1,7 +1,7 @@
 # database_export_logic – Logic to export database (backup)
 
 database_export_logic() {
-    local site_name="$1"
+    local domain="$1"
     local save_location="$2"  # Đã được truyền từ file cli
 
     # Ensure PROJECT_DIR is set
@@ -10,8 +10,8 @@ database_export_logic() {
         return 1
     fi
 
-    # Ensure $site_name is set
-    if [[ -z "$site_name" ]]; then
+    # Ensure $domain is set
+    if [[ -z "$domain" ]]; then
         echo -e "${CROSSMARK} Missing site name parameter."
         return 1
     fi
@@ -25,11 +25,11 @@ database_export_logic() {
 
     # Fetch database credentials from the website's .env file
     local db_info
-    db_info=$(db_fetch_env "$site_name")
+    db_info=$(db_fetch_env "$domain")
     
     # Check if fetching database credentials was successful
     if [[ $? -ne 0 ]]; then
-        echo -e "${CROSSMARK} Failed to fetch database credentials for site '$site_name'."
+        echo -e "${CROSSMARK} Failed to fetch database credentials for site '$domain'."
         return 1
     fi
 
@@ -38,17 +38,17 @@ database_export_logic() {
     IFS=' ' read -r db_name db_user db_password <<< "$db_info"
 
     # Check if MariaDB container is running
-    if ! is_mariadb_running "$site_name"; then
-        echo -e "${CROSSMARK} MariaDB container for site '$site_name' is not running. Please check!"
+    if ! is_mariadb_running "$domain"; then
+        echo -e "${CROSSMARK} MariaDB container for site '$domain' is not running. Please check!"
         return 1
     fi
 
     # Proceed to backup the database
-    echo -e "${SAVE} Backing up database: $db_name for site: $site_name..."
+    echo -e "${SAVE} Backing up database: $db_name for site: $domain..."
 
     # Run mysqldump inside the container with the --env flag to securely pass the password
     # Export the backup file directly into the save_location on the host
-    if ! docker exec --env MYSQL_PWD="$db_password" ${site_name}-mariadb mysqldump -u$db_user $db_name > "$save_location"; then
+    if ! docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb mysqldump -u$db_user $db_name > "$save_location"; then
         echo -e "${CROSSMARK} Failed to backup the database '$db_name' in container."
         return 1
     fi

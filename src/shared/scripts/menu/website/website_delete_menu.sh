@@ -25,10 +25,9 @@ source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/website_loader.sh"
 
 echo -e "${BLUE}===== DELETE A WEBSITE =====${NC}"
-site_name=""
+domain=""
 select_website
-site_name="$SITE_NAME"
-if [[ -z "$site_name" ]]; then
+if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} No website selected."
   exit 1
 fi
@@ -45,7 +44,7 @@ else
   backup_enabled=false
 fi
 
-echo -e "\n${WARNING}  Are you sure you want to delete site '${YELLOW}$site_name${NC}'?"
+echo -e "\n${WARNING}  Are you sure you want to delete site '${YELLOW}$domain${NC}'?"
 read -rp "Type 'yes' to confirm: " confirm
 if [[ "$confirm" != "yes" ]]; then
   echo "${CROSSMARK} Cancelled."
@@ -53,11 +52,11 @@ if [[ "$confirm" != "yes" ]]; then
 fi
 
 # === Run deletion logic ===
-if [[ -n "$site_name" ]]; then
+if [[ -n "$domain" ]]; then
   if [[ "$backup_enabled" == true ]]; then
-    bash "$SCRIPTS_DIR/cli/website_delete.sh" --site_name="$site_name" --backup_enabled=true
+    bash "$SCRIPTS_DIR/cli/website_delete.sh" --domain="$domain" --backup_enabled=true
   else
-    bash "$SCRIPTS_DIR/cli/website_delete.sh" --site_name="$site_name"
+    bash "$SCRIPTS_DIR/cli/website_delete.sh" --domain="$domain"
   fi
 else
   echo "${CROSSMARK} Missing required parameters to delete website." >&2

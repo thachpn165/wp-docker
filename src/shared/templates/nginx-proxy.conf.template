@@ -9,7 +9,7 @@ server {
 server {
     listen 443 ssl;
     server_name ${DOMAIN};
-    root /var/www/${SITE_NAME};
+    root /var/www/${DOMAIN};
     index index.php index.html index.htm;
 
     # 🔐 Chứng chỉ SSL
@@ -34,7 +34,7 @@ server {
     # Resolver 127.0.0.11 là DNS resolver của Docker, giúp giảm thời gian resolve domain và để resolve domain trong network Docker
     # Không nên xoá nếu không muốn gặp lỗi "host not found in upstream" khi restart Nginx
     resolver 127.0.0.11 valid=10s;
-    set $php_upstream "${SITE_NAME}-php:9000";
+    set $php_upstream "${DOMAIN}-php:9000";
 
     # 📌 Xử lý file tĩnh (các file hình ảnh, JS, CSS, fonts...)
     location ~* \.(ico|css|js|gif|jpg|jpeg|png|woff2?|ttf|eot|svg|mp4|webm|ogv|webp|pdf|zip|tar|gz|bz2|rar|7z|xml|rss|atom|txt|json|map)$ {
@@ -54,6 +54,6 @@ server {
         fastcgi_intercept_errors on;
     }
 
-    error_log  /var/www/logs/${SITE_NAME}/error.log;
-    access_log /var/www/logs/${SITE_NAME}/access.log;
+    error_log  /var/www/logs/${DOMAIN}/error.log;
+    access_log /var/www/logs/${DOMAIN}/access.log;
 }

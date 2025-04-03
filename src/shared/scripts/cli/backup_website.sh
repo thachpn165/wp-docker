@@ -10,10 +10,10 @@
 # - The backup_loader.sh script must be available in the FUNCTIONS_DIR.
 #
 # Usage:
-#   ./backup_website.sh --site_name=<site_name> --storage=<local|cloud> [--rclone_storage=<rclone_storage_name>]
+#   ./backup_website.sh --domain=example.tld --storage=<local|cloud> [--rclone_storage=<rclone_storage_name>]
 #
 # Parameters:
-#   --site_name         (Required) The name of the site to back up.
+#   --domain         (Required) The name of the site to back up.
 #   --storage           (Required) The storage type for the backup. Valid values are "local" or "cloud".
 #   --rclone_storage    (Optional) The name of the rclone storage configuration. Required if --storage is "cloud".
 #
@@ -30,10 +30,10 @@
 #
 # Examples:
 #   Backup to local storage:
-#     ./backup_website.sh --site_name=mywebsite --storage=local
+#     ./backup_website.sh --domain=mywebsite --storage=local
 #
 #   Backup to cloud storage:
-#     ./backup_website.sh --site_name=mywebsite --storage=cloud --rclone_storage=mycloud
+#     ./backup_website.sh --domain=mywebsite --storage=cloud --rclone_storage=mycloud
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
@@ -69,8 +69,8 @@ source "$FUNCTIONS_DIR/backup_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     --storage=*)
@@ -89,8 +89,8 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [[ -z "$site_name" || ( "$storage" != "local" && "$storage" != "cloud" ) ]]; then
-  echo "${CROSSMARK} Missing or invalid parameters. Ensure --site_name, --storage, and --rclone_storage are correctly provided."
+if [[ -z "$domain" || ( "$storage" != "local" && "$storage" != "cloud" ) ]]; then
+  echo "${CROSSMARK} Missing or invalid parameters. Ensure --domain, --storage, and --rclone_storage are correctly provided."
   exit 1
 fi
 
@@ -100,8 +100,8 @@ if [[ "$storage" == "cloud" && -z "$rclone_storage" ]]; then
   exit 1
 fi
 
-# Set the SITE_NAME variable for the backup_website_logic
-SITE_NAME="$site_name"
+# Set the SITE_DOMAIN variable for the backup_website_logic
+SITE_DOMAIN="$domain"
 
 # Call the logic function to backup the website, passing the necessary parameters including site_name and rclone_storage
-backup_website_logic "$site_name" "$storage" "$rclone_storage"
+backup_website_logic "$domain" "$storage" "$rclone_storage"

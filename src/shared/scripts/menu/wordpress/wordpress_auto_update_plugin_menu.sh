@@ -20,25 +20,16 @@ source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 
-# 📋 **Hiển thị danh sách website để chọn**
-echo -e "${YELLOW}📋 Danh sách các website có thể bật/tắt tự cập nhật plugin:${NC}"
-site_list=($(ls -1 "$SITES_DIR"))
-
-if [ ${#site_list[@]} -eq 0 ]; then
-    echo -e "${RED}${CROSSMARK} Không có website nào để thực hiện thao tác này.${NC}"
-    exit 1
+# 📋 Hiển thị danh sách website để chọn (dùng select_website)
+select_website
+if [[ -z "$domain" ]]; then
+  echo -e "${RED}${CROSSMARK} No website selected.${NC}"
+  exit 1
 fi
 
-for i in "${!site_list[@]}"; do
-    echo -e "  ${GREEN}[$i]${NC} ${site_list[$i]}"
-done
-
-echo ""
-read -p "Nhập số tương ứng với website cần bật/tắt tự cập nhật plugin: " site_index
-site_name="${site_list[$site_index]}"
 
 # 📋 **Lựa chọn hành động bật/tắt tự động cập nhật**
-echo -e "${YELLOW}📋 Chọn hành động cho website '$site_name':${NC}"
+echo -e "${YELLOW}📋 Chọn hành động cho website '$domain':${NC}"
 echo "1) Bật tự động cập nhật plugin"
 echo "2) Tắt tự động cập nhật plugin"
 read -p "Nhập số tương ứng với hành động: " action_choice
@@ -53,4 +44,4 @@ else
 fi
 
 # Truyền tham số vào CLI
-bash "$SCRIPTS_DIR/cli/wordpress_auto_update_plugin.sh" --site_name="$site_name" --action="$action"
+bash "$SCRIPTS_DIR/cli/wordpress_auto_update_plugin.sh" --domain="$domain" --action="$action"

@@ -1,16 +1,16 @@
 backup_website_logic() {
-    if [[ -z "$SITE_NAME" ]]; then
-        log_with_time "${RED}${CROSSMARK} Error: SITE_NAME is not set!${NC}"
+    if [[ -z "$domain" ]]; then
+        log_with_time "${RED}${CROSSMARK} Error: SITE_DOMAIN is not set!${NC}"
         return 1
     fi
 
-    local site_name="$1"  # Get site name from argument
+    local domain="$1"  # Get site name from argument
     local storage="$2"  # Get storage option (local or cloud)
     local rclone_storage="$3"  # Get rclone storage from argument
 
     # Define backup and log directories
-    local backup_dir="$(realpath "$SITES_DIR/$SITE_NAME/backups")"
-    local log_dir="$(realpath "$SITES_DIR/$SITE_NAME/logs")"
+    local backup_dir="$(realpath "$SITES_DIR/$domain/backups")"
+    local log_dir="$(realpath "$SITES_DIR/$domain/logs")"
     local log_file="$log_dir/wp-backup.log"
 
     # Ensure backup and logs directories exist
@@ -18,14 +18,14 @@ backup_website_logic() {
     is_directory_exist "$log_dir"
 
     # Log start of backup process
-    log_with_time "${GREEN}${CHECKMARK} Starting backup process for site: $site_name${NC}"
+    log_with_time "${GREEN}${CHECKMARK} Starting backup process for site: $domain${NC}"
 
     # Backup database using the existing database_export_logic
     log_with_time "🔄 Backing up database..."
-    db_backup_file=$(bash "$CLI_DIR/database_export.sh" --site_name="$site_name" | tail -n 1)
+    db_backup_file=$(bash "$CLI_DIR/database_export.sh" --domain="$domain" | tail -n 1)
 
     log_with_time "🔄 Backing up source code..."
-    files_backup_file=$(bash "$CLI_DIR/backup_file.sh" --site_name="$site_name" | tail -n 1)
+    files_backup_file=$(bash "$CLI_DIR/backup_file.sh" --domain="$domain" | tail -n 1)
 
     # Check if backup files exist
     if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then

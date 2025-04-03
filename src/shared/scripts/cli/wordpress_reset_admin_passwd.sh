@@ -8,10 +8,10 @@
 # - The `wordpress_loader.sh` script must be available in the FUNCTIONS_DIR directory.
 #
 # Usage:
-#   ./wordpress_reset_admin_passwd.sh --site_name=<site_name> --user_id=<user_id>
+#   ./wordpress_reset_admin_passwd.sh --domain=example.tld --user_id=<user_id>
 #
 # Parameters:
-#   --site_name=<site_name>  The name of the WordPress site for which the admin password will be reset.
+#   --domain=example.tld  The name of the WordPress site for which the admin password will be reset.
 #   --user_id=<user_id>      The ID of the user whose password will be reset.
 #
 # Behavior:
@@ -19,7 +19,7 @@
 # - Determines the PROJECT_DIR by searching for the config.sh file in the directory structure.
 # - Sources the configuration file and WordPress loader script.
 # - Parses the command-line arguments to extract the site name and user ID.
-# - Ensures that the required parameters (--site_name and --user_id) are provided.
+# - Ensures that the required parameters (--domain and --user_id) are provided.
 # - Calls the `reset_admin_password_logic` function to perform the password reset operation.
 #
 # Error Handling:
@@ -60,8 +60,8 @@ source "$FUNCTIONS_DIR/wordpress_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     --user_id=*)
@@ -76,10 +76,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [ -z "$site_name" ] || [ -z "$user_id" ]; then
-  echo "${CROSSMARK} Missing required parameters: --site_name and --user_id"
+if [ -z "$domain" ] || [ -z "$user_id" ]; then
+  echo "${CROSSMARK} Missing required parameters: --domain and --user_id"
   exit 1
 fi
 
 # === Call the logic function to reset admin password ===
-reset_admin_password_logic "$site_name" "$user_id"
+reset_admin_password_logic "$domain" "$user_id"

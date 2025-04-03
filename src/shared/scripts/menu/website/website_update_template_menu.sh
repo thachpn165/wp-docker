@@ -44,4 +44,4 @@ fi
 
 # Proceed with update
 echo -e "${GREEN}${CHECKMARK} Updating website '$SELECTED_SITE'...${NC}"
-bash "$SCRIPTS_DIR/cli/website_update_template.sh" --site_name="$SELECTED_SITE"
+bash "$SCRIPTS_DIR/cli/website_update_template.sh" --domain="$SELECTED_SITE"

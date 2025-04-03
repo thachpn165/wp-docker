@@ -1,5 +1,5 @@
 # This script provides information about a specific website by utilizing the 
-# `website_management_info_logic` function. It requires the `--site_name` 
+# `website_management_info_logic` function. It requires the `--domain` 
 # parameter to specify the target website.
 
 # Prerequisites:
@@ -15,16 +15,16 @@
 #    file in the directory hierarchy if `PROJECT_DIR` is not already set.
 # 3. Ensures the `config.sh` file exists and sources it along with the 
 #    `website_loader.sh` script.
-# 4. Parses the `--site_name` parameter from the command-line arguments.
-# 5. Validates that the `--site_name` parameter is provided.
+# 4. Parses the `--domain` parameter from the command-line arguments.
+# 5. Validates that the `--domain` parameter is provided.
 # 6. Calls the `website_management_info_logic` function with the provided 
 #    `site_name` to display the website information.
 
 # Usage:
-#   ./website_info.sh --site_name=<site_name>
+#   ./website_info.sh --domain=example.tld
 
 # Parameters:
-#   --site_name=<site_name> : (Required) The name of the website for which 
+#   --domain=example.tld : (Required) The name of the website for which 
 #                             information is to be displayed.
 
 # Error Handling:
@@ -33,7 +33,7 @@
 #   - The `PROJECT_DIR` cannot be determined.
 #   - The `config.sh` file is missing.
 #   - An unknown parameter is provided.
-#   - The `--site_name` parameter is missing.
+#   - The `--domain` parameter is missing.
 #!/usr/bin/env bash
 
 # Ensure PROJECT_DIR is set
@@ -70,17 +70,17 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 # === Parse argument for site_name ===
 while [[ "$#" -gt 0 ]]; do
   case $1 in
-    --site_name=*) site_name="${1#*=}" ;;
+    --domain=*) domain="${1#*=}" ;;
     *) echo "${CROSSMARK} Unknown parameter: $1"; exit 1 ;;
   esac
   shift
 done
 
-# === Ensure site_name is provided ===
-if [[ -z "$site_name" ]]; then
-  echo "${CROSSMARK} Missing required --site_name parameter"
+# === Ensure domain is provided ===
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} Missing required --domain parameter"
   exit 1
 fi
 
 # === Call logic to display website information ===
-website_management_info_logic "$site_name"
+website_management_info_logic "$domain"

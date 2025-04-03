@@ -39,7 +39,7 @@ source "$FUNCTIONS_DIR/php_loader.sh"
 select_website || exit 1  # Use the existing select_website function to allow user to select a site
 
 # === Confirm Rebuild PHP Container ===
-echo -e "${YELLOW}🔁 Rebuild the PHP container for site: $SITE_NAME${NC}"
+echo -e "${YELLOW}🔁 Rebuild the PHP container for site: $domain${NC}"
 read -p "Are you sure you want to rebuild the PHP container for this site? (y/n): " confirm_rebuild
 confirm_rebuild=$(echo "$confirm_rebuild" | tr '[:upper:]' '[:lower:]')
 
@@ -49,4 +49,4 @@ if [[ "$confirm_rebuild" != "y" ]]; then
 fi
 
 # === Call the CLI to rebuild PHP container ===
-bash "$CLI_DIR/php_rebuild_container.sh" --site_name="$SITE_NAME"
+bash "$CLI_DIR/php_rebuild_container.sh" --domain="$domain"

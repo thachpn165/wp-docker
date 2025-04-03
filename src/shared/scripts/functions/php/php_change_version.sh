@@ -26,17 +26,17 @@
 # Exit Codes:
 #   - Returns 1 if the `.env` file is missing or if no PHP version is provided.
 php_change_version_logic() {
-  local site_name="$1"
+  local domain="$1"
   local php_version="$2"  # This will be passed from CLI
 
   # Set paths
-  local site_dir="$SITES_DIR/$site_name"
+  local site_dir="$SITES_DIR/$domain"
   local env_file="$site_dir/.env"
   local docker_compose_file="$site_dir/docker-compose.yml"
 
   # Ensure .env exists
   if [[ ! -f "$env_file" ]]; then
-    echo -e "${RED}${CROSSMARK} .env file not found for website ${site_name}!${NC}"
+    echo -e "${RED}${CROSSMARK} .env file not found for website ${domain}!${NC}"
     return 1
   fi
 
@@ -67,8 +67,8 @@ php_change_version_logic() {
   # Restart PHP container
   echo -e "${YELLOW}🔄 Restarting PHP container to apply changes...${NC}"
   run_in_dir "$site_dir" docker compose stop php
-  run_in_dir "$site_dir" docker rm -f "${site_name}-php" 2>/dev/null || true
+  run_in_dir "$site_dir" docker rm -f "${domain}-php" 2>/dev/null || true
   run_in_dir "$site_dir" docker compose up -d php
 
-  echo -e "${GREEN}${CHECKMARK} Website $site_name is now running with PHP: $php_version${NC}"
+  echo -e "${GREEN}${CHECKMARK} Website $domain is now running with PHP: $php_version${NC}"
 }

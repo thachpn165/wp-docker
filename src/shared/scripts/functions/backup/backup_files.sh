@@ -1,13 +1,13 @@
 backup_file_logic() {
-    local site_name="$1"
-    local web_root="$SITES_DIR/${site_name}/wordpress"  # Automatically determine web root
-    local backup_dir="$SITES_DIR/${site_name}/backups"
-    local backup_file="${backup_dir}/files-${site_name}-$(date +%Y%m%d-%H%M%S).tar.gz"
+    local domain="$1"
+    local web_root="$SITES_DIR/${domain}/wordpress"  # Automatically determine web root
+    local backup_dir="$SITES_DIR/${domain}/backups"
+    local backup_file="${backup_dir}/files-${domain}-$(date +%Y%m%d-%H%M%S).tar.gz"
 
-    is_directory_exist "$SITES_DIR/$site_name/backups"
-    is_directory_exist "$SITES_DIR/$site_name/logs"
+    is_directory_exist "$SITES_DIR/$domain/backups"
+    is_directory_exist "$SITES_DIR/$domain/logs"
 
-    echo "🔹 Backing up files for ${site_name}..."
+    echo "🔹 Backing up files for ${domain}..."
     tar -czf "${backup_file}" -C "${web_root}" . 2>/dev/null
 
     if [[ $? -eq 0 ]]; then

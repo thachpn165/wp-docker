@@ -26,14 +26,14 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 
 # === Display the list of websites to the user ===
 select_website
-site_name="$SITE_NAME"
-if [[ -z "$site_name" ]]; then
+
+if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
 # === Prompt user for logs option (e.g., access logs or error logs) ===
-echo -e "${YELLOW}⚡ You are about to view logs for the website '$site_name'. Choose log type:${NC}"
+echo -e "${YELLOW}⚡ You are about to view logs for the website '$domain'. Choose log type:${NC}"
 echo "1. Access Logs"
 echo "2. Error Logs"
 read -p "Select an option (1/2): " log_option
@@ -49,5 +49,5 @@ else
 fi
 
 # === Call the CLI with --log_type parameter ===
-echo -e "${GREEN}📄 Displaying $log_type logs for $site_name...${NC}"
-bash "$SCRIPTS_DIR/cli/website_logs.sh" --site_name="$site_name" --log_type="$log_type"
+echo -e "${GREEN}📄 Displaying $log_type logs for $domain...${NC}"
+bash "$SCRIPTS_DIR/cli/website_logs.sh" --domain="$domain" --log_type="$log_type"

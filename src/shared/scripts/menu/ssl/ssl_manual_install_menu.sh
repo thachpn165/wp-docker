@@ -26,22 +26,21 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 
 # === Display the list of websites to the user ===
 select_website
-site_name="$SITE_NAME"
-if [[ -z "$site_name" ]]; then
+if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
 # === Ask the user for certificate input ===
-echo -e "${BLUE}🔹 Paste the certificate file content (.crt) for website (including certificate, CA root,...): ${CYAN}$site_name${NC}"
+echo -e "${BLUE}🔹 Paste the certificate file content (.crt) for website (including certificate, CA root,...): ${CYAN}$domain${NC}"
 echo -e "${YELLOW}👉 End input by pressing Ctrl+D (on Linux/macOS) or Ctrl+Z then Enter (on Windows Git Bash)${NC}"
 echo ""
-cat > "$SSL_DIR/$site_name.crt"
+cat > "$SSL_DIR/$domain.crt"
 
-echo -e "\n${BLUE}🔹 Paste the private key file content (.key) for website: ${CYAN}$site_name${NC}"
+echo -e "\n${BLUE}🔹 Paste the private key file content (.key) for website: ${CYAN}$domain${NC}"
 echo -e "${YELLOW}👉 End input by pressing Ctrl+D or Ctrl+Z as above${NC}"
 echo ""
-cat > "$SSL_DIR/$site_name.key"
+cat > "$SSL_DIR/$domain.key"
 
 # === Run SSL Installation Logic ===
-ssl_install_manual_logic "$site_name" "$SSL_DIR"
+ssl_install_manual_logic "$domain" "$SSL_DIR"

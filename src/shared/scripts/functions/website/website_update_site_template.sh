@@ -7,12 +7,12 @@ website_management_update_site_template_logic() {
 
   for site_path in "$SITES_DIR/"*/; do
     [ -d "$site_path" ] || continue
-    site_name=$(basename "$site_path")
+    domain=$(basename "$site_path")
     site_ver_file="$site_path/.template_version"
     site_template_version=$(cat "$site_ver_file" 2>/dev/null || echo "unknown")
 
     if [[ "$site_template_version" != "$TEMPLATE_VERSION_NEW" ]]; then
-      outdated_sites+=("$site_name")
+      outdated_sites+=("$domain")
     fi
   done
 

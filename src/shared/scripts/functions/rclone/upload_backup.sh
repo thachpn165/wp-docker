@@ -92,14 +92,14 @@ upload_backup() {
     fi
 
     local first_file="${selected_files[0]}"
-    local site_name=$(echo "$first_file" | awk -F '/' '{for(i=1;i<=NF;i++) if($i=="sites") print $(i+1)}')
+    local domain=$(echo "$first_file" | awk -F '/' '{for(i=1;i<=NF;i++) if($i=="sites") print $(i+1)}')
 
-    if [[ -z "$site_name" ]]; then
+    if [[ -z "$domain" ]]; then
         echo -e "${RED}${CROSSMARK} Cannot determine site from file: $first_file${NC}"
         return 1
     fi
 
-    local log_file="$SITES_DIR/$site_name/logs/rclone-upload.log"
+    local log_file="$SITES_DIR/$domain/logs/rclone-upload.log"
     mkdir -p "$(dirname "$log_file")"
 
     echo -e "${BLUE}📂 Files to be uploaded:${NC}" | tee -a "$log_file"

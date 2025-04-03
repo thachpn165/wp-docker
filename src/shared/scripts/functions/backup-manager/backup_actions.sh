@@ -2,10 +2,10 @@
 backup_website() {
     select_website || return
 
-    local env_file="$SITES_DIR/$SITE_NAME/.env"
-    local web_root="$SITES_DIR/$SITE_NAME/wordpress"
-    local backup_dir="$(realpath "$SITES_DIR/$SITE_NAME/backups")"
-    local log_dir="$(realpath "$SITES_DIR/$SITE_NAME/logs")"
+    local env_file="$SITES_DIR/$domain/.env"
+    local web_root="$SITES_DIR/$domain/wordpress"
+    local backup_dir="$(realpath "$SITES_DIR/$domain/backups")"
+    local log_dir="$(realpath "$SITES_DIR/$domain/logs")"
     local db_backup_file=""
     local files_backup_file=""
     local storage_choice=""
@@ -15,7 +15,7 @@ backup_website() {
     is_directory_exist "$log_dir"
 
     if [[ ! -f "$env_file" ]]; then
-        echo -e "${RED}${CROSSMARK} .env file not found in $SITES_DIR/$SITE_NAME!${NC}"
+        echo -e "${RED}${CROSSMARK} .env file not found in $SITES_DIR/$domain!${NC}"
         return 1
     fi
 
@@ -29,7 +29,7 @@ backup_website() {
         return 1
     fi
 
-    echo -e "${GREEN}${CHECKMARK} Preparing to backup website: $SITE_NAME${NC}"
+    echo -e "${GREEN}${CHECKMARK} Preparing to backup website: $domain${NC}"
     echo -e "📂 Source code: $web_root"
     echo -e "🗄️ Database: $DB_NAME (User: $DB_USER)"
 
@@ -38,10 +38,10 @@ backup_website() {
     local backup_database_cli="$CLI_DIR/backup/backup_database.sh"
 
     # Call the CLI for database backup
-    db_backup_file=$(bash "$backup_database_cli" --site_name="$SITE_NAME" --db_name="$DB_NAME" --db_user="$DB_USER" --db_pass="$DB_PASS" | tail -n 1)
+    db_backup_file=$(bash "$backup_database_cli" --domain="$domain" --db_name="$DB_NAME" --db_user="$DB_USER" --db_pass="$DB_PASS" | tail -n 1)
 
     # Call the CLI for files backup
-    files_backup_file=$(bash "$backup_files_cli" --site_name="$SITE_NAME" --webroot="$web_root" | tail -n 1)
+    files_backup_file=$(bash "$backup_files_cli" --domain="$domain" --webroot="$web_root" | tail -n 1)
 
     # Check if backup files exist
     if [[ ! -f "$db_backup_file" || ! -f "$files_backup_file" ]]; then

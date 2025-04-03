@@ -34,8 +34,8 @@ source "$FUNCTIONS_DIR/php_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     *)
@@ -46,10 +46,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [[ -z "$site_name" ]]; then
-  echo "${CROSSMARK} Missing --site_name parameter. Please provide the site name."
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} Missing --domain parameter. Please provide the site name."
   exit 1
 fi
 
 # Call the logic function to rebuild the PHP container
-php_rebuild_container_logic "$site_name"
+php_rebuild_container_logic "$domain"

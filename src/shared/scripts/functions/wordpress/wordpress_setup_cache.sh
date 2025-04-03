@@ -4,7 +4,7 @@
 #          NGINX configuration, and cache type setup.
 #
 # Parameters:
-#   1. site_name (string): The name of the WordPress site.
+#   1. domain (string): The domain of the WordPress site.
 #   2. cache_type (string): The type of cache to configure. Supported values:
 #      - "no-cache": Disables caching and removes cache plugins.
 #      - "wp-super-cache": Configures WP Super Cache plugin.
@@ -38,15 +38,15 @@
 #   - 1 on failure, with an appropriate error message.
 #
 # Example Usage:
-#   wordpress_cache_setup_logic "example-site" "wp-super-cache"
+#   wordpress_cache_setup_logic "example.com" "wp-super-cache"
 # -----------------------------------------------------------------------------
 wordpress_cache_setup_logic() {
-    local site_name="$1"
+    local domain="$1"
     local cache_type="$2"
-    local site_dir="$SITES_DIR/$site_name"
+    local site_dir="$SITES_DIR/$domain"
     local wp_config_file="$site_dir/wordpress/wp-config.php"
-    local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${site_name}.conf"
-    local PHP_CONTAINER="$site_name-php"
+    local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
+    local PHP_CONTAINER="$domain-php"
 
     # Ensure the site directory exists
     if [ ! -d "$site_dir" ]; then
@@ -139,8 +139,11 @@ wordpress_cache_setup_logic() {
         "wp-fastest-cache") plugin_slug="wp-fastest-cache" ;;
     esac
 
-    docker_exec_php "wp plugin install $plugin_slug --activate --path=$PHP_CONTAINER_WP_PATH"
-    docker exec -u root -i "$PHP_CONTAINER" chown -R $PHP_USER /var/www/html/wp-content
+    #docker_exec_php "wp plugin install $plugin_slug --activate --path=$PHP_CONTAINER_WP_PATH"
+    wp_cli "$domain" plugin install "$plugin_slug" --activate
+    exit_if_error $? "${CROSSMARK} An error occurred while installing and activating the plugin: $plugin_slug"
+
+    docker exec -u root -i "$PHP_CONTAINER" chown -R $PHP_USER /var/www/html/wp-content # Need root to change ownership
     exit_if_error $? "${CROSSMARK} An error occurred while changing ownership of wp-content directory."
 
     # Handle FastCGI cache and Redis options
@@ -155,7 +158,9 @@ wordpress_cache_setup_logic() {
         fi
 
         # Update options for Nginx Helper Plugin
-        docker_exec_php "wp option update rt_wp_nginx_helper_options '{\"enable_purge\":true}' --format=json --path=$PHP_CONTAINER_WP_PATH"
+        #docker_exec_php "wp option update rt_wp_nginx_helper_options '{\"enable_purge\":true}' --format=json --path=$PHP_CONTAINER_WP_PATH"
+        wp_cli "$domain" option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json
+        exit_if_error $? "${CROSSMARK} An error occurred while updating Nginx Helper options."
     fi
 
     if [[ "$cache_type" == "fastcgi-cache" ]]; then
@@ -165,9 +170,18 @@ wordpress_cache_setup_logic() {
             define('WP_REDIS_PORT', 6379);\\
             define('WP_REDIS_DATABASE', 0);" "$wp_config_file"
         fi
-        docker_exec_php "wp plugin install redis-cache --activate --path=$PHP_CONTAINER_WP_PATH"
-        docker_exec_php "wp redis update-dropin --path=$PHP_CONTAINER_WP_PATH"
-        docker_exec_php "wp redis enable --path=$PHP_CONTAINER_WP_PATH"
+        wp_cli "$domain" plugin install redis-cache --activate
+        exit_if_error $? "${CROSSMARK} An error occurred while installing and activating Redis Cache plugin."
+
+        wp_cli "$domain" redis update-dropin
+        exit_if_error $? "${CROSSMARK} An error occurred while updating Redis Cache drop-in."
+        
+        wp_cli "$domain" option update redis-cache
+        exit_if_error $? "${CROSSMARK} An error occurred while updating Redis Cache options."
+        
+        
+        wp_cli "$domain" redis enable
+        exit_if_error $? "${CROSSMARK} An error occurred while enabling Redis Cache."
     fi
 
     # Reload NGINX to apply new cache settings

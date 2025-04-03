@@ -6,16 +6,17 @@
 # =====================================
 
 website_management_logs_logic() {
-  local site_name="$1"
+  local domain="$1"
   local log_type="$2"
   
-  if [[ -z "$site_name" ]]; then
+  #echo "domain from logs logic: $domain"
+  if [[ -z "$domain" ]]; then
     echo -e "${RED}${CROSSMARK} site_name is not set. Please provide a valid site name.${NC}"
     return 1
   fi
 
   if [[ "$log_type" == "access" ]]; then
-    log_file="$SITES_DIR/$site_name/logs/access.log"
+    log_file="$SITES_DIR/$domain/logs/access.log"
     echo -e "\n${CYAN}📜 Following Access Log: $log_file${NC}"
     
     # Tail the last 100 lines if TEST_MODE is enabled
@@ -25,7 +26,7 @@ website_management_logs_logic() {
       tail -f "$log_file"
     fi
   elif [[ "$log_type" == "error" ]]; then
-    error_log="$SITES_DIR/$site_name/logs/error.log"
+    error_log="$SITES_DIR/$domain/logs/error.log"
     echo -e "\n${MAGENTA}📛 Following Error Log: $error_log${NC}"
     
     # Tail the last 100 lines if TEST_MODE is enabled
@@ -41,8 +42,8 @@ website_management_logs_logic() {
 }
 
 website_management_logs() {
-  echo -ne "${YELLOW}⏳ Loading log"; for i in {1..5}; do echo -n "."; sleep 0.2; done; echo "${NC}"
+  echo -ne "Loading log"; for i in {1..5}; do echo -n "."; sleep 0.2; done; echo ""
   
   # Call the main logic function with the correct parameters
-  website_management_logs_logic "$SITE_NAME" "$LOG_TYPE"
+  website_management_logs_logic "$domain" "$LOG_TYPE"
 }

@@ -11,7 +11,7 @@
 # - Executes the `backup_manage` function with the parsed parameters.
 
 # === Command-Line Arguments ===
-# --site_name=<site_name>   : (Required) The name of the site for which the backup action is to be performed.
+# --domain=example.tld   : (Required) The name of the site for which the backup action is to be performed.
 # --action=<action>         : (Required) The action to perform (e.g., create, restore, delete).
 # --max_age_days=<days>     : (Optional) The maximum age of backups to consider, in days.
 
@@ -20,8 +20,8 @@
 # 1  : Failure due to missing configuration file, invalid parameters, or unknown arguments.
 
 # === Example Usage ===
-# ./backup_manage.sh --site_name=my_site --action=create
-# ./backup_manage.sh --site_name=my_site --action=delete --max_age_days=30
+# ./backup_manage.sh --domain=my_site --action=create
+# ./backup_manage.sh --domain=my_site --action=delete --max_age_days=30
 
 # === Load config & backup_utils.sh ===
 
@@ -59,8 +59,8 @@ source "$FUNCTIONS_DIR/backup_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     --action=*)
@@ -79,10 +79,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [[ -z "$site_name" || -z "$action" ]]; then
-  echo "${CROSSMARK} Missing required parameters. Ensure --site_name and --action are provided."
+if [[ -z "$domain" || -z "$action" ]]; then
+  echo "${CROSSMARK} Missing required parameters. Ensure --domain and --action are provided."
   exit 1
 fi
 
 # Call the backup_manage function with the passed parameters
-backup_manage "$site_name" "$action" "$max_age_days"
+backup_manage "$domain" "$action" "$max_age_days"

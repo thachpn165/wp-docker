@@ -20,16 +20,12 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/backup_loader.sh"
 
-# === Select website ===
+# 📋 Hiển thị danh sách website để chọn (dùng select_website)
 select_website
-
-# Ensure site is selected
-if [[ -z "$SITE_NAME" ]]; then
-    echo "${CROSSMARK} No website selected. Exiting."
-    exit 1
+if [[ -z "$domain" ]]; then
+  echo -e "${RED}${CROSSMARK} No website selected.${NC}"
+  exit 1
 fi
-
-echo "Selected site: $SITE_NAME"
 
 # === Choose storage: local or cloud ===
 echo -e "${YELLOW}📂 Choose storage option:${NC}"
@@ -83,4 +79,4 @@ if [[ "$storage" == "cloud" ]]; then
 fi
 
 # === Pass selected parameters to the backup logic ===
-backup_website_logic "$SITE_NAME" "$storage" "$selected_storage"
+backup_website_logic "$domain" "$storage" "$selected_storage"

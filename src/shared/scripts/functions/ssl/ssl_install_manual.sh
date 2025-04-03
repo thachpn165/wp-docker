@@ -5,16 +5,16 @@
 # ============================================
 
 ssl_install_manual_logic() {
-    local SITE_NAME="$1"
+    local domain="$1"
     local SSL_DIR="$2"
 
-    if [ -z "$SITE_NAME" ]; then
+    if [ -z "$domain" ]; then
         echo -e "${RED}${CROSSMARK} No website selected.${NC}"
         return 1
     fi
 
-    local target_crt="$SSL_DIR/$SITE_NAME.crt"
-    local target_key="$SSL_DIR/$SITE_NAME.key"
+    local target_crt="$SSL_DIR/$domain.crt"
+    local target_key="$SSL_DIR/$domain.key"
 
     # Check if files exist and are not empty
     if [[ ! -s "$target_crt" || ! -s "$target_key" ]]; then

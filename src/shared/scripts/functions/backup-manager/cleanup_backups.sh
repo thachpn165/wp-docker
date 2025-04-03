@@ -1,13 +1,13 @@
 #!/bin/bash
 
 cleanup_backups() {
-    local site_name="$1"
+    local domain="$1"
     local retention_days="$2"
-    local backup_dir="$SITES_DIR/${site_name}/backups"
+    local backup_dir="$SITES_DIR/${domain}/backups"
     local deleted_files=()
 
     if [[ ! -d "$backup_dir" ]]; then
-        echo "${CROSSMARK} Backup directory not found for $site_name!"
+        echo "${CROSSMARK} Backup directory not found for $domain!"
         return 1
     fi
 
@@ -24,7 +24,7 @@ cleanup_backups() {
             rm -f "$file"
             echo "🗑️ Deleted: $file"
         done
-        echo "${CHECKMARK} Cleanup completed for $site_name backups."
+        echo "${CHECKMARK} Cleanup completed for $domain backups."
     else
         echo "${INFO} No backups were deleted. All backups are within the ${retention_days} days limit."
     fi

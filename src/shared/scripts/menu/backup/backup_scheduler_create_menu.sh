@@ -24,14 +24,10 @@ source "$FUNCTIONS_DIR/backup_loader.sh"
 backup_scheduler_create() {
     # === Select website ===
     select_website
-
-    # Ensure site is selected
-    if [[ -z "$SITE_NAME" ]]; then
-        echo "${CROSSMARK} No website selected. Exiting."
-        exit 1
+    if [[ -z "$domain" ]]; then
+    echo -e "${RED}${CROSSMARK} No website selected.${NC}"
+    exit 1
     fi
-
-    echo "Selected site: $SITE_NAME"
 
     # === Choose schedule time (Cron format) ===
     echo -e "${YELLOW}📅 Select the time for the backup to run (Cron format):${NC}"
@@ -101,10 +97,10 @@ backup_scheduler_create() {
     done
 
     # === Set log file path using local variable ===
-    local backup_log_file="$SITES_DIR/$SITE_NAME/logs/backup_schedule.logs"
+    local backup_log_file="$SITES_DIR/$domain/logs/backup_schedule.logs"
 
     # === Schedule the backup in crontab ===
-    backup_command="bash $CLI_DIR/backup_website.sh --site_name=$SITE_NAME --storage=$storage"
+    backup_command="bash $CLI_DIR/backup_website.sh --domain=$domain --storage=$storage"
     if [[ "$storage" == "cloud" ]]; then
         backup_command="$backup_command --rclone_storage=$rclone_storage"
     fi

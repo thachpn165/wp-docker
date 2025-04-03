@@ -27,9 +27,9 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 # === Ask for website and email ===
 echo -e "${YELLOW}🔧 Please select the website for which you want to install the SSL certificate:${NC}"
 select_website
-SITE_NAME="$SITE_NAME"
+SITE_DOMAIN="$domain"
 
-if [[ -z "$SITE_NAME" ]]; then
+if [[ -z "$domain" ]]; then
   echo -e "${RED}${CROSSMARK} No website selected. Exiting.${NC}"
   exit 1
 fi
@@ -46,4 +46,4 @@ fi
 STAGING=false
 
 # === Call the logic to install Let's Encrypt SSL ===
-ssl_install_lets_encrypt_logic "$SITE_NAME" "$EMAIL" "$STAGING"
+ssl_install_lets_encrypt_logic "$domain" "$EMAIL" "$STAGING"
