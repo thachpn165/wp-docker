@@ -20,7 +20,7 @@ system_tools_menu() {
             bash "$CLI_DIR/cli/system_cleanup_docker.sh"
             ;;
         4)
-            bash "$CLI_DIR1/system_nginx_rebuild.sh"
+            bash "$CLI_DIR/system_nginx_rebuild.sh"
             ;;
         *)
             echo -e "${RED}${CROSSMARK} Invalid option or you have exited.${NC}"
