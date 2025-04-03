@@ -56,24 +56,24 @@ rename_site_to_domain() {
   domain=$(grep -i "^DOMAIN=" "$env_file" | cut -d '=' -f 2 | tr -d '[:space:]')
 
   if [[ -z "$domain" ]]; then
-    echo "${CROSSMARK} DOMAIN not found in $env_file for $site_name. Skipping..."
+    echo "${CROSSMARK} DOMAIN not found in $env_file for $domain. Skipping..."
     return 1
   fi
 
   # Check if the domain is already the folder name
-  if [[ "$site_name" == "$domain" ]]; then
-    echo "${CHECKMARK} Directory $site_name already matches domain $domain. Skipping rename."
+  if [[ "$domain" == "$domain" ]]; then
+    echo "${CHECKMARK} Directory $domain already matches domain $domain. Skipping rename."
     return 0
   fi
 
   # Rename the directory to match the domain
-  echo "🔄 Renaming $site_name to $domain..."
+  echo "🔄 Renaming $domain to $domain..."
 
   # Ensure SITES_DIR contains the site directory before renaming
-  if mv "$SITES_DIR/$site_name" "$SITES_DIR/$domain"; then
-    echo "${CHECKMARK} Renamed directory $site_name to $domain successfully."
+  if mv "$SITES_DIR/$domain" "$SITES_DIR/$domain"; then
+    echo "${CHECKMARK} Renamed directory $domain to $domain successfully."
   else
-    echo "${CROSSMARK} Failed to rename directory $site_name to $domain."
+    echo "${CROSSMARK} Failed to rename directory $domain to $domain."
     return 1
   fi
 }

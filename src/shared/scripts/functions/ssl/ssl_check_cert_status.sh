@@ -1,15 +1,15 @@
 ssl_check_certificate_status_logic() {
-    local site_name="$1"
+    local domain="$1"
     local SSL_DIR="$2"
 
-    if [ -z "$site_name" ]; then
+    if [ -z "$domain" ]; then
         echo -e "${RED}${CROSSMARK} No website selected.${NC}"
         return 1
     fi
 
-    local ENV_FILE="$SITES_DIR/$site_name/.env"
+    local ENV_FILE="$SITES_DIR/$domain/.env"
     if [ ! -f "$ENV_FILE" ]; then
-        echo -e "${RED}${CROSSMARK} .env file not found for site $site_name${NC}"
+        echo -e "${RED}${CROSSMARK} .env file not found for site $domain${NC}"
         return 1
     fi
 

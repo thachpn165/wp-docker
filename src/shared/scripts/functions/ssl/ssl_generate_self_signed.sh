@@ -1,5 +1,5 @@
 ssl_generate_self_signed_logic() {
-    local SITE_NAME=$1
+    local SITE_DOMAIN=$1
     # Set SSL directory to a temporary directory if in test mode
     local SSL_DIR="${TEST_MODE:+/tmp/test_ssl_directory}"
 
@@ -8,18 +8,18 @@ ssl_generate_self_signed_logic() {
         SSL_DIR="$NGINX_PROXY_DIR/ssl"
     fi
 
-    local CERT_PATH="$SSL_DIR/$SITE_NAME.crt"
-    local KEY_PATH="$SSL_DIR/$SITE_NAME.key"
+    local CERT_PATH="$SSL_DIR/$domain.crt"
+    local KEY_PATH="$SSL_DIR/$domain.key"
 
-    if [ -z "$SITE_NAME" ]; then
+    if [ -z "$domain" ]; then
         echo -e "${RED}${CROSSMARK} No website selected.${NC}"
         return 1
     fi
 
     # Skip checking website directory in TEST_MODE
     if [[ "$TEST_MODE" != true ]]; then
-        if [ ! -d "$PROJECT_DIR/sites/$SITE_NAME" ]; then
-            echo -e "${RED}${CROSSMARK} Website '$SITE_NAME' does not exist.${NC}"
+        if [ ! -d "$PROJECT_DIR/sites/$domain" ]; then
+            echo -e "${RED}${CROSSMARK} Website '$domain' does not exist.${NC}"
             return 1
         fi
     fi
@@ -29,15 +29,15 @@ ssl_generate_self_signed_logic() {
         return 1
     fi
 
-    echo -e "${YELLOW}🔐 Regenerating self-signed certificate for site: $SITE_NAME...${NC}"
+    echo -e "${YELLOW}🔐 Regenerating self-signed certificate for site: $domain...${NC}"
     openssl req -x509 -nodes -days 365 \
         -newkey rsa:2048 \
         -keyout "$KEY_PATH" \
         -out "$CERT_PATH" \
-        -subj "/C=VN/ST=HCM/L=HCM/O=WP-Docker/OU=Dev/CN=$SITE_NAME"
+        -subj "/C=VN/ST=HCM/L=HCM/O=WP-Docker/OU=Dev/CN=$domain"
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}${CHECKMARK} Self-signed SSL certificate has been regenerated successfully for $SITE_NAME.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Self-signed SSL certificate has been regenerated successfully for $domain.${NC}"
         echo -e "${YELLOW}🔄 Reloading nginx-proxy container...${NC}"
         nginx_reload
         echo ""

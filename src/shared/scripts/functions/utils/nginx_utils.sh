@@ -2,7 +2,7 @@
 # 🌐 nginx_utils.sh – NGINX Proxy utility functions
 # =====================================
 nginx_add_mount_docker() {
-    local site_name="$1"
+    local domain="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
 
     # Nếu đang trong TEST_MODE, sử dụng file mock
@@ -10,8 +10,8 @@ nginx_add_mount_docker() {
         OVERRIDE_FILE="/tmp/mock-docker-compose.override.yml"
     fi
 
-    local MOUNT_ENTRY="      - ../../sites/$site_name/wordpress:/var/www/$site_name"
-    local MOUNT_LOGS="      - ../../sites/$site_name/logs:/var/www/logs/$site_name"
+    local MOUNT_ENTRY="      - ../../sites/$domain/wordpress:/var/www/$domain"
+    local MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
 
     # Nếu file không tồn tại, tạo file mới
     if [ ! -f "$OVERRIDE_FILE" ]; then

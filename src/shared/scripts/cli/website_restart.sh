@@ -3,22 +3,22 @@
 # loads necessary configuration files, and restarts the specified website's containers.
 #
 # Usage:
-#   ./website_restart.sh --site_name=SITE_NAME
+#   ./website_restart.sh --domain=SITE_DOMAIN
 #
 # Arguments:
-#   --site_name=SITE_NAME   (Required) The name of the WordPress site to restart.
+#   --domain=SITE_DOMAIN   (Required) The name of the WordPress site to restart.
 #
 # Script Workflow:
 # 1. Verifies that the script is executed in a Bash shell.
 # 2. Determines the PROJECT_DIR by locating the 'config.sh' file in the directory structure.
 # 3. Loads the configuration file and required functions.
-# 4. Parses the --site_name argument to identify the target site.
+# 4. Parses the --domain argument to identify the target site.
 # 5. Stops and removes the Docker containers associated with the specified site.
 # 6. Restarts the Docker containers for the specified site.
 #
 # Exit Codes:
 #   1 - General error (e.g., missing Bash shell, PROJECT_DIR not found, or missing config file).
-#   2 - Missing or invalid --site_name argument.
+#   2 - Missing or invalid --domain argument.
 #   3 - Docker Compose operations (down/up) failed.
 #
 # Prerequisites:
@@ -27,7 +27,7 @@
 # - The SITES_DIR must contain a subdirectory for the specified site with a valid docker-compose.yml file.
 #
 # Example:
-#   ./website_restart.sh --site_name=my_wordpress_site
+#   ./website_restart.sh --domain=my_wordpress_site
 #
 # Notes:
 # - Ensure the script has executable permissions: chmod +x website_restart.sh
@@ -65,31 +65,33 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/website_loader.sh"
 
+echo "domain from CLI: $domain"
 # === Parse argument ===
 for arg in "$@"; do
   case $arg in
-    --site_name=*) SITE_NAME="${arg#*=}" ;;
+    --domain=*) domain="${arg#*=}" ;;
   esac
 done
 
-if [[ -z "$SITE_NAME" ]]; then
-  echo "${CROSSMARK} Missing required --site_name=SITE_NAME parameter"
+
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} Missing required --domain parameter"
   exit 1
 fi
 
 # === Restart Website Logic ===
-echo "🔄 Restarting WordPress website: $SITE_NAME"
+echo "🔄 Restarting WordPress website: $domain"
 
 # Stop and remove containers related to the site
-docker compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" down || {
-  echo "${CROSSMARK} Failed to stop containers for $SITE_NAME"
+docker compose -f "$SITES_DIR/$domain/docker-compose.yml" down || {
+  echo "${CROSSMARK} Failed to stop containers for $domain"
   exit 1
 }
 
 # Restart containers
-docker compose -f "$SITES_DIR/$SITE_NAME/docker-compose.yml" up -d || {
-  echo "${CROSSMARK} Failed to restart containers for $SITE_NAME"
+docker compose -f "$SITES_DIR/$domain/docker-compose.yml" up -d || {
+  echo "${CROSSMARK} Failed to restart containers for $domain"
   exit 1
 }
 
-echo "${CHECKMARK} Website $SITE_NAME has been restarted successfully."
+echo "${CHECKMARK} Website $domain has been restarted successfully."

@@ -1,10 +1,10 @@
 backup_restore_web_logic() {
-    local site_name="$1"
+    local domain="$1"
     local code_backup_file="$2"
     local db_backup_file="$3"
     local test_mode="$4"
-    local site_dir="$SITES_DIR/$site_name"
-    local db_container="${site_name}-mariadb"
+    local site_dir="$SITES_DIR/$domain"
+    local db_container="${domain}-mariadb"
 
     # Ensure website directory exists
     if ! is_directory_exist "$site_dir"; then
@@ -52,9 +52,9 @@ backup_restore_web_logic() {
         fi
 
         # Call the restore database function
-        backup_restore_database "$db_backup_file" "$db_container" "$site_name"
+        backup_restore_database "$db_backup_file" "$db_container" "$domain"
         exit_if_error "$?" "Database restore failed!"
     fi
 
-    echo -e "${GREEN}${CHECKMARK} Website '$site_name' restore completed.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Website '$domain' restore completed.${NC}"
 }

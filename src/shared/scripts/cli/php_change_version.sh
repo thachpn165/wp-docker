@@ -33,8 +33,8 @@ source "$FUNCTIONS_DIR/php_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     --php_version=*)
@@ -49,10 +49,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Validate parameters
-if [[ -z "$site_name" || -z "$php_version" ]]; then
-  echo "${CROSSMARK} Missing parameters. Please provide --site_name and --php_version."
+if [[ -z "$domain" || -z "$php_version" ]]; then
+  echo "${CROSSMARK} Missing parameters. Please provide --domain and --php_version."
   exit 1
 fi
 
 # Call the logic function
-php_change_version_logic "$site_name" "$php_version"
+php_change_version_logic "$domain" "$php_version"

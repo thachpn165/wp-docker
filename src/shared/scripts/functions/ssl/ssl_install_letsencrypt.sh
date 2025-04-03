@@ -1,7 +1,7 @@
 ssl_install_lets_encrypt_logic() {
-    local ENV_FILE="$SITES_DIR/$SITE_NAME/.env"
+    local ENV_FILE="$SITES_DIR/$domain/.env"
     if [ ! -f "$ENV_FILE" ]; then
-        echo -e "${RED}${CROSSMARK} .env file not found for site $SITE_NAME${NC}"
+        echo -e "${RED}${CROSSMARK} .env file not found for site $domain${NC}"
         return 1
     fi
 
@@ -14,7 +14,7 @@ ssl_install_lets_encrypt_logic() {
     echo -e "${BLUE}🌍 Domain: ${CYAN}$DOMAIN${NC}"
 
     # Determine webroot path (where WordPress source code is located)
-    local WEBROOT="$SITES_DIR/$SITE_NAME/wordpress"
+    local WEBROOT="$SITES_DIR/$domain/wordpress"
 
     if [ ! -d "$WEBROOT" ]; then
         echo -e "${RED}${CROSSMARK} Source code directory not found: $WEBROOT${NC}"

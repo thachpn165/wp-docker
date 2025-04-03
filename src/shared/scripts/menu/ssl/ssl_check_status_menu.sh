@@ -28,15 +28,15 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 select_website
 
 # Ensure a site is selected
-if [[ -z "$SITE_NAME" ]]; then
+if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
 if [[ $? -eq 0 ]]; then
   # === Call the CLI for checking SSL certificate status ===
-  echo -e "${GREEN}${CHECKMARK} Checking SSL certificate status for '$SITE_NAME'...${NC}"
-  bash "$SCRIPTS_DIR/cli/ssl_check_status.sh" --site_name="$SITE_NAME"
+  echo -e "${GREEN}${CHECKMARK} Checking SSL certificate status for '$domain'...${NC}"
+  bash "$SCRIPTS_DIR/cli/ssl_check_status.sh" --domain="$domain"
 else
   echo -e "${YELLOW}${WARNING} SSL certificate check cancelled.${NC}"
 fi

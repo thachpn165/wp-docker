@@ -12,7 +12,7 @@ website_management_update_site_template_logic() {
     site_template_version=$(cat "$site_ver_file" 2>/dev/null || echo "unknown")
 
     if [[ "$site_template_version" != "$TEMPLATE_VERSION_NEW" ]]; then
-      outdated_sites+=("$site_name")
+      outdated_sites+=("$domain")
     fi
   done
 

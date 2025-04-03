@@ -26,21 +26,20 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 
 # === Display the list of websites to the user ===
 select_website
-site_name="$SITE_NAME"
-if [[ -z "$site_name" ]]; then
+if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
 # === Ask the user if they want to restart the selected website ===
-echo -e "${YELLOW}⚡ You are about to restart the website '$site_name'. Are you sure?${NC}"
+echo -e "${YELLOW}⚡ You are about to restart the website '$domain'. Are you sure?${NC}"
 confirm_action "Do you want to proceed?"
 
 if [[ $? -eq 0 ]]; then
-  # === Call the CLI for restarting the website, pass --site_name correctly ===
-  echo -e "${GREEN}${CHECKMARK} Restarting website '$site_name'...${NC}"
-  bash "$SCRIPTS_DIR/cli/website_restart.sh" --site_name="$site_name"  # Fixed here, passing --site
-  echo -e "${GREEN}${CHECKMARK} Website '$site_name' has been restarted successfully.${NC}"
+  # === Call the CLI for restarting the website, pass --domain correctly ===
+  echo -e "${GREEN}${CHECKMARK} Restarting website '$domain'...${NC}"
+  bash "$SCRIPTS_DIR/cli/website_restart.sh" --domain="$domain"  # Fixed here, passing --site
+  echo -e "${GREEN}${CHECKMARK} Website '$domain' has been restarted successfully.${NC}"
 else
   echo -e "${YELLOW}${WARNING} Website restart cancelled.${NC}"
 fi

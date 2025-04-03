@@ -1,6 +1,6 @@
 # database_import_logic – Logic to import database (restore)
 database_import_logic() {
-    local site_name="$1"
+    local domain="$1"
     local backup_file="$2"
 
     # Ensure PROJECT_DIR is set
@@ -9,8 +9,8 @@ database_import_logic() {
         return 1
     fi
 
-    # Ensure $site_name is set
-    if [[ -z "$site_name" ]]; then
+    # Ensure $domain is set
+    if [[ -z "$domain" ]]; then
         echo "${CROSSMARK} Missing site name parameter."
         return 1
     fi
@@ -23,11 +23,11 @@ database_import_logic() {
 
     # Fetch database credentials from the website's .env file
     local db_info
-    db_info=$(db_fetch_env "$site_name")
+    db_info=$(db_fetch_env "$domain")
 
     # Check if fetching database credentials was successful
     if [[ $? -ne 0 ]]; then
-        echo "${CROSSMARK} Failed to fetch database credentials for site '$site_name'."
+        echo "${CROSSMARK} Failed to fetch database credentials for site '$domain'."
         return 1
     fi
 
@@ -36,8 +36,8 @@ database_import_logic() {
     IFS=' ' read -r db_name db_user db_password <<< "$db_info"
 
     # Check if MariaDB container is running
-    if ! is_mariadb_running "$site_name"; then
-        echo "${CROSSMARK} MariaDB container for site '$site_name' is not running. Please check!"
+    if ! is_mariadb_running "$domain"; then
+        echo "${CROSSMARK} MariaDB container for site '$domain' is not running. Please check!"
         return 1
     fi
 
@@ -50,14 +50,14 @@ database_import_logic() {
     fi
 
     # Call the database reset logic to drop all data
-    echo "${IMPORTANT} Dropping existing database: $db_name for site: $site_name..."
-    bash "$CLI_DIR/database_reset.sh" --site_name="$site_name"
+    echo "${IMPORTANT}${NC} Dropping existing database: $db_name for site: $domain..."
+    bash "$CLI_DIR/database_reset.sh" --domain="$domain"
 
     # Proceed to restore the database from the backup file
-    echo "Restoring database: $db_name for site: $site_name from file: $backup_file..."
+    echo "Restoring database: $db_name for site: $domain from file: $backup_file..."
 
     # Run the import command inside the container
-    if ! docker exec --env MYSQL_PWD="$db_password" ${site_name}-mariadb mysql -u$db_user $db_name < "$backup_file"; then
+    if ! docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb mysql -u$db_user $db_name < "$backup_file"; then
         echo "${CROSSMARK} Failed to import the database '$db_name' in container."
         return 1
     fi

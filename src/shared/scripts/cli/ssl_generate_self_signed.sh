@@ -8,22 +8,22 @@
 # - The ssl_loader.sh script must be available in the FUNCTIONS_DIR directory.
 #
 # Usage:
-#   ./ssl_generate_self_signed.sh --site_name=SITE_NAME
+#   ./ssl_generate_self_signed.sh --domain=SITE_DOMAIN
 #
 # Arguments:
-#   --site_name=SITE_NAME  (Required) The name of the site for which the SSL certificate will be generated.
+#   --domain=SITE_DOMAIN  (Required) The name of the site for which the SSL certificate will be generated.
 #
 # Behavior:
 # 1. Verifies that the script is running in a Bash shell.
 # 2. Determines the PROJECT_DIR by searching upwards from the script's directory for the config.sh file.
 # 3. Loads the configuration file (config.sh) and the SSL loader script (ssl_loader.sh).
-# 4. Parses the --site_name argument to retrieve the site name.
+# 4. Parses the --domain argument to retrieve the site name.
 # 5. Calls the `ssl_generate_self_signed_logic` function to generate the SSL certificate.
 #
 # Error Handling:
 # - Exits with an error if not run in a Bash shell.
 # - Exits with an error if PROJECT_DIR cannot be determined or the config.sh file is missing.
-# - Exits with an error if the --site_name argument is not provided.
+# - Exits with an error if the --domain argument is not provided.
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
@@ -59,14 +59,14 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 # === Parse argument ===
 for arg in "$@"; do
   case $arg in
-    --site_name=*) SITE_NAME="${arg#*=}" ;;
+    --domain=*) domain="${arg#*=}" ;;
   esac
 done
 
-if [[ -z "$SITE_NAME" ]]; then
-  echo "${CROSSMARK} Missing required --site_name=SITE_NAME parameter"
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} Missing required --domain=SITE_DOMAIN parameter"
   exit 1
 fi
 
 # === Generate self-signed SSL ===
-ssl_generate_self_signed_logic "$SITE_NAME"
+ssl_generate_self_signed_logic "$domain"

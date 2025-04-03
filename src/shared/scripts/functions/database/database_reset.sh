@@ -1,13 +1,13 @@
 database_reset_logic() {
-    local site_name="$1"
+    local domain="$1"
 
     # Fetch database credentials from the website's .env file
     local db_info
-    db_info=$(db_fetch_env "$site_name")
+    db_info=$(db_fetch_env "$domain")
     
     # Check if fetching database credentials was successful
     if [[ $? -ne 0 ]]; then
-        echo "${CROSSMARK} Failed to fetch database credentials for site '$site_name'."
+        echo "${CROSSMARK} Failed to fetch database credentials for site '$domain'."
         return 1
     fi
 
@@ -16,13 +16,13 @@ database_reset_logic() {
     IFS=' ' read -r db_name db_user db_password <<< "$db_info"
 
     # Check if MariaDB container is running
-    if ! is_mariadb_running "$site_name"; then
-        echo "${CROSSMARK} MariaDB container for site '$site_name' is not running. Please check!"
+    if ! is_mariadb_running "$domain"; then
+        echo "${CROSSMARK} MariaDB container for site '$domain' is not running. Please check!"
         return 1
     fi
 
     # Warning and user confirmation
-    echo "${IMPORTANT} WARNING: This will RESET the database '$db_name' for site '$site_name'. All data in the database will be lost permanently!"
+    echo "${IMPORTANT} WARNING: This will RESET the database '$db_name' for site '$domain'. All data in the database will be lost permanently!"
     read -rp "Are you sure you want to proceed? (y/n): " confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
         echo "${CROSSMARK} Action canceled. No changes were made."
@@ -30,10 +30,10 @@ database_reset_logic() {
     fi
 
     # Proceed to reset the database
-    echo "${IMPORTANT} Resetting database: $db_name for site: $site_name..."
+    echo "${IMPORTANT}${NC} Resetting database: $db_name for site: $domain..."
     
     # Use --env to securely pass the password to the container
-    docker exec -i --env MYSQL_PWD="$db_password" ${site_name}-mariadb mysql -u$db_user -e "DROP DATABASE IF EXISTS $db_name; CREATE DATABASE $db_name;"
+    docker exec -i --env MYSQL_PWD="$db_password" ${domain}-mariadb mysql -u$db_user -e "DROP DATABASE IF EXISTS $db_name; CREATE DATABASE $db_name;"
 
     if [[ $? -ne 0 ]]; then
         echo "${CROSSMARK} Failed to reset the database '$db_name'."

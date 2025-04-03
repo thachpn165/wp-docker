@@ -11,7 +11,7 @@
 # - Invokes the logic function to apply the specified action to the WordPress wp-login.php page.
 
 # === Command-Line Parameters ===
-# --site_name=<site_name> : (Required) The name of the WordPress site to apply the action to.
+# --domain=<site_name> : (Required) The name of the WordPress site to apply the action to.
 # --action=<action>       : (Required) The action to perform (e.g., enable or disable protection).
 
 # === Environment Variables ===
@@ -25,10 +25,10 @@
 # === Error Handling ===
 # - Exits with an error if the script is not run in a Bash shell.
 # - Exits with an error if PROJECT_DIR cannot be determined or the config file is missing.
-# - Exits with an error if required parameters (--site_name and --action) are not provided.
+# - Exits with an error if required parameters (--domain and --action) are not provided.
 
 # === Usage Example ===
-# ./wordpress_protect_wp_login.sh --site_name=mywebsite --action=enable
+# ./wordpress_protect_wp_login.sh --domain=mywebsite --action=enable
 # This example enables protection for the wp-login.php page of the 'mywebsite' WordPress site.
 
 # Ensure PROJECT_DIR is set
@@ -65,8 +65,8 @@ source "$FUNCTIONS_DIR/wordpress_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     --action=*)
@@ -81,10 +81,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [ -z "$site_name" ] || [ -z "$action" ]; then
-  echo "${CROSSMARK} Missing required parameters: --site_name and --action"
+if [ -z "$domain" ] || [ -z "$action" ]; then
+  echo "${CROSSMARK} Missing required parameters: --domain and --action"
   exit 1
 fi
 
 # === Call the logic function to protect wp-login ===
-wordpress_protect_wp_login_logic "$site_name" "$action"
+wordpress_protect_wp_login_logic "$domain" "$action"

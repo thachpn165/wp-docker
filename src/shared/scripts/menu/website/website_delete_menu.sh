@@ -27,7 +27,6 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 echo -e "${BLUE}===== DELETE A WEBSITE =====${NC}"
 domain=""
 select_website
-domain="$SITE_DOMAIN"
 if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} No website selected."
   exit 1

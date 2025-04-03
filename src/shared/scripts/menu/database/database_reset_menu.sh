@@ -35,24 +35,14 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/database_loader.sh"
 
-# Ensure SITE_NAME is set by calling select_website
+# Ensure SITE_DOMAIN is set by calling select_website
 select_website || exit 1
 
-# Check if SITE_NAME is still empty
-if [[ -z "$SITE_NAME" ]]; then
+# Check if SITE_DOMAIN is still empty
+if [[ -z "$domain" ]]; then
     echo "${CROSSMARK} Site name is not set. Exiting..."
     exit 1
 fi
 
-# Display a warning about the action
-echo -e "\n${WARNING} WARNING: This action will RESET the database for the selected website '$SITE_NAME'. All data in the database will be lost permanently!"
-echo "Please ensure you have backed up the data before proceeding."
-read -rp "Do you want to proceed? (y/n): " confirm
-
-if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-  echo "${CROSSMARK} Action canceled. No changes were made."
-  exit 0
-fi
-
 # Call cli/database_reset.sh with the selected site_name as parameter
-bash "$CLI_DIR/database_reset.sh" --site_name="$SITE_NAME"
+bash "$CLI_DIR/database_reset.sh" --domain="$domain"

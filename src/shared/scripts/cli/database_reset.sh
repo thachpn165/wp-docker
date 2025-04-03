@@ -34,8 +34,8 @@ source "$FUNCTIONS_DIR/database_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     *)
@@ -46,10 +46,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure site_name is set
-if [[ -z "$site_name" ]]; then
-    echo "${CROSSMARK} Missing required parameter: --site_name"
+if [[ -z "$domain" ]]; then
+    echo "${CROSSMARK} Missing required parameter: --domain"
     exit 1
 fi
 
 # Call the logic function to reset the database
-database_reset_logic "$site_name"
+database_reset_logic "$domain"

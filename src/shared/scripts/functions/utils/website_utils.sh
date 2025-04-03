@@ -32,6 +32,9 @@ select_website() {
 
         SITE_DOMAIN="$SELECTED_WEBSITE"
     fi
-
+    
+    # Corrected assignment: no spaces around "=" in bash
+    domain="$SITE_DOMAIN"
+    
     echo -e "${GREEN}${CHECKMARK} Selected: $SITE_DOMAIN${NC}"
 }

@@ -83,7 +83,7 @@ while [[ "$#" -gt 0 ]]; do
   esac
   shift
 done
-#if [[ -z "$site_name" || ]] 
+#if [[ -z "$domain" || ]] 
 if [[ -z "$domain" || -z "$php_version" ]]; then
   echo "${CROSSMARK} Missing parameters. Usage:"
   echo "  $0 --domain=abc.com --php=8.2"

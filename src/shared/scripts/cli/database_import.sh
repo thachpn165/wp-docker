@@ -34,7 +34,7 @@ source "$FUNCTIONS_DIR/database_loader.sh"
 # Parse parameters
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
-        --site_name=*) site_name="${1#*=}" ;;
+        --domain=*) domain="${1#*=}" ;;
         --backup_file=*) backup_file="${1#*=}" ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
@@ -42,10 +42,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure site_name and backup_file are provided
-if [[ -z "$site_name" || -z "$backup_file" ]]; then
-    echo "${CROSSMARK} Missing required parameters: --site_name or --backup_file."
+if [[ -z "$domain" || -z "$backup_file" ]]; then
+    echo "${CROSSMARK} Missing required parameters: --domain or --backup_file."
     exit 1
 fi
 
 # Call the logic function to import the database
-database_import_logic "$site_name" "$backup_file"
+database_import_logic "$domain" "$backup_file"

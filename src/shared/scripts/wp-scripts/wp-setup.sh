@@ -21,10 +21,10 @@ fi
 
 # 🏗️ Định nghĩa các biến hệ thống
 site_name="$1"
-SITE_DIR="$SITES_DIR/$site_name"
+SITE_DIR="$SITES_DIR/$domain"
 ENV_FILE="$SITE_DIR/.env"
-CONTAINER_PHP="${site_name}-php"
-CONTAINER_DB="${site_name}-mariadb"
+CONTAINER_PHP="${domain}-php"
+CONTAINER_DB="${domain}-mariadb"
 
 # 📋 Lấy thông tin từ .env
 if is_file_exist "$ENV_FILE"; then
@@ -33,8 +33,8 @@ fi
 
 # 🌍 Xác định URL website
 if [ -z "$DOMAIN" ]; then
-    echo -e "${YELLOW}${WARNING} Không tìm thấy biến DOMAIN trong .env, sử dụng mặc định https://$site_name.local${NC}"
-    SITE_URL="https://$site_name.local"
+    echo -e "${YELLOW}${WARNING} Không tìm thấy biến DOMAIN trong .env, sử dụng mặc định https://$domain.local${NC}"
+    SITE_URL="https://$domain.local"
 else
     SITE_URL="https://$DOMAIN"
 fi
@@ -42,9 +42,9 @@ fi
 # 🔑 Tạo tài khoản admin ngẫu nhiên
 ADMIN_USER="admin-$(openssl rand -base64 12)"
 ADMIN_PASSWORD=$(openssl rand -base64 12)
-ADMIN_EMAIL="admin@$site_name.local"
+ADMIN_EMAIL="admin@$domain.local"
 
-echo -e "${BLUE}🔹 Bắt đầu cài đặt WordPress cho '$site_name'...${NC}"
+echo -e "${BLUE}🔹 Bắt đầu cài đặt WordPress cho '$domain'...${NC}"
 
 # ⏳ Chờ container PHP khởi động
 echo -e "${YELLOW}⏳ Chờ container PHP '$CONTAINER_PHP' khởi động...${NC}"
@@ -91,7 +91,7 @@ fi
 wp_set_wpconfig "$CONTAINER_PHP" "$DB_NAME" "$DB_USER" "$DB_PASS" "$CONTAINER_DB"
 
 # 🚀 Cài đặt WordPress
-wp_install "$CONTAINER_PHP" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+wp_install "$CONTAINER_PHP" "$SITE_URL" "$domain" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
 
 # 🛠️ **Thiết lập permalinks**
 wp_set_permalinks "$CONTAINER_PHP" "$SITE_URL"

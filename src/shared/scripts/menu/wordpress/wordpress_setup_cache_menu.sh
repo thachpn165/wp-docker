@@ -31,38 +31,15 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# === Display Website Selection ===
-echo -e "${YELLOW}📋 Please choose the website for cache setup:${NC}"
-
-# Fetch all websites
-site_list=($(ls -1 "$SITES_DIR"))
-
-# Check if there are any websites
-if [[ ${#site_list[@]} -eq 0 ]]; then
-  echo -e "${RED}${CROSSMARK} No websites found.${NC}"
+# 📋 Hiển thị danh sách website để chọn (dùng select_website)
+select_website
+if [[ -z "$domain" ]]; then
+  echo -e "${RED}${CROSSMARK} No website selected.${NC}"
   exit 1
 fi
-
-# Display list of websites
-for i in "${!site_list[@]}"; do
-  echo -e "  ${GREEN}[$i]${NC} ${site_list[$i]}"
-done
-
-# Ask user to select a website
-echo -e "${YELLOW}🔹 Select the website (enter the number):${NC}"
-read -p "Website number: " site_index
-
-# Check if the selection is valid
-if [[ -z "${site_list[$site_index]}" ]]; then
-  echo -e "${RED}${CROSSMARK} Invalid website selection.${NC}"
-  exit 1
-fi
-
-site_name="${site_list[$site_index]}"
-echo -e "${GREEN}${CHECKMARK} Selected website: $site_name${NC}"
 
 # === Cache Type Selection ===
-echo -e "${YELLOW}📋 Please choose the cache type for $site_name:${NC}"
+echo -e "${YELLOW}📋 Please choose the cache type for $domain:${NC}"
 echo -e "  ${GREEN}[1]${NC} WP Super Cache"
 echo -e "  ${GREEN}[2]${NC} FastCGI Cache"
 echo -e "  ${GREEN}[3]${NC} W3 Total Cache"
@@ -86,4 +63,4 @@ esac
 echo -e "${GREEN}${CHECKMARK} Selected cache type: $cache_type${NC}"
 
 # Call the logic function to set up the cache
-wordpress_cache_setup_logic "$site_name" "$cache_type"
+wordpress_cache_setup_logic "$domain" "$cache_type"

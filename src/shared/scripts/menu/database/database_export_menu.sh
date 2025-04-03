@@ -35,16 +35,16 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/database_loader.sh"
 
-# Ensure SITE_NAME is set by calling select_website
+# Ensure SITE_DOMAIN is set by calling select_website
 echo "🔧 Choose the website for backup:"
 select_website || exit 1
 
-# Check if SITE_NAME is still empty
-if [[ -z "$SITE_NAME" ]]; then
+# Check if SITE_DOMAIN is still empty
+if [[ -z "$domain" ]]; then
     echo "${CROSSMARK} Site name is not set. Exiting..."
     exit 1
 fi
 echo "💾 Backup will be saved to: $save_location"
 
 # Call cli/database_export.sh with the selected site_name and save_location as parameters
-bash "$CLI_DIR/database_export.sh" --site_name="$SITE_NAME" --save_location="$save_location"
+bash "$CLI_DIR/database_export.sh" --domain="$domain" --save_location="$save_location"

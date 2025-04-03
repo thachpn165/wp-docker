@@ -26,27 +26,26 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 
 # === Select Website ===
 select_website
-site_name="$SITE_NAME"
-if [[ -z "$site_name" ]]; then
+if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
 # === Ask the user for certificate update options ===
-echo -e "${YELLOW}⚡ You are about to edit SSL certificate for '$site_name'. Are you sure?${NC}"
+echo -e "${YELLOW}⚡ You are about to edit SSL certificate for '$domain'. Are you sure?${NC}"
 confirm_action "Do you want to proceed?"
 
 if [[ $? -eq 0 ]]; then
   # === Request user to input SSL Certificate and Private Key ===
-  echo -e "${YELLOW}Please enter the SSL certificate content for '$site_name':"
+  echo -e "${YELLOW}Please enter the SSL certificate content for '$domain':"
   read -r ssl_certificate
 
-  echo -e "${YELLOW}Please enter the SSL private key content for '$site_name':"
+  echo -e "${YELLOW}Please enter the SSL private key content for '$domain':"
   read -r ssl_private_key
 
   # === Call the SSL edit logic directly, no need for CLI here ===
-  echo -e "${GREEN}${CHECKMARK} Editing SSL certificate for website '$site_name'...${NC}"
-  ssl_edit_certificate_logic "$site_name" "$ssl_certificate" "$ssl_private_key"
+  echo -e "${GREEN}${CHECKMARK} Editing SSL certificate for website '$domain'...${NC}"
+  ssl_edit_certificate_logic "$domain" "$ssl_certificate" "$ssl_private_key"
 else
   echo -e "${YELLOW}${WARNING} SSL certificate update cancelled.${NC}"
 fi

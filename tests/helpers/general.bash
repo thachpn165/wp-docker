@@ -95,8 +95,8 @@ version: "3"
 services:
   nginx-proxy:
     volumes:
-      - ../../sites/$site_name/wordpress:/var/www/$site_name
-      - ../../sites/$site_name/logs:/var/www/logs/$site_name
+      - ../../sites/$domain/wordpress:/var/www/$domain
+      - ../../sites/$domain/logs:/var/www/logs/$domain
 EOF
 
   export PATH="$TEST_MOCK_BIN_DIR:$PATH"

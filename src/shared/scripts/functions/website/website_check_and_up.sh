@@ -9,11 +9,11 @@ website_check_and_up() {
         [ -d "$site_dir" ] || continue
 
         site_name=$(basename "$site_dir")
-        php_container="${site_name}-php"
-        mariadb_container="${site_name}-mariadb"
+        php_container="${domain}-php"
+        mariadb_container="${domain}-mariadb"
 
-        _check_and_start_container "$php_container" "$site_name"
-        _check_and_start_container "$mariadb_container" "$site_name"
+        _check_and_start_container "$php_container" "$domain"
+        _check_and_start_container "$mariadb_container" "$domain"
     done
 
     if [ "$started_any" = true ]; then
@@ -38,7 +38,7 @@ _check_and_start_container() {
     fi
 
     echo ""
-    echo "➡️  Site: $site_name"
+    echo "➡️  Site: $domain"
     echo "   ⏳ Starting container $container_name..."
     docker start "$container_name" >/dev/null
     started_any=true

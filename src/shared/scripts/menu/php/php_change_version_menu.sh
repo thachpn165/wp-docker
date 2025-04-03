@@ -40,17 +40,17 @@ echo -e "${YELLOW}🔧 Choose the website to change PHP version:${NC}"
 select_website || exit 1
 
 # === Prompt for PHP version ===
-echo -e "${YELLOW}🔧 Select PHP version for $SITE_NAME:${NC}"
-php_choose_version "$SITE_NAME"
+echo -e "${YELLOW}🔧 Select PHP version for $domain:${NC}"
+php_choose_version "$domain"
 
 # === Handle PHP version change logic ===
 if [[ -n "$REPLY" ]]; then
     php_version="$REPLY"  # Assign the selected PHP version to php_version variable
-    echo -e "${GREEN}${CHECKMARK} PHP version for $SITE_NAME has been updated to $php_version.${NC}"
+    echo -e "${GREEN}${CHECKMARK} PHP version for $domain has been updated to $php_version.${NC}"
 
     # === Send command to CLI ===
-    bash "$CLI_DIR/php_change_version.sh" --site_name="$SITE_NAME" --php_version="$php_version"
+    bash "$CLI_DIR/php_change_version.sh" --domain="$domain" --php_version="$php_version"
 else
-    echo -e "${RED}${CROSSMARK} Failed to select PHP version for $SITE_NAME.${NC}"
+    echo -e "${RED}${CROSSMARK} Failed to select PHP version for $domain.${NC}"
     exit 1
 fi

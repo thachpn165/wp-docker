@@ -32,8 +32,8 @@
 # -----------------------------------------------------------------------------
 # backup_manage: Quản lý backup, có thể liệt kê hoặc xóa các backup cũ dựa trên tham số
 backup_manage() {
-    local site_name="$1"
-    local backup_dir="$SITES_DIR/$site_name/backups"
+    local domain="$1"
+    local backup_dir="$SITES_DIR/$domain/backups"
     local action="$2"
     local max_age_days="${3:-7}" 
 
@@ -46,7 +46,7 @@ backup_manage() {
     case "$action" in
         "list")
             # List backup files
-            echo "Listing backups for $site_name in $backup_dir:"
+            echo "Listing backups for $domain in $backup_dir:"
 
             # Determine operating system (macOS or Linux)
             if [[ "$(uname)" == "Darwin" ]]; then
@@ -68,9 +68,9 @@ backup_manage() {
             echo -e "${YELLOW}📂 DATABASE BACKUP (sql files):${NC}"
             eval $FIND_CMD | grep ".sql"
             if [[ $? -eq 0 ]]; then
-                echo "${CHECKMARK} Database backup listing completed."
+                echo "${CHECKMARK} Database backup listing completed${NC}."
             else
-                echo "${CROSSMARK} Error listing database backups."
+                echo "${CROSSMARK} Error listing database backups.${NC}"
             fi
             ;;
         "clean")

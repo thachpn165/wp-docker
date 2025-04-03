@@ -10,7 +10,7 @@
 # - The ssl_loader.sh script must be available in the FUNCTIONS_DIR.
 
 # Input Arguments:
-# --site_name=<site_name> : (Required) The name of the site for which the SSL certificate will be installed.
+# --domain=<site_name> : (Required) The name of the site for which the SSL certificate will be installed.
 # --email=<email>         : (Required) The email address to be used for Let's Encrypt registration.
 # --staging               : (Optional) If provided, the script will use Let's Encrypt's staging environment.
 
@@ -19,13 +19,13 @@
 # - Determines the PROJECT_DIR by searching for the config.sh file in the script's directory structure.
 # - Loads the configuration and required functions from the specified files.
 # - Parses input arguments to extract the site name, email, and optional staging flag.
-# - Ensures that the required parameters (--site_name and --email) are provided.
+# - Ensures that the required parameters (--domain and --email) are provided.
 # - Invokes the `ssl_install_lets_encrypt_logic` function to handle the SSL installation process.
 
 # Error Handling:
 # - Exits with an error message if the script is not run in a Bash shell.
 # - Exits with an error message if the PROJECT_DIR cannot be determined or the config file is missing.
-# - Exits with an error message if required parameters (--site_name or --email) are not provided.
+# - Exits with an error message if required parameters (--domain or --email) are not provided.
 
 # Ensure PROJECT_DIR is set
 if [[ -z "$PROJECT_DIR" ]]; then
@@ -61,17 +61,17 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 # === Parse input arguments ===
 for arg in "$@"; do
   case $arg in
-    --site_name=*) SITE_NAME="${arg#*=}" ;;
+    --domain=*) domain="${arg#*=}" ;;
     --email=*) EMAIL="${arg#*=}" ;;
     --staging) STAGING=true ;;
   esac
 done
 
 # Ensure site_name and email are provided
-if [[ -z "$SITE_NAME" || -z "$EMAIL" ]]; then
-  echo "${CROSSMARK} Missing required parameters: --site_name and --email are required."
+if [[ -z "$domain" || -z "$EMAIL" ]]; then
+  echo "${CROSSMARK} Missing required parameters: --domain and --email are required."
   exit 1
 fi
 
 # Call the logic to install Let's Encrypt SSL
-ssl_install_lets_encrypt_logic "$SITE_NAME" "$EMAIL" "$STAGING"
+ssl_install_lets_encrypt_logic "$domain" "$EMAIL" "$STAGING"

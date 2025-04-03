@@ -63,14 +63,14 @@ is_mariadb_running() {
 
 # Function to import database (restore from backup)
 db_import_database() {
-    local site_name="$1"
+    local domain="$1"
     local db_user="$2"
     local db_password="$3"
     local db_name="$4"
     local backup_file="$5"
     
-    if ! is_mariadb_running "$site_name"; then
-        echo "${CROSSMARK} MariaDB container for site '$site_name' is not running. Please check!"
+    if ! is_mariadb_running "$domain"; then
+        echo "${CROSSMARK} MariaDB container for site '$domain' is not running. Please check!"
         return 1
     fi
     
@@ -79,18 +79,18 @@ db_import_database() {
         return 1
     fi
     
-    echo "Restoring database: $db_name for site: $site_name from file: $backup_file..."
-    docker exec -i ${site_name}-mariadb mysql -u$db_user -p$db_password $db_name < "$backup_file"
+    echo "Restoring database: $db_name for site: $domain from file: $backup_file..."
+    docker exec -i ${domain}-mariadb mysql -u$db_user -p$db_password $db_name < "$backup_file"
     echo "${CHECKMARK} Database import completed!"
 }
 
 # Function to fetch database variable from .env file
 db_fetch_env() {
-    local site_name="$1"
-    local env_file="$SITES_DIR/$site_name/.env"
+    local domain="$1"
+    local env_file="$SITES_DIR/$domain/.env"
 
     if [[ ! -f "$env_file" ]]; then
-        echo "${CROSSMARK} .env file not found for $site_name at $env_file"
+        echo "${CROSSMARK} .env file not found for $domain at $env_file"
         return 1
     fi
 
@@ -99,7 +99,7 @@ db_fetch_env() {
     local db_pass=$(fetch_env_variable "$env_file" "MYSQL_PASSWORD")
 
     if [[ -z "$db_name" || -z "$db_user" || -z "$db_pass" ]]; then
-        echo "${CROSSMARK} Missing database credentials in .env for $site_name"
+        echo "${CROSSMARK} Missing database credentials in .env for $domain"
         return 1
     fi
 

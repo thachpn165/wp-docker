@@ -26,7 +26,7 @@ source "$CONFIG_FILE"
 
 # === Check input ===
 site_name="${1:-}"
-if [[ -z "$site_name" ]]; then
+if [[ -z "$domain" ]]; then
   echo -e "${RED}${CROSSMARK} Missing site name.${NC}"
   exit 1
 fi
@@ -45,9 +45,9 @@ if [[ "$auto_gen" == "n" ]]; then
 else
   ADMIN_USER="admin-..."
   ADMIN_PASSWORD="..."
-  ADMIN_EMAIL="admin@$site_name.local"
+  ADMIN_EMAIL="admin@$domain.local"
 fi
 
 # === Gọi hàm xử lý cài WordPress ===
 source "$FUNCTIONS_DIR/website/website_setup_wordpress.sh"
-website_setup_wordpress "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+website_setup_wordpress "$domain" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"

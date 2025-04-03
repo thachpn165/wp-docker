@@ -2,77 +2,77 @@
 
 wordpress_protect_wp_login_logic() {
 
-    site_name="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
+    site_name="$1"  # site_name will be passed from the menu file or CLI
 
-    SITE_DIR="$SITES_DIR/$site_name"
-    NGINX_CONF_FILE="$NGINX_PROXY_DIR/conf.d/${site_name}.conf"
-    AUTH_FILE="$NGINX_PROXY_DIR/globals/.wp-login-auth-$site_name"
-    INCLUDE_FILE="$NGINX_PROXY_DIR/globals/wp-login-$site_name.conf"
+    SITE_DIR="$SITES_DIR/$domain"
+    NGINX_CONF_FILE="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
+    AUTH_FILE="$NGINX_PROXY_DIR/globals/.wp-login-auth-$domain"
+    INCLUDE_FILE="$NGINX_PROXY_DIR/globals/wp-login-$domain.conf"
     TEMPLATE_FILE="$TEMPLATES_DIR/wp-login-template.conf"
 
-    # 📋 **Lựa chọn hành động bật/tắt bảo vệ wp-login.php**
+    # 📋 **Choose action to enable/disable wp-login.php protection**
     if [[ "$2" == "enable" ]]; then
         USERNAME=$(openssl rand -hex 4)
         PASSWORD=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 16)
 
-        # **Tạo tập tin xác thực mật khẩu trong thư mục `nginx-proxy/globals`**
-        echo -e "${YELLOW}🔐 Đang tạo file xác thực mật khẩu...${NC}"
+        # **Create authentication file in the `nginx-proxy/globals` directory**
+        echo -e "${YELLOW}🔐 Creating authentication file...${NC}"
         echo "$USERNAME:$(openssl passwd -apr1 $PASSWORD)" > "$AUTH_FILE"
 
-        # **Tạo tập tin cấu hình wp-login.php từ template**
-        echo -e "${YELLOW}📄 Đang tạo tập tin cấu hình wp-login.php...${NC}"
+        # **Create wp-login.php configuration file from template**
+        echo -e "${YELLOW}📄 Creating wp-login.php configuration file...${NC}"
         if [ -f "$TEMPLATE_FILE" ]; then
-            sed "s|\$site_name|$site_name|g" "$TEMPLATE_FILE" > "$INCLUDE_FILE"
-            echo -e "${GREEN}${CHECKMARK} Tập tin cấu hình đã được tạo: $INCLUDE_FILE${NC}"
+            sed "s|\$domain|$domain|g" "$TEMPLATE_FILE" > "$INCLUDE_FILE"
+            echo -e "${GREEN}${CHECKMARK} Configuration file created: $INCLUDE_FILE${NC}"
         else
-            echo -e "${RED}${CROSSMARK} Không tìm thấy template wp-login-template.conf!${NC}"
+            echo -e "${RED}${CROSSMARK} wp-login-template.conf template not found!${NC}"
             exit 1
         fi
 
-        # **Include file cấu hình vào NGINX ngay sau include cloudflare.conf**
-        echo -e "${YELLOW}🔧 Đang cập nhật NGINX config để include wp-login.php...${NC}"
-        if ! grep -q "include /etc/nginx/globals/wp-login-$site_name.conf;" "$NGINX_CONF_FILE"; then
+        # **Include configuration file into NGINX right after including cloudflare.conf**
+        echo -e "${YELLOW}🔧 Updating NGINX config to include wp-login.php...${NC}"
+        if ! grep -q "include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"; then
             if [[ "$OSTYPE" == "darwin"* ]]; then
                 sed -i '' "/include \/etc\/nginx\/globals\/cloudflare.conf;/a\\
-                include /etc/nginx/globals/wp-login-$site_name.conf;" "$NGINX_CONF_FILE"
+                include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"
             else
                 sed -i "/include \/etc\/nginx\/globals\/cloudflare.conf;/a\\
-                include /etc/nginx/globals/wp-login-$site_name.conf;" "$NGINX_CONF_FILE"
+                include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"
             fi
-            echo -e "${GREEN}${CHECKMARK} Include wp-login.php đã được thêm vào cấu hình NGINX.${NC}"
-            # **Hiển thị thông tin đăng nhập sau khi bật bảo vệ**
-            echo -e "${GREEN}${CHECKMARK} wp-login.php đã được bảo vệ!${NC}"
-            echo -e "${YELLOW}${WARNING} Bạn sẽ cần nhập thông tin này khi truy cập vào admin hoặc đăng nhập vào WordPress, hãy lưu lại trước khi thoát ra${NC}"
-            echo -e "🔑 ${CYAN}Thông tin đăng nhập:${NC}"
+            echo -e "${GREEN}${CHECKMARK} wp-login.php include added to NGINX configuration.${NC}"
+            # **Display login information after enabling protection**
+            echo -e "${GREEN}${CHECKMARK} wp-login.php is now protected!${NC}"
+            echo -e "${YELLOW}${WARNING} You will need this information to access the admin or log in to WordPress. Save it before exiting.${NC}"
+            echo -e "🔑 ${CYAN}Login information:${NC}"
             echo -e "  ${GREEN}Username:${NC} $USERNAME"
             echo -e "  ${GREEN}Password:${NC} $PASSWORD"
         fi
 
     elif [[ "$2" == "disable" ]]; then
-        echo -e "${YELLOW}🔧 Đang gỡ bỏ bảo vệ wp-login.php...${NC}"
+        echo -e "${YELLOW}🔧 Removing wp-login.php protection...${NC}"
         if [ -f "$INCLUDE_FILE" ]; then
-            echo -e "${YELLOW}🗑️ Đang xóa tập tin cấu hình wp-login.php...${NC}"
+            echo -e "${YELLOW}🗑️ Deleting wp-login.php configuration file...${NC}"
             rm -f "$INCLUDE_FILE"
-            echo -e "${GREEN}${CHECKMARK} Tập tin cấu hình wp-login.php đã được xóa.${NC}"
+            echo -e "${GREEN}${CHECKMARK} wp-login.php configuration file deleted.${NC}"
         fi
 
-        # **Gỡ dòng include trong NGINX config**
-        echo -e "${YELLOW}🔧 Đang cập nhật NGINX config để gỡ bỏ include...${NC}"
+        # **Remove include line from NGINX config**
+        echo -e "${YELLOW}🔧 Updating NGINX config to remove include...${NC}"
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' -e "/include \/etc\/nginx\/globals\/wp-login-$site_name.conf;/d" "$NGINX_CONF_FILE"
+            sed -i '' -e "/include \/etc\/nginx\/globals\/wp-login-$domain.conf;/d" "$NGINX_CONF_FILE"
         else
-            sed -i -e "/include \/etc\/nginx\/globals\/wp-login-$site_name.conf;/d" "$NGINX_CONF_FILE"
+            sed -i -e "/include \/etc\/nginx\/globals\/wp-login-$domain.conf;/d" "$NGINX_CONF_FILE"
         fi
-        echo -e "${GREEN}${CHECKMARK} Dòng include đã được gỡ bỏ.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Include line removed.${NC}"
 
-        # **Xóa file xác thực nếu tồn tại**
+        # **Delete authentication file if it exists**
         if [ -f "$AUTH_FILE" ]; then
-            echo -e "${YELLOW}🗑️ Đang xóa file xác thực mật khẩu...${NC}"
+            echo -e "${YELLOW}🗑️ Deleting authentication file...${NC}"
             rm -f "$AUTH_FILE"
-            echo -e "${GREEN}${CHECKMARK} File xác thực mật khẩu đã được xóa.${NC}"
+            echo -e "${GREEN}${CHECKMARK} Authentication file deleted.${NC}"
         fi
     fi
 
-    # **Reload NGINX để áp dụng thay đổi**
+    # **Reload NGINX to apply changes**
     nginx_reload
 }

@@ -39,8 +39,8 @@ source "$FUNCTIONS_DIR/database_loader.sh"
 echo "🔧 Choose the website for database import:"
 select_website || exit 1
 
-# Ensure SITE_NAME is selected
-if [[ -z "$SITE_NAME" ]]; then
+# Ensure SITE_DOMAIN is selected
+if [[ -z "$domain" ]]; then
     echo "${CROSSMARK} Site name is not set. Exiting..."
     exit 1
 fi
@@ -54,7 +54,7 @@ if [[ -z "$backup_file" ]]; then
     exit 1
 fi
 
-echo "💾 Importing database for site: $SITE_NAME from backup file: $backup_file"
+echo "💾 Importing database for site: $domain from backup file: $backup_file"
 
 # Call cli/database_import.sh with the selected site_name, db_user, db_password, db_name, and backup_file
-bash "$CLI_DIR/database_import.sh" --site_name="$SITE_NAME" --backup_file="$backup_file"
+bash "$CLI_DIR/database_import.sh" --domain="$domain" --backup_file="$backup_file"

@@ -107,7 +107,7 @@ core_check_for_update() {
     echo "${WARNING} New version available! Current version is $CURRENT_VERSION and latest version is $LATEST_VERSION."
     echo "👉 You can run the update feature to upgrade the system."
   else
-    echo "${CHECKMARK} You are using the latest version: $CURRENT_VERSION"
+    echo "You are using the latest version: $CURRENT_VERSION"
   fi
 }
 
