@@ -1,6 +1,6 @@
 #!/bin/bash
 wordpress_reset_wp_database_logic() {
-    site_name="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
+    domain="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
     SITE_DIR="$SITES_DIR/$domain"
     ENV_FILE="$SITE_DIR/.env"
 

@@ -1,6 +1,6 @@
 wordpress_auto_update_plugin_logic() {
 
-    site_name="$1"  # site_name will be passed from the menu file or CLI
+    domain="$1"  # site_name will be passed from the menu file or CLI
 
     SITE_DIR="$SITES_DIR/$domain"
     PHP_CONTAINER="$domain-php"

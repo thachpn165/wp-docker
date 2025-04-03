@@ -8,7 +8,7 @@ website_check_and_up() {
     for site_dir in "$BASE_DIR/sites/"*/; do
         [ -d "$site_dir" ] || continue
 
-        site_name=$(basename "$site_dir")
+        domain=$(basename "$site_dir")
         php_container="${domain}-php"
         mariadb_container="${domain}-mariadb"
 
@@ -24,7 +24,7 @@ website_check_and_up() {
 
 _check_and_start_container() {
     local container_name="$1"
-    local site_name="$2"
+    local domain="$2"
     local is_running
 
     # Do not display anything if the container does not exist

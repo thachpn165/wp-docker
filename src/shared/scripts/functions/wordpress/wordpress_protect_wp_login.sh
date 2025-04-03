@@ -2,7 +2,7 @@
 
 wordpress_protect_wp_login_logic() {
 
-    site_name="$1"  # site_name will be passed from the menu file or CLI
+    domain="$1"  # site_name will be passed from the menu file or CLI
 
     SITE_DIR="$SITES_DIR/$domain"
     NGINX_CONF_FILE="$NGINX_PROXY_DIR/conf.d/${domain}.conf"

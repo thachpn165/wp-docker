@@ -20,7 +20,7 @@ if [ -z "$1" ]; then
 fi
 
 # 🏗️ Định nghĩa các biến hệ thống
-site_name="$1"
+domain="$1"
 SITE_DIR="$SITES_DIR/$domain"
 ENV_FILE="$SITE_DIR/.env"
 CONTAINER_PHP="${domain}-php"

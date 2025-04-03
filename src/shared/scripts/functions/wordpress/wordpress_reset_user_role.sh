@@ -2,7 +2,7 @@ reset_user_role_logic() {
 
 
     # Lấy tên website từ tham số site_name
-    site_name="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
+    domain="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
 
     SITE_DIR="$SITES_DIR/$domain"
     PHP_CONTAINER="$domain-php"

@@ -25,7 +25,7 @@ source "$CONFIG_FILE"
 
 
 # === Check input ===
-site_name="${1:-}"
+domain="${1:-}"
 if [[ -z "$domain" ]]; then
   echo -e "${RED}${CROSSMARK} Missing site name.${NC}"
   exit 1
