@@ -45,7 +45,7 @@ while [[ "$#" -gt 0 ]]; do
   esac
 done
 
-# Ensure site_name is set
+# Ensure domain is set
 if [[ -z "$domain" ]]; then
     echo "${CROSSMARK} Missing required parameter: --domain"
     exit 1

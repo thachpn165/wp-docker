@@ -47,7 +47,7 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 save_location="${SITES_DIR}/$domain/backups/${domain}-backup-$(date +%F)-$timestamp.sql"
-# Ensure site_name is set
+# Ensure domain is set
 if [[ -z "$domain" ]]; then
     echo "${CROSSMARK} Missing required parameter: --domain"
     exit 1

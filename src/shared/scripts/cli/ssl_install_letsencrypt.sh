@@ -67,7 +67,7 @@ for arg in "$@"; do
   esac
 done
 
-# Ensure site_name and email are provided
+# Ensure domain and email are provided
 if [[ -z "$domain" || -z "$EMAIL" ]]; then
   echo "${CROSSMARK} Missing required parameters: --domain and --email are required."
   exit 1

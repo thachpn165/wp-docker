@@ -76,7 +76,7 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-# === Ensure site_name is provided ===
+# === Ensure domain is provided ===
 if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} Missing required --domain parameter"
   exit 1

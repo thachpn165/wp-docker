@@ -88,7 +88,7 @@ while [[ "$#" -gt 0 ]]; do
   esac
 done
 
-# Ensure site_name is passed, but code_backup_file and db_backup_file can be optional
+# Ensure domain is passed, but code_backup_file and db_backup_file can be optional
 if [[ -z "$domain" ]]; then
   echo "${CROSSMARK} Missing site_name parameter."
   exit 1

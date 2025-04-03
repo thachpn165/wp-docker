@@ -41,7 +41,7 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# Ensure site_name and backup_file are provided
+# Ensure domain and backup_file are provided
 if [[ -z "$domain" || -z "$backup_file" ]]; then
     echo "${CROSSMARK} Missing required parameters: --domain or --backup_file."
     exit 1
