@@ -1,5 +1,42 @@
 # 📦 CHANGELOG – WP Docker LEMP
 
+## [v1.1.5-beta] - 2025-04-04
+
+### 🚀 Added
+- **Refactored all references from `$site_name` to `$domain`** across the entire project for better clarity and domain-based structure.
+  - Unified naming convention for folders, containers, and volumes using `$domain`.
+  - Introduced backward-compatible script at `upgrade/v1.1.5-beta.sh` to automatically rename old site folders based on `.env` domain.
+
+- **New CLI commands for database operations** under `wpdocker database`:
+  - `export`, `import`, and `reset` subcommands added for centralized and clean database handling.
+
+- **Improved site creation flow**:
+  - Introduced `log_with_time` for better logging output.
+  - Added `trap` cleanup logic to rollback on partial site setup failures.
+
+- **WP-CLI wrapper helper function (`wp_cli`)**:
+  - Simplifies running WP-CLI commands inside Docker containers.
+  - Usage: `wp_cli user list`, `wp_cli plugin install`, etc.
+
+- **Nightly version install support in `install.sh`**:
+  - Automatically downloads from `https://github.com/thachpn165/wp-docker/releases/download/dev/wp-docker-dev.zip`.
+
+### 🐞 Fixed
+- **Fixed volume naming** for domains with `.` by auto-normalizing volume name format to match Docker's actual volume behavior.
+- **Fixed macOS compatibility** in `nginx_remove_mount_docker` by using a portable `grep -vF` logic instead of `sed`.
+- **Ensured `$domain` is passed correctly** from menu → CLI → logic layers.
+- **Fixed emoji display issues** when used in colored terminal output.
+
+### ♻️ Changed
+- **Deprecated usage of `$site_name`** in favor of `$domain`.
+  - All logic and variable references now operate on `$domain` only.
+- **Removed `DEV_MODE`** flag from `install.sh`.
+  - The Nightly install mode now directly triggers download from `dev` tag.
+- **Improved select_website and argument parsing**:
+  - Ensures `$domain` is consistently available across CLI and logic files.
+
+---
+
 ## [v1.1.4-beta] - 2025-04-02
 
 ### 🚀 Added

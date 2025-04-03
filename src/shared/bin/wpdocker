@@ -91,6 +91,23 @@ handle_database() {
     esac
 }
 
+handle_system() {
+    case "$1" in
+        check) bash "$CLI_DIR/system_check_resources.sh" "${@:2}" ;;
+        manage) bash "$CLI_DIR/system_manage_docker.sh" "${@:2}" ;;
+        cleanup) bash "$CLI_DIR/system_cleanup_docker.sh" "${@:2}" ;;
+        nginx) 
+            case "$2" in
+                rebuild) bash "$CLI_DIR/system_nginx_rebuild.sh" "${@:3}" ;;
+                restart) bash "$CLI_DIR/system_nginx_restart.sh" "${@:3}" ;;
+                *) echo "${CROSSMARK} Unknown subcommand for nginx: $2" ;;
+            esac
+            ;;
+        *) echo "${CROSSMARK} Unknown subcommand for system: $1" ;;
+    esac
+}
+
+
 # Main subcommands handler
 if [[ -z "$1" ]]; then
     # If no subcommand is provided, call the main menu
@@ -103,6 +120,7 @@ else
         backup) handle_backup "$2" "${@:3}" ;;
         php) handle_php "$2" "${@:3}" ;;
         database) handle_database "$2" "${@:3}" ;;
+        system) handle_system "$2" "${@:3}" ;;
         *)
             echo "${CROSSMARK} Unknown subcommand: $1"
             #bash "$INSTALL_DIR/main.sh"

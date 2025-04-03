@@ -1,12 +1,12 @@
 # WP Docker
 
-[![Version](https://img.shields.io/badge/version-v1.1.4--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Version](https://img.shields.io/badge/version-v1.1.5--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker)](./LICENSE)
 
-> **Note**: Version `v1.1.4-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
+> **Note**: Version `v1.1.5-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
 
 ![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
 
@@ -30,45 +30,40 @@ By simplifying multi-stage environment replication (dev → staging → prod), W
 
 Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
-## Latest Release - v1.1.4-beta
+## Latest Release - v1.1.5-beta
 
-### Added
-- **Refactored core functions** to adhere to the 3-step standard. This allows for better maintainability and cleaner code.
-  - **Three-step structure**:
-    1. **Logic functions** that contain the core functionality of each action.
-    2. **CLI wrapper** that calls the logic functions and handles input parameters.
-    3. **Menu functions** to interact with the user and display options.
-  - This refactoring applies to various system functions such as website management, SSL management, backup management, and PHP version management.
-  
-- **Support for `wpdocker` with subcommands**:
-  - Introduced subcommands for managing WordPress sites, SSL, backups, PHP versions, and more.
-  - New `wpdocker` command structure:
-    - **wpdocker website**: Manage WordPress websites.
-      - `create`, `delete`, `list`, `restart`, `logs`, `info`, `update_template`.
-    - **wpdocker ssl**: Manage SSL certificates.
-      - `selfsigned`, `letsencrypt`, `check`.
-    - **wpdocker backup**: Manage website backups.
-      - `website`, `database`, `file`.
-    - **wpdocker php**: Manage PHP configurations.
-      - `change`, `get`, `rebuild`, `edit` (edit PHP config or PHP ini).
+### 🚀 Added
+- **Refactored all references from `$site_name` to `$domain`** across the entire project for better clarity and domain-based structure.
+  - Unified naming convention for folders, containers, and volumes using `$domain`.
+  - Introduced backward-compatible script at `upgrade/v1.1.5-beta.sh` to automatically rename old site folders based on `.env` domain.
 
-- **Alias feature** for easier command execution:
-  - Created an alias for the `wpdocker` command, allowing users to use commands like `wpdocker website create`, `wpdocker ssl letsencrypt`, etc.
-  - The aliases are added to the appropriate shell configuration files (`~/.bashrc` or `~/.zshrc`).
-  - A helper function `check_and_add_alias` was added to check for and add aliases if they don't already exist.
+- **New CLI commands for database operations** under `wpdocker database`:
+  - `export`, `import`, and `reset` subcommands added for centralized and clean database handling.
 
-### Fixed
-- **Bug fix** in handling shell configurations (alias issue):
-  - Corrected the behavior when adding aliases in shell configuration files.
-  - Resolved issues related to alias duplication and ensured smooth execution after reload.
+- **Improved site creation flow**:
+  - Introduced `log_with_time` for better logging output.
+  - Added `trap` cleanup logic to rollback on partial site setup failures.
 
-### Changed
-- **Menu structure** refactor to make it more modular and user-friendly.
-  - Subcommands are now managed with individual functions for clarity and ease of maintenance.
-  - Centralized subcommand handling for website, SSL, backup, and PHP management under the `wpdocker` command.
-  
-- **Shell environment detection**:
-  - Improved shell detection logic to ensure compatibility with both Bash and Zsh environments, providing more accurate behavior when modifying the shell configuration.
+- **WP-CLI wrapper helper function (`wp_cli`)**:
+  - Simplifies running WP-CLI commands inside Docker containers.
+  - Usage: `wp_cli user list`, `wp_cli plugin install`, etc.
+
+- **Nightly version install support in `install.sh`**:
+  - Automatically downloads from `https://github.com/thachpn165/wp-docker/releases/download/dev/wp-docker-dev.zip`.
+
+### 🐞 Fixed
+- **Fixed volume naming** for domains with `.` by auto-normalizing volume name format to match Docker's actual volume behavior.
+- **Fixed macOS compatibility** in `nginx_remove_mount_docker` by using a portable `grep -vF` logic instead of `sed`.
+- **Ensured `$domain` is passed correctly** from menu → CLI → logic layers.
+- **Fixed emoji display issues** when used in colored terminal output.
+
+### ♻️ Changed
+- **Deprecated usage of `$site_name`** in favor of `$domain`.
+  - All logic and variable references now operate on `$domain` only.
+- **Removed `DEV_MODE`** flag from `install.sh`.
+  - The Nightly install mode now directly triggers download from `dev` tag.
+- **Improved select_website and argument parsing**:
+  - Ensures `$domain` is consistently available across CLI and logic files.
 
 *For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
 
@@ -143,8 +138,8 @@ After modifying configuration files, restart the affected services through the s
 
 ## 🚀 WP Docker Roadmap (2025)
 
-### ${CHECKMARK} Current Version: `v1.1.4` (Beta)
-- Planned release of the first stable version (v1.2.0-stable): 2025-04-01
+### ${CHECKMARK} Current Version: `v1.1.5` (Beta)
+- Planned release of the first stable version (v1.2.0-stable): 2025-04-15
 
 ### Core Features Completed:
 - Create WordPress websites with Docker
@@ -171,7 +166,7 @@ After modifying configuration files, restart the affected services through the s
 - Integrate Fail2Ban for server security.
 
 #### v1.5.0
-- Full CLI support for all available features
+- ~Full CLI support for all available features~ (Added in v1.1.5-beta)
 - IP blocking for DDoS attacks based on access_log analysis (using Lua for OpenResty and Go for Caddy).
 
 #### v1.6.0
