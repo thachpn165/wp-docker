@@ -61,19 +61,19 @@ rename_site_to_domain() {
   fi
 
   # Check if the domain is already the folder name
-  if [[ "$domain" == "$domain" ]]; then
-    echo "${CHECKMARK} Directory $domain already matches domain $domain. Skipping rename."
+  if [[ "$site_name" == "$domain" ]]; then
+    echo "${CHECKMARK} Directory $site_name already matches domain $domain. Skipping rename."
     return 0
   fi
 
   # Rename the directory to match the domain
-  echo "🔄 Renaming $domain to $domain..."
+  echo "🔄 Renaming $site_name to $domain..."
 
   # Ensure SITES_DIR contains the site directory before renaming
-  if mv "$SITES_DIR/$domain" "$SITES_DIR/$domain"; then
-    echo "${CHECKMARK} Renamed directory $domain to $domain successfully."
+  if mv "$SITES_DIR/$site_name" "$SITES_DIR/$domain"; then
+    echo "${CHECKMARK} Renamed directory $site_name to $domain successfully."
   else
-    echo "${CROSSMARK} Failed to rename directory $domain to $domain."
+    echo "${CROSSMARK} Failed to rename directory $site_name to $domain."
     return 1
   fi
 }
