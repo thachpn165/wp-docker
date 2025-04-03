@@ -20,11 +20,11 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/website_loader.sh"
-echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
-domain="$(get_input_or_test_value "Enter domain (e.g. abc.com): " "")"
-suggested_site_name=$(echo "$domain" | sed -E 's/\.[a-zA-Z]+$//')
-site_name="$(get_input_or_test_value "Enter site name (default: $suggested_site_name): " "$suggested_site_name")"
 
+echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
+
+# Lấy domain từ người dùng
+read -p "Enter domain (e.g. abc.com): " domain
 
 php_choose_version || exit 1
 php_version="$REPLY"
@@ -39,7 +39,6 @@ auto_generate=true
 
 echo "🔧 Creating WordPress site..."
 bash "$SCRIPTS_DIR/cli/website_create.sh" \
-  --site_name="$site_name" \
   --domain="$domain" \
   --php="$php_version" \
   --auto_generate="$auto_generate" || exit 1

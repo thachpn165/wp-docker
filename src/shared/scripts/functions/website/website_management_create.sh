@@ -2,18 +2,18 @@
 # 🐋 website_management_create_logic – Main Logic (used by menu & CLI)
 # =====================================
 website_management_create_logic() {
-  local site_name="$1"
-  local domain="$2"
-  local php_version="$3"
 
-  SITE_DIR="$SITES_DIR/$site_name"
-  CONTAINER_PHP="${site_name}-php"
-  CONTAINER_DB="${site_name}-mariadb"
-  MARIADB_VOLUME="${site_name}_mariadb_data"
+  local domain="$1"
+  local php_version="$2"
+
+  SITE_DIR="$SITES_DIR/$domain"  # Use domain for directory naming
+  CONTAINER_PHP="${domain}-php"  # Container name using domain
+  CONTAINER_DB="${domain}-mariadb"
+  MARIADB_VOLUME="${domain}_mariadb_data"
 
   # ❌ Check if site already exists
-  if is_directory_exist "$SITE_DIR" false; then
-    echo -e "${RED}❌ Website '$site_name' already exists.${NC}"
+ if is_directory_exist "$SITE_DIR" false; then
+    echo -e "${RED}❌ Website '$domain' already exists.${NC}"
     return 1
   fi
 
@@ -25,10 +25,10 @@ website_management_create_logic() {
 
   # 🗘️ Create log
   mkdir -p "$LOGS_DIR"
-  LOG_FILE="$LOGS_DIR/${site_name}-setup.log"
+  LOG_FILE="$LOGS_DIR/${domain}-setup.log"
   touch "$LOG_FILE"
   run_unless_test bash -c "exec > >(tee -a \"$LOG_FILE\") 2>&1"
-  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] STARTING SITE CREATION: $site_name =====" >> "$LOG_FILE"
+  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] STARTING SITE CREATION: $domain =====" >> "$LOG_FILE"
 
   # 🧱 Create directory structure
   mkdir -p "$SITE_DIR"/{php,mariadb/conf.d,wordpress,logs,backups}
@@ -45,15 +45,15 @@ website_management_create_logic() {
   fi
 
   # 🔧 Configure NGINX
-  update_nginx_override_mounts "$site_name" || return 1
-  export site_name domain php_version
+  update_nginx_override_mounts "$domain" || return 1
+  export domain php_version
   run_unless_test bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh" || return 1
 
   # ⚙️ Create configurations
   copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini" || return 1
   apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf" || return 1
   create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf" || return 1
-  website_create_env "$SITE_DIR" "$site_name" "$domain" "$php_version" || return 1
+  website_create_env "$SITE_DIR" "$domain" "$php_version" || return 1
 
   # SSL
   generate_ssl_cert "$domain" "$SSL_DIR" || return 1
@@ -96,5 +96,5 @@ website_management_create_logic() {
     echo -e "${YELLOW}⚠️ Container PHP not running, skipping permissions.${NC}"
   fi
 
-  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ✅ COMPLETED: $site_name =====" >> "$LOG_FILE"
+  echo "===== [ $(date '+%Y-%m-%d %H:%M:%S') ] ✅ COMPLETED: $domain =====" >> "$LOG_FILE"
 }
