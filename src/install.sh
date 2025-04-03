@@ -8,11 +8,7 @@ DEV_MODE=false
 # ========================
 # ⚙️ Command Line Parameter Processing
 # ========================
-if [[ "$1" == "--dev" ]]; then
-  DEV_MODE=true
-  ZIP_NAME="wp-docker-dev.zip"
-  echo "🛠 Installing in DEV mode (no system symlink creation)"
-else
+{
   # Ask the user to choose version: Official or Nightly (Testing Only)
   echo "❓ What version would you like to install?"
   echo "1) Official"
@@ -26,9 +22,12 @@ else
   if [[ "$version_choice" == "2" ]]; then
     DEV_MODE=true
     ZIP_NAME="wp-docker-dev.zip"
+    DEV_REPO_TAG="dev"
     echo "🛠 Installing Nightly (Testing Only) version"
+    DOWNLOAD_URL="$REPO_URL/releases/download/dev/$ZIP_NAME"
   else
     echo "🛠 Installing Official version"
+    DOWNLOAD_URL="$REPO_URL/releases/latest/download/$ZIP_NAME"
   fi
 fi
 
@@ -39,7 +38,7 @@ if [[ -d "$INSTALL_DIR" ]]; then
   echo "${WARNING} Directory $INSTALL_DIR already exists."
   read -rp "❓ Do you want to delete and overwrite it? [y/N]: " confirm
   if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-    echo "${CROSSMARK} Installation cancelled."
+    echo "Installation cancelled."
     exit 0
   fi
   rm -rf "$INSTALL_DIR"
@@ -49,14 +48,14 @@ fi
 # 📥 Download and extract release
 # ========================
 echo "📦 Downloading source code from GitHub Release..."
-curl -L "$REPO_URL/releases/latest/download/$ZIP_NAME" -o "$ZIP_NAME" || { echo "${CROSSMARK} Command failed at line 35"; exit 1; }
+curl -L "$DOWNLOAD_URL" -o "$ZIP_NAME" || { echo "Command failed at line 35"; exit 1; }
 echo "📁 Extracting to $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
 unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
-rm "$ZIP_NAME" || { echo "${CROSSMARK} Command failed at line 40"; exit 1; }
+rm "$ZIP_NAME" || { echo "Command failed at line 40"; exit 1; }
 
 # ========================
-# ${CHECKMARK} Set permissions for current user
+# Set permissions for current user
 # ========================
 echo "🔐 Setting permissions for user: $USER"
 chown -R "$USER" "$INSTALL_DIR"
@@ -81,7 +80,7 @@ check_and_add_alias() {
 
   # Check if the alias is already present
   if ! grep -q "$alias_line" "$shell_config"; then
-    echo "${CHECKMARK} Adding alias for wpdocker to $shell_config..."
+    echo "Adding alias for wpdocker to $shell_config..."
     echo "$alias_line" >> "$shell_config"
   else
     echo "${WARNING} Alias 'wpdocker' already exists in $shell_config"
@@ -90,20 +89,20 @@ check_and_add_alias() {
   # Reload the shell configuration file to apply changes
   if [[ "$SHELL" == *"zsh"* ]]; then
       # If the current shell is zsh, source .zshrc
-      echo "${CHECKMARK} Sourcing .zshrc to reload Zsh configuration..."
+      echo "Sourcing .zshrc to reload Zsh configuration..."
       source "$HOME/.zshrc"
   elif [[ "$SHELL" == *"bash"* ]]; then
       # If the current shell is bash, source .bashrc
-      echo "${CHECKMARK} Sourcing .bashrc to reload Bash configuration..."
+      echo "Sourcing .bashrc to reload Bash configuration..."
       source "$HOME/.bashrc"
   else
-      echo "${CROSSMARK} Unsupported shell: $SHELL. Please reload your shell configuration manually."
+      echo "Unsupported shell: $SHELL. Please reload your shell configuration manually."
   fi
 
 }
 check_and_add_alias
 
-echo "${CHECKMARK} Installation successful at: $INSTALL_DIR"
+echo "Installation successful at: $INSTALL_DIR"
 
 # ========================
 # 📢 Special warning for macOS (Docker Desktop)
