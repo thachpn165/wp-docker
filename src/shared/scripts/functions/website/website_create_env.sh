@@ -4,17 +4,15 @@
 
 website_create_env() {
   local output_dir="$1"
-  local site_name="$2"
-  local domain="$3"
-  local php_version="$4"
+  local domain="$2"
+  local php_version="$3"
 
   # Check input parameters
-  if [[ "$TEST_MODE" != true && $# -ne 4 ]]; then
+  if [[ "$TEST_MODE" != true && $# -ne 3 ]]; then
     echo -e "${RED}${CROSSMARK} Missing parameters when calling website_create_env().${NC}"
-    echo -e "${YELLOW}Usage: website_create_env <output_dir> <site_name> <domain> <php_version>${NC}"
+    echo -e "${YELLOW}Usage: website_create_env <output_dir> <domain> <php_version>${NC}"
     return 1
   fi
-
 
   local env_file="$output_dir/.env"
 
@@ -24,7 +22,6 @@ website_create_env() {
   mkdir -p "$output_dir"
 
   cat > "$env_file" <<EOF
-SITE_NAME=$site_name
 DOMAIN=$domain
 PHP_VERSION=$php_version
 MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD

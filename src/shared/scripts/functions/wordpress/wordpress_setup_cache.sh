@@ -4,7 +4,7 @@
 #          NGINX configuration, and cache type setup.
 #
 # Parameters:
-#   1. site_name (string): The name of the WordPress site.
+#   1. domain (string): The domain of the WordPress site.
 #   2. cache_type (string): The type of cache to configure. Supported values:
 #      - "no-cache": Disables caching and removes cache plugins.
 #      - "wp-super-cache": Configures WP Super Cache plugin.
@@ -38,15 +38,15 @@
 #   - 1 on failure, with an appropriate error message.
 #
 # Example Usage:
-#   wordpress_cache_setup_logic "example-site" "wp-super-cache"
+#   wordpress_cache_setup_logic "example.com" "wp-super-cache"
 # -----------------------------------------------------------------------------
 wordpress_cache_setup_logic() {
-    local site_name="$1"
+    local domain="$1"
     local cache_type="$2"
-    local site_dir="$SITES_DIR/$site_name"
+    local site_dir="$SITES_DIR/$domain"
     local wp_config_file="$site_dir/wordpress/wp-config.php"
-    local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${site_name}.conf"
-    local PHP_CONTAINER="$site_name-php"
+    local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
+    local PHP_CONTAINER="$domain-php"
 
     # Ensure the site directory exists
     if [ ! -d "$site_dir" ]; then

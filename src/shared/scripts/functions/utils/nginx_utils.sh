@@ -1,7 +1,7 @@
 # =====================================
 # 🌐 nginx_utils.sh – NGINX Proxy utility functions
 # =====================================
-update_nginx_override_mounts() {
+nginx_add_mount_docker() {
     local site_name="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
 
@@ -29,7 +29,11 @@ EOF
 
     # Kiểm tra và thêm MOUNT_ENTRY nếu cần
     if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
-        echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null
+        if ! echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null; then
+            echo -e "${RED}${CROSSMARK} Failed to add mount source: $MOUNT_ENTRY${NC}"
+            nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
+            return 1
+        fi
         echo -e "${GREEN}➕ Added mount source: $MOUNT_ENTRY${NC}"
     else
         echo -e "${YELLOW}${WARNING} Mount source already exists: $MOUNT_ENTRY${NC}"
@@ -37,10 +41,47 @@ EOF
 
     # Kiểm tra và thêm MOUNT_LOGS nếu cần
     if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
-        echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null
+        if ! echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null; then
+            echo -e "${RED}${CROSSMARK} Failed to add mount logs: $MOUNT_LOGS${NC}"
+            nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
+            return 1
+        fi
         echo -e "${GREEN}➕ Added mount logs: $MOUNT_LOGS${NC}"
     else
         echo -e "${YELLOW}${WARNING} Mount logs already exists: $MOUNT_LOGS${NC}"
+    fi
+}
+
+# Helper function to remove entries from docker-compose.override.yml
+nginx_remove_mount_docker() {
+    local override_file="$1"
+    local mount_entry="$2"
+    local mount_logs="$3"
+
+    # Escape slashes (/) and dots (.) by replacing them with another delimiter (e.g., #)
+    local safe_mount_entry="${mount_entry//\//\\\/}"
+    safe_mount_entry="${safe_mount_entry//./\\\.}"
+    local safe_mount_logs="${mount_logs//\//\\\/}"
+    safe_mount_logs="${safe_mount_logs//./\\\.}"
+
+    # If the override file exists
+    if [ -f "$override_file" ]; then
+        # Create a temporary file to store the modified content
+        temp_file=$(mktemp)
+
+        # Remove the lines containing mount_entry and mount_logs
+        grep -vF "$mount_entry" "$override_file" | grep -vF "$mount_logs" > "$temp_file"
+
+        # If the content was changed, replace the original file with the modified one
+        if ! diff "$override_file" "$temp_file" > /dev/null; then
+            mv "$temp_file" "$override_file"
+            echo -e "${GREEN}${CHECKMARK} Removed mount entries due to error.${NC}"
+        else
+            rm -f "$temp_file"
+            echo -e "${YELLOW}No changes to mount entries found.${NC}"
+        fi
+    else
+        echo -e "${RED}❌ $override_file does not exist.${NC}"
     fi
 }
 
