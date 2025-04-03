@@ -9,7 +9,7 @@
 # - The `backup_loader.sh` script must be available in the directory specified by the `FUNCTIONS_DIR` variable.
 
 # Command-line Parameters:
-# --domain=<site_name>         (Required) The name of the site to restore.
+# --domain=example.tld         (Required) The name of the site to restore.
 # --code_backup_file=<file_path>  (Optional) Path to the code backup file.
 # --db_backup_file=<file_path>    (Optional) Path to the database backup file.
 # --test_mode=<true|false>        (Optional) Flag to indicate whether to run in test mode.

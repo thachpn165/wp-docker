@@ -7,10 +7,10 @@
 #              executes the logic to reset the user role.
 #
 # Usage:
-#   ./wordpress_reset_user_role.sh --domain=<site_name>
+#   ./wordpress_reset_user_role.sh --domain=example.tld
 #
 # Parameters:
-#   --domain=<site_name> : (Required) The name of the WordPress site for 
+#   --domain=example.tld : (Required) The name of the WordPress site for 
 #                             which the user role needs to be reset.
 #
 # Prerequisites:

@@ -7,10 +7,10 @@
 # to perform the backup operation.
 #
 # Usage:
-#   ./backup_file.sh --domain=<site_name>
+#   ./backup_file.sh --domain=example.tld
 #
 # Parameters:
-#   --domain=<site_name> : (Required) The name of the site to back up.
+#   --domain=example.tld : (Required) The name of the site to back up.
 #
 # Behavior:
 #   - Ensures the script is executed directly in a Bash shell.

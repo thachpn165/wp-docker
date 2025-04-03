@@ -11,7 +11,7 @@
 # - Invokes the logic function to apply the specified action to the WordPress wp-login.php page.
 
 # === Command-Line Parameters ===
-# --domain=<site_name> : (Required) The name of the WordPress site to apply the action to.
+# --domain=example.tld : (Required) The name of the WordPress site to apply the action to.
 # --action=<action>       : (Required) The action to perform (e.g., enable or disable protection).
 
 # === Environment Variables ===

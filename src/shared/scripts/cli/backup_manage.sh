@@ -11,7 +11,7 @@
 # - Executes the `backup_manage` function with the parsed parameters.
 
 # === Command-Line Arguments ===
-# --domain=<site_name>   : (Required) The name of the site for which the backup action is to be performed.
+# --domain=example.tld   : (Required) The name of the site for which the backup action is to be performed.
 # --action=<action>         : (Required) The action to perform (e.g., create, restore, delete).
 # --max_age_days=<days>     : (Optional) The maximum age of backups to consider, in days.
 

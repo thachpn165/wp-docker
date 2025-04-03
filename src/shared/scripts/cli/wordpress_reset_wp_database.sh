@@ -8,10 +8,10 @@
 # - The `wordpress_loader.sh` script must be available in the directory specified by the `FUNCTIONS_DIR` variable.
 #
 # Usage:
-#   ./wordpress_reset_wp_database.sh --domain=<site_name>
+#   ./wordpress_reset_wp_database.sh --domain=example.tld
 #
 # Parameters:
-#   --domain=<site_name> : (Required) The name of the WordPress site whose database will be reset.
+#   --domain=example.tld : (Required) The name of the WordPress site whose database will be reset.
 #
 # Behavior:
 # - Validates that the script is run in a Bash shell.

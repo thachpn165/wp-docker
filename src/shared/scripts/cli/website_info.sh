@@ -21,10 +21,10 @@
 #    `site_name` to display the website information.
 
 # Usage:
-#   ./website_info.sh --domain=<site_name>
+#   ./website_info.sh --domain=example.tld
 
 # Parameters:
-#   --domain=<site_name> : (Required) The name of the website for which 
+#   --domain=example.tld : (Required) The name of the website for which 
 #                             information is to be displayed.
 
 # Error Handling:

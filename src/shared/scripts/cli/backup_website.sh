@@ -10,7 +10,7 @@
 # - The backup_loader.sh script must be available in the FUNCTIONS_DIR.
 #
 # Usage:
-#   ./backup_website.sh --domain=<site_name> --storage=<local|cloud> [--rclone_storage=<rclone_storage_name>]
+#   ./backup_website.sh --domain=example.tld --storage=<local|cloud> [--rclone_storage=<rclone_storage_name>]
 #
 # Parameters:
 #   --domain         (Required) The name of the site to back up.

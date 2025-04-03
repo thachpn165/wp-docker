@@ -10,7 +10,7 @@
 # - The ssl_loader.sh script must be available in the FUNCTIONS_DIR.
 
 # Input Arguments:
-# --domain=<site_name> : (Required) The name of the site for which the SSL certificate will be installed.
+# --domain=example.tld : (Required) The name of the site for which the SSL certificate will be installed.
 # --email=<email>         : (Required) The email address to be used for Let's Encrypt registration.
 # --staging               : (Optional) If provided, the script will use Let's Encrypt's staging environment.
 

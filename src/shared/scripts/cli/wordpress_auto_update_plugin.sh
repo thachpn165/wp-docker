@@ -9,10 +9,10 @@
 # - The script depends on functions defined in wordpress_loader.sh.
 
 # Usage:
-# ./wordpress_auto_update_plugin.sh --domain=<site_name> --action=<action>
+# ./wordpress_auto_update_plugin.sh --domain=example.tld --action=<action>
 # 
 # Parameters:
-# --domain=<site_name>  : The name of the WordPress site for which the plugin auto-update settings will be managed.
+# --domain=example.tld  : The name of the WordPress site for which the plugin auto-update settings will be managed.
 # --action=<action>        : The action to perform on the plugin auto-update settings (e.g., enable, disable).
 
 # Behavior:

@@ -8,10 +8,10 @@
 # - The `wordpress_loader.sh` script must be available in the FUNCTIONS_DIR directory.
 #
 # Usage:
-#   ./wordpress_reset_admin_passwd.sh --domain=<site_name> --user_id=<user_id>
+#   ./wordpress_reset_admin_passwd.sh --domain=example.tld --user_id=<user_id>
 #
 # Parameters:
-#   --domain=<site_name>  The name of the WordPress site for which the admin password will be reset.
+#   --domain=example.tld  The name of the WordPress site for which the admin password will be reset.
 #   --user_id=<user_id>      The ID of the user whose password will be reset.
 #
 # Behavior:

@@ -7,7 +7,7 @@
 #              SSL certificates using a logic function.
 #
 # Usage:
-#   ./ssl_check_status.sh --domain=<site_name> [--ssl_dir=<ssl_directory>]
+#   ./ssl_check_status.sh --domain=example.tld [--ssl_dir=<ssl_directory>]
 #
 # Arguments:
 #   --domain   (Required) The name of the site for which to check the SSL status.

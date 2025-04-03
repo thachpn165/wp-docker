@@ -12,10 +12,10 @@
 #     directory relative to PROJECT_DIR.
 #
 # Usage:
-#   ./website_logs.sh --domain=<site_name> --log_type=<log_type>
+#   ./website_logs.sh --domain=example.tld --log_type=<log_type>
 #
 # Arguments:
-#   --domain=<site_name>  The name of the website for which logs are to be retrieved.
+#   --domain=example.tld  The name of the website for which logs are to be retrieved.
 #   --log_type=<log_type>    The type of log to retrieve. Must be either "access" or "error".
 #
 # Exit Codes:
