@@ -6,8 +6,8 @@
 
 # === website_management_info_logic ===
 website_management_info_logic() {
-    local site_name="$1"
-    local site_dir="$SITES_DIR/$site_name"
+    local domain="$1"
+    local site_dir="$SITES_DIR/$domain"
     local env_file="$site_dir/.env"
     local domain
     local db_name
@@ -16,13 +16,13 @@ website_management_info_logic() {
 
     # Check if website exists
     if ! is_directory_exist "$site_dir"; then
-        echo -e "${RED}❌ Website '$site_name' does not exist.${NC}"
+        echo -e "${RED}${CROSSMARK} Website '$domain' does not exist.${NC}"
         return 1
     fi
 
     # Check if .env file exists
     if ! is_file_exist "$env_file"; then
-        echo -e "${RED}❌ .env file for website '$site_name' not found!${NC}"
+        echo -e "${RED}${CROSSMARK} .env file for website '$domain' not found!${NC}"
         return 1
     fi
 
@@ -33,7 +33,7 @@ website_management_info_logic() {
     db_pass=$(fetch_env_variable "$env_file" "MYSQL_PASSWORD")
 
     # Display website information
-    echo -e "${GREEN}Website Information for '$site_name':${NC}"
+    echo -e "${GREEN}Website Information for '$domain':${NC}"
     echo -e "  ${YELLOW}Domain:${NC} $domain"
     echo -e "  ${YELLOW}Database Name:${NC} $db_name"
     echo -e "  ${YELLOW}Database User:${NC} $db_user"

@@ -12,20 +12,20 @@ echo "🛠 Running upgrade script for v1.1.4-beta..."
 WPDOCKER_SYMLINK="/usr/local/bin/wpdocker"
 
 if [[ -L "$WPDOCKER_SYMLINK" ]]; then
-    echo "⚠️ Found existing symlink for wpdocker at $WPDOCKER_SYMLINK."
-    echo "❌ Removing the existing symlink to avoid conflict with new alias functionality..."
+    echo "${WARNING} Found existing symlink for wpdocker at $WPDOCKER_SYMLINK."
+    echo "${CROSSMARK} Removing the existing symlink to avoid conflict with new alias functionality..."
 
     # Remove the symlink
     rm -f "$WPDOCKER_SYMLINK"
 
     if [[ $? -eq 0 ]]; then
-        echo "✅ Successfully removed the old wpdocker symlink."
+        echo "${CHECKMARK} Successfully removed the old wpdocker symlink."
     else
-        echo "❌ Failed to remove the wpdocker symlink. Please check manually."
+        echo "${CROSSMARK} Failed to remove the wpdocker symlink. Please check manually."
         exit 1
     fi
 else
-    echo "✅ No existing wpdocker symlink found. Proceeding with the upgrade..."
+    echo "${CHECKMARK} No existing wpdocker symlink found. Proceeding with the upgrade..."
 fi
 
 # ========================

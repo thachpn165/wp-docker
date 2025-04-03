@@ -19,7 +19,7 @@ function _M.run()
     for key, val in pairs(args) do
         for _, variable in ipairs(php_variables) do
             if tostring(key):find(variable, 1, true) or tostring(val):find(variable, 1, true) then
-                ngx.log(ngx.ERR, "[WAF] ⚠️ PHP variable detected in query: ", variable)
+                ngx.log(ngx.ERR, "[WAF] ${WARNING} PHP variable detected in query: ", variable)
                 return ngx.exit(403)
             end
         end
@@ -28,7 +28,7 @@ function _M.run()
     -- Check URI directly
     for _, variable in ipairs(php_variables) do
         if uri:find(variable, 1, true) then
-            ngx.log(ngx.ERR, "[WAF] ⚠️ PHP variable detected in URI: ", variable)
+            ngx.log(ngx.ERR, "[WAF] ${WARNING} PHP variable detected in URI: ", variable)
             return ngx.exit(403)
         end
     end

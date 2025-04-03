@@ -3,39 +3,39 @@
 # =====================================
 
 website_management_delete_logic() {
-  local site_name="$1"
+  local domain="$1"
   local backup_enabled="${2:-false}"  # Tham số backup_enabled mặc định là false
 
   if [[ "$TEST_MODE" == true ]]; then
     backup_enabled=false
   fi
 
-  if [[ -z "$site_name" ]]; then
-    echo -e "${RED}❌ Missing site name parameter.${NC}"
+  if [[ -z "$domain" ]]; then
+    echo -e "${RED}${CROSSMARK} Missing domain parameter.${NC}"
     return 1
   fi
 
-  SITE_DIR="$SITES_DIR/$site_name"
+  SITE_DIR="$SITES_DIR/$domain"
   ENV_FILE="$SITE_DIR/.env"
 
   if ! is_directory_exist "$SITE_DIR"; then
-    echo -e "${RED}❌ Website '$site_name' does not exist.${NC}"
+    echo -e "${RED}${CROSSMARK} Website '$domain' does not exist.${NC}"
     return 1
   fi
 
   if ! is_file_exist "$ENV_FILE"; then
-    echo -e "${RED}❌ Website .env file not found!${NC}"
+    echo -e "${RED}${CROSSMARK} Website .env file not found!${NC}"
     return 1
   fi
 
   DOMAIN=$(fetch_env_variable "$ENV_FILE" "DOMAIN")
-  MARIADB_VOLUME="${site_name}_mariadb_data"
-  SITE_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$site_name.conf"
+  MARIADB_VOLUME="${domain//./}_mariadb_data"
+  SITE_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$domain.conf"
 
   # Nếu backup_enabled=true thì tiến hành backup
   if [[ "$backup_enabled" == true ]]; then
     echo -e "${YELLOW}📦 Creating backup before deletion...${NC}"
-    ARCHIVE_DIR="$ARCHIVES_DIR/old_website/${site_name}-$(date +%Y%m%d-%H%M%S)"
+    ARCHIVE_DIR="$ARCHIVES_DIR/old_website/${domain}-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$ARCHIVE_DIR"
 
     DB_NAME=$(fetch_env_variable "$ENV_FILE" "MYSQL_DATABASE")
@@ -44,59 +44,57 @@ website_management_delete_logic() {
 
     if [[ -n "$DB_NAME" && -n "$DB_USER" && -n "$DB_PASS" ]]; then
       echo -e "${YELLOW}📦 Backing up database...${NC}"
-      docker exec "${site_name}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" \
-        > "$ARCHIVE_DIR/${site_name}_db.sql" 2>/dev/null || true
+      docker exec "${domain}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" \
+        > "$ARCHIVE_DIR/${domain}_db.sql" 2>/dev/null || true
     fi
 
     echo -e "${YELLOW}📦 Compressing WordPress source code...${NC}"
-    tar -czf "$ARCHIVE_DIR/${site_name}_wordpress.tar.gz" -C "$SITE_DIR/wordpress" . || true
+    tar -czf "$ARCHIVE_DIR/${domain}_wordpress.tar.gz" -C "$SITE_DIR/wordpress" . || true
 
-    echo -e "${GREEN}✅ Website backup created at: $ARCHIVE_DIR${NC}"
+    echo -e "${GREEN}${CHECKMARK} Website backup created at: $ARCHIVE_DIR${NC}"
   fi
 
   # 🛑 Stop containers
   run_in_dir "$SITE_DIR" docker compose down
 
-  # 🧹 Remove override entry before deleting directory
+  # 🧹 Remove override entry before deleting directory using nginx_remove_mount_docker
   OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
-  MOUNT_ENTRY="      - ../../sites/$site_name/wordpress:/var/www/$site_name"
-  MOUNT_LOGS="      - ../../sites/$site_name/logs:/var/www/logs/$site_name"
+  MOUNT_ENTRY="      - ../../sites/$domain/wordpress:/var/www/$domain"
+  MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
+
   if [ -f "$OVERRIDE_FILE" ]; then
-    temp_file=$(mktemp)
-    grep -vF "$MOUNT_ENTRY" "$OVERRIDE_FILE" | grep -vF "$MOUNT_LOGS" > "$temp_file"
-    mv "$temp_file" "$OVERRIDE_FILE"
-    echo -e "${GREEN}✅ Removed website entry from docker-compose.override.yml.${NC}"
+      nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
   fi
 
   # 🗂️ Delete website directory
   remove_directory "$SITE_DIR"
-  echo -e "${GREEN}✅ Deleted website directory: $SITE_DIR${NC}"
+  echo -e "${GREEN}${CHECKMARK} Deleted website directory: $SITE_DIR${NC}"
 
   # 🔐 Delete SSL certificate
   remove_file "$SSL_DIR/$DOMAIN.crt"
   remove_file "$SSL_DIR/$DOMAIN.key"
-  echo -e "${GREEN}✅ Deleted SSL certificate (if any).${NC}"
+  echo -e "${GREEN}${CHECKMARK} Deleted SSL certificate (if any).${NC}"
 
   # 🗃️ Delete DB volume
   remove_volume "$MARIADB_VOLUME"
-  echo -e "${GREEN}✅ Deleted DB volume: $MARIADB_VOLUME${NC}"
+  echo -e "${GREEN}${CHECKMARK} Deleted DB volume: $MARIADB_VOLUME${NC}"
 
   # 🧾 Delete NGINX configuration
   if is_file_exist "$SITE_CONF_FILE"; then
     remove_file "$SITE_CONF_FILE"
-    echo -e "${GREEN}✅ Deleted NGINX configuration file.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Deleted NGINX configuration file.${NC}"
   fi
 
   # 🕒 Delete cronjob if exists
-  if crontab -l 2>/dev/null | grep -q "$site_name"; then
+  if crontab -l 2>/dev/null | grep -q "$domain"; then
     tmp_cron=$(mktemp)
-    crontab -l | grep -v "$site_name" > "$tmp_cron"
+    crontab -l | grep -v "$domain" > "$tmp_cron"
     crontab "$tmp_cron"
     rm -f "$tmp_cron"
-    echo -e "${GREEN}✅ Deleted cronjob related to site.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Deleted cronjob related to site.${NC}"
   fi
 
   # 🔁 Restart NGINX Proxy
   nginx_restart
-  echo -e "${GREEN}✅ Website '$site_name' deleted successfully.${NC}"
+  echo -e "${GREEN}${CHECKMARK} Website '$domain' deleted successfully.${NC}"
 }

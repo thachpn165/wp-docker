@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ============================================
-# ✅ System Resources Check Status Menu
+# ${CHECKMARK} System Resources Check Status Menu
 # ============================================
 
 # === Load config & system_loader.sh ===
@@ -18,7 +18,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"

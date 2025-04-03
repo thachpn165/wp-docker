@@ -6,7 +6,7 @@ CONFIG_FILE="shared/config/config.sh"
 while [ ! -f "$CONFIG_FILE" ]; do
     CONFIG_FILE="../$CONFIG_FILE"
     if [ "$(pwd)" = "/" ]; then
-        echo "❌ Lỗi: Không tìm thấy config.sh!" >&2
+        echo "${CROSSMARK} Lỗi: Không tìm thấy config.sh!" >&2
         exit 1
     fi
 done
@@ -15,16 +15,16 @@ source "$CONFIG_FILE"
 
 # 📌 Nhận tham số đầu vào (tên website)
 if [ -z "$1" ]; then
-    echo -e "${RED}❌ Lỗi: Chưa nhập tên website.${NC}"
+    echo -e "${RED}${CROSSMARK} Lỗi: Chưa nhập tên website.${NC}"
     exit 1
 fi
 
 # 🏗️ Định nghĩa các biến hệ thống
-site_name="$1"
-SITE_DIR="$SITES_DIR/$site_name"
+domain="$1"
+SITE_DIR="$SITES_DIR/$domain"
 ENV_FILE="$SITE_DIR/.env"
-CONTAINER_PHP="${site_name}-php"
-CONTAINER_DB="${site_name}-mariadb"
+CONTAINER_PHP="${domain}-php"
+CONTAINER_DB="${domain}-mariadb"
 
 # 📋 Lấy thông tin từ .env
 if is_file_exist "$ENV_FILE"; then
@@ -33,8 +33,8 @@ fi
 
 # 🌍 Xác định URL website
 if [ -z "$DOMAIN" ]; then
-    echo -e "${YELLOW}⚠️ Không tìm thấy biến DOMAIN trong .env, sử dụng mặc định https://$site_name.local${NC}"
-    SITE_URL="https://$site_name.local"
+    echo -e "${YELLOW}${WARNING} Không tìm thấy biến DOMAIN trong .env, sử dụng mặc định https://$domain.local${NC}"
+    SITE_URL="https://$domain.local"
 else
     SITE_URL="https://$DOMAIN"
 fi
@@ -42,16 +42,16 @@ fi
 # 🔑 Tạo tài khoản admin ngẫu nhiên
 ADMIN_USER="admin-$(openssl rand -base64 12)"
 ADMIN_PASSWORD=$(openssl rand -base64 12)
-ADMIN_EMAIL="admin@$site_name.local"
+ADMIN_EMAIL="admin@$domain.local"
 
-echo -e "${BLUE}🔹 Bắt đầu cài đặt WordPress cho '$site_name'...${NC}"
+echo -e "${BLUE}🔹 Bắt đầu cài đặt WordPress cho '$domain'...${NC}"
 
 # ⏳ Chờ container PHP khởi động
 echo -e "${YELLOW}⏳ Chờ container PHP '$CONTAINER_PHP' khởi động...${NC}"
 sleep 10
 
 if ! is_container_running "$CONTAINER_PHP"; then
-    echo -e "${RED}❌ Lỗi: Container PHP '$CONTAINER_PHP' chưa chạy. Hãy kiểm tra lại!${NC}"
+    echo -e "${RED}${CROSSMARK} Lỗi: Container PHP '$CONTAINER_PHP' chưa chạy. Hãy kiểm tra lại!${NC}"
     exit 1
 fi
 
@@ -61,20 +61,20 @@ fi
 # 📂 Kiểm tra và tải mã nguồn WordPress
 if [ ! -f "$SITE_DIR/wordpress/index.php" ]; then
     echo -e "${YELLOW}📥 Đang tải WordPress...${NC}"
-    docker exec -i "$CONTAINER_PHP" sh -c " || { echo "❌ Command failed at line 64"; exit 1; }
+    docker exec -i "$CONTAINER_PHP" sh -c " || { echo "${CROSSMARK} Command failed at line 64"; exit 1; }
         curl -o wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
         tar -xzf wordpress.tar.gz --strip-components=1 -C /var/www/html && \
-        rm wordpress.tar.gz || { echo "❌ Command failed at line 67"; exit 1; }
+        rm wordpress.tar.gz || { echo "${CROSSMARK} Command failed at line 67"; exit 1; }
     "
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ WordPress đã được tải xuống thành công.${NC}"
+        echo -e "${GREEN}${CHECKMARK} WordPress đã được tải xuống thành công.${NC}"
     else
-        echo -e "${RED}❌ Lỗi khi tải mã nguồn WordPress.${NC}"
+        echo -e "${RED}${CROSSMARK} Lỗi khi tải mã nguồn WordPress.${NC}"
         exit 1
     fi
 else
-    echo -e "${GREEN}✅ Mã nguồn WordPress đã có sẵn, bỏ qua bước tải xuống.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Mã nguồn WordPress đã có sẵn, bỏ qua bước tải xuống.${NC}"
 fi
 
 # 📋 Lấy thông tin database từ .env
@@ -83,7 +83,7 @@ DB_USER=$(fetch_env_variable "$ENV_FILE" "MYSQL_USER")
 DB_PASS=$(fetch_env_variable "$ENV_FILE" "MYSQL_PASSWORD")
 
 if [[ -z "$DB_NAME" || -z "$DB_USER" || -z "$DB_PASS" ]]; then
-    echo -e "${RED}❌ Lỗi: Biến môi trường MySQL không hợp lệ trong .env!${NC}"
+    echo -e "${RED}${CROSSMARK} Lỗi: Biến môi trường MySQL không hợp lệ trong .env!${NC}"
     exit 1
 fi
 
@@ -91,7 +91,7 @@ fi
 wp_set_wpconfig "$CONTAINER_PHP" "$DB_NAME" "$DB_USER" "$DB_PASS" "$CONTAINER_DB"
 
 # 🚀 Cài đặt WordPress
-wp_install "$CONTAINER_PHP" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+wp_install "$CONTAINER_PHP" "$SITE_URL" "$domain" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
 
 # 🛠️ **Thiết lập permalinks**
 wp_set_permalinks "$CONTAINER_PHP" "$SITE_URL"

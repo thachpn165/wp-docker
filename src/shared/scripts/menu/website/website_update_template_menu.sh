@@ -14,7 +14,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -25,7 +25,7 @@ outdated_sites=($(website_management_update_site_template_logic))
 
 # Check if there are any outdated sites
 if [[ ${#outdated_sites[@]} -eq 0 ]]; then
-  echo -e "${YELLOW}⚠️ No outdated sites found.${NC}"
+  echo -e "${YELLOW}${WARNING} No outdated sites found.${NC}"
   exit 1
 fi
 
@@ -38,10 +38,10 @@ done
 # Ask the user if they want to update any of the sites
 SELECTED_SITE=$(select_from_list "🔹 Select a website to update:" "${outdated_sites[@]}")
 if [[ -z "$SELECTED_SITE" ]]; then
-  echo -e "${RED}❌ Invalid selection!${NC}"
+  echo -e "${RED}${CROSSMARK} Invalid selection!${NC}"
   exit 1
 fi
 
 # Proceed with update
-echo -e "${GREEN}✅ Updating website '$SELECTED_SITE'...${NC}"
-bash "$SCRIPTS_DIR/cli/website_update_template.sh" --site_name="$SELECTED_SITE"
+echo -e "${GREEN}${CHECKMARK} Updating website '$SELECTED_SITE'...${NC}"
+bash "$SCRIPTS_DIR/cli/website_update_template.sh" --domain="$SELECTED_SITE"

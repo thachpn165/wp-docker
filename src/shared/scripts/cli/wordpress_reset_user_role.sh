@@ -7,10 +7,10 @@
 #              executes the logic to reset the user role.
 #
 # Usage:
-#   ./wordpress_reset_user_role.sh --site_name=<site_name>
+#   ./wordpress_reset_user_role.sh --domain=example.tld
 #
 # Parameters:
-#   --site_name=<site_name> : (Required) The name of the WordPress site for 
+#   --domain=example.tld : (Required) The name of the WordPress site for 
 #                             which the user role needs to be reset.
 #
 # Prerequisites:
@@ -25,7 +25,7 @@
 #   2 : Config file or required scripts not found.
 #
 # Example:
-#   ./wordpress_reset_user_role.sh --site_name=my_wordpress_site
+#   ./wordpress_reset_user_role.sh --domain=my_wordpress_site
 #
 # -----------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -52,7 +52,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -63,8 +63,8 @@ source "$FUNCTIONS_DIR/wordpress_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     *)
@@ -75,10 +75,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [ -z "$site_name" ]; then
-  echo "❌ Missing required parameter: --site_name"
+if [ -z "$domain" ]; then
+  echo "${CROSSMARK} Missing required parameter: --domain"
   exit 1
 fi
 
 # === Call the logic function to reset user role ===
-reset_user_role_logic "$site_name"
+reset_user_role_logic "$domain"

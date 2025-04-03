@@ -14,7 +14,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -24,14 +24,10 @@ source "$FUNCTIONS_DIR/backup_loader.sh"
 backup_scheduler_create() {
     # === Select website ===
     select_website
-
-    # Ensure site is selected
-    if [[ -z "$SITE_NAME" ]]; then
-        echo "❌ No website selected. Exiting."
-        exit 1
+    if [[ -z "$domain" ]]; then
+    echo -e "${RED}${CROSSMARK} No website selected.${NC}"
+    exit 1
     fi
-
-    echo "Selected site: $SITE_NAME"
 
     # === Choose schedule time (Cron format) ===
     echo -e "${YELLOW}📅 Select the time for the backup to run (Cron format):${NC}"
@@ -55,13 +51,13 @@ backup_scheduler_create() {
             read -p "Enter custom cron time (e.g., '0 3 * * *'): " schedule_time
             ;;
         *)
-            echo "❌ Invalid choice"
+            echo "${CROSSMARK} Invalid choice"
             exit 1
             ;;
     esac
 
     # === Choose storage for backup ===
-    echo -e "${YELLOW}💾 Select where to store the backup:${NC}"
+    echo -e "${YELLOW}${SAVE} Select where to store the backup:${NC}"
     select storage_choice in "local" "cloud"; do
         case $storage_choice in
             local)
@@ -75,7 +71,7 @@ backup_scheduler_create() {
                 storages=($(grep -oP '^\[\K[^\]]+' "$RCLONE_CONFIG_FILE"))
 
                 if [[ ${#storages[@]} -eq 0 ]]; then
-                    echo -e "${RED}❌ No storage available in rclone.conf. Please set up Rclone first!${NC}"
+                    echo -e "${RED}${CROSSMARK} No storage available in rclone.conf. Please set up Rclone first!${NC}"
                     exit 1
                 fi
 
@@ -88,23 +84,23 @@ backup_scheduler_create() {
 
                 # Validate rclone_storage
                 if [[ -z "$rclone_storage" ]]; then
-                    echo -e "${RED}❌ Invalid storage selection!${NC}"
+                    echo -e "${RED}${CROSSMARK} Invalid storage selection!${NC}"
                     exit 1
                 fi
 
                 break
                 ;;
             *)
-                echo "❌ Invalid choice. Please select either 'local' or 'cloud'."
+                echo "${CROSSMARK} Invalid choice. Please select either 'local' or 'cloud'."
                 ;;
         esac
     done
 
     # === Set log file path using local variable ===
-    local backup_log_file="$SITES_DIR/$SITE_NAME/logs/backup_schedule.logs"
+    local backup_log_file="$SITES_DIR/$domain/logs/backup_schedule.logs"
 
     # === Schedule the backup in crontab ===
-    backup_command="bash $CLI_DIR/backup_website.sh --site_name=$SITE_NAME --storage=$storage"
+    backup_command="bash $CLI_DIR/backup_website.sh --domain=$domain --storage=$storage"
     if [[ "$storage" == "cloud" ]]; then
         backup_command="$backup_command --rclone_storage=$rclone_storage"
     fi
@@ -112,7 +108,7 @@ backup_scheduler_create() {
     # Add the backup job to crontab
     (crontab -l 2>/dev/null; echo "$schedule_time $backup_command >> $backup_log_file 2>&1") | crontab -
 
-    echo -e "${GREEN}✅ Backup schedule added successfully to crontab!${NC}"
+    echo -e "${GREEN}${CHECKMARK} Backup schedule added successfully to crontab!${NC}"
 }
 
 # === Call the function to execute ===

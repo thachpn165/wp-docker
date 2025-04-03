@@ -9,10 +9,10 @@
 export PROJECT_DIR_ORIGINAL="$(realpath "$BATS_TEST_DIRNAME/../../src")"
 export PROJECT_DIR="$PROJECT_DIR_ORIGINAL"
 
-# ✅ Load config gốc
+# ${CHECKMARK} Load config gốc
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -34,7 +34,7 @@ export SCRIPTS_DIR="$PROJECT_DIR/shared/scripts"
 export TEST_MODE=true
 export TEST_ALWAYS_READY=true
 
-# ✅ Load toàn bộ logic quản lý website
+# ${CHECKMARK} Load toàn bộ logic quản lý website
 source "$FUNCTIONS_DIR/website_loader.sh"
 
 # === Helper: tạo site name random ===
@@ -52,7 +52,7 @@ assert_output_contains() {
   }
 }
 
-# === ✅ Mocks for Docker CLI when TEST_MODE ===
+# === ${CHECKMARK} Mocks for Docker CLI when TEST_MODE ===
 if [[ "$TEST_MODE" == true ]]; then
   TEST_MOCK_BIN_DIR="$PROJECT_DIR_TEST/mocks"
   mkdir -p "$TEST_MOCK_BIN_DIR"
@@ -95,8 +95,8 @@ version: "3"
 services:
   nginx-proxy:
     volumes:
-      - ../../sites/$site_name/wordpress:/var/www/$site_name
-      - ../../sites/$site_name/logs:/var/www/logs/$site_name
+      - ../../sites/$domain/wordpress:/var/www/$domain
+      - ../../sites/$domain/logs:/var/www/logs/$domain
 EOF
 
   export PATH="$TEST_MOCK_BIN_DIR:$PATH"

@@ -32,21 +32,21 @@
 # -----------------------------------------------------------------------------
 # backup_manage: Quản lý backup, có thể liệt kê hoặc xóa các backup cũ dựa trên tham số
 backup_manage() {
-    local site_name="$1"
-    local backup_dir="$SITES_DIR/$site_name/backups"
+    local domain="$1"
+    local backup_dir="$SITES_DIR/$domain/backups"
     local action="$2"
     local max_age_days="${3:-7}" 
 
     # Check if the backup directory exists
     if [[ ! -d "$backup_dir" ]]; then
-        echo "❌ Directory $backup_dir not found!"
+        echo "${CROSSMARK} Directory $backup_dir not found!"
         return 1
     fi
 
     case "$action" in
         "list")
             # List backup files
-            echo "Listing backups for $site_name in $backup_dir:"
+            echo "Listing backups for $domain in $backup_dir:"
 
             # Determine operating system (macOS or Linux)
             if [[ "$(uname)" == "Darwin" ]]; then
@@ -59,18 +59,18 @@ backup_manage() {
             echo -e "${YELLOW}📂 FILE BACKUP (tar.gz files):${NC}"
             eval $FIND_CMD | grep ".tar.gz"
             if [[ $? -eq 0 ]]; then
-                echo "✅ File backup listing completed."
+                echo "${CHECKMARK} File backup listing completed."
             else
-                echo "❌ Error listing file backups."
+                echo "${CROSSMARK} Error listing file backups."
             fi
             
             # List DATABASE BACKUP (.sql files)
             echo -e "${YELLOW}📂 DATABASE BACKUP (sql files):${NC}"
             eval $FIND_CMD | grep ".sql"
             if [[ $? -eq 0 ]]; then
-                echo "✅ Database backup listing completed."
+                echo "${CHECKMARK} Database backup listing completed${NC}."
             else
-                echo "❌ Error listing database backups."
+                echo "${CROSSMARK} Error listing database backups.${NC}"
             fi
             ;;
         "clean")
@@ -78,14 +78,14 @@ backup_manage() {
             echo "Cleaning old backups older than $max_age_days days in $backup_dir"
             find "$backup_dir" -type f -name "*.tar.gz" -mtime +$max_age_days -exec rm -f {} \;
             if [[ $? -eq 0 ]]; then
-                echo "✅ Old backups older than $max_age_days days have been removed from $backup_dir."
+                echo "${CHECKMARK} Old backups older than $max_age_days days have been removed from $backup_dir."
             else
-                echo "❌ Error removing old backups."
+                echo "${CROSSMARK} Error removing old backups."
                 return 1
             fi
             ;;
         *)
-            echo "❌ Invalid action: $action. Use 'list' or 'clean'."
+            echo "${CROSSMARK} Invalid action: $action. Use 'list' or 'clean'."
             return 1
             ;;
     esac

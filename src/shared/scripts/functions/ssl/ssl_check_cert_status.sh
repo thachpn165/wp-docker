@@ -1,27 +1,27 @@
 ssl_check_certificate_status_logic() {
-    local site_name="$1"
+    local domain="$1"
     local SSL_DIR="$2"
 
-    if [ -z "$site_name" ]; then
-        echo -e "${RED}❌ No website selected.${NC}"
+    if [ -z "$domain" ]; then
+        echo -e "${RED}${CROSSMARK} No website selected.${NC}"
         return 1
     fi
 
-    local ENV_FILE="$SITES_DIR/$site_name/.env"
+    local ENV_FILE="$SITES_DIR/$domain/.env"
     if [ ! -f "$ENV_FILE" ]; then
-        echo -e "${RED}❌ .env file not found for site $site_name${NC}"
+        echo -e "${RED}${CROSSMARK} .env file not found for site $domain${NC}"
         return 1
     fi
 
     local DOMAIN=$(fetch_env_variable "$ENV_FILE" "DOMAIN")
     if [ -z "$DOMAIN" ]; then
-        echo -e "${RED}❌ DOMAIN variable not found in .env${NC}"
+        echo -e "${RED}${CROSSMARK} DOMAIN variable not found in .env${NC}"
         return 1
     fi
 
     local CERT_PATH="$SSL_DIR/$DOMAIN.crt"
     if [ ! -f "$CERT_PATH" ]; then
-        echo -e "${RED}❌ Certificate not found: $CERT_PATH${NC}"
+        echo -e "${RED}${CROSSMARK} Certificate not found: $CERT_PATH${NC}"
         return 1
     fi
 
@@ -44,11 +44,11 @@ ssl_check_certificate_status_logic() {
     local remaining_days=$(( (end_ts - now_ts) / 86400 ))
 
     if (( now_ts > end_ts )); then
-        status="${RED}❌ EXPIRED${NC}"
+        status="${RED}${CROSSMARK} EXPIRED${NC}"
     elif (( remaining_days <= 7 )); then
-        status="${YELLOW}⚠️ Expiring soon ($remaining_days days remaining)${NC}"
+        status="${YELLOW}${WARNING} Expiring soon ($remaining_days days remaining)${NC}"
     else
-        status="${GREEN}✅ Valid ($remaining_days days remaining)${NC}"
+        status="${GREEN}${CHECKMARK} Valid ($remaining_days days remaining)${NC}"
     fi
 
     echo -e "${CYAN}📄 Domain (Subject):${NC} $subject"

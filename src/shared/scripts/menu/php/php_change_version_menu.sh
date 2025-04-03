@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -z "$BASH_VERSION" ]; then
-  echo "❌ This script must be run in a Bash shell." >&2
+  echo "${CROSSMARK} This script must be run in a Bash shell." >&2
   exit 1
 fi
 
@@ -19,7 +19,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -27,7 +27,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -40,17 +40,17 @@ echo -e "${YELLOW}🔧 Choose the website to change PHP version:${NC}"
 select_website || exit 1
 
 # === Prompt for PHP version ===
-echo -e "${YELLOW}🔧 Select PHP version for $SITE_NAME:${NC}"
-php_choose_version "$SITE_NAME"
+echo -e "${YELLOW}🔧 Select PHP version for $domain:${NC}"
+php_choose_version "$domain"
 
 # === Handle PHP version change logic ===
 if [[ -n "$REPLY" ]]; then
     php_version="$REPLY"  # Assign the selected PHP version to php_version variable
-    echo -e "${GREEN}✅ PHP version for $SITE_NAME has been updated to $php_version.${NC}"
+    echo -e "${GREEN}${CHECKMARK} PHP version for $domain has been updated to $php_version.${NC}"
 
     # === Send command to CLI ===
-    bash "$CLI_DIR/php_change_version.sh" --site_name="$SITE_NAME" --php_version="$php_version"
+    bash "$CLI_DIR/php_change_version.sh" --domain="$domain" --php_version="$php_version"
 else
-    echo -e "${RED}❌ Failed to select PHP version for $SITE_NAME.${NC}"
+    echo -e "${RED}${CROSSMARK} Failed to select PHP version for $domain.${NC}"
     exit 1
 fi

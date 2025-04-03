@@ -9,10 +9,10 @@
 # - The script depends on functions defined in wordpress_loader.sh.
 
 # Usage:
-# ./wordpress_auto_update_plugin.sh --site_name=<site_name> --action=<action>
+# ./wordpress_auto_update_plugin.sh --domain=example.tld --action=<action>
 # 
 # Parameters:
-# --site_name=<site_name>  : The name of the WordPress site for which the plugin auto-update settings will be managed.
+# --domain=example.tld  : The name of the WordPress site for which the plugin auto-update settings will be managed.
 # --action=<action>        : The action to perform on the plugin auto-update settings (e.g., enable, disable).
 
 # Behavior:
@@ -26,11 +26,11 @@
 # Error Handling:
 # - If the script is not run in a Bash shell, it exits with an error.
 # - If PROJECT_DIR cannot be determined or the config file is missing, the script exits with an error.
-# - If required parameters (--site_name and --action) are not provided, the script exits with an error.
+# - If required parameters (--domain and --action) are not provided, the script exits with an error.
 # - If an unknown parameter is passed, the script exits with an error.
 
 # Example:
-# ./wordpress_auto_update_plugin.sh --site_name=mywebsite --action=enable
+# ./wordpress_auto_update_plugin.sh --domain=mywebsite --action=enable
 # This command enables auto-updates for plugins on the WordPress site named "mywebsite".
 
 # Ensure PROJECT_DIR is set
@@ -48,7 +48,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -56,7 +56,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -67,8 +67,8 @@ source "$FUNCTIONS_DIR/wordpress_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     --action=*)
@@ -83,10 +83,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [ -z "$site_name" ] || [ -z "$action" ]; then
-  echo "❌ Missing required parameters: --site_name and --action"
+if [ -z "$domain" ] || [ -z "$action" ]; then
+  echo "${CROSSMARK} Missing required parameters: --domain and --action"
   exit 1
 fi
 
 # === Call the logic function to update plugin auto-update settings ===
-wordpress_auto_update_plugin_logic "$site_name" "$action"
+wordpress_auto_update_plugin_logic "$domain" "$action"

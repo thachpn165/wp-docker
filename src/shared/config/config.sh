@@ -69,19 +69,23 @@ DOCKER_NETWORK="${DOCKER_NETWORK:-proxy_network}"  # Docker network name
 NGINX_PROXY_CONTAINER="${NGINX_PROXY_CONTAINER:-nginx-proxy}"  # NGINX proxy container name
 
 # ==== Terminal colors ====
-RED="${RED:-\033[1;31m}"  # Red
-GREEN="${GREEN:-\033[1;32m}"  # Green
-YELLOW="${YELLOW:-\033[1;33m}"  # Yellow
-BLUE="${BLUE:-\033[1;34m}"  # Blue
-MAGENTA="${MAGENTA:-\033[1;35m}"  # Magenta
-CYAN="${CYAN:-\033[1;36m}"  # Cyan
-WHITE="${WHITE:-\033[1;37m}"  # White
-NC="${NC:-\033[0m}"  # No color
+RED="${RED:-$'\033[1;31m'}"     
+GREEN="${GREEN:-$'\033[1;32m'}" 
+YELLOW="${YELLOW:-$'\033[1;33m'}"
+BLUE="${BLUE:-$'\033[1;34m'}"
+MAGENTA="${MAGENTA:-$'\033[1;35m'}"
+CYAN="${CYAN:-$'\033[1;36m'}"
+WHITE="${WHITE:-$'\033[1;37m'}"
+NC="${NC:-$'\033[0m'}" # No Color
 
 # ==== Emoji 🫠 ====
-CHECKMARK="${GREEN}✅${NC}"
-CROSSMARK="${RED}❌${NC}"
-
+CHECKMARK="${GREEN}✅ ${NC}"
+CROSSMARK="${RED}❌ ${NC}"
+SAVE="${WHITE}💾 ${NC}"
+WARNING="${YELLOW}⚠️ ${NC}"
+INFO="${WHITE}ℹ️ ${NC}"
+ERROR="${RED}❗ ${NC}"
+IMPORTANT="${RED}🚨 ${NC}"
 # ==== Rclone configuration ====
 RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$BASE_DIR/shared/config/rclone}"  # Rclone config directory
 RCLONE_CONFIG_FILE="${RCLONE_CONFIG_FILE:-$RCLONE_CONFIG_DIR/rclone.conf}"  # Rclone config file

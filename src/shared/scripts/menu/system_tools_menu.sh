@@ -17,13 +17,13 @@ system_tools_menu() {
             bash "$MENU_DIR/system-tools/system_manage_docker_menu.sh"
             ;;
         3)
-            bash "$MENU_DIR/cli/system_cleanup_docker.sh"
+            bash "$CLI_DIR/cli/system_cleanup_docker.sh"
             ;;
         4)
-            bash "$MENU_DIR/cli/system_nginx_rebuild.sh"
+            bash "$CLI_DIR1/system_nginx_rebuild.sh"
             ;;
         *)
-            echo -e "${RED}❌ Invalid option or you have exited.${NC}"
+            echo -e "${RED}${CROSSMARK} Invalid option or you have exited.${NC}"
             ;;
     esac
 }

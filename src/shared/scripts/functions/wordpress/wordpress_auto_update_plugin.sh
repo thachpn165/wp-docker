@@ -1,25 +1,27 @@
 wordpress_auto_update_plugin_logic() {
 
-    site_name="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
+    domain="$1"  # site_name will be passed from the menu file or CLI
 
-    SITE_DIR="$SITES_DIR/$site_name"
-    PHP_CONTAINER="$site_name-php"
-
-    # **Lấy danh sách plugin hiện có**
-    echo -e "${YELLOW}📋 Danh sách plugin trên website '$site_name':${NC}"
-    docker exec -u root "$PHP_CONTAINER" wp plugin list --field=name --allow-root --path=/var/www/html
-
-    # **Xử lý bật/tắt tự động cập nhật plugin**
+    SITE_DIR="$SITES_DIR/$domain"
+    PHP_CONTAINER="$domain-php"
+    
+    # **Handle enabling/disabling automatic plugin updates**
     if [[ "$2" == "enable" ]]; then
-        echo -e "${YELLOW}🔄 Đang bật tự động cập nhật cho toàn bộ plugin...${NC}"
-        docker exec -u root "$PHP_CONTAINER" wp plugin auto-updates enable --all --allow-root --path=/var/www/html
-        echo -e "${GREEN}✅ Tự động cập nhật đã được bật cho tất cả plugin trên '$site_name'.${NC}"
+        echo -e "${YELLOW}🔄 Enabling automatic updates for all plugins...${NC}"
+        wp_cli "$domain" plugin auto-updates enable --all
+        exit_if_error "$?" "Unable to enable automatic updates for plugins on '$domain'."
+        echo -e "${GREEN}${CHECKMARK} Automatic updates have been enabled for all plugins on '$domain'.${NC}"
     elif [[ "$2" == "disable" ]]; then
-        echo -e "${YELLOW}🔄 Đang tắt tự động cập nhật cho toàn bộ plugin...${NC}"
-        docker exec -u root "$PHP_CONTAINER" wp plugin auto-updates disable --all --allow-root --path=/var/www/html
-        echo -e "${GREEN}✅ Tự động cập nhật đã được tắt cho tất cả plugin trên '$site_name'.${NC}"
+        echo -e "${YELLOW}🔄 Disabling automatic updates for all plugins...${NC}"
+        wp_cli "$domain" plugin auto-updates disable --all
+        exit_if_error "$?" "Unable to disable automatic updates for plugins on '$domain'."
+        echo -e "${GREEN}${CHECKMARK} Automatic updates have been disabled for all plugins on '$domain'.${NC}"
     else
-        echo -e "${RED}❌ Lựa chọn không hợp lệ.${NC}"
+        echo -e "${RED}${CROSSMARK} Invalid option.${NC}"
         exit 1
     fi
+    
+    echo -e "${YELLOW} Current plugin status on '$domain':${NC}"
+    wp_cli "$domain" plugin list --fields=name,status,auto_update --format=table
+
 }

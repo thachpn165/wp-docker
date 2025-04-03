@@ -15,7 +15,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -23,7 +23,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -34,8 +34,8 @@ source "$FUNCTIONS_DIR/php_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     *)
@@ -46,10 +46,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [[ -z "$site_name" ]]; then
-  echo "❌ Missing --site_name parameter. Please provide the site name."
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} Missing --domain parameter. Please provide the site name."
   exit 1
 fi
 
 # Call the logic function to rebuild the PHP container
-php_rebuild_container_logic "$site_name"
+php_rebuild_container_logic "$domain"

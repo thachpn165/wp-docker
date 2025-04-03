@@ -38,14 +38,14 @@ ssl_menu() {
                 [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
                 ;;
             5)
-                ssl_check_certificate_status
+                bash "$MENU_DIR/ssl/ssl_check_status_menu.sh"
                 [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
                 ;;
             6)
                 break
                 ;;
             *)
-                echo -e "${RED}⚠️ Invalid option. Please try again.${NC}"
+                echo -e "${RED}${WARNING} Invalid option. Please try again.${NC}"
                 sleep 1
                 ;;
         esac

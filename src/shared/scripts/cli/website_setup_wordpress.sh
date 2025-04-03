@@ -13,10 +13,10 @@
 #   - Required functions must be available in the FUNCTIONS_DIR.
 #
 # Usage:
-#   ./website_setup_wordpress.sh --site_name=SITE --user=USER --pass=PASS --email=EMAIL
+#   ./website_setup_wordpress.sh --domain=DOMAIN --user=USER --pass=PASS --email=EMAIL
 #
 # Arguments:
-#   --site_name=SITE   The name of the WordPress site to set up.
+#   --domain=DOMAIN   The domain of the WordPress site to set up.
 #   --user=USER        The admin username for the WordPress site.
 #   --pass=PASS        The admin password for the WordPress site.
 #   --email=EMAIL      The admin email address for the WordPress site.
@@ -34,7 +34,7 @@
 #     before executing the WordPress setup logic.
 #
 # Example:
-#   ./website_setup_wordpress.sh --site_name=mywebsite --user=admin --pass=secret --email=admin@example.com
+#   ./website_setup_wordpress.sh --domain=mywebsite.com --user=admin --pass=secret --email=admin@example.com
 # -----------------------------------------------------------------------------
 
 # Ensure PROJECT_DIR is set
@@ -52,7 +52,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -60,7 +60,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -71,7 +71,7 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 # === Parse arguments ===
 for arg in "$@"; do
   case $arg in
-    --site_name=*) site_name="${arg#*=}" ;;
+    --domain=*) domain="${arg#*=}" ;;
     --user=*) admin_user="${arg#*=}" ;;
     --pass=*) admin_password="${arg#*=}" ;;
     --email=*) admin_email="${arg#*=}" ;;
@@ -79,12 +79,12 @@ for arg in "$@"; do
 done
 
 # === Check required ===
-if [[ -z "$site_name" || -z "$admin_user" || -z "$admin_password" || -z "$admin_email" ]]; then
-  echo "❌ Missing required parameters."
-  echo "Usage: $0 --site_name=SITE --user=USER --pass=PASS --email=EMAIL"
+if [[ -z "$domain" || -z "$admin_user" || -z "$admin_password" || -z "$admin_email" ]]; then
+  echo "${CROSSMARK} Missing required parameters."
+  echo "Usage: $0 --domain=DOMAIN --user=USER --pass=PASS --email=EMAIL"
   exit 1
 fi
 
 # === Call function === 
 source "$FUNCTIONS_DIR/website/website_setup_wordpress.sh"
-website_setup_wordpress_logic "$site_name" "$admin_user" "$admin_password" "$admin_email"
+website_setup_wordpress_logic "$domain" "$admin_user" "$admin_password" "$admin_email"

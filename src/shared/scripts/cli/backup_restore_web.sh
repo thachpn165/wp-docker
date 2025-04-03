@@ -9,7 +9,7 @@
 # - The `backup_loader.sh` script must be available in the directory specified by the `FUNCTIONS_DIR` variable.
 
 # Command-line Parameters:
-# --site_name=<site_name>         (Required) The name of the site to restore.
+# --domain=example.tld         (Required) The name of the site to restore.
 # --code_backup_file=<file_path>  (Optional) Path to the code backup file.
 # --db_backup_file=<file_path>    (Optional) Path to the database backup file.
 # --test_mode=<true|false>        (Optional) Flag to indicate whether to run in test mode.
@@ -27,7 +27,7 @@
 # 1  - Failure due to missing prerequisites, invalid parameters, or errors during execution.
 
 # Usage Example:
-# ./backup_restore_web.sh --site_name=my_site --code_backup_file=/path/to/code.tar.gz --db_backup_file=/path/to/db.sql --test_mode=true
+# ./backup_restore_web.sh --domain=my_site --code_backup_file=/path/to/code.tar.gz --db_backup_file=/path/to/db.sql --test_mode=true
 #!/bin/bash
 
 
@@ -46,7 +46,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -54,7 +54,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -65,8 +65,8 @@ source "$FUNCTIONS_DIR/backup_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     --code_backup_file=*)
@@ -88,11 +88,11 @@ while [[ "$#" -gt 0 ]]; do
   esac
 done
 
-# Ensure site_name is passed, but code_backup_file and db_backup_file can be optional
-if [[ -z "$site_name" ]]; then
-  echo "❌ Missing site_name parameter."
+# Ensure domain is passed, but code_backup_file and db_backup_file can be optional
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} Missing site_name parameter."
   exit 1
 fi
 
 # Call the logic function to restore the website, passing the necessary parameters
-backup_restore_web_logic "$site_name" "$code_backup_file" "$db_backup_file" "$test_mode"
+backup_restore_web_logic "$domain" "$code_backup_file" "$db_backup_file" "$test_mode"

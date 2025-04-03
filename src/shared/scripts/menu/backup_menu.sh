@@ -12,7 +12,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "❌ Config file not found at: $CONFIG_FILE" >&2
+    echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
     exit 1
 fi
 source "$CONFIG_FILE"
@@ -31,7 +31,7 @@ backup_menu() {
         echo -e "  ${GREEN}[3]${NC} Schedule automatic backup"
         echo -e "  ${GREEN}[4]${NC} Manage backup schedule (Crontab)"
         echo -e "  ${GREEN}[5]${NC} Restore website from backup"
-        echo -e "  ${GREEN}[6]${NC} ❌ Exit"
+        echo -e "  ${GREEN}[6]${NC} ${CROSSMARK} Exit"
         echo -e "${BLUE}============================${NC}"
         
         [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-6): " choice
@@ -47,7 +47,7 @@ backup_menu() {
                 break
                 ;;
             *)
-                echo -e "${RED}❌ Invalid option, please try again!${NC}"
+                echo -e "${RED}${CROSSMARK} Invalid option, please try again!${NC}"
                 ;;
         esac
     done

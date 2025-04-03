@@ -14,7 +14,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -24,12 +24,12 @@ source "$FUNCTIONS_DIR/backup_loader.sh"
 select_website
 
 # Ensure site is selected
-if [[ -z "$SITE_NAME" ]]; then
-    echo "❌ No website selected. Exiting."
+if [[ -z "$domain" ]]; then
+    echo "${CROSSMARK} No website selected. Exiting."
     exit 1
 fi
 
-echo "Selected site: $SITE_NAME"
+echo "Selected site: $domain"
 
 # === Choose action: list or clean ===
 echo -e "${YELLOW}📂 Choose action:${NC}"
@@ -46,7 +46,7 @@ select action_choice in "list" "clean"; do
             break
             ;;
         *)
-            echo "❌ Invalid option. Please select either 'list' or 'clean'."
+            echo "${CROSSMARK} Invalid option. Please select either 'list' or 'clean'."
             ;;
     esac
 done
@@ -59,4 +59,4 @@ if [[ "$action" == "clean" ]]; then
 fi
 
 # === Execute the backup_manage logic with selected parameters ===
-bash "$SCRIPTS_DIR/cli/backup_manage.sh" --site_name="$SITE_NAME" --action="$action" --max_age_days="$max_age_days"
+bash "$SCRIPTS_DIR/cli/backup_manage.sh" --domain="$domain" --action="$action" --max_age_days="$max_age_days"

@@ -13,7 +13,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -26,14 +26,14 @@ select_backup_files() {
     local selected_files=()
 
     if ! is_directory_exist "$backup_dir"; then
-        echo -e "${RED}❌ Backup directory not found: $backup_dir${NC}"
+        echo -e "${RED}${CROSSMARK} Backup directory not found: $backup_dir${NC}"
         return 1
     fi
 
     local backup_files=($(ls -1 "$backup_dir" 2>/dev/null))
 
     if [[ ${#backup_files[@]} -eq 0 ]]; then
-        echo -e "${RED}❌ No backup files found in $backup_dir${NC}"
+        echo -e "${RED}${CROSSMARK} No backup files found in $backup_dir${NC}"
         return 1
     fi
 
@@ -56,7 +56,7 @@ upload_backup() {
     echo -e "${BLUE}📤 Starting backup upload...${NC}"
 
     if [[ $# -lt 1 ]]; then
-        echo -e "${RED}❌ Missing storage parameter!${NC}"
+        echo -e "${RED}${CROSSMARK} Missing storage parameter!${NC}"
         echo -e "📌 Usage: upload_backup <storage> [file1 file2 ...]"
         return 1
     fi
@@ -72,14 +72,14 @@ upload_backup() {
         # Find the nearest site_name with backups directory
         local found_dir=$(find "$SITES_DIR" -type d -name backups | head -n1)
         if [[ -z "$found_dir" ]]; then
-            echo -e "${RED}❌ No backups directory found in any site!${NC}"
+            echo -e "${RED}${CROSSMARK} No backups directory found in any site!${NC}"
             return 1
         fi
 
         selected_files=($(select_backup_files "$found_dir"))
 
         if [[ ${#selected_files[@]} -eq 0 ]]; then
-            echo -e "${RED}❌ No files selected for upload.${NC}"
+            echo -e "${RED}${CROSSMARK} No files selected for upload.${NC}"
             return 1
         fi
 
@@ -92,14 +92,14 @@ upload_backup() {
     fi
 
     local first_file="${selected_files[0]}"
-    local site_name=$(echo "$first_file" | awk -F '/' '{for(i=1;i<=NF;i++) if($i=="sites") print $(i+1)}')
+    local domain=$(echo "$first_file" | awk -F '/' '{for(i=1;i<=NF;i++) if($i=="sites") print $(i+1)}')
 
-    if [[ -z "$site_name" ]]; then
-        echo -e "${RED}❌ Cannot determine site from file: $first_file${NC}"
+    if [[ -z "$domain" ]]; then
+        echo -e "${RED}${CROSSMARK} Cannot determine site from file: $first_file${NC}"
         return 1
     fi
 
-    local log_file="$SITES_DIR/$site_name/logs/rclone-upload.log"
+    local log_file="$SITES_DIR/$domain/logs/rclone-upload.log"
     mkdir -p "$(dirname "$log_file")"
 
     echo -e "${BLUE}📂 Files to be uploaded:${NC}" | tee -a "$log_file"
@@ -108,7 +108,7 @@ upload_backup() {
     done
 
     if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
-        echo -e "${RED}❌ Rclone configuration not found!${NC}" | tee -a "$log_file"
+        echo -e "${RED}${CROSSMARK} Rclone configuration not found!${NC}" | tee -a "$log_file"
         return 1
     fi
 
@@ -118,9 +118,9 @@ upload_backup() {
             --progress --log-file "$log_file"
 
         if [[ $? -eq 0 ]]; then
-            echo -e "${GREEN}✅ Upload successful: $file${NC}" | tee -a "$log_file"
+            echo -e "${GREEN}${CHECKMARK} Upload successful: $file${NC}" | tee -a "$log_file"
         else
-            echo -e "${RED}❌ Upload failed: $file${NC}" | tee -a "$log_file"
+            echo -e "${RED}${CROSSMARK} Upload failed: $file${NC}" | tee -a "$log_file"
         fi
     done
 

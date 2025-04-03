@@ -32,7 +32,7 @@ create_optimized_php_fpm_config() {
 
     # If exists as directory, remove it
     if [ -d "$php_fpm_conf_path" ]; then
-        echo "⚠️ Removing directory '$php_fpm_conf_path' as we need to create a file..."
+        echo "${WARNING} Removing directory '$php_fpm_conf_path' as we need to create a file..."
         rm -rf "$php_fpm_conf_path"
     fi
 
@@ -63,5 +63,5 @@ pm.process_idle_timeout = 10s
 pm.max_requests = 500
 EOF
 
-    echo "✅ Created optimized PHP-FPM configuration at $php_fpm_conf_path"
+    echo "${CHECKMARK} Created optimized PHP-FPM configuration at $php_fpm_conf_path"
 }

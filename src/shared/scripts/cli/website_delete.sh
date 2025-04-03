@@ -7,11 +7,11 @@
 #              and function files before executing the deletion logic.
 #
 # Usage:
-#   ./website_delete.sh --site_name=SITE_NAME
+#   ./website_delete.sh --domain=DOMAIN
 #
 # Arguments:
-#   --site_name=SITE_NAME   The name of the site to be deleted. This parameter 
-#                           is required.
+#   --domain=DOMAIN   The domain of the site to be deleted. This parameter 
+#                     is required.
 #
 # Environment Variables:
 #   PROJECT_DIR             The root directory of the project. If not set, the 
@@ -28,7 +28,7 @@
 #   1  If the script is not run in a Bash shell.
 #   1  If PROJECT_DIR cannot be determined.
 #   1  If the config file is not found.
-#   1  If the --site_name parameter is missing.
+#   1  If the --domain parameter is missing.
 #
 # Notes:
 #   - The script sources the 'config.sh' file to load environment variables 
@@ -52,7 +52,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -60,7 +60,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -71,14 +71,14 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 # === Parse argument ===
 for arg in "$@"; do
   case $arg in
-    --site_name=*) SITE_NAME="${arg#*=}" ;;
+    --domain=*) DOMAIN="${arg#*=}" ;;
   esac
 done
 
-if [[ -z "$SITE_NAME" ]]; then
-  echo "❌ Missing required --site_name=SITE_NAME parameter"
+if [[ -z "$DOMAIN" ]]; then
+  echo "${CROSSMARK} Missing required --domain=DOMAIN parameter"
   exit 1
 fi
 
 # === Run deletion logic ===
-website_management_delete_logic "$SITE_NAME"
+website_management_delete_logic "$DOMAIN"

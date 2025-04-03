@@ -12,10 +12,10 @@ if [[ -z "$PROJECT_DIR" ]]; then
   done
 fi
 
-# === ✅ Load config.sh from PROJECT_DIR ===
+# === ${CHECKMARK} Load config.sh from PROJECT_DIR ===
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ config.sh not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} config.sh not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -29,17 +29,17 @@ rclone_setup() {
 
     # Check if Rclone is not installed, proceed with installation
     if ! command -v rclone &> /dev/null; then
-        echo -e "${YELLOW}⚠️ Rclone is not installed. Proceeding with installation...${NC}"
+        echo -e "${YELLOW}${WARNING} Rclone is not installed. Proceeding with installation...${NC}"
         
         if [[ "$(uname)" == "Darwin" ]]; then
-            brew install rclone || { echo -e "${RED}❌ Error: Failed to install Rclone!${NC}"; exit 1; }
+            brew install rclone || { echo -e "${RED}${CROSSMARK} Error: Failed to install Rclone!${NC}"; exit 1; }
         else
-            curl https://rclone.org/install.sh | sudo bash || { echo -e "${RED}❌ Error: Failed to install Rclone!${NC}"; exit 1; }
+            curl https://rclone.org/install.sh | sudo bash || { echo -e "${RED}${CROSSMARK} Error: Failed to install Rclone!${NC}"; exit 1; }
         fi
 
-        echo -e "${GREEN}✅ Rclone installation successful!${NC}"
+        echo -e "${GREEN}${CHECKMARK} Rclone installation successful!${NC}"
     else
-        echo -e "${GREEN}✅ Rclone is already installed.${NC}"
+        echo -e "${GREEN}${CHECKMARK} Rclone is already installed.${NC}"
     fi
 
     echo -e "${BLUE}🚀 Setting up Rclone Storage${NC}"
@@ -47,7 +47,7 @@ rclone_setup() {
     # Check if configuration file exists
     if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
         echo -e "${YELLOW}📄 Creating new Rclone configuration file: $RCLONE_CONFIG_FILE${NC}"
-        touch "$RCLONE_CONFIG_FILE" || { echo -e "${RED}❌ Cannot create file $RCLONE_CONFIG_FILE${NC}"; exit 1; }
+        touch "$RCLONE_CONFIG_FILE" || { echo -e "${RED}${CROSSMARK} Cannot create file $RCLONE_CONFIG_FILE${NC}"; exit 1; }
     fi
 
     # Enter storage name (no accents, no spaces, no special characters)
@@ -56,7 +56,7 @@ rclone_setup() {
         STORAGE_NAME=$(echo "$STORAGE_NAME" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | tr -cd '[:alnum:]_-')
 
         if grep -q "^\[$STORAGE_NAME\]" "$RCLONE_CONFIG_FILE"; then
-            echo -e "${RED}❌ Storage name '$STORAGE_NAME' already exists. Please enter a different name.${NC}"
+            echo -e "${RED}${CROSSMARK} Storage name '$STORAGE_NAME' already exists. Please enter a different name.${NC}"
         else
             break
         fi
@@ -78,8 +78,8 @@ rclone_setup() {
         2) STORAGE_TYPE="dropbox" ;;
         3) STORAGE_TYPE="s3" ;;
         4) STORAGE_TYPE="s3" ;;
-        5) echo -e "${GREEN}❌ Exiting setup.${NC}"; return ;;
-        *) echo -e "${RED}❌ Invalid option!${NC}"; return ;;
+        5) echo -e "${GREEN}${CROSSMARK} Exiting setup.${NC}"; return ;;
+        *) echo -e "${RED}${CROSSMARK} Invalid option!${NC}"; return ;;
     esac
 
     echo -e "${BLUE}📂 Setting up Storage: $STORAGE_NAME...${NC}"
@@ -103,7 +103,7 @@ rclone_setup() {
         [[ "$TEST_MODE" != true ]] && read -p "🔑 Paste OAuth JSON token here: " AUTH_JSON
         echo "token = $AUTH_JSON" >> "$RCLONE_CONFIG_FILE"
 
-        echo -e "${GREEN}✅ Google Drive has been set up successfully!${NC}"
+        echo -e "${GREEN}${CHECKMARK} Google Drive has been set up successfully!${NC}"
 
     elif [[ "$STORAGE_TYPE" == "dropbox" ]]; then
         echo "token = $(rclone authorize dropbox)" >> "$RCLONE_CONFIG_FILE"
@@ -120,7 +120,7 @@ rclone_setup() {
         } >> "$RCLONE_CONFIG_FILE"
     fi
 
-    echo -e "${GREEN}✅ Storage $STORAGE_NAME has been set up successfully!${NC}"
+    echo -e "${GREEN}${CHECKMARK} Storage $STORAGE_NAME has been set up successfully!${NC}"
     echo -e "${GREEN}📄 Configuration saved at: $BASE_DIR/$RCLONE_CONFIG_FILE${NC}"
 }
 

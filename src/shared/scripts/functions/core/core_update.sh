@@ -12,10 +12,10 @@ if [[ -z "$PROJECT_DIR" ]]; then
   done
 fi
 
-# === ✅ Load config.sh from PROJECT_DIR ===
+# === ${CHECKMARK} Load config.sh from PROJECT_DIR ===
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ config.sh not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} config.sh not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -23,7 +23,7 @@ source "$CONFIG_FILE"
 # Function to check installation directory
 core_check_install_dir() {
   if [[ ! -d "$INSTALL_DIR" ]]; then
-    echo "❌ $INSTALL_DIR not found. You need to install using install.sh first." | tee -a "$LOG_FILE"
+    echo "${CROSSMARK} $INSTALL_DIR not found. You need to install using install.sh first." | tee -a "$LOG_FILE"
     exit 1
   fi
 }
@@ -57,7 +57,7 @@ core_update_system_files() {
 core_update_version_file() {
   NEW_VERSION=$(cat "$TMP_DIR/$CORE_VERSION_FILE")
   echo "$NEW_VERSION" > "$INSTALL_DIR/version.txt"
-  echo "✅ WP Docker has been updated to version: $NEW_VERSION" | tee -a "$LOG_FILE"
+  echo "${CHECKMARK} WP Docker has been updated to version: $NEW_VERSION" | tee -a "$LOG_FILE"
 }
 
 # Function to clean up temporary files
@@ -75,20 +75,20 @@ core_check_template_version() {
 
   for site_path in "$INSTALL_DIR/sites/"*/; do
     [ -d "$site_path" ] || continue
-    site_name=$(basename "$site_path")
+    domain=$(basename "$site_path")
     site_ver_file="$site_path/.template_version"
 
     site_template_version=$(cat "$site_ver_file" 2>/dev/null || echo "unknown")
 
     if [[ "$site_template_version" != "$TEMPLATE_VERSION_NEW" ]]; then
-      outdated_sites+=("$site_name ($site_template_version)")
+      outdated_sites+=("$domain ($site_template_version)")
     fi
   done
 
   if [[ ${#outdated_sites[@]} -eq 0 ]]; then
-    echo "✅ All sites are using the latest template." | tee -a "$LOG_FILE"
+    echo "${CHECKMARK} All sites are using the latest template." | tee -a "$LOG_FILE"
   else
-    echo "⚠️ The following sites are using OLD template:" | tee -a "$LOG_FILE"
+    echo "${WARNING} The following sites are using OLD template:" | tee -a "$LOG_FILE"
     for s in "${outdated_sites[@]}"; do
       echo "  - $s → should update to $TEMPLATE_VERSION_NEW" | tee -a "$LOG_FILE"
     done
@@ -111,17 +111,17 @@ core_run_upgrade_scripts() {
       fi
     done
   else
-    echo "✅ No upgrade scripts found for version $NEW_VERSION." | tee -a "$LOG_FILE"
+    echo "${CHECKMARK} No upgrade scripts found for version $NEW_VERSION." | tee -a "$LOG_FILE"
   fi
 }
 
 # Function to run the complete update process
 core_update_system() {
   # Ask user to confirm update
-  echo -e "${YELLOW}⚠️ Are you sure you want to update WP Docker to the latest version? (y/n)${NC}"
+  echo -e "${YELLOW}${WARNING} Are you sure you want to update WP Docker to the latest version? (y/n)${NC}"
   [[ "$TEST_MODE" != true ]] && read -p "Enter 'y' to continue, 'n' to cancel: " choice
   if [[ "$choice" != "y" && "$choice" != "Y" ]]; then
-    echo -e "${GREEN}✅ Update process cancelled.${NC}"
+    echo -e "${GREEN}${CHECKMARK} Update process cancelled.${NC}"
     exit 0
   fi
 

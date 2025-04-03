@@ -18,7 +18,7 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 source "$CONFIG_FILE"
@@ -26,15 +26,14 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 
 # === Select website to generate SSL ===
 select_website
-site_name="$SITE_NAME"
-if [[ -z "$site_name" ]]; then
-  echo "❌ No website selected."
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} No website selected."
   exit 1
 fi
 
 # === Display selected website for SSL creation ===
-echo -e "${GREEN}You have selected website: $site_name${NC}"
-echo -e "${YELLOW}Now generating self-signed SSL for '$site_name'...${NC}"
+echo -e "${GREEN}You have selected website: $domain${NC}"
+echo -e "${YELLOW}Now generating self-signed SSL for '$domain'...${NC}"
 
 # Call the logic to generate SSL (This will be handled in your CLI)
-bash "$SCRIPTS_DIR/cli/ssl_generate_self_signed.sh" --site_name="$site_name"
+bash "$SCRIPTS_DIR/cli/ssl_generate_self_signed.sh" --domain="$domain"

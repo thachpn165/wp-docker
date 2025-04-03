@@ -7,10 +7,10 @@
 # to perform the backup operation.
 #
 # Usage:
-#   ./backup_file.sh --site_name=<site_name>
+#   ./backup_file.sh --domain=example.tld
 #
 # Parameters:
-#   --site_name=<site_name> : (Required) The name of the site to back up.
+#   --domain=example.tld : (Required) The name of the site to back up.
 #
 # Behavior:
 #   - Ensures the script is executed directly in a Bash shell.
@@ -32,10 +32,10 @@
 #   1 : If the configuration file is missing.
 #   1 : If the functions directory is missing.
 #   1 : If an unknown parameter is passed.
-#   1 : If the required `--site_name` parameter is missing.
+#   1 : If the required `--domain` parameter is missing.
 #
 # Example:
-#   ./backup_file.sh --site_name=my_site
+#   ./backup_file.sh --domain=my_site
 #
 # Notes:
 #   - Ensure the directory structure and required files are correctly set up
@@ -58,7 +58,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -66,7 +66,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -79,8 +79,8 @@ source "$FUNCTIONS_DIR/backup_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     *)
@@ -91,10 +91,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Ensure valid parameters are passed
-if [ -z "$site_name" ]; then
-  echo "❌ Missing required parameter: --site_name"
+if [ -z "$domain" ]; then
+  echo "${CROSSMARK} Missing required parameter: --domain"
   exit 1
 fi
 
 # === Call the logic function to backup files ===
-backup_file_logic "$site_name"
+backup_file_logic "$domain"

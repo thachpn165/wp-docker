@@ -14,7 +14,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -22,7 +22,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -33,8 +33,8 @@ source "$FUNCTIONS_DIR/php_loader.sh"
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
-    --site_name=*)
-      site_name="${1#*=}"
+    --domain=*)
+      domain="${1#*=}"
       shift
       ;;
     --php_version=*)
@@ -49,10 +49,10 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Validate parameters
-if [[ -z "$site_name" || -z "$php_version" ]]; then
-  echo "❌ Missing parameters. Please provide --site_name and --php_version."
+if [[ -z "$domain" || -z "$php_version" ]]; then
+  echo "${CROSSMARK} Missing parameters. Please provide --domain and --php_version."
   exit 1
 fi
 
 # Call the logic function
-php_change_version_logic "$site_name" "$php_version"
+php_change_version_logic "$domain" "$php_version"

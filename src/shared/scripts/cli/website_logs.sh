@@ -12,10 +12,10 @@
 #     directory relative to PROJECT_DIR.
 #
 # Usage:
-#   ./website_logs.sh --site_name=<site_name> --log_type=<log_type>
+#   ./website_logs.sh --domain=example.tld --log_type=<log_type>
 #
 # Arguments:
-#   --site_name=<site_name>  The name of the website for which logs are to be retrieved.
+#   --domain=example.tld  The name of the website for which logs are to be retrieved.
 #   --log_type=<log_type>    The type of log to retrieve. Must be either "access" or "error".
 #
 # Exit Codes:
@@ -36,8 +36,8 @@
 #   - The website_management_logs function is called to handle the log retrieval.
 #
 # Examples:
-#   ./website_logs.sh --site_name=mywebsite --log_type=access
-#   ./website_logs.sh --site_name=mywebsite --log_type=error
+#   ./website_logs.sh --domain=mywebsite --log_type=access
+#   ./website_logs.sh --domain=mywebsite --log_type=error
 # -----------------------------------------------------------------------------
 
 # Ensure PROJECT_DIR is set
@@ -55,7 +55,7 @@ if [[ -z "$PROJECT_DIR" ]]; then
 
   # Handle error if config file is not found
   if [[ -z "$PROJECT_DIR" ]]; then
-    echo "❌ Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
     exit 1
   fi
 fi
@@ -63,7 +63,7 @@ fi
 # Load the config file if PROJECT_DIR is set
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "❌ Config file not found at: $CONFIG_FILE" >&2
+  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
 
@@ -71,24 +71,24 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/website_loader.sh"
 
-# === Parse argument for --site_name and --log_type ===
+# === Parse argument for --domain and --log_type ===
 for arg in "$@"; do
   case $arg in
-    --site_name=*) SITE_NAME="${arg#*=}" ;;  # Ensure it's SITE_NAME
+    --domain=*) domain="${arg#*=}" ;;  # Ensure it's SITE_DOMAIN
     --log_type=*) LOG_TYPE="${arg#*=}" ;;
   esac
 done
-# Check if SITE_NAME is set
-if [[ -z "$SITE_NAME" ]]; then
-  echo "❌ site_name is not set. Please provide a valid site name."
+# Check if SITE_DOMAIN is set
+if [[ -z "$domain" ]]; then
+  echo "${CROSSMARK} site_name is not set. Please provide a valid site name."
   exit 1
 fi
 
 # Check if LOG_TYPE is set and valid
 if [[ -z "$LOG_TYPE" || ! "$LOG_TYPE" =~ ^(access|error)$ ]]; then
-  echo "❌ log_type is required. Please specify access or error log."
+  echo "${CROSSMARK} log_type is required. Please specify access or error log."
   exit 1
 fi
 
 # === Call the website management logic to show the logs ===
-website_management_logs "$SITE_NAME" "$LOG_TYPE"
+website_management_logs "$domain" "$LOG_TYPE"

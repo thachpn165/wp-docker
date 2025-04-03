@@ -1,27 +1,27 @@
 # =====================================
-# 🌀 website_setup_wordpress – Install WordPress with provided or auto admin
+# 🌀 website_setup_wordpress – Install WordPress with provided or auto-generated admin credentials
 # =====================================
 website_setup_wordpress_logic() {
-  local site_name="$1"
+  local domain="$1"
   local auto_generate="${2:-true}"
 
-  if [[ -z "$site_name" ]]; then
-    echo -e "${RED}❌ Missing site name.${NC}"
+  if [[ -z "$domain" ]]; then
+    echo -e "${RED}${CROSSMARK} Missing domain.${NC}"
     return 1
   fi
 
-  local SITE_DIR="$SITES_DIR/$site_name"
+  local SITE_DIR="$SITES_DIR/$domain"
   local ENV_FILE="$SITE_DIR/.env"
 
-  # 📄 Load .env (fallback tìm trong TMP_DIR nếu cần)
+  # 📄 Load .env (fallback to TMP_DIR if necessary)
   if [[ ! -f "$ENV_FILE" ]]; then
     local tmp_env_path
-    tmp_env_path=$(find "$TMP_DIR" -maxdepth 1 -type d -name "${site_name}_*" | head -n 1)
+    tmp_env_path=$(find "$TMP_DIR" -maxdepth 1 -type d -name "${domain}_*" | head -n 1)
     if [[ -n "$tmp_env_path" && -f "$tmp_env_path/.env" ]]; then
       ENV_FILE="$tmp_env_path/.env"
       SITE_DIR="$tmp_env_path"
     else
-      echo -e "${RED}❌ .env file not found for site '$site_name'${NC}"
+      echo -e "${RED}${CROSSMARK} .env file not found for domain '$domain'${NC}"
       return 1
     fi
   fi
@@ -37,11 +37,11 @@ website_setup_wordpress_logic() {
   DB_PASS=$(fetch_env_variable "$ENV_FILE" "MYSQL_PASSWORD")
   PHP_VERSION=$(fetch_env_variable "$ENV_FILE" "PHP_VERSION")
 
-  local PHP_CONTAINER="${site_name}-php"
-  local DB_CONTAINER="${site_name}-mariadb"
+  local PHP_CONTAINER="${domain}-php"
+  local DB_CONTAINER="${domain}-mariadb"
   local SITE_URL="https://$DOMAIN"
 
-  # 🔐 Tạo tài khoản admin
+  # 🔐 Create admin account
   local ADMIN_USER ADMIN_PASSWORD ADMIN_EMAIL
   if [[ "$TEST_MODE" == true ]]; then
     ADMIN_USER="${admin_user:-admin-test}"
@@ -54,72 +54,76 @@ website_setup_wordpress_logic() {
   if [[ "$auto_generate" == true ]]; then
     ADMIN_USER="admin-$(openssl rand -base64 6 | tr -dc 'a-zA-Z0-9' | head -c 8)"
     ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
-    ADMIN_EMAIL="admin@$site_name.local"
+    ADMIN_EMAIL="admin@$domain.local"
   else
     read -p "👤 Enter admin username: " ADMIN_USER
     while [[ -z "$ADMIN_USER" ]]; do
-      echo "⚠️ Cannot be empty."
+      echo "${WARNING} Cannot be empty."
       read -p "👤 Enter admin username: " ADMIN_USER
     done
 
     read -s -p "🔐 Enter admin password: " ADMIN_PASSWORD; echo
     read -s -p "🔐 Confirm password: " CONFIRM_PASSWORD; echo
     while [[ "$ADMIN_PASSWORD" != "$CONFIRM_PASSWORD" || -z "$ADMIN_PASSWORD" ]]; do
-      echo "⚠️ Passwords do not match or are empty. Please try again."
+      echo "${WARNING} Passwords do not match or are empty. Please try again."
       read -s -p "🔐 Enter admin password: " ADMIN_PASSWORD; echo
       read -s -p "🔐 Confirm password: " CONFIRM_PASSWORD; echo
     done
 
-    read -p "📧 Enter admin email (ENTER to use admin@$site_name.local): " ADMIN_EMAIL
-    ADMIN_EMAIL="${ADMIN_EMAIL:-admin@$site_name.local}"
+    read -p "📧 Enter admin email (ENTER to use admin@$domain.local): " ADMIN_EMAIL
+    ADMIN_EMAIL="${ADMIN_EMAIL:-admin@$domain.local}"
   fi
 
-  # ✨ Cài WordPress
-  echo -e "${BLUE}▹ Starting WordPress installation for '$site_name'...${NC}"
+  # ✨ Install WordPress
+  echo -e "${BLUE}▹ Starting WordPress installation for '$domain'...${NC}"
   echo -e "${YELLOW}⏳ Waiting for PHP container '$PHP_CONTAINER' to start...${NC}"
   local timeout=30
   while ! is_container_running "$PHP_CONTAINER"; do
     sleep 1
     ((timeout--))
     if (( timeout <= 0 )); then
-      echo -e "${RED}❌ PHP container '$PHP_CONTAINER' not ready after 30s.${NC}"
+      echo -e "${RED}${CROSSMARK} PHP container '$PHP_CONTAINER' not ready after 30s.${NC}"
       return 1
     fi
     echo -ne "⏳ Waiting for PHP container... ($((30-timeout))/30)\r"
   done
 
-  # 📦 Tải WordPress nếu chưa có
+  # 📦 Download WordPress if not already present
   if [[ ! -f "$SITE_DIR/wordpress/index.php" ]]; then
     echo -e "${YELLOW}📦 Downloading WordPress...${NC}"
     docker exec -i "$PHP_CONTAINER" sh -c "mkdir -p /var/www/html && chown -R nobody:nogroup /var/www/html"
     docker exec -i "$PHP_CONTAINER" sh -c "curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
       tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && rm /var/www/html/wordpress.tar.gz"
-    echo -e "${GREEN}✅ WordPress source code downloaded.${NC}"
+    echo -e "${GREEN}${CHECKMARK} WordPress source code downloaded.${NC}"
   else
-    echo -e "${GREEN}✅ WordPress source code already exists.${NC}"
+    echo -e "${GREEN}${CHECKMARK} WordPress source code already exists.${NC}"
   fi
 
-  # ⚙️ wp-config
+  # ⚙️ Configure wp-config
   wp_set_wpconfig "$PHP_CONTAINER" "$DB_NAME" "$DB_USER" "$DB_PASS" "$DB_CONTAINER"
 
-  # 🚀 Install WP
-  wp_install "$PHP_CONTAINER" "$SITE_URL" "$site_name" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+  # 🚀 Install WordPress
+  wp_install "$PHP_CONTAINER" "$SITE_URL" "$domain" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+  if [[ $? -ne 0 ]]; then
+    echo -e "${RED}${CROSSMARK} WordPress installation failed.${NC}"
+    return 1
+  fi
 
-  # 🧑‍🔧 Quyền thư mục
+  # 🧑‍🔧 Set directory permissions
   if is_container_running "$PHP_CONTAINER"; then
     docker exec -u root "$PHP_CONTAINER" chown -R nobody:nogroup "/var/www/" || {
-      echo -e "${RED}❌ Permission setting failed.${NC}"
+      echo -e "${RED}${CROSSMARK} Permission setting failed.${NC}"
       return 1
     }
   else
-    echo -e "${RED}❌ Skipping chown as container is not ready.${NC}"
+    echo -e "${RED}${CROSSMARK} Skipping chown as container is not ready.${NC}"
   fi
 
-  # 🔁 Permalinks
+  # 🔁 Configure permalinks
   wp_set_permalinks "$PHP_CONTAINER" "$SITE_URL"
   # wp_plugin_install_performance_lab "$PHP_CONTAINER" # Optional
 
-  echo -e "${YELLOW}✅ WordPress installation completed.${NC}"
+  echo -e "${YELLOW}${CHECKMARK} WordPress installation completed.${NC}"
   website_print_wp_info "$SITE_URL" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
 }
 
