@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - 'dev'
+  pull_request:
+    branches:
+      - 'dev'
 
 permissions:
   contents: write
@@ -18,22 +21,35 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: dev
-          fetch-depth: 0  # Lấy toàn bộ lịch sử commit để có thể lấy version từ nhánh main
+          fetch-depth: 0
 
-      - name: 🧮 Calculate DEV_VERSION and write version.txt
+      - name: ⬇️ Fetch version from main branch
         run: |
-          mkdir wp-docker
           git fetch origin main
-          git checkout origin/main -- src/version.txt
-          main_version=$(cat src/version.txt)
+          main_version=$(git show origin/main:src/version.txt)
+          echo "$main_version" > tmp_main_version.txt
+          echo "MAIN_VERSION=$main_version" >> $GITHUB_ENV
+
+      - name: 🧮 Calculate DEV_VERSION & update files
+        run: |
+          git fetch origin main
+          main_version=$(git show origin/main:src/version.txt)
           timestamp=$(date +%Y%m%d%H%M%S)
           DEV_VERSION="${main_version}-dev-${timestamp}"
-          echo "$DEV_VERSION" > wp-docker/version.txt
+          echo "$DEV_VERSION" > version.txt
+          echo "$DEV_VERSION" > latest_version_dev.txt
           echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_ENV
+          cp version.txt latest_version_dev.txt src/
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add latest_version_dev.txt
+          git commit -m "🔄 Update latest_version_dev.txt to $DEV_VERSION"
+          git push origin HEAD:dev
 
       - name: 🧼 Clean up & package
         run: |
           mkdir -p dist
+          mkdir -p wp-docker
           cp -r src/* wp-docker/
           cd wp-docker
           zip -r ../dist/wp-docker-dev.zip . \
@@ -49,28 +65,4 @@ jobs:
           files: dist/wp-docker-dev.zip
           generate_release_notes: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  update-version-file:
-    name: ✍️ Update latest_version_dev.txt
-    runs-on: ubuntu-latest
-    needs: build-and-release  # ✅ Ensure this runs only after dev build succeeds
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          ref: dev  # đảm bảo sửa trực tiếp trên nhánh dev
-
-      - name: Update latest_version_dev.txt
-        run: |
-          echo "$DEV_VERSION" > src/version.txt
-          echo "$DEV_VERSION" > latest_version_dev.txt
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add latest_version_dev.txt src/version.txt
-          git commit -m "🔄 Update latest_version_dev.txt to $DEV_VERSION"
-          git push origin HEAD:dev
-        env:
-          DEV_VERSION: ${{ env.DEV_VERSION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
