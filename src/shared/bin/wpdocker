@@ -36,6 +36,7 @@ source "$FUNCTIONS_DIR/core/core_version_management.sh"
 
 # Define subcommands handlers
 handle_website() {
+    # wpdocker website
     case "$1" in
         create) bash "$CLI_DIR/website_create.sh" "${@:2}" ;;
         delete) bash "$CLI_DIR/website_delete.sh" "${@:2}" ;;
@@ -49,6 +50,7 @@ handle_website() {
 }
 
 handle_ssl() {
+    
     case "$1" in
         selfsigned) bash "$CLI_DIR/ssl_create.sh" "${@:2}" ;;
         letsencrypt) bash "$CLI_DIR/ssl_create.sh" "${@:2}" ;;
@@ -58,6 +60,7 @@ handle_ssl() {
 }
 
 handle_backup() {
+    # wpdocker backup
     case "$1" in
         website) bash "$FUNCTIONS_DIR/backup/backup_website.sh" "${@:2}" ;;
         database) bash "$FUNCTIONS_DIR/backup/backup_database.sh" "${@:2}" ;;
@@ -92,6 +95,7 @@ handle_database() {
 }
 
 handle_system() {
+    # wpdocker system
     case "$1" in
         check) bash "$CLI_DIR/system_check_resources.sh" "${@:2}" ;;
         manage) bash "$CLI_DIR/system_manage_docker.sh" "${@:2}" ;;
@@ -104,6 +108,23 @@ handle_system() {
             esac
             ;;
         *) echo "${CROSSMARK} Unknown subcommand for system: $1" ;;
+    esac
+}
+
+handle_wordpress() {
+    # wpdocker wordpress
+    case "$1" in
+        cli) bash "$CLI_DIR/wordpress_wp_cli.sh" "${@:2}" ;;
+        reset) 
+            case "$2" in
+                password) bash "$CLI_DIR/wordpress_reset_admin_password.sh" "${@:3}" ;;
+                role) bash "$CLI_DIR/wordpress_reset_user_role.sh" "${@:3}" ;;
+                *) echo "${CROSSMARK} Unknown subcommand for wordpress reset: $2" ;;
+            esac
+            ;;
+        cache)
+            bash "$CLI_DIR/wordpress_cache_setup.sh" "${@:2}" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for wordpress: $1" ;;
     esac
 }
 
@@ -121,6 +142,7 @@ else
         php) handle_php "$2" "${@:3}" ;;
         database) handle_database "$2" "${@:3}" ;;
         system) handle_system "$2" "${@:3}" ;;
+        wordpress) handle_wordpress "$2" "${@:3}" ;;
         *)
             echo "${CROSSMARK} Unknown subcommand: $1"
             #bash "$INSTALL_DIR/main.sh"
