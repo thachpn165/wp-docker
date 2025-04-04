@@ -54,12 +54,14 @@ CROSSMARK="${RED}${CROSSMARK}${NC}"
 
 # 🏆 **Display Header**
 print_header() {
-    echo -e "\n\n\n"
+    clear
+    #echo -e "\n\n\n"
     get_system_info
     echo -e "${MAGENTA}==============================================${NC}"
     echo -e "${MAGENTA}        ${CYAN}WordPress Docker 🐳            ${NC}"
     echo -e "${MAGENTA}==============================================${NC}"
     echo ""
+    
     echo -e "${BLUE}🐳 Docker Status:${NC}"
     echo -e "  🌐 Docker Network: $(check_docker_network)"
     echo -e "  🚀 NGINX Proxy: $(check_nginx_status)"
@@ -71,15 +73,15 @@ print_header() {
     echo -e "  📀 Disk: ${YELLOW}${DISK_USAGE}${NC}"
     echo -e "  🌍 IP Address: ${CYAN}${IP_ADDRESS}${NC}"
     echo ""
-    # **Display current and latest versions**
-    core_display_version
-
+    echo -e "${CYAN}📦 Version Channel:${NC} ${YELLOW}${CORE_CHANNEL}${NC}"
+    bash "$CLI_DIR/core_display_version.sh" --channel=nightly
     echo -e "${MAGENTA}==============================================${NC}"
 }
 
+
+
 # 🎯 **Display Main Menu**
 while true; do
-    #core_check_for_update
     print_header
     echo -e "${BLUE}MAIN MENU:${NC}"
     echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[6]${NC} Website Backup Management"
