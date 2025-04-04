@@ -58,17 +58,7 @@ core_get_version() {
 
 # === Function: Display current version and update status ===
 core_display_version() {
-  CURRENT_VERSION=$(cat "$BASE_DIR/version.txt")
-  LATEST_VERSION=$(core_version_cache)
-
-  core_compare_versions "$CURRENT_VERSION" "$LATEST_VERSION"
-  result=$?
-
-  if [[ "$result" -eq 2 ]]; then
-    echo -e "📦 WP Docker Version: ${CURRENT_VERSION} ${RED}(new version available: $LATEST_VERSION)${NC}"
-  else
-    echo -e "${BLUE}📦 WP Docker Version:${NC} ${CURRENT_VERSION} ${GREEN}(latest)${NC}"
-  fi
+  core_display_version_logic "$CORE_CHANNEL"
 }
 
 # === Function: Check and notify about new version (used in main menu) ===

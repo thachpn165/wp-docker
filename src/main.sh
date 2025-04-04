@@ -45,9 +45,9 @@ source "$MENU_DIR/rclone_menu.sh"
 source "$MENU_DIR/ssl_menu.sh"
 source "$MENU_DIR/php_menu.sh"
 source "$MENU_DIR/database_menu.sh"
+source "$FUNCTIONS_DIR/core_loader.sh"
 # **Run system setup before displaying menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
-
 # ✔️ ${CROSSMARK} **Status Icons**
 CHECKMARK="${GREEN}${CHECKMARK}${NC}"
 CROSSMARK="${RED}${CROSSMARK}${NC}"
@@ -74,7 +74,7 @@ print_header() {
     echo -e "  🌍 IP Address: ${CYAN}${IP_ADDRESS}${NC}"
     echo ""
     echo -e "${CYAN}📦 Version Channel:${NC} ${YELLOW}${CORE_CHANNEL}${NC}"
-    bash "$CLI_DIR/core_display_version.sh" --channel=${CORE_CHANNEL}
+    core_display_version
     echo -e "${MAGENTA}==============================================${NC}"
 }
 
