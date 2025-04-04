@@ -1,9 +1,9 @@
-name: 🚀 Dev Build
+name: Dev Build
 
 on:
   push:
     branches:
-      - 'dev'  # Trigger the workflow on push to the dev branch
+      - 'dev'
 
 permissions:
   contents: write
@@ -17,18 +17,21 @@ jobs:
       - name: 📥 Checkout source code
         uses: actions/checkout@v3
 
+      - name: 🧮 Calculate DEV_VERSION and write version.txt
+        run: |
+          git fetch origin main
+          git checkout origin/main -- src/version.txt
+          main_version=$(cat src/version.txt)
+          timestamp=$(date +%Y%m%d%H%M%S)
+          DEV_VERSION="${main_version}-dev-${timestamp}"
+          echo "$DEV_VERSION" > wp-docker/version.txt
+          echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_ENV
+
       - name: 🧼 Clean up & package
         run: |
           mkdir -p dist
-
-          # Create temporary folder to hold the source (without src/ folder)
           mkdir wp-docker
           cp -r src/* wp-docker/
-
-          # Write version into version.txt in the build
-          echo "dev" > wp-docker/version.txt  # Or you can use something else if needed
-
-          # Zip the contents inside wp-docker (excluding the wp-docker root folder)
           cd wp-docker
           zip -r ../dist/wp-docker-dev.zip . \
             -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" "tests/*" "sites/" \
@@ -39,8 +42,32 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: "wp-docker-dev Release"
-          tag_name: "dev"  # You can set the tag name as you need, e.g., 'dev'
+          tag_name: "dev"
           files: dist/wp-docker-dev.zip
           generate_release_notes: true
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-version-file:
+    name: ✍️ Update latest_version_dev.txt
+    runs-on: ubuntu-latest
+    needs: build-and-release  # ✅ Ensure this runs only after dev build succeeds
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: dev  # đảm bảo sửa trực tiếp trên nhánh dev
+
+      - name: Update latest_version_dev.txt
+        run: |
+          echo "$DEV_VERSION" > src/version.txt
+          echo "$DEV_VERSION" > latest_version_dev.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add latest_version_dev.txt src/version.txt
+          git commit -m "🔄 Update latest_version_dev.txt to $DEV_VERSION"
+          git push origin dev
+        env:
+          DEV_VERSION: ${{ env.DEV_VERSION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
