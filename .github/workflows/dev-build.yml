@@ -39,10 +39,10 @@ jobs:
           echo "$DEV_VERSION" > version.txt
           echo "$DEV_VERSION" > latest_version_dev.txt
           echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_ENV
-          cp version.txt latest_version_dev.txt src/
+          mv version.txt latest_version_dev.txt src/
+          git add latest_version_dev.txt version.txt
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add latest_version_dev.txt version.txt
           git commit -m "🔄 Update latest_version_dev.txt to $DEV_VERSION"
           git push origin HEAD:dev
 
