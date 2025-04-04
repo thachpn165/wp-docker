@@ -35,7 +35,14 @@ for arg in "$@"; do
 done
 
 if [[ -z "$domain" ]]; then
-  echo "${CROSSMARK} Missing required --domain=SITE_DOMAIN parameter"
+  echo -e "${RED}${CROSSMARK} Missing required --domain=SITE_DOMAIN parameter.${NC}"
+  echo "Usage: $0 --domain=SITE_DOMAIN wp-cli-commands..."
+  exit 1
+fi
+
+if [[ ${#params[@]} -eq 0 ]]; then
+  echo -e "${RED}${CROSSMARK} You must provide a WP-CLI command to run.${NC}"
+  echo "Example: $0 --domain=wpdocker.dev plugin list"
   exit 1
 fi
 
