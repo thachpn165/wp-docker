@@ -45,22 +45,23 @@ source "$MENU_DIR/rclone_menu.sh"
 source "$MENU_DIR/ssl_menu.sh"
 source "$MENU_DIR/php_menu.sh"
 source "$MENU_DIR/database_menu.sh"
-source "$FUNCTIONS_DIR/core/core_version_management.sh"
+source "$FUNCTIONS_DIR/core_loader.sh"
 # **Run system setup before displaying menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
-
 # ✔️ ${CROSSMARK} **Status Icons**
 CHECKMARK="${GREEN}${CHECKMARK}${NC}"
 CROSSMARK="${RED}${CROSSMARK}${NC}"
 
 # 🏆 **Display Header**
 print_header() {
-    echo -e "\n\n\n"
+    clear
+    #echo -e "\n\n\n"
     get_system_info
     echo -e "${MAGENTA}==============================================${NC}"
     echo -e "${MAGENTA}        ${CYAN}WordPress Docker 🐳            ${NC}"
     echo -e "${MAGENTA}==============================================${NC}"
     echo ""
+    
     echo -e "${BLUE}🐳 Docker Status:${NC}"
     echo -e "  🌐 Docker Network: $(check_docker_network)"
     echo -e "  🚀 NGINX Proxy: $(check_nginx_status)"
@@ -72,15 +73,15 @@ print_header() {
     echo -e "  📀 Disk: ${YELLOW}${DISK_USAGE}${NC}"
     echo -e "  🌍 IP Address: ${CYAN}${IP_ADDRESS}${NC}"
     echo ""
-    # **Display current and latest versions**
+    echo -e "${CYAN}📦 Version Channel:${NC} ${YELLOW}${CORE_CHANNEL}${NC}"
     core_display_version
-
     echo -e "${MAGENTA}==============================================${NC}"
 }
 
+
+
 # 🎯 **Display Main Menu**
 while true; do
-    core_check_for_update
     print_header
     echo -e "${BLUE}MAIN MENU:${NC}"
     echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[6]${NC} Website Backup Management"
@@ -102,7 +103,7 @@ while true; do
         7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "Press Enter to continue..." ;;
         8) php_menu ;;
         9) database_menu ;;
-        10) core_check_version_update ;;  # Call function to display version and update
+        10) bash "$MENU_DIR/core/core_update_menu.sh" ;;  # Call function to display version and update
         11) echo -e "${GREEN}${CROSSMARK} Exiting program.${NC}" && exit 0 ;;
         *) 
             echo -e "${RED}${WARNING} Invalid option! Please select from [1-10].${NC}"

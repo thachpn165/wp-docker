@@ -62,6 +62,7 @@ yarn.lock
 tmp/
 latest_version.txt
 .cursorignore
+tests.yml.bak
 # ☁️ RCLONE CONFIG
 src/shared/config/rclone/rclone.conf
 

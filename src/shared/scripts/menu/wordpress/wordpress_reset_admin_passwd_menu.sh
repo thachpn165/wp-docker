@@ -32,7 +32,7 @@ PHP_CONTAINER="$domain-php"
 # 📋 Lấy danh sách tài khoản Admin
 echo -e "${YELLOW}📋 Danh sách tài khoản Admin:${NC}"
 #docker exec -u "$PHP_USER" "$PHP_CONTAINER" wp user list --role=administrator --fields=ID,user_login --format=table --path=/var/www/html
-wp_cli "$domain" user list --role=administrator --fields=ID,user_login --format=table
+bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" user list --role=administrator --fields=ID,user_login --format=table
 echo ""
 read -p "Nhập ID của tài khoản cần reset mật khẩu: " user_id
 
