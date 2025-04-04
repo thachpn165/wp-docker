@@ -74,7 +74,7 @@ print_header() {
     echo -e "  🌍 IP Address: ${CYAN}${IP_ADDRESS}${NC}"
     echo ""
     echo -e "${CYAN}📦 Version Channel:${NC} ${YELLOW}${CORE_CHANNEL}${NC}"
-    bash "$CLI_DIR/core_display_version.sh" --channel=nightly
+    bash "$CLI_DIR/core_display_version.sh" --channel=${CORE_CHANNEL}
     echo -e "${MAGENTA}==============================================${NC}"
 }
 
