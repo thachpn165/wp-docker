@@ -19,6 +19,7 @@ jobs:
 
       - name: 🧮 Calculate DEV_VERSION and write version.txt
         run: |
+          mkdir wp-docker
           git fetch origin main
           git checkout origin/main -- src/version.txt
           main_version=$(cat src/version.txt)
@@ -30,7 +31,6 @@ jobs:
       - name: 🧼 Clean up & package
         run: |
           mkdir -p dist
-          mkdir wp-docker
           cp -r src/* wp-docker/
           cd wp-docker
           zip -r ../dist/wp-docker-dev.zip . \
