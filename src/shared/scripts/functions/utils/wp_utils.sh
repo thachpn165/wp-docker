@@ -48,7 +48,7 @@ wp_install() {
     #    --admin_password='$admin_pass' --admin_email='$admin_email' --skip-email --path=/var/www/html --allow-root
     #"
 
-    wp_cli "$domain" core install --url="$site_url" --title="$title" --admin_user="$admin_user" \
+    bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" core install --url="$site_url" --title="$title" --admin_user="$admin_user" \
         --admin_password="$admin_pass" --admin_email="$admin_email"
     exit_if_error "$?" "Error installing WordPress."
     echo "${CHECKMARK} WordPress has been installed."
@@ -61,7 +61,7 @@ wp_set_permalinks() {
 
     #echo -e "${YELLOW}🔗 Setting up WordPress permalinks...${NC}"
     #docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp option update permalink_structure '/%postname%/' --path=/var/www/html"
-    wp_cli "$domain" option update permalink_structure '/%postname%/' --path=/var/www/html
+    bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" option update permalink_structure '/%postname%/' --path=/var/www/html
     exit_if_error "$?" "Error setting up permalinks."
 }
 
@@ -71,7 +71,7 @@ wp_plugin_install_security_plugin() {
 
     #echo -e "${YELLOW}🔒 Installing WordPress security plugin...${NC}"
     #docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp plugin install limit-login-attempts-reloaded --activate --path=/var/www/html"
-    wp_cli "$domain" plugin install limit-login-attempts-reloaded --activate --path=/var/www/html
+    bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" plugin install limit-login-attempts-reloaded --activate --path=/var/www/html
     exit_if_error "$?" "Error installing security plugin."
     echo -e "${GREEN}${CHECKMARK} Security plugin has been installed and activated.${NC}"
 }
@@ -82,7 +82,7 @@ wp_plugin_install_performance_lab() {
 
     #echo -e "${YELLOW}🔧 Installing and activating Performance Lab plugin...${NC}"
     #docker exec -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache -u "$PHP_USER" -i "$container" sh -c "wp plugin install performance-lab --activate --path=/var/www/html"
-    wp_cli "$domain" plugin install performance-lab --activate --path=/var/www/html
+    bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" plugin install performance-lab --activate --path=/var/www/html
     exit_if_error "$?" "Error installing Performance Lab plugin."
     echo -e "${GREEN}${CHECKMARK} Performance Lab plugin has been installed and WebP Uploads module has been activated.${NC}"
 }
