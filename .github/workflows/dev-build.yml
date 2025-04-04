@@ -61,7 +61,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: "wp-docker-dev Release"
-          tag_name: "dev"
+          tag_name: "nightly-${{ env.DEV_VERSION }}"
+          body: "Release for development version: ${{ env.DEV_VERSION }}"
           files: dist/wp-docker-dev.zip
           generate_release_notes: true
         env:
