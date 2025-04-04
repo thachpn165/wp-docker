@@ -32,7 +32,7 @@ CORE_VERSION_FILE="${CORE_VERSION_FILE:-version.txt}"  # Version file
 CORE_TEMPLATE_VERSION_FILE="${CORE_TEMPLATE_VERSION_FILE:-shared/templates/.template_version}"  # Template version file
 LOG_FILE="${LOG_FILE:-/tmp/update_wp_docker.log}"  # Log file location
 CORE_LATEST_VERSION="${CORE_LATEST_VERSION:-https://raw.githubusercontent.com/thachpn165/${REPO_NAME}/refs/heads/main/src/${CORE_VERSION_FILE}}" # Latest version file
-CORE_NIGHTLY_VERSION="${CORE_NIGHTLY_VERSION:-https://raw.githubusercontent.com/thachpn165/${REPO_NAME}/refs/heads/dev/src/${CORE_VERSION_FILE}}"  # Nightly version file
+CORE_NIGHTLY_VERSION="${CORE_NIGHTLY_VERSION:-https://raw.githubusercontent.com/thachpn165/${REPO_NAME}/refs/heads/nightly/src/${CORE_VERSION_FILE}}"  # Nightly version file
 CORE_ENV="${CORE_ENV:-$BASE_DIR/.env}"  # Environment file
 
 # ==== Core source directories ====
