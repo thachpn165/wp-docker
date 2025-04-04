@@ -30,7 +30,8 @@ ZIP_NAME="${ZIP_NAME:-wp-docker.zip}"  # Downloaded ZIP file name
 CORE_VERSION_FILE="${CORE_VERSION_FILE:-version.txt}"  # Version file
 CORE_TEMPLATE_VERSION_FILE="${CORE_TEMPLATE_VERSION_FILE:-shared/templates/.template_version}"  # Template version file
 LOG_FILE="${LOG_FILE:-/tmp/update_wp_docker.log}"  # Log file location
-CORE_LATEST_VERSION="${CORE_LATEST_VERSION:-https://raw.githubusercontent.com/thachpn165/wp-docker/main/src/version.txt}"
+CORE_LATEST_VERSION="${CORE_LATEST_VERSION:-https://raw.githubusercontent.com/thachpn165/wp-docker/main/src/version.txt}" # Latest version file
+CORE_NIGHTLY_VERSION="${CORE_NIGHTLY_VERSION:-https://raw.githubusercontent.com/thachpn165/wp-docker/dev/version.txt}"  # Nightly version file
 
 # ==== Core source directories ====
 SITES_DIR="${SITES_DIR:-$BASE_DIR/sites}"  # Sites directory

@@ -45,7 +45,6 @@ source "$MENU_DIR/rclone_menu.sh"
 source "$MENU_DIR/ssl_menu.sh"
 source "$MENU_DIR/php_menu.sh"
 source "$MENU_DIR/database_menu.sh"
-source "$FUNCTIONS_DIR/core/core_version_management.sh"
 # **Run system setup before displaying menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
 
@@ -80,7 +79,7 @@ print_header() {
 
 # 🎯 **Display Main Menu**
 while true; do
-    core_check_for_update
+    #core_check_for_update
     print_header
     echo -e "${BLUE}MAIN MENU:${NC}"
     echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[6]${NC} Website Backup Management"
@@ -102,7 +101,7 @@ while true; do
         7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "Press Enter to continue..." ;;
         8) php_menu ;;
         9) database_menu ;;
-        10) core_check_version_update ;;  # Call function to display version and update
+        10) bash "$MENU_DIR/core/core_update_menu.sh" ;;  # Call function to display version and update
         11) echo -e "${GREEN}${CROSSMARK} Exiting program.${NC}" && exit 0 ;;
         *) 
             echo -e "${RED}${WARNING} Invalid option! Please select from [1-10].${NC}"
