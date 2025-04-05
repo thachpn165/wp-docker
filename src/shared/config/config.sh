@@ -55,7 +55,6 @@ export TEMPLATE_CHANGELOG_FILE="${TEMPLATE_CHANGELOG_FILE:-$BASE_DIR/shared/temp
 TMP_DIR="${TMP_DIR:-$BASE_DIR/tmp}"  # Temporary data directory
 LOGS_DIR="${LOGS_DIR:-$BASE_DIR/logs}"  # Logs directory
 ARCHIVES_DIR="${ARCHIVES_DIR:-$BASE_DIR/archives}"  # Archives directory
-
 # ==== Webserver (NGINX) ====
 NGINX_PROXY_DIR="${NGINX_PROXY_DIR:-$BASE_DIR/webserver/nginx}"  # NGINX proxy directory
 PROXY_CONF_DIR="${PROXY_CONF_DIR:-$NGINX_PROXY_DIR/conf.d}"  # NGINX configuration directory
@@ -66,10 +65,10 @@ NGINX_MAIN_CONF="${NGINX_MAIN_CONF:-$NGINX_PROXY_DIR/globals/nginx.conf}"  # NGI
 # ==== Utility scripts ====
 SETUP_WORDPRESS_SCRIPT="${SETUP_WORDPRESS_SCRIPT:-$WP_SCRIPTS_DIR/wp-setup.sh}"  # WordPress setup script
 PHP_USER="${PHP_USER:-nobody}"  # PHP user
-PHP_CONTAINER_WP_PATH="${PHP_CONTAINER_WP_PATH:-/var/www/html}"  # PHP container WordPress path
 # ==== Network & container configuration ====
 DOCKER_NETWORK="${DOCKER_NETWORK:-proxy_network}"  # Docker network name
 NGINX_PROXY_CONTAINER="${NGINX_PROXY_CONTAINER:-nginx-proxy}"  # NGINX proxy container name
+PHP_CONTAINER_WP_PATH="${PHP_CONTAINER_WP_PATH:-/var/www/html}"  # PHP container WordPress path
 
 # ==== Terminal colors ====
 RED="${RED:-$'\033[1;31m'}"     

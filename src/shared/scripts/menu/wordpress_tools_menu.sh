@@ -5,6 +5,7 @@ wordpress_tools_menu() {
     echo -e "  ${GREEN}[2]${NC} Edit User Roles"
     echo -e "  ${GREEN}[3]${NC} Enable/Disable Auto-update for All Plugins"
     echo -e "  ${GREEN}[4]${NC} Protect wp-login.php"
+    echo -e "  ${GREEN}[5]${NC} WordPress Migration"
     echo ""
     [[ "$TEST_MODE" != true ]] && read -p "Select function (or press Enter to exit): " wp_tool_choice
 
