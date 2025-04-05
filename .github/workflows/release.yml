@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*'  # Tự động chạy khi tag bắt đầu bằng v, ví dụ: v1.0.6-beta
-
+  workflow_dispatch:
 permissions:
   contents: write
 
