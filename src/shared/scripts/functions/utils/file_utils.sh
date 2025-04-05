@@ -68,17 +68,6 @@ confirm_action() {
   esac
 }
 
-# Function to write log with timestamp, avoid duplicate logs
-log_with_time() {
-    local message="$1"
-    local formatted_time
-    formatted_time="$(date '+%Y-%m-%d %H:%M:%S') - $message"
-
-    # Print to terminal and write to log simultaneously
-    echo -e "$formatted_time"  # Print to terminal
-    echo -e "$formatted_time" >> "$log_file"  # Append to log file
-}
-
 # Function to run command in directory using pushd/popd to ensure command runs correctly and returns to original directory
 run_in_dir() {
   local target_dir="$1"
