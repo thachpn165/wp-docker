@@ -63,9 +63,6 @@ tmp/
 latest_version.txt
 .cursorignore
 tests.yml.bak
-version.txt
-latest_version_dev.txt
-latest_version_main.txt
 
 # ☁️ RCLONE CONFIG
 src/shared/config/rclone/rclone.conf
