@@ -4,7 +4,9 @@ INSTALL_DIR="/opt/wp-docker"
 REPO_URL="https://github.com/thachpn165/wp-docker"
 ZIP_NAME="wp-docker.zip"
 DEV_MODE=false
+CORE_ENV="$INSTALL_DIR/.env"
 
+source "$INSTALL_DIR/shared/scripts/functions/core/env_utils.sh"
 # ========================
 # ⚙️ Command Line Parameter Processing
 # ========================
@@ -22,9 +24,11 @@ if [[ "$version_choice" == "2" ]]; then
   ZIP_NAME="wp-docker-dev.zip"
   echo "🛠 Installing Nightly (Testing Only) version"
   DOWNLOAD_URL="$REPO_URL/releases/download/dev/$ZIP_NAME"
+  INSTALL_CHANNEL="nightly"
 else
   echo "🛠 Installing Official version"
   DOWNLOAD_URL="$REPO_URL/releases/latest/download/$ZIP_NAME"
+  INSTALL_CHANNEL="official"
 fi
 
 # ========================
@@ -99,6 +103,9 @@ check_and_add_alias() {
 check_and_add_alias
 
 echo "Installation successful at: $INSTALL_DIR"
+
+# Save install channel to .env
+env_set_value "CORE_CHANNEL" "$INSTALL_CHANNEL"
 
 # ========================
 # 📢 Special warning for macOS (Docker Desktop)

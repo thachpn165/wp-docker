@@ -36,6 +36,31 @@ source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
 source "$FUNCTIONS_DIR/setup-aliases.sh"
+source "$FUNCTIONS_DIR/utils/env_utils.sh"
+
+# === Ensure CORE_CHANNEL is set in .env ===
+if [[ ! -f "$CORE_ENV" ]]; then
+  echo -e "${YELLOW}${WARNING} .env file not found. Creating new .env at $CORE_ENV${NC}"
+  touch "$CORE_ENV"
+fi
+
+if ! grep -q "^CORE_CHANNEL=" "$CORE_ENV"; then
+  echo -e "${CYAN}🌐 Please choose a release channel to use:${NC}"
+  PS3="Choose channel: "
+  select opt in "official" "nightly"; do
+    case $opt in
+      official|nightly)
+        env_set_value "CORE_CHANNEL" "$opt"
+        echo -e "${GREEN}${CHECKMARK} CORE_CHANNEL has been set to '$opt' in $CORE_ENV.${NC}"
+        break
+        ;;
+      *)
+        echo -e "${RED}${CROSSMARK} Invalid option. Please choose again.${NC}"
+        ;;
+    esac
+  done
+fi
+
 # ${CHECKMARK} Set system timezone (if needed)
 clear
 setup_timezone

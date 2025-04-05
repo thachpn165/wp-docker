@@ -26,11 +26,14 @@ TEST_ALWAYS_READY="${TEST_ALWAYS_READY:-false}"
 INSTALL_DIR="${INSTALL_DIR:-/opt/wp-docker}"  # Installation directory
 TMP_DIR="${TMP_DIR:-/tmp/wp-docker-update}"  # Temporary directory for updates
 REPO_URL="${REPO_URL:-https://github.com/thachpn165/wp-docker}"  # Repository URL
+REPO_NAME="${REPO_NAME:-wp-docker}"  # Repository name
 ZIP_NAME="${ZIP_NAME:-wp-docker.zip}"  # Downloaded ZIP file name
 CORE_VERSION_FILE="${CORE_VERSION_FILE:-version.txt}"  # Version file
 CORE_TEMPLATE_VERSION_FILE="${CORE_TEMPLATE_VERSION_FILE:-shared/templates/.template_version}"  # Template version file
 LOG_FILE="${LOG_FILE:-/tmp/update_wp_docker.log}"  # Log file location
-CORE_LATEST_VERSION="${CORE_LATEST_VERSION:-https://raw.githubusercontent.com/thachpn165/wp-docker/main/src/version.txt}"
+CORE_LATEST_VERSION="${CORE_LATEST_VERSION:-https://raw.githubusercontent.com/thachpn165/${REPO_NAME}/refs/heads/main/src/${CORE_VERSION_FILE}}" # Latest version file
+CORE_NIGHTLY_VERSION="${CORE_NIGHTLY_VERSION:-https://raw.githubusercontent.com/thachpn165/${REPO_NAME}/refs/heads/nightly/src/${CORE_VERSION_FILE}}"  # Nightly version file
+CORE_ENV="${CORE_ENV:-$BASE_DIR/.env}"  # Environment file
 
 # ==== Core source directories ====
 SITES_DIR="${SITES_DIR:-$BASE_DIR/sites}"  # Sites directory
@@ -52,7 +55,6 @@ export TEMPLATE_CHANGELOG_FILE="${TEMPLATE_CHANGELOG_FILE:-$BASE_DIR/shared/temp
 TMP_DIR="${TMP_DIR:-$BASE_DIR/tmp}"  # Temporary data directory
 LOGS_DIR="${LOGS_DIR:-$BASE_DIR/logs}"  # Logs directory
 ARCHIVES_DIR="${ARCHIVES_DIR:-$BASE_DIR/archives}"  # Archives directory
-
 # ==== Webserver (NGINX) ====
 NGINX_PROXY_DIR="${NGINX_PROXY_DIR:-$BASE_DIR/webserver/nginx}"  # NGINX proxy directory
 PROXY_CONF_DIR="${PROXY_CONF_DIR:-$NGINX_PROXY_DIR/conf.d}"  # NGINX configuration directory
@@ -63,10 +65,10 @@ NGINX_MAIN_CONF="${NGINX_MAIN_CONF:-$NGINX_PROXY_DIR/globals/nginx.conf}"  # NGI
 # ==== Utility scripts ====
 SETUP_WORDPRESS_SCRIPT="${SETUP_WORDPRESS_SCRIPT:-$WP_SCRIPTS_DIR/wp-setup.sh}"  # WordPress setup script
 PHP_USER="${PHP_USER:-nobody}"  # PHP user
-PHP_CONTAINER_WP_PATH="${PHP_CONTAINER_WP_PATH:-/var/www/html}"  # PHP container WordPress path
 # ==== Network & container configuration ====
 DOCKER_NETWORK="${DOCKER_NETWORK:-proxy_network}"  # Docker network name
 NGINX_PROXY_CONTAINER="${NGINX_PROXY_CONTAINER:-nginx-proxy}"  # NGINX proxy container name
+PHP_CONTAINER_WP_PATH="${PHP_CONTAINER_WP_PATH:-/var/www/html}"  # PHP container WordPress path
 
 # ==== Terminal colors ====
 RED="${RED:-$'\033[1;31m'}"     
@@ -102,3 +104,5 @@ source "${FUNCTIONS_DIR}/utils/db_utils.sh"  # Database utilities
 source "${FUNCTIONS_DIR}/utils/website_utils.sh"  # Website utilities
 source "${FUNCTIONS_DIR}/utils/misc_utils.sh"  # Miscellaneous utilities
 source "${FUNCTIONS_DIR}/utils/nginx_utils.sh"  # NGINX utilities
+source "${FUNCTIONS_DIR}/utils/env_utils.sh"  # .env utilities
+env_load

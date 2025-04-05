@@ -106,3 +106,19 @@ db_fetch_env() {
     # Return the values
     echo "$db_name $db_user $db_pass"
 }
+
+# Function to get database name
+db_get_name() {
+    local domain="$1"
+    
+    local db_info
+    if ! db_info=$(db_fetch_env "$domain"); then
+        echo -e "${RED}${CROSSMARK} Unable to get database info for $domain${NC}" >&2
+        return 1
+    fi
+
+    local db_name db_user db_pass
+    read -r db_name db_user db_pass <<< "$db_info"
+
+    echo "$db_name"
+}

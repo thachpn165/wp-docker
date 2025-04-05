@@ -1,4 +1,4 @@
-name: 🚀 Build & Release
+name: Official Release
 
 on:
   push:
@@ -10,23 +10,36 @@ permissions:
 
 jobs:
   build-and-release:
-    name: 📦 Đóng gói & Tạo bản phát hành
+    name: 📦 Build & Release official version
     runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout source code
         uses: actions/checkout@v3
 
-      - name: 🧼 Dọn dẹp & đóng gói
+      - name: 🔐 Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: ✍️ Insert version to version.txt & latest_version_main.txt
+        run: |
+          echo "${{ github.ref_name }}" > src/version.txt
+          echo "${{ github.ref_name }}" > src/latest_version_main.txt
+
+      - name: 💾 Commit and Push version files
+        run: |
+          git add src/version.txt src/latest_version_main.txt
+          git commit -m "🔖 Update version.txt and latest_version_main.txt to ${{ github.ref_name }}"
+          git push origin HEAD:main
+
+      - name: 🧼 Cleanup & Build
         run: |
           mkdir -p dist
 
           # Tạo thư mục tạm để chứa source (không có thư mục src/)
           mkdir wp-docker
           cp -r src/* wp-docker/
-
-          # Ghi phiên bản vào file version.txt trong bản build
-          echo "${{ github.ref_name }}" > wp-docker/version.txt
 
           # Zip nội dung bên trong wp-docker (không bao gồm thư mục gốc wp-docker)
           cd wp-docker
@@ -35,7 +48,7 @@ jobs:
             -x "*.DS_Store" "__MACOSX"
           cd ..
 
-      - name: 🚀 Tạo GitHub Release
+      - name: 🚀 Create Github Release
         uses: softprops/action-gh-release@v1
         with:
           name: "${{ github.ref_name }}"

@@ -1,12 +1,12 @@
 # WP Docker
 
-[![Version](https://img.shields.io/badge/version-v1.1.5--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Version](https://img.shields.io/badge/version-v1.1.6--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker)](./LICENSE)
 
-> **Note**: Version `v1.1.5-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
+> **Note**: Version `v1.1.6-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
 
 ![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
 
@@ -30,40 +30,56 @@ By simplifying multi-stage environment replication (dev → staging → prod), W
 
 Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
-## Latest Release - v1.1.5-beta
+## Latest Release - v1.1.6-beta
+Release date: 2025-04-05
 
 ### 🚀 Added
-- **Refactored all references from `$site_name` to `$domain`** across the entire project for better clarity and domain-based structure.
-  - Unified naming convention for folders, containers, and volumes using `$domain`.
-  - Introduced backward-compatible script at `upgrade/v1.1.5-beta.sh` to automatically rename old site folders based on `.env` domain.
+- **WordPress Migration Tool**:
+  - New feature to restore a full WordPress website (code & database) from `archives/$domain/`.
+  - Automatically validates prefix, updates `wp-config.php`, checks DNS, and installs SSL.
+  - Menu-driven with confirmation prompts and error recovery logic.
+  - Display reminder to configure cache via main menu.
+  
+- **Version Channel Management**:
+  - Introduced `.env` based `CORE_CHANNEL` to manage release channels: `official` or `nightly`.
+  - Added CLI `core_channel_set.sh` and helpers to modify/read `.env` automatically.
+  
+- **Improved version update system**:
+  - Rewritten into standardized 3-step structure: logic + cli + menu.
+  - Separated version check for `official` and `nightly` via `core_version_main.sh` and `core_version_dev.sh`.
+  - Auto-detection and display of latest version at startup menu.
+  - `core_display_version.sh` now adapts to `CORE_CHANNEL` for accurate fetch.
 
-- **New CLI commands for database operations** under `wpdocker database`:
-  - `export`, `import`, and `reset` subcommands added for centralized and clean database handling.
-
-- **Improved site creation flow**:
-  - Introduced `log_with_time` for better logging output.
-  - Added `trap` cleanup logic to rollback on partial site setup failures.
-
-- **WP-CLI wrapper helper function (`wp_cli`)**:
-  - Simplifies running WP-CLI commands inside Docker containers.
-  - Usage: `wp_cli user list`, `wp_cli plugin install`, etc.
-
-- **Nightly version install support in `install.sh`**:
-  - Automatically downloads from `https://github.com/thachpn165/wp-docker/releases/download/dev/wp-docker-dev.zip`.
+- **New subcommand: `wpdocker system`**:
+  - Includes:
+    - `wpdocker system check`: view Docker resources.
+    - `wpdocker system manage`: manage Docker containers.
+    - `wpdocker system cleanup`: clean up Docker.
+    - `wpdocker system nginx rebuild/restart`: manage NGINX proxy.
 
 ### 🐞 Fixed
-- **Fixed volume naming** for domains with `.` by auto-normalizing volume name format to match Docker's actual volume behavior.
-- **Fixed macOS compatibility** in `nginx_remove_mount_docker` by using a portable `grep -vF` logic instead of `sed`.
-- **Ensured `$domain` is passed correctly** from menu → CLI → logic layers.
-- **Fixed emoji display issues** when used in colored terminal output.
+- **404 error with WP Fastest Cache**:
+  - Fixed by appending `try_files $uri $uri/ /index.php?$args;` into `@cachemiss`.
+
+- **NGINX rebuild CLI path**:
+  - Corrected script path issue in system tools menu.
+
+- **`env_set_value` compatibility**:
+  - Updated to use portable `sedi` helper for macOS/Linux sed compatibility.
+
+- **Ensure prefix updated correctly in wp-config.php** after restoring database.
+- **Fix access denied error** when checking tables prefix due to missing `MYSQL_PWD`.
 
 ### ♻️ Changed
-- **Deprecated usage of `$site_name`** in favor of `$domain`.
-  - All logic and variable references now operate on `$domain` only.
-- **Removed `DEV_MODE`** flag from `install.sh`.
-  - The Nightly install mode now directly triggers download from `dev` tag.
-- **Improved select_website and argument parsing**:
-  - Ensures `$domain` is consistently available across CLI and logic files.
+- **Dev build workflow now uses `nightly` as tag** instead of `dev`.
+- **Improved GitHub Actions** for CI/CD:
+  - `dev-build.yml` and `release.yml` now update `version.txt` and push to repo.
+  - `dev` version follows `vX.X.X-dev-timestamp` format.
+- **Database reset during import**:
+  - `database_import_logic` now resets database by dropping and recreating it cleanly.
+- **Improved logic isolation**:
+  - Various logic modules split from CLI for consistency and testability.
+
 
 *For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
 
@@ -138,7 +154,7 @@ After modifying configuration files, restart the affected services through the s
 
 ## 🚀 WP Docker Roadmap (2025)
 
-### ${CHECKMARK} Current Version: `v1.1.5` (Beta)
+### ${CHECKMARK} Current Version: `v1.1.6` (Beta)
 - Planned release of the first stable version (v1.2.0-stable): 2025-04-15
 
 ### Core Features Completed:
@@ -151,6 +167,8 @@ After modifying configuration files, restart the affected services through the s
 - Integrated WAF (OpenResty + Lua-based rules)
 - Auto-update WP-CLI and system version checker
 - Clean command-line interface optimized for macOS and Linux
+- Automatic WordPress Migration (restore data from existing WordPress website in "one-shot")
+
 
 ---
 

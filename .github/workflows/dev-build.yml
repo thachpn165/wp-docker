@@ -1,9 +1,12 @@
-name: 🚀 Dev Build
+name: Dev Build
 
 on:
   push:
     branches:
-      - 'dev'  # Trigger the workflow on push to the dev branch
+      - 'dev'
+  pull_request:
+    branches:
+      - 'dev'
 
 permissions:
   contents: write
@@ -16,19 +19,41 @@ jobs:
     steps:
       - name: 📥 Checkout source code
         uses: actions/checkout@v3
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: ⬇️ Fetch version from main branch
+        run: |
+          git fetch origin main
+          main_version=$(git show origin/main:src/version.txt)
+          echo "$main_version" > tmp_main_version.txt
+          echo "MAIN_VERSION=$main_version" >> $GITHUB_ENV
+
+      - name: 🧮 Calculate DEV_VERSION & update files
+        run: |
+          git fetch origin main
+          main_version=$(git show origin/main:src/version.txt)
+          timestamp=$(date +%Y%m%d%H%M%S)
+          DEV_VERSION="${main_version}-dev-${timestamp}"
+          echo "$DEV_VERSION" > version.txt
+          echo "$DEV_VERSION" > latest_version_dev.txt
+          echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_ENV
+
+          mv version.txt latest_version_dev.txt src/
+          git add src/version.txt src/latest_version_dev.txt
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git commit -m "🔄 Update latest_version_dev.txt to $DEV_VERSION"
+          git push origin HEAD:dev
 
       - name: 🧼 Clean up & package
         run: |
           mkdir -p dist
-
-          # Create temporary folder to hold the source (without src/ folder)
-          mkdir wp-docker
+          mkdir -p wp-docker
           cp -r src/* wp-docker/
-
-          # Write version into version.txt in the build
-          echo "dev" > wp-docker/version.txt  # Or you can use something else if needed
-
-          # Zip the contents inside wp-docker (excluding the wp-docker root folder)
           cd wp-docker
           zip -r ../dist/wp-docker-dev.zip . \
             -x "*.git*" "*.github*" "*.vscode*" "logs/*" "tmp/*" "tests/*" "sites/" \
@@ -39,7 +64,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: "wp-docker-dev Release"
-          tag_name: "dev"  # You can set the tag name as you need, e.g., 'dev'
+          tag_name: "nightly"
+          body: "Release for development version: ${{ env.DEV_VERSION }}"
           files: dist/wp-docker-dev.zip
           generate_release_notes: true
         env:

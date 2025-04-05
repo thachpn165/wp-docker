@@ -40,24 +40,22 @@ database_import_logic() {
         echo "${CROSSMARK} MariaDB container for site '$domain' is not running. Please check!"
         return 1
     fi
-
-    # Ask for confirmation before dropping the database
-    echo -e "\n${WARNING} WARNING: The database will be completely dropped before importing the new data. Are you sure you want to proceed? (y/n)"
-    read -rp "Confirm (y/n): " confirm
-    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-        echo "${CROSSMARK} Action canceled. No changes were made."
-        return 1
+    # Drop and recreate the database
+    docker cp "$backup_file" ${domain}-mariadb:/tmp/restore.sql
+    docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb \
+    mysql -u "$db_user" -e "DROP DATABASE IF EXISTS \`$db_name\`; CREATE DATABASE \`$db_name\`;" > /dev/null 2>&1
+    # Import database from copied SQL file
+    if ! docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb \
+        sh -c "mysql -u $db_user $db_name < /tmp/restore.sql"; then
+        echo "${CROSSMARK} Failed to import the database '$db_name' in container."
+    return 1
     fi
-
-    # Call the database reset logic to drop all data
-    echo "${IMPORTANT}${NC} Dropping existing database: $db_name for site: $domain..."
-    bash "$CLI_DIR/database_reset.sh" --domain="$domain"
-
+    docker exec ${domain}-mariadb rm -f /tmp/restore.sql   
     # Proceed to restore the database from the backup file
     echo "Restoring database: $db_name for site: $domain from file: $backup_file..."
 
     # Run the import command inside the container
-    if ! docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb mysql -u$db_user $db_name < "$backup_file"; then
+    if ! docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb mysql -u $db_user $db_name < "$backup_file"; then
         echo "${CROSSMARK} Failed to import the database '$db_name' in container."
         return 1
     fi

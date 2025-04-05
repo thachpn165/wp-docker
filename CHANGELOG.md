@@ -1,5 +1,56 @@
 # 📦 CHANGELOG – WP Docker LEMP
 
+## [v1.1.6-beta] - 2025-04-05
+
+### 🚀 Added
+- **WordPress Migration Tool**:
+  - New feature to restore a full WordPress website (code & database) from `archives/$domain/`.
+  - Automatically validates prefix, updates `wp-config.php`, checks DNS, and installs SSL.
+  - Menu-driven with confirmation prompts and error recovery logic.
+  - Display reminder to configure cache via main menu.
+  
+- **Version Channel Management**:
+  - Introduced `.env` based `CORE_CHANNEL` to manage release channels: `official` or `nightly`.
+  - Added CLI `core_channel_set.sh` and helpers to modify/read `.env` automatically.
+  
+- **Improved version update system**:
+  - Rewritten into standardized 3-step structure: logic + cli + menu.
+  - Separated version check for `official` and `nightly` via `core_version_main.sh` and `core_version_dev.sh`.
+  - Auto-detection and display of latest version at startup menu.
+  - `core_display_version.sh` now adapts to `CORE_CHANNEL` for accurate fetch.
+
+- **New subcommand: `wpdocker system`**:
+  - Includes:
+    - `wpdocker system check`: view Docker resources.
+    - `wpdocker system manage`: manage Docker containers.
+    - `wpdocker system cleanup`: clean up Docker.
+    - `wpdocker system nginx rebuild/restart`: manage NGINX proxy.
+
+### 🐞 Fixed
+- **404 error with WP Fastest Cache**:
+  - Fixed by appending `try_files $uri $uri/ /index.php?$args;` into `@cachemiss`.
+
+- **NGINX rebuild CLI path**:
+  - Corrected script path issue in system tools menu.
+
+- **`env_set_value` compatibility**:
+  - Updated to use portable `sedi` helper for macOS/Linux sed compatibility.
+
+- **Ensure prefix updated correctly in wp-config.php** after restoring database.
+- **Fix access denied error** when checking tables prefix due to missing `MYSQL_PWD`.
+
+### ♻️ Changed
+- **Dev build workflow now uses `nightly` as tag** instead of `dev`.
+- **Improved GitHub Actions** for CI/CD:
+  - `dev-build.yml` and `release.yml` now update `version.txt` and push to repo.
+  - `dev` version follows `vX.X.X-dev-timestamp` format.
+- **Database reset during import**:
+  - `database_import_logic` now resets database by dropping and recreating it cleanly.
+- **Improved logic isolation**:
+  - Various logic modules split from CLI for consistency and testability.
+
+---
+
 ## [v1.1.5-beta] - 2025-04-04
 
 ### 🚀 Added
