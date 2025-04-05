@@ -1,9 +1,13 @@
 # Define utility functions that don't belong to a specific category
 
 # =========================================
-# 🧪 System Environment Related
-# =========================================
-# 📝 **Check Required Environment Variables**
+# ✅ Check if required environment variables are defined
+# Usage:
+#   check_required_envs
+# Requires:
+#   - required_vars[]: An array of variable names to check
+# Behavior:
+#   - Exits with an error if any required variable is missing.
 check_required_envs() {
   for var in "${required_vars[@]}"; do
     if [ -z "${!var}" ]; then
@@ -14,17 +18,15 @@ check_required_envs() {
 }
 
 
-# Exit if the last command failed
+# ❌ Exit if the last command failed
 # Usage:
-#   exit_if_error $? "An error occurred while executing the command."
+#   exit_if_error $? "An error occurred"
 # Arguments:
-#   1. result (int): The exit status of the last command.
-#   2. error_message (string): The error message to display if the command failed.
+#   1. result (int): Exit code of the previous command
+#   2. error_message (string): Error message to display if failed
 # Behavior:
-#   - If the result is not 0, it prints the error message in red and returns 1.
-#   - If the result is 0, it does nothing and returns 0.
-#   - This function is useful for error handling in scripts, allowing you to check the success
-#     or failure of a command and take appropriate action.
+#   - Prints error in red and returns 1 if result is non-zero.
+#   - Otherwise does nothing.
 exit_if_error() { 
     local result=$1
     local error_message=$2
@@ -37,14 +39,19 @@ exit_if_error() {
 # 🧪 TEST_MODE Support Functions
 # =========================================
 
-# ${CHECKMARK} Check if running in test mode
+# 🧪 Check if running in test mode
+# Returns:
+#   - true if TEST_MODE is enabled
 is_test_mode() {
   [[ "$TEST_MODE" == true ]]
 }
 
-# ${CHECKMARK} Execute command if not in test mode, return fallback value if in test mode
+# 🧪 Run command unless in TEST_MODE (returns fallback if test)
 # Usage:
-#   domain=$(run_if_not_test "example.com" get_input_domain)
+#   value=$(run_if_not_test "fallback" some_function)
+# Arguments:
+#   1. fallback: Value to return in test mode
+#   2. command: Function or command to run if not in test mode
 run_if_not_test() {
   local fallback="$1"
   shift
@@ -55,9 +62,11 @@ run_if_not_test() {
   fi
 }
 
-# ${CHECKMARK} Run a command (or function) only when not in TEST_MODE
+# 🧪 Execute command only if not in test mode
 # Usage:
 #   run_unless_test docker compose up -d
+# Notes:
+#   - Does nothing in TEST_MODE (for CI testing)
 run_unless_test() {
   if [[ "$TEST_MODE" == true && "$BATS_TEST_FILENAME" != "" ]]; then
     #echo "[MOCK run_unless_test] $*"
@@ -68,10 +77,9 @@ run_unless_test() {
 }
 
 
-# ${CHECKMARK} Get input from user, or use test value if in TEST_MODE
+# 🧪 Prompt user or use fallback in TEST_MODE
 # Usage:
-#   domain=$(get_input_or_test_value "Enter domain: " "example.com")
-
+#   value=$(get_input_or_test_value "Enter value: " "test-default")
 get_input_or_test_value() {
   local prompt="$1"
   local fallback="$2"
@@ -84,20 +92,11 @@ get_input_or_test_value() {
   fi
 }
 
-# Select an item from a list, supports entering a number or choosing a default (used for website, storage, etc.)
-# Function: select_from_list
-# Arguments:
-#   1. prompt (string): The message to display when prompting the user to select an option.
-#   2. options (array): A list of options for the user to choose from.
-# Behavior:
-#   - If TEST_MODE is enabled, the function will automatically select the first item in the list
-#     or the value of TEST_SELECTED_OPTION if it is set.
-#   - If TEST_MODE is not enabled, the function will prompt the user to select an option by entering
-#     a number corresponding to the desired item in the list.
-#   - If the user enters a valid number within the range of the list, the function will return the
-#     selected option.
-#   - If the input is invalid, the function will return an empty string and exit with a status of 1.
-# Select an item from a list, hỗ trợ nhập số hoặc chọn mặc định (dùng cho website, storage,...)
+# 🔢 Prompt user to select from a list (or auto-select in test mode)
+# Usage:
+#   selected=$(select_from_list "Choose option:" "${options[@]}")
+# Notes:
+#   - In TEST_MODE, auto-selects first or TEST_SELECTED_OPTION
 select_from_list() {
     local prompt="$1"
     shift
@@ -125,7 +124,12 @@ select_from_list() {
 # Other Functions
 # =========================================
 
-# Function to display loading animation
+# 🔄 Show a loading animation (spinner)
+# Usage:
+#   show_loading "Loading..." 0.1
+# Arguments:
+#   1. message: Text to display before spinner
+#   2. delay: Delay in seconds between spinner frames
 show_loading() {
     local message="$1"
     local delay="$2"  # Delay between rotation cycles (in seconds)
@@ -144,7 +148,11 @@ show_loading() {
     done
 }
 
-# 📋 Get environment variable value from .env file
+# 📋 Fetch a variable value from a .env file
+# Usage:
+#   value=$(fetch_env_variable ".env" "DB_NAME")
+# Returns:
+#   - The value of the specified variable, or exits with error if file not found
 fetch_env_variable() {
     local env_file="$1"
     local var_name="$2"
@@ -157,3 +165,72 @@ fetch_env_variable() {
 }
 
 random_string=$(date +%s)
+
+# ===========================================================
+# 🖨️ print_msg <type> <message>
+# -----------------------------------------------------------
+# Display formatted message with color + emoji based on type.
+# Automatically prints to terminal in a consistent, readable format.
+#
+# Usage:
+#   print_msg success "Installation completed!"
+#   print_msg error "Database connection failed."
+#   print_msg warning "Low disk space warning."
+#   print_msg info "Starting update..."
+#   print_msg progress "Uploading files..."
+#
+# Supported types:
+#   - success     ✅ Green      (successfully completed)
+#   - error       ❌ Red        (critical error)
+#   - warning     ⚠️  Yellow     (non-blocking warning)
+#   - info        ℹ️  White      (informational)
+#   - save        💾 White      (for saving configurations)
+#   - important   🚨 Red        (important alert)
+#   - debug       🐛 Cyan       (debug logs, visible in DEBUG_MODE)
+#   - step        ➤  Magenta    (step by step)
+#   - check       🔍 Cyan       (checking something)
+#   - run         🚀 Green      (currently executing something)
+#   - skip        ⏭️  Yellow     (skipping a step)
+#   - cancel      🛑 Red        (user cancelled or aborted)
+#   - question    ❓ White      (prompt input from user)
+#   - completed   🏁 Green      (final completion of task/process)
+#   - progress    🚀 + spinner  (displays loading animation via show_loading)
+#
+# Recommended with i18n:
+#   print_msg error "$MSG_SITE_NOT_FOUND"
+#   print_msg success "$MSG_BACKUP_SUCCESS"
+# ===========================================================
+print_msg() {
+  local type="$1"
+  local message="$2"
+  local color emoji
+
+  case "$type" in
+    success)     emoji="✅" color="$GREEN" ;;
+    error)       emoji="❌" color="$RED" ;;
+    warning)     emoji="⚠️"  color="$YELLOW" ;;
+    info)        emoji="ℹ️"  color="$WHITE" ;;
+    save)        emoji="💾" color="$WHITE" ;;
+    important)   emoji="🚨" color="$RED" ;;
+    debug)       emoji="🐛" color="$CYAN" ;;
+    step)        emoji="➤"  color="$MAGENTA" ;;
+    check)       emoji="🔍" color="$CYAN" ;;
+    run)         emoji="🚀" color="$GREEN" ;;
+    skip)        emoji="⏭️"  color="$YELLOW" ;;
+    cancel)      emoji="🛑" color="$RED" ;;
+    question)    emoji="❓" color="$WHITE" ;;
+    completed)   emoji="🏁" color="$GREEN" ;;
+    progress)
+      emoji="🚀"
+      color="$GREEN"
+      show_loading "${color}${emoji} ${message}${NC}" 0.1
+      return
+      ;;
+    *)
+      echo -e "$message"
+      return
+      ;;
+  esac
+
+  echo -e "${color}${emoji} ${message}${NC}"
+}

@@ -1,3 +1,7 @@
+# ✅ Prevent multiple loading of language files
+[[ -n "$LANG_LOADED" ]] && return
+LANG_LOADED=true
+
 LANG_FILE="$PROJECT_DIR/shared/lang/${LANG_CODE}.sh"
 
 if [[ -f "$LANG_FILE" ]]; then

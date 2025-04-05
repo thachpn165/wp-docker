@@ -1,39 +1,18 @@
 # Ensure the script is executed in a Bash shell
 if [ -z "$BASH_VERSION" ]; then
-    echo "${CROSSMARK} This script must be run in a Bash shell." >&2
+    print_msg error "Please run this script in a Bash shell."
     exit 1
 fi
 
-# === 🧠 Auto-detect PROJECT_DIR (source code root) ===
-
-# If PROJECT_DIR is not set, attempt to find the project root (from anywhere)
-if [[ -z "$PROJECT_DIR" ]]; then
-    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-
-    # Go upwards from the script location to find 'config.sh'
-    while [[ "$SCRIPT_PATH" != "/" ]]; do
-        if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-            PROJECT_DIR="$SCRIPT_PATH"
-            break
-        fi
-        SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-    done
-fi
-
-# === ${CHECKMARK} Load config.sh from PROJECT_DIR ===
-
-# Check if we found the project directory and config file
-if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
-fi
-
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-    exit 1
-fi
-source "$CONFIG_FILE"
+# === Load config.sh from anywhere using universal loader ===
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
+  fi
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 
 # Import menu functions
 source "$MENU_DIR/menu_utils.sh"
@@ -48,9 +27,8 @@ source "$MENU_DIR/database_menu.sh"
 source "$FUNCTIONS_DIR/core_loader.sh"
 # **Run system setup before displaying menu**
 bash "$SCRIPTS_DIR/setup-system.sh"
-# ✔️ ${CROSSMARK} **Status Icons**
-CHECKMARK="${GREEN}${CHECKMARK}${NC}"
-CROSSMARK="${RED}${CROSSMARK}${NC}"
+
+
 
 # 🏆 **Display Header**
 print_header() {

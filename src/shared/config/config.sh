@@ -13,9 +13,10 @@ if [[ "$CONFIG_DIR" == */src/shared/config ]]; then
   DEV_MODE=true
 else
   BASE_DIR="$(cd "$CONFIG_DIR/../.." && pwd)"
+  
   DEV_MODE=false
 fi
-
+PROJECT_DIR=$BASE_DIR
 # ==== 2. Load .env file ====
 CORE_ENV="${CORE_ENV:-$BASE_DIR/.env}"
 
@@ -40,6 +41,7 @@ source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
 INSTALL_DIR="${INSTALL_DIR:-/opt/wp-docker}"
 TMP_DIR="${TMP_DIR:-$BASE_DIR/tmp}"
 LOGS_DIR="${LOGS_DIR:-$BASE_DIR/logs}"
+DEBUG_LOG="${DEBUG_LOG:-$LOGS_DIR/debug.log}"
 ARCHIVES_DIR="${ARCHIVES_DIR:-$BASE_DIR/archives}"
 REPO_URL="${REPO_URL:-https://github.com/thachpn165/wp-docker}"
 REPO_NAME="${REPO_NAME:-wp-docker}"
@@ -90,15 +92,6 @@ CYAN="${CYAN:-$'\033[1;36m'}"
 WHITE="${WHITE:-$'\033[1;37m'}"
 NC="${NC:-$'\033[0m'}"
 
-# ==== 11. Emoji symbols ====
-CHECKMARK="${GREEN}✅ ${NC}"
-CROSSMARK="${RED}❌ ${NC}"
-SAVE="${WHITE}💾 ${NC}"
-WARNING="${YELLOW}⚠️ ${NC}"
-INFO="${WHITE}ℹ️ ${NC}"
-ERROR="${RED}❗ ${NC}"
-IMPORTANT="${RED}🚨 ${NC}"
-
 # ==== 12. Template meta ====
 export TEMPLATE_VERSION_FILE="${TEMPLATE_VERSION_FILE:-$BASE_DIR/shared/templates/.template_version}"
 export TEMPLATE_CHANGELOG_FILE="${TEMPLATE_CHANGELOG_FILE:-$BASE_DIR/shared/templates/TEMPLATE_CHANGELOG.md}"
@@ -119,3 +112,28 @@ source "$FUNCTIONS_DIR/utils/db_utils.sh"
 source "$FUNCTIONS_DIR/utils/website_utils.sh"
 source "$FUNCTIONS_DIR/utils/misc_utils.sh"
 source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
+
+# ==== 15. Helper: load config file from any entry script ====
+load_config_file() {
+  if [[ "$DEV_MODE" == "true" && -n "$BASE_DIR" ]]; then
+    CONFIG_FILE="$BASE_DIR/shared/config/config.sh"
+  else
+    # Traverse upwards to detect config.sh
+    local script_path="$(realpath "${BASH_SOURCE[0]:-$0}")"
+    local dir="$(dirname "$script_path")"
+    while [[ "$dir" != "/" ]]; do
+      if [[ -f "$dir/shared/config/config.sh" ]]; then
+        CONFIG_FILE="$dir/shared/config/config.sh"
+        break
+      fi
+      dir="$(dirname "$dir")"
+    done
+  fi
+
+  if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE"
+  else
+    echo "❌ Could not locate config.sh!" >&2
+    exit 1
+  fi
+}
