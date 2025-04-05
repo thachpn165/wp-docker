@@ -29,7 +29,7 @@ jobs:
 
       - name: 💾 Commit and Push version files
         run: |
-          git add src/version.txt src/latest_version_main.txt
+          git add src/version.txt src/latest_version_main.txt -f
           git commit -m "🔖 Update version.txt and latest_version_main.txt to ${{ github.ref_name }}"
           git push origin HEAD:main
 
