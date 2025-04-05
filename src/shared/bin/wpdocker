@@ -115,6 +115,7 @@ handle_wordpress() {
     # wpdocker wordpress
     case "$1" in
         cli) bash "$CLI_DIR/wordpress_wp_cli.sh" "${@:2}" ;;
+        migrate) bash "$CLI_DIR/wordpress_migration.sh" "${@:2}" ;;
         reset) 
             case "$2" in
                 password) bash "$CLI_DIR/wordpress_reset_admin_password.sh" "${@:3}" ;;
