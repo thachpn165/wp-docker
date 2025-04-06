@@ -51,7 +51,7 @@ is_directory_exist() {
         fi
     fi
 }
-``
+
 # Ask user to confirm action
 confirm_action() {
   local message="$1"
@@ -72,15 +72,17 @@ confirm_action() {
 run_in_dir() {
   local target_dir="$1"
   shift
+  local status
 
   if [[ ! -d "$target_dir" ]]; then
-    echo -e "${RED}${CROSSMARK} Directory '$target_dir' does not exist!${NC}"
+    echo "❌ Directory not found: $target_dir"
     return 1
   fi
 
   pushd "$target_dir" > /dev/null
-  "$@"
-  local status=$?
+  debug_log "[run_in_dir] Executing: $*"
+  "$@"  # gọi trực tiếp từng đối số, không eval
+  status=$?
   popd > /dev/null
   return $status
 }

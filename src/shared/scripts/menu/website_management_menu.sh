@@ -22,7 +22,7 @@ website_management_menu() {
 
     read -p "$MSG_SELECT_OPTION " sub_choice
     case $sub_choice in
-      1) bash "$MENU_DIR/website/website_create_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+    1) source "$MENU_DIR/website/website_create_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
       2) bash "$MENU_DIR/website/website_delete_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
       3) bash "$MENU_DIR/website/website_list_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
       4) bash "$MENU_DIR/website/website_restart_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;

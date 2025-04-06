@@ -1,51 +1,38 @@
 #!/usr/bin/env bash
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
+  fi
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 
-# =============================================
-# 🗑️ website_delete_menu.sh – Delete a website
-# =============================================
+# Load backup-related scripts
+source "$FUNCTIONS_DIR/backup_loader.sh"
 
-# Auto-detect PROJECT_DIR
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-fi
-
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-source "$CONFIG_FILE"
-source "$FUNCTIONS_DIR/website_loader.sh"
-
-echo -e "${BLUE}===== DELETE A WEBSITE =====${NC}"
+#echo -e "${BLUE}===== DELETE A WEBSITE =====${NC}"
+print_msg title "$TITLE_WEBSITE_DELETE"
 domain=""
 select_website
 if [[ -z "$domain" ]]; then
-  echo "${CROSSMARK} No website selected."
+  print_msg error "$ERROR_NO_WEBSITE_SELECTED"
   exit 1
 fi
 
 # Prompt the user for backup confirmation
 backup_enabled=true
 if [[ "$TEST_MODE" != true ]]; then
-  echo -e "\n${SAVE} Do you want to backup the website before deletion?"
-  read -rp "Type 'yes' to backup, or anything else to skip: " backup_confirm
+  backup_confirm=$(get_input_or_test_value "$PROMPT_BACKUP_BEFORE_DELETE $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
   if [[ "$backup_confirm" != "yes" ]]; then
     backup_enabled=false
   fi
-else
-  backup_enabled=false
-fi
+  else
+    backup_enabled=false
+  fi
 
-echo -e "\n${WARNING}  Are you sure you want to delete site '${YELLOW}$domain${NC}'?"
-read -rp "Type 'yes' to confirm: " confirm
+confirm=$(get_input_or_test_value "$PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "yes")
 if [[ "$confirm" != "yes" ]]; then
   echo "${CROSSMARK} Cancelled."
   exit 1
@@ -59,6 +46,6 @@ if [[ -n "$domain" ]]; then
     bash "$SCRIPTS_DIR/cli/website_delete.sh" --domain="$domain"
   fi
 else
-  echo "${CROSSMARK} Missing required parameters to delete website." >&2
+  print_msg error "$ERROR_MISSING_PARAM: --domain"
   exit 1
 fi

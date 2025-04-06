@@ -2,7 +2,7 @@ php_choose_version() {
   local PHP_VERSION_FILE="$BASE_DIR/php_versions.txt"
 
   if [[ ! -f "$PHP_VERSION_FILE" ]]; then
-    echo -e "${RED}${CROSSMARK} PHP version list not found at: $PHP_VERSION_FILE${NC}"
+    print_msg error "$MSG_NOT_FOUND: $PHP_VERSION_FILE"
     return 1
   fi
 
@@ -12,8 +12,8 @@ php_choose_version() {
   done < "$PHP_VERSION_FILE"
 
   if [[ ${#PHP_VERSIONS[@]} -eq 0 ]]; then
-    echo -e "${RED}${CROSSMARK} PHP version list is empty. Please run the PHP version update command again.${NC}"
-    echo -e "${YELLOW}👉 Tip: bash shared/scripts/setup-system.sh${NC}"
+    print_msg error "$ERROR_PHP_LIST_EMPTY"
+    print_msg tip "wpdocker php get"
     return 1
   fi
 
@@ -23,23 +23,25 @@ php_choose_version() {
     return 0
   fi
 
-  echo -e "${YELLOW}Supported PHP versions (Bitnami):${NC}"
+  print_msg info "$MSG_PHP_LIST_SUPPORTED"
   for i in "${!PHP_VERSIONS[@]}"; do
     echo -e "  ${GREEN}[$i]${NC} ${PHP_VERSIONS[$i]}"
   done
 
-  echo -e "\n${YELLOW}${WARNING} Note:${NC}"
-  echo -e "${RED}- PHP 8.0 and below may NOT work on ARM operating systems such as:${NC}"
-  echo -e "  ${CYAN}- Apple Silicon (M1, M2,...), Raspberry Pi, ARM64 servers...${NC}"
-  echo -e "  ${WHITE}→ If you encounter \"platform mismatch\" error, add:${NC}"
-  echo -e "     ${GREEN}platform: linux/amd64${NC} in docker-compose.yml"
-  echo -e "     ${WHITE}Then use the Restart website feature to restart"
+  print_msg recommend "$TIPS_PHP_RECOMMEND_VERSION"
+  print_msg warning "$WARNING_PHP_ARM_TITLE"
+  print_msg warning "$WARNING_PHP_ARM_LINE1"
+  print_msg warning "$WARNING_PHP_ARM_LINE2"
+  print_msg warning "$WARNING_PHP_ARM_LINE3"
+  print_msg warning "$WARNING_PHP_ARM_LINE4"
+  print_msg warning "$WARNING_PHP_ARM_LINE5"
+
   sleep 0.2
   echo ""
-  [[ "$TEST_MODE" != true ]] && read -p "🔹 Enter the number corresponding to the PHP version you want to select: " php_index
+  php_index=$(get_input_or_test_value "$MSG_SELECT_OPTION" "${TEST_PHP_INDEX:-0}")
 
   if ! [[ "$php_index" =~ ^[0-9]+$ ]] || (( php_index < 0 || php_index >= ${#PHP_VERSIONS[@]} )); then
-    echo -e "${RED}${CROSSMARK} Invalid selection.${NC}"
+    print_msg error "$ERROR_SELECT_OPTION_INVALID"
     return 1
   fi
 

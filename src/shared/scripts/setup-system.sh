@@ -92,7 +92,8 @@ else
 fi
 
 # ${CHECKMARK} Start nginx-proxy and redis if not running
-run_in_dir "$NGINX_PROXY_DIR" bash -c '
+pushd "$NGINX_PROXY_DIR" > /dev/null
+
 if ! docker compose ps | grep -q "nginx-proxy.*Up"; then
     echo -e "${YELLOW}🌀 nginx-proxy container is not running. Starting...${NC}"
     docker compose up -d || { echo "${CROSSMARK} Command failed at line 66"; exit 1; }
@@ -116,7 +117,8 @@ if [[ "$status" != "running" ]]; then
     echo -e "\n${RED}💥 Please check the configuration file, volume mount, or port usage.${NC}"
     exit 1
 fi
-'
+
+popd > /dev/null
 
 # Check network & website, etc.
 create_docker_network "$DOCKER_NETWORK"

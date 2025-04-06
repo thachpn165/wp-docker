@@ -130,22 +130,36 @@ select_from_list() {
 # Arguments:
 #   1. message: Text to display before spinner
 #   2. delay: Delay in seconds between spinner frames
-show_loading() {
-    local message="$1"
-    local delay="$2"  # Delay between rotation cycles (in seconds)
-    
-    # Create array of loading symbols
-    local symbols=("/" "-" "\\" "|")
-    
-    # Loading animation loop
-    echo -n "$message "
+start_loading() {
+  local message="$1"
+  local delay="${2:-0.1}"
+  local symbols=("/" "-" "\\" "|")
+
+  print_msg info "$message "
+  
+  if [[ "$DEBUG_MODE" == true ]]; then
+    return
+  fi
+  (
     while true; do
-        for symbol in "${symbols[@]}"; do
-            echo -n "$symbol"
-            sleep "$delay"
-            echo -ne "\b"  # Move cursor back one position (backspace)
-        done
+      for symbol in "${symbols[@]}"; do
+        echo -n "$symbol"
+        sleep "$delay"
+        echo -ne "\b"
+      done
     done
+  ) &
+  LOADING_PID=$!
+}
+
+stop_loading() {
+  if [[ -n "$LOADING_PID" ]]; then
+    kill "$LOADING_PID" &>/dev/null
+    wait "$LOADING_PID" 2>/dev/null
+    unset LOADING_PID
+    echo -ne "\b \b"  # Clear loading symbol
+    echo ""
+  fi
 }
 
 # 📋 Fetch a variable value from a .env file
@@ -212,7 +226,6 @@ print_msg() {
     info)        emoji="ℹ️"  color="$WHITE" ;;
     save)        emoji="💾" color="$WHITE" ;;
     important)   emoji="🚨" color="$RED" ;;
-    debug)       emoji="🐛" color="$CYAN" ;;
     step)        emoji="➤"  color="$MAGENTA" ;;
     check)       emoji="🔍" color="$CYAN" ;;
     run)         emoji="🚀" color="$GREEN" ;;
@@ -220,14 +233,16 @@ print_msg() {
     cancel)      emoji="🛑" color="$RED" ;;
     question)    emoji="❓" color="$WHITE" ;;
     completed)   emoji="🏁" color="$GREEN" ;;
+    recommend)   emoji="💡" color="$BLUE" ;;
     title)     emoji="" color="$CYAN" ;;
     label)     emoji="" color="$BLUE" ;;
     sub_label) emoji="" color="$WHITE" ;;
+    copy)      emoji="→" color="$GREEN";; 
     
     progress)
       emoji="🚀"
       color="$GREEN"
-      show_loading "${color}${emoji} ${message}${NC}" 0.1
+      start_loading "${color}${emoji} ${message}${NC}" 2
       return
       ;;
     *)

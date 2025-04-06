@@ -30,35 +30,15 @@
 # === Usage Example ===
 # ./system_manage_docker.sh --container_name=my_container --container_action=start
 
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  
-  # Iterate upwards from the current script directory to find 'config.sh'
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-
-  # Handle error if config file is not found
-  if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
   fi
-fi
-
-# Load the config file if PROJECT_DIR is set
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-
-# Source the config file
-source "$CONFIG_FILE"
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 source "$FUNCTIONS_DIR/system_loader.sh"
 
 # === Parse command line flags ===
@@ -71,7 +51,8 @@ while [[ "$#" -gt 0 ]]; do
       container_action="${1#*=}"
       ;;
     *)
-      echo "Unknown parameter: $1"
+      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
+      print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --container_name=my_container --container_action=start"
       exit 1
       ;;
   esac
@@ -80,7 +61,7 @@ done
 
 # Check if the required parameters are provided
 if [[ -z "$container_name" || -z "$container_action" ]]; then
-  echo "${CROSSMARK} Missing required parameters: --container_name and --container_action"
+  print_and_debug error "$ERROR_MISSING_PARAM: --container_name & --container_action"
   exit 1
 fi
 

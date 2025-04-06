@@ -16,29 +16,27 @@ core_version_dev_cache() {
     local age=$((now - last_modified))
 
     if [[ $age -gt $expiration ]]; then
-      print_msg "progress" "$WARNING_CORE_VERSION_FILE_OUTDATED"
+      echo "${WARNING} Cache for dev version is outdated. Fetching again..."
       curl -s "$url" -o "$cache_file"
-      exit_if_error "$?" "$ERROR_CORE_VERSION_FAILED_FETCH"
     fi
   else
-    print_msg "progress" "$WARNING_CORE_VERSION_FILE_OUTDATED"
+    echo "${INFO} No cache for dev version. Fetching..."
     curl -s "$url" -o "$cache_file"
-    exit_if_error "$?" "$ERROR_CORE_VERSION_FAILED_FETCH"
   fi
 
   cat "$cache_file"
 }
 
 core_display_dev_version() {
-  local current_version=$(cat "$CORE_CURRENT_VERSION")
+  local current_version=$(cat "$BASE_DIR/version.txt")
   local latest_version=$(core_version_dev_cache)
 
   core_compare_versions "$current_version" "$latest_version"
   result=$?
 
   if [[ $result -eq 2 ]]; then
-     print_msg "info" "$INFO_LABEL_CORE_VERSION : $current_version → ${RED}$latest_version${NC}"
+    echo -e "📦 WP Docker Version: ${current_version} ${RED}(new version available: $latest_version)${NC}"
   else
-    print_msg "info" "$INFO_LABEL_CORE_VERSION : $current_version ${GREEN}($MSG_LATEST)${NC}"
+    echo -e "${BLUE}📦 WP Docker Version:${NC} ${current_version} ${GREEN}(latest)${NC}"
   fi
 }

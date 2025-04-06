@@ -2,18 +2,29 @@
 
 # Check if a container is running
 is_container_running() {
-    local container_name="$1"
+    # Cho phép truyền vào nhiều container, kiểm tra tất cả
+    local all_running=true
 
-    # Trong môi trường test, luôn coi như container đã chạy
-    if [[ "$TEST_MODE" == true ]]; then
-        echo "[MOCK is_container_running] TEST_MODE=true → return 0" >&2
+    for container_name in "$@"; do
+        if [[ "$TEST_MODE" == true ]]; then
+            echo "[MOCK is_container_running] TEST_MODE=true → container $container_name assumed running" >&2
+            continue
+        fi
+
+        if docker ps --format '{{.Names}}' | grep -q "^${container_name}$"; then
+            debug_log "✅ Container '$container_name' is running"
+        else
+            debug_log "❌ Container '$container_name' is NOT running"
+            all_running=false
+        fi
+    done
+
+    if [[ "$all_running" == true ]]; then
         return 0
+    else
+        return 1
     fi
-
-    # Kiểm tra thực tế trong môi trường thật
-    docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
 }
-
 
 # Check if a Docker volume exists
 is_volume_exist() {

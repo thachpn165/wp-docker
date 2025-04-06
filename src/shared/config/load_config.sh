@@ -4,24 +4,38 @@
 
 if [[ -n "$CONFIG_FILE_LOADED" ]]; then return 0; fi
 
-# === Auto-detect BASE_DIR (root of the repo)
-SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-SEARCH_DIR="$(dirname "$SCRIPT_PATH")"
+# === Helper: Load config.sh
+load_config_file() {
+  if [[ -z "$PROJECT_DIR" ]]; then
+    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+    
+    # Iterate upwards from the current script directory to find 'config.sh'
+    while [[ "$SCRIPT_PATH" != "/" ]]; do
+      if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
+        PROJECT_DIR="$SCRIPT_PATH"
+        break
+      fi
+      SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+    done
 
-while [[ "$SEARCH_DIR" != "/" ]]; do
-  if [[ -f "$SEARCH_DIR/shared/config/config.sh" ]]; then
-    BASE_DIR="$SEARCH_DIR"
-    break
+    # Handle error if config file is not found
+    if [[ -z "$PROJECT_DIR" ]]; then
+      echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
+      exit 1
+    fi
   fi
-  SEARCH_DIR="$(dirname "$SEARCH_DIR")"
-done
 
-if [[ -z "$BASE_DIR" ]]; then
-  echo "❌ Could not detect BASE_DIR (config.sh not found)" >&2
-  exit 1
-fi
+  # Load the config file if PROJECT_DIR is set
+  CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
+    exit 1
+  fi
 
-# === Load config.sh once
-CONFIG_FILE="$BASE_DIR/shared/config/config.sh"
-source "$CONFIG_FILE"
-export CONFIG_FILE_LOADED=true
+  # Source the config file
+  source "$CONFIG_FILE"
+}
+
+
+# === Auto-load config.sh
+load_config_file

@@ -29,7 +29,7 @@ select_website
 
 # Ensure a site is selected
 if [[ -z "$domain" ]]; then
-  echo "${CROSSMARK} No website selected."
+  print_msf error "$ERROR_NO_WEBSITE_SELECTED"
   exit 1
 fi
 

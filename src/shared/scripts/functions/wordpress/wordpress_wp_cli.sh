@@ -19,5 +19,5 @@ wordpress_wp_cli_logic() {
         -e WP_CLI_CACHE_DIR=/tmp/wp-cli-cache \
         -u "$user" \
         "$php_container" \
-        wp $wp_command --allow-root --path=/var/www/html
+        wp $wp_command --path=/var/www/html
 }

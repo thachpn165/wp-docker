@@ -5,7 +5,7 @@ nginx_add_mount_docker() {
     local domain="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
 
-    # Nếu đang trong TEST_MODE, sử dụng file mock
+    # If in TEST_MODE, use mock file
     if [[ "$TEST_MODE" == true ]]; then
         OVERRIDE_FILE="/tmp/mock-docker-compose.override.yml"
     fi
@@ -13,42 +13,41 @@ nginx_add_mount_docker() {
     local MOUNT_ENTRY="      - ../../sites/$domain/wordpress:/var/www/$domain"
     local MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
 
-    # Nếu file không tồn tại, tạo file mới
     if [ ! -f "$OVERRIDE_FILE" ]; then
-        echo -e "${YELLOW}📄 Creating new docker-compose.override.yml...${NC}"
-        cat > "$OVERRIDE_FILE" <<EOF
+        print_msg info "$INFO_DOCKER_NGINX_CREATING_DOCKER_COMPOSE_OVERRIDE"
+        cat > "$OVERRIDE_FILE" <<EOF #get NGINX_PROXY_CONTAINER from config.sh
 services:
-  nginx-proxy:
+  $NGINX_PROXY_CONTAINER:
     volumes:
 $MOUNT_ENTRY
 $MOUNT_LOGS
 EOF
-        echo -e "${GREEN}${CHECKMARK} docker-compose.override.yml has been created and configured.${NC}"
+        print_msg success "$SUCCESS_DOCKER_NGINX_CREATE_DOCKER_COMPOSE_OVERRIDE"
         return
     fi
 
-    # Kiểm tra và thêm MOUNT_ENTRY nếu cần
+    # Check and add MOUNT_ENTRY if needed
     if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
         if ! echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null; then
-            echo -e "${RED}${CROSSMARK} Failed to add mount source: $MOUNT_ENTRY${NC}"
-            nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
+            print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
+            run_cmd "nginx_remove_mount_docker \"$OVERRIDE_FILE\" \"$MOUNT_ENTRY\" \"$MOUNT_LOGS\""
             return 1
         fi
-        echo -e "${GREEN}➕ Added mount source: $MOUNT_ENTRY${NC}"
+        print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
     else
-        echo -e "${YELLOW}${WARNING} Mount source already exists: $MOUNT_ENTRY${NC}"
+        print_msg skip "$SKIP_DOCKER_NGINX_MOUNT_VOLUME_EXIST: $MOUNT_ENTRY"
     fi
 
-    # Kiểm tra và thêm MOUNT_LOGS nếu cần
+    # Check and add MOUNT_LOGS if needed
     if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
         if ! echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null; then
-            echo -e "${RED}${CROSSMARK} Failed to add mount logs: $MOUNT_LOGS${NC}"
-            nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
+            print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
+            run_cmd "nginx_remove_mount_docker \"$OVERRIDE_FILE\" \"$MOUNT_ENTRY\" \"$MOUNT_LOGS\""
             return 1
         fi
-        echo -e "${GREEN}➕ Added mount logs: $MOUNT_LOGS${NC}"
+        print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
     else
-        echo -e "${YELLOW}${WARNING} Mount logs already exists: $MOUNT_LOGS${NC}"
+        print_msg skip "$SKIP_DOCKER_NGINX_MOUNT_VOLUME_EXIST: $MOUNT_LOGS"
     fi
 }
 
@@ -75,34 +74,51 @@ nginx_remove_mount_docker() {
         # If the content was changed, replace the original file with the modified one
         if ! diff "$override_file" "$temp_file" > /dev/null; then
             mv "$temp_file" "$override_file"
-            echo -e "${GREEN}${CHECKMARK} Removed mount entries due to error.${NC}"
+            print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_REMOVED"
+            debug_log "Removed mount entries: $mount_entry and $mount_logs"
         else
             rm -f "$temp_file"
-            echo -e "${YELLOW}No changes to mount entries found.${NC}"
+            print_msg info "$INFO_DOCKER_NGINX_MOUNT_NOCHANGE"
         fi
     else
-        echo -e "${RED}❌ $override_file does not exist.${NC}"
+        print_msg error "$override_file $ERROR_NOT_EXIST"
     fi
 }
 
 # 🔁 Restart NGINX Proxy (use when changing docker-compose, mount volume, etc.)
 nginx_restart() {
-  echo -e "${YELLOW}🔁 Restarting NGINX Proxy container...${NC}"
+  start_loading "$INFO_DOCKER_NGINX_STARTING"
   pushd "$NGINX_PROXY_DIR" > /dev/null
-  docker compose down
-  docker compose up -d --force-recreate
+
+  run_cmd "docker compose down"
+    if [[ $? -ne 0 ]]; then
+        print_msg error "$ERROR_DOCKER_NGINX_STOP $NGINX_PROXY_CONTAINER"
+        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+        popd > /dev/null
+        return 1
+    fi
+  run_cmd "docker compose up -d --force-recreate"
+    if [[ $? -ne 0 ]]; then
+        print_msg error "$ERROR_DOCKER_NGINX_START $NGINX_PROXY_CONTAINER"
+        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+        popd > /dev/null
+        return 1
+    fi
   popd > /dev/null
-  echo -e "${GREEN}${CHECKMARK} NGINX Proxy has been restarted successfully.${NC}"
+  stop_loading
+  print_msg success "$SUCCESS_DOCKER_NGINX_RESTART"
 }
 
 
 # 🔄 Reload NGINX (use when changing config/nginx.conf/nginx site)
 nginx_reload() {
-  echo -e "${YELLOW}🔄 Reloading NGINX Proxy...${NC}"
-  docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload 2>/dev/null
-  if [[ $? -eq 0 ]]; then
-    echo -e "${GREEN}${CHECKMARK} NGINX has been reloaded successfully.${NC}"
-  else
-    echo -e "${RED}${WARNING} Error during reload. Tip: Check logs with 'docker logs $NGINX_PROXY_CONTAINER'${NC}"
-  fi
+  #echo -e "${YELLOW}🔄 Reloading NGINX Proxy...${NC}"
+  start_loading "$INFO_DOCKER_NGINX_RELOADING"
+  run_cmd "docker exec \"$NGINX_PROXY_CONTAINER\" nginx -s reload"
+    if [[ $? -ne 0 ]]; then
+        print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
+        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+        return 1
+    fi
+    print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
 }

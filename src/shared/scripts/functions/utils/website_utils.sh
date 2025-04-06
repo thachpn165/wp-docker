@@ -11,7 +11,7 @@ select_website() {
     done < <(find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -print0)
 
     if [[ ${#sites[@]} -eq 0 ]]; then
-        echo -e "${RED}${CROSSMARK} No websites found in $SITES_DIR${NC}"
+        print_and_debug error "$ERROR_NO_WEBSITES_FOUND $SITES_DIR"
         return 1
     fi
 
@@ -24,9 +24,9 @@ select_website() {
             echo "  $((i+1)). ${sites[$i]}"
         done
 
-        SELECTED_WEBSITE=$(select_from_list "🔹 Select a website:" "${sites[@]}")
+        SELECTED_WEBSITE=$(select_from_list "$PROMPT_WEBSITE_SELECT" "${sites[@]}")
         if [[ -z "$SELECTED_WEBSITE" ]]; then
-            echo -e "${RED}${CROSSMARK} Invalid selection!${NC}"
+            print_msg error "$ERROR_SELECT_OPTION_INVALID"
             return 1
         fi
 
@@ -36,5 +36,5 @@ select_website() {
     # Corrected assignment: no spaces around "=" in bash
     domain="$SITE_DOMAIN"
     
-    echo -e "${GREEN}${CHECKMARK} Selected: $SITE_DOMAIN${NC}"
+    print_and_debug info "$MSG_WEBSITE_SELECTED: $domain"
 }

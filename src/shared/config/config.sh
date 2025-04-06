@@ -67,6 +67,9 @@ SYSTEM_TOOLS_FUNC_DIR="${SYSTEM_TOOLS_FUNC_DIR:-$FUNCTIONS_DIR/system-tools}"
 SCRIPTS_FUNCTIONS_DIR="${SCRIPTS_FUNCTIONS_DIR:-$FUNCTIONS_DIR}"
 
 # ==== 7. Webserver (NGINX) ====
+PHP_CONTAINER_SUFFIX="${PHP_CONTAINER_SUFFIX:--php}"
+DB_CONTAINER_SUFFIX="${DB_CONTAINER_SUFFIX:--mariadb}"
+DB_VOLUME_SUFFIX="_mariadb_data"
 NGINX_PROXY_DIR="${NGINX_PROXY_DIR:-$BASE_DIR/webserver/nginx}"
 PROXY_CONF_DIR="${PROXY_CONF_DIR:-$NGINX_PROXY_DIR/conf.d}"
 NGINX_SCRIPTS_DIR="${NGINX_SCRIPTS_DIR:-$NGINX_PROXY_DIR/scripts}"
@@ -114,28 +117,3 @@ source "$FUNCTIONS_DIR/utils/db_utils.sh"
 source "$FUNCTIONS_DIR/utils/website_utils.sh"
 source "$FUNCTIONS_DIR/utils/misc_utils.sh"
 source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
-
-# ==== 15. Helper: load config file from any entry script ====
-load_config_file() {
-  if [[ "$DEV_MODE" == "true" && -n "$BASE_DIR" ]]; then
-    CONFIG_FILE="$BASE_DIR/shared/config/config.sh"
-  else
-    # Traverse upwards to detect config.sh
-    local script_path="$(realpath "${BASH_SOURCE[0]:-$0}")"
-    local dir="$(dirname "$script_path")"
-    while [[ "$dir" != "/" ]]; do
-      if [[ -f "$dir/shared/config/config.sh" ]]; then
-        CONFIG_FILE="$dir/shared/config/config.sh"
-        break
-      fi
-      dir="$(dirname "$dir")"
-    done
-  fi
-
-  if [[ -f "$CONFIG_FILE" ]]; then
-    source "$CONFIG_FILE"
-  else
-    echo "❌ Could not locate config.sh!" >&2
-    exit 1
-  fi
-}

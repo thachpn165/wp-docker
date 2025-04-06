@@ -63,7 +63,7 @@ print_header() {
 }
 
 # 🎯 Main interactive menu loop
-while true; do
+
     print_header
     print_msg title "$TITLE_MENU_MAIN"
     print_msg label "${GREEN}[1]${NC} ${STRONG}$LABEL_MENU_MAIN_WEBSITE${NC}"
@@ -97,4 +97,3 @@ while true; do
             sleep 2 
             ;;
     esac
-done

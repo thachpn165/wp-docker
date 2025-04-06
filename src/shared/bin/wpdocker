@@ -104,6 +104,7 @@ handle_system() {
             case "$2" in
                 rebuild) bash "$CLI_DIR/system_nginx_rebuild.sh" "${@:3}" ;;
                 restart) bash "$CLI_DIR/system_nginx_restart.sh" "${@:3}" ;;
+                reload) nginx_reload ;;
                 *) echo "${CROSSMARK} Unknown subcommand for nginx: $2" ;;
             esac
             ;;
