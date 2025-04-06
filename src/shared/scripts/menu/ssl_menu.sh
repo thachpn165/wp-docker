@@ -3,7 +3,7 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 # Header menu
 print_ssl_menu_header() {
     echo -e "\n${MAGENTA}===========================================${NC}"
-    echo -e "         🔐 SSL CERTIFICATE MANAGEMENT"
+    print_msg title "$TITLE_MENU_SSL"
     echo -e "${MAGENTA}===========================================${NC}"
 }
 
@@ -11,41 +11,41 @@ print_ssl_menu_header() {
 ssl_menu() {
     while true; do
         print_ssl_menu_header
-        echo -e "${GREEN}1)${NC} Generate self-signed SSL"
-        echo -e "${GREEN}2)${NC} Install manual SSL (Paid SSL)"
-        echo -e "${GREEN}3)${NC} Edit SSL"
-        echo -e "${GREEN}4)${NC} Install Let's Encrypt SSL (free)"
-        echo -e "${GREEN}5)${NC} Check SSL certificate status"
-        echo -e "${GREEN}6)${NC} Back to main menu"
+        print_msg label "${GREEN}1)${NC} $LABEL_MENU_SSL_SELFSIGNED"
+        print_msg label "${GREEN}2)${NC} $LABEL_MENU_SSL_MANUAL"
+        print_msg label "${GREEN}3)${NC} $LABEL_MENU_SSL_EDIT"
+        print_msg label "${GREEN}4)${NC} $LABEL_MENU_SSL_LETSENCRYPT"
+        print_msg label "${GREEN}5)${NC} $LABEL_MENU_SSL_CHECK"
+        print_msg label "${GREEN}6)${NC} $MSG_BACK"
         echo ""
 
-        [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-7): " choice
+        read -p "$MSG_SELECT_OPTION " choice
         case "$choice" in
             1)
                 bash "$MENU_DIR/ssl/ssl_generate_self_signed_menu.sh"
-                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             2)
                 bash "$MENU_DIR/ssl/ssl_manual_install_menu.sh"
-                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             3)
                 bash "$MENU_DIR/ssl/ssl_edit_cert_menu.sh"
-                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             4)
                 bash "$MENU_DIR/ssl/ssl_install_letsencrypt_menu.sh"
-                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             5)
                 bash "$MENU_DIR/ssl/ssl_check_status_menu.sh"
-                [[ "$TEST_MODE" != true ]] && read -p "Press Enter to continue..."
+                [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             6)
                 break
                 ;;
             *)
-                echo -e "${RED}${WARNING} Invalid option. Please try again.${NC}"
+                print_msg error "$ERROR_SELECT_OPTION_INVALID"
                 sleep 1
                 ;;
         esac

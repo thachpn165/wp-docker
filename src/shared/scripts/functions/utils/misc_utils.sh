@@ -31,7 +31,7 @@ exit_if_error() {
     local result=$1
     local error_message=$2
     if [[ $result -ne 0 ]]; then
-        echo -e "${RED}${error_message}${NC}"
+        print_msg error "$error_message"
         return 1
     fi
 }
@@ -220,6 +220,10 @@ print_msg() {
     cancel)      emoji="🛑" color="$RED" ;;
     question)    emoji="❓" color="$WHITE" ;;
     completed)   emoji="🏁" color="$GREEN" ;;
+    title)     emoji="" color="$CYAN" ;;
+    label)     emoji="" color="$BLUE" ;;
+    sub_label) emoji="" color="$WHITE" ;;
+    
     progress)
       emoji="🚀"
       color="$GREEN"

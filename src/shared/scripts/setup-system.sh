@@ -3,6 +3,16 @@
 # ========================================
 # ⚙️ setup-system.sh – Initialize WP Docker system
 # ========================================
+
+# === Load config.sh from anywhere using universal loader ===
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
+  fi
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
 source "$FUNCTIONS_DIR/setup-aliases.sh"
