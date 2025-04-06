@@ -297,6 +297,7 @@ readonly ERROR_BACKUP_FAILED_FETCH_DB_NAME_ENV="Không thể lấy tên database
 readonly ERROR_BACKUP_PASSWD_NOT_FOUND="Thiếu thông tin MYSQL_ROOT_PASSWORD trong .env hoặc bị sai. Không thể khôi phục database."
 readonly ERROR_BACKUP_ENV_FILE_NOT_FOUND="Không tìm thấy tập tin .env tại"
 readonly SUCCESS_BACKUP_RESTORED_DB="Đã hoàn tất khôi phục database"
+readonly ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING="Container database không hoạt động"
 # =============================================
 # 🐘 PHP Management
 # =============================================

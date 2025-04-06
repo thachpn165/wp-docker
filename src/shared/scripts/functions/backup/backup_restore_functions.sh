@@ -41,69 +41,32 @@ backup_restore_files() {
 
 backup_restore_database() {
   DB_BACKUP="$1"          # Path to database backup file (.sql)
-  DB_CONTAINER="$2"       # Name of container containing database (mariadb)
-  SITE_DOMAIN="$3"          # Website name to find .env and other details
+  DB_CONTAINER="$2"       # Name of container containing database (mariadb) – now unused
+  SITE_DOMAIN="$3"        # Website name to find .env and other details
+
   local formatted_msg_restoring_database
-  formatted_msg_restoring_database="$(printf "$MSG_BACKUP_RESTORING_DB" "$DB_BACKUP" "$DB_CONTAINER")"
-  if [[ -z "$DB_BACKUP" || -z "$DB_CONTAINER" || -z "$domain" ]]; then
-    #echo "${CROSSMARK} Missing parameters: Invalid database backup file path, container, or site name!"
+  formatted_msg_restoring_database="$(printf "$MSG_BACKUP_RESTORING_DB" "$DB_BACKUP" "$SITE_DOMAIN")"
+
+  if [[ -z "$DB_BACKUP" || -z "$SITE_DOMAIN" ]]; then
     print_and_debug error "$ERROR_BACKUP_RESTORE_DB_MISSING_PARAMS"
     debug_log "[Debug] Failed Database backup file: $DB_BACKUP"
-    debug_log "[Debug] Failed Database container: $DB_CONTAINER"
     debug_log "[Debug] Failed Site domain: $SITE_DOMAIN"
     return 1
   fi
 
-  # Get database name from .env file
-  DB_NAME=$(fetch_env_variable "$SITES_DIR/$domain/.env" "MYSQL_DATABASE")
-  
-  if [[ -z "$DB_NAME" ]]; then
-    #echo "${CROSSMARK} Could not get database name from .env"
-    print_and_debug error "$ERROR_BACKUP_FAILED_FETCH_DB_NAME_ENV"
-    debug_log "[Debug] Failed Database name: $DB_NAME"
-    return 1
-  fi
-
-  # Check if database backup file exists
   if [[ ! -f "$DB_BACKUP" ]]; then
-    #echo "${CROSSMARK} Database backup file not found: $DB_BACKUP"
     print_and_debug error "$MSG_NOT_FOUND: $DB_BACKUP"
     debug_log "[Debug] Failed Database backup file: $DB_BACKUP"
     return 1
   fi
 
-  # Get MYSQL_ROOT_PASSWORD from .env
-  MYSQL_ROOT_PASSWORD=$(fetch_env_variable "$SITES_DIR/$domain/.env" "MYSQL_ROOT_PASSWORD")
-  
-  if [[ -z "$MYSQL_ROOT_PASSWORD" ]]; then
-    #echo "${CROSSMARK} Missing MySQL root password. Cannot restore database."
-    print_and_debug error "$ERROR_BACKUP_PASSWD_NOT_FOUND"
-    debug_log "[Debug] Failed MySQL root password: $MYSQL_ROOT_PASSWORD"
-    # check .env file
-    if [[ ! -f "$SITES_DIR/$domain/.env" ]]; then
-      print_and_debug error "$ERROR_BACKUP_ENV_FILE_NOT_FOUND $SITES_DIR/$domain/.env"
-      debug_log "[Debug] Failed .env file: $SITES_DIR/$domain/.env"
-    fi
-    return 1
-  fi
-
-  # Restore database from backup file
   print_and_debug step "$formatted_msg_restoring_database"
-  # Drop database if exists and create new one
-  docker exec -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" -i "$DB_CONTAINER" mysql -u root -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
+  debug_log "[Debug] Delegating database restore to: cli/website_database_import.sh --domain=\"$SITE_DOMAIN\" --backup_file=\"$DB_BACKUP\""
 
-  # Restore database
-  docker exec -e MYSQL_PWD="$MYSQL_ROOT_PASSWORD" -i "$DB_CONTAINER" mysql -u root "$DB_NAME" < "$DB_BACKUP"
-
-  if [[ $? -eq 0 ]]; then
-    #echo "${CHECKMARK} Database has been successfully restored from backup to database '$DB_NAME'."
-    print_and_debug success "$SUCCESS_BACKUP_RESTORED_DB $DB_NAME"
-  else
-    #echo "${CROSSMARK} An error occurred while restoring database from backup."
-    print_and_debug error "$ERROR_BACKUP_RESTORE_DB_FAILED"
-    debug_log "[Debug] Failed Database restore: $DB_BACKUP"
-    debug_log "[Debug] Failed Database name: $DB_NAME"
-    debug_log "[Debug] Failed Database container: $DB_CONTAINER"
-    return 1
-  fi
+  bash "$CLI_DIR/database_import.sh" \
+    --domain="$SITE_DOMAIN" \
+    --backup_file="$DB_BACKUP" || {
+      print_and_debug error "$ERROR_BACKUP_RESTORE_DB_FAILED"
+      return 1
+    }
 }
