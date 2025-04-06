@@ -35,5 +35,6 @@ backup_restore_web_logic() {
         backup_restore_database "$db_backup_file" "$db_container" "$domain"
     fi
 
-    echo -e "${GREEN}${CHECKMARK} Website '$domain' restore completed.${NC}"
+    #echo -e "${GREEN}${CHECKMARK} Website '$domain' restore completed.${NC}"
+    print_and_debug success "$SUCCESS_BACKUP_RESTORED_DB: $domain"
 }
