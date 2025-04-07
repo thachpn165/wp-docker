@@ -9,7 +9,7 @@ php_choose_version || return 1
 php_version="$REPLY"
 
 echo ""
-choice=$(get_input_or_test_value "$PROMPT_WEBSITE_CREATE_RANDOM_ADMIN" "Y")
+choice=$(get_input_or_test_value "$PROMPT_WEBSITE_CREATE_RANDOM_ADMIN" "${TEST_WEBSITE_CREATE_RANDOM_ADMIN:-y}")
 echo "🔍 Prompt text: $PROMPT_WEBSITE_CREATE_RANDOM_ADMIN"
 choice="$(echo "$choice" | tr '[:upper:]' '[:lower:]')"
 

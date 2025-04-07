@@ -28,7 +28,7 @@ database_reset_logic() {
 
     # Confirm with user
     print_msg important "$(printf "$QUESTION_DB_RESET_CONFIRM" "$db_name" "$domain")"
-    get_input_or_test_value "n" "$CONFIRM_DB_RESET" confirm
+    confirm=$(get_input_or_test_value "$CONFIRM_DB_RESET" "${TEST_VALUE:-y}")
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
         print_msg cancel "$MSG_OPERATION_CANCELLED"
         return 0

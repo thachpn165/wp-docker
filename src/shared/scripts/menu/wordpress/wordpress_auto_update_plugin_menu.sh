@@ -32,8 +32,7 @@ print_msg info "$(printf "$PROMPT_CHOOSE_ACTION_FOR_SITE" "$domain")"
 echo "1) $LABEL_ENABLE_AUTO_UPDATE_PLUGIN"
 echo "2) $LABEL_DISABLE_AUTO_UPDATE_PLUGIN"
 
-get_input_or_test_value "$PROMPT_ENTER_OPTION" action_choice
-
+action_choice=$(get_input_or_test_value "$PROMPT_ENTER_OPTION" "${TEST_ACTION_CHOICE:-1}")
 if [[ "$action_choice" == "1" ]]; then
   action="enable"
 elif [[ "$action_choice" == "2" ]]; then

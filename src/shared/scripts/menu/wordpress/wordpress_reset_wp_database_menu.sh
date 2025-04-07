@@ -41,8 +41,8 @@ echo ""
 print_msg warning "$(printf "$CONFIRM_RESET_DATABASE_FOR_SITE" "$domain")"
 echo "1) ✅ $CONFIRM_YES_RESET_DATABASE"
 echo "2) ❌ $CONFIRM_NO_CANCEL"
-get_input_or_test_value "$PROMPT_SELECT_OPTION" confirm_choice
 
+confirm_choice=$(get_input_or_test_value "$PROMPT_SELECT_OPTION" "${TEST_CONFIRM_CHOICE:-1}")
 if [[ "$confirm_choice" == "1" ]]; then
   bash "$SCRIPTS_DIR/cli/wordpress_reset_wp_database.sh" --domain="$domain"
   print_msg success "$(printf "$SUCCESS_DATABASE_RESET_DONE" "$domain")"

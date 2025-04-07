@@ -33,7 +33,8 @@ echo ""
 print_msg question "$(printf "$QUESTION_PROTECT_WPLOGIN_ACTION" "$domain")"
 echo "1) $LABEL_PROTECT_WPLOGIN_ENABLE"
 echo "2) $LABEL_PROTECT_WPLOGIN_DISABLE"
-get_input_or_test_value "$PROMPT_ENTER_ACTION_NUMBER" action_choice
+
+action_choice=$(get_input_or_test_value "$PROMPT_ENTER_ACTION_NUMBER" "${TEST_ACTION:-1}")
 
 if [[ "$action_choice" == "1" ]]; then
     action="enable"

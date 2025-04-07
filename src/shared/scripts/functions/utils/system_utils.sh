@@ -57,7 +57,7 @@ choose_editor() {
     echo -e "  $((i + 1))) ${AVAILABLE_EDITORS[$i]}"
   done
 
-  get_input_or_test_value "$PROMPT_SELECT_EDITOR" "" editor_index
+  editor_index=$(get_input_or_test_value "$PROMPT_SELECT_EDITOR" "${TEST_EDITOR:-1}")
 
   if ! [[ "$editor_index" =~ ^[0-9]+$ ]] || (( editor_index < 1 || editor_index > ${#AVAILABLE_EDITORS[@]} )); then
     print_msg warning "$WARNING_EDITOR_INVALID_SELECT"
@@ -68,7 +68,7 @@ choose_editor() {
 
   print_msg info "$(printf "$INFO_EDITOR_USAGE_GUIDE" "$EDITOR_CMD")"
 
-  get_input_or_test_value "$PROMPT_CONFIRM_EDITOR" "y" confirm
+  confirm=$(get_input_or_test_value "$PROMPT_CONFIRM_EDITOR" "${TEST_CONFIRM_EDITOR:-y}")
   if [[ "$confirm" =~ ^[Nn]$ ]]; then
     print_msg warning "$WARNING_EDITOR_CANCELLED"
     return 1
