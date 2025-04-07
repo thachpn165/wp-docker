@@ -1,4 +1,44 @@
-# 📦 CHANGELOG – WP Docker LEMP
+# 📦 CHANGELOG – WP Docker
+
+## [v1.1.7-beta] - 2025-04-07
+
+### 🚀 Added
+
+- Integrated i18n (multi-language) system across the project:
+  - All CLI messages are managed in centralized files: `shared/lang/vi.sh` and `en.sh`.
+  - `LANG_CODE` defined in `.env` allows dynamic language switching.
+- New language switch feature (`core_change_lang_logic`) in System Tools menu.
+- Integrated global `DEBUG_MODE` and `DEV_MODE`:
+  - `DEBUG_MODE=true`: displays full log and commands being executed.
+  - `DEV_MODE=true`: shows under-development features.
+- Added `print_msg`, `print_and_debug`, and `debug_log` for unified CLI output.
+- New feature: Restore website from backup (`backup_restore_web_menu.sh`), with support for selecting `.tar.gz` and `.sql` files.
+- Enhanced cron job summary with readable format using `cron_translate()`.
+- The `core_change_lang_logic` now dynamically loads supported languages from `LANG_LIST`.
+- Updated GitHub Actions `dev-build.yml` to automatically generate `nightly` release.
+
+---
+
+### 🐞 Fixed
+
+- Fixed issue where `run_cmd` silently failed when `DEBUG_MODE=false` (added `eval` fallback).
+- Resolved incorrect detection of relative backup file paths during restore.
+- Fixed conflict in GitHub Actions builds caused by concurrent edits to `latest_version_dev.txt`.
+- Resolved MySQL error caused by invalid `mysql < db_name` syntax.
+
+---
+
+### ♻️ Changed
+
+- All scripts in `menu/` and `cli/` have been refactored:
+  - Replaced all `read -p` with `get_input_or_test_value` for test compatibility.
+  - Standardized `PROJECT_DIR` detection and sourcing `load_config.sh`.
+- All CLI display logic switched to `print_msg` with i18n support.
+- Refactored path resolution to ensure backup file paths are absolute.
+- Fully refactored all `wordpress_*` logic scripts to adopt i18n/debug/dev standards.
+- All inline CLI messages have been moved to language files (i18n) to eliminate hardcoded text.
+
+---
 
 ## [v1.1.6-beta] - 2025-04-05
 
