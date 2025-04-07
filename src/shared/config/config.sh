@@ -51,7 +51,7 @@ CORE_CURRENT_VERSION="${CORE_CURRENT_VERSION:-$BASE_DIR/$CORE_VERSION_FILE}"
 CORE_TEMPLATE_VERSION_FILE="${CORE_TEMPLATE_VERSION_FILE:-shared/templates/.template_version}"
 LOG_FILE="${LOG_FILE:-/tmp/update_wp_docker.log}"
 CORE_LATEST_VERSION="${CORE_LATEST_VERSION:-https://raw.githubusercontent.com/thachpn165/${REPO_NAME}/refs/heads/main/src/${CORE_VERSION_FILE}}"
-CORE_NIGHTLY_VERSION="${CORE_NIGHTLY_VERSION:-https://raw.githubusercontent.com/thachpn165/${REPO_NAME}/refs/heads/nightly/src/${CORE_VERSION_FILE}}"
+CORE_NIGHTLY_VERSION="${CORE_NIGHTLY_VERSION:-https://raw.githubusercontent.com/thachpn165/wp-docker/refs/tags/nightly/src/version.txt}"
 
 # ==== 6. Define directory structure ====
 SITES_DIR="${SITES_DIR:-$BASE_DIR/sites}"

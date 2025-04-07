@@ -25,6 +25,32 @@ if [[ ! -f "$CORE_ENV" ]]; then
   touch "$CORE_ENV"
 fi
 
+# === Prompt language selection if LANG_CODE is not set ===
+if ! grep -q "^LANG_CODE=" "$CORE_ENV"; then
+  echo -e "\n🌐 Please select a language:"
+  options=("English (en)" "Vietnamese (vi)")
+  PS3="Select a language number: "
+  select opt in "${options[@]}"; do
+    case $REPLY in
+      1)
+        lang_code="en"
+        break
+        ;;
+      2)
+        lang_code="vi"
+        break
+        ;;
+      *)
+        echo "❌ Invalid selection. Please try again."
+        ;;
+    esac
+  done
+
+  echo "✅ Language selected: $lang_code"
+  echo "LANG_CODE=\"$lang_code\"" >> "$CORE_ENV"
+fi
+
+# === Prompt for CORE_CHANNEL if not set ===
 if ! grep -q "^CORE_CHANNEL=" "$CORE_ENV"; then
   print_msg info "$PROMPT_SELECT_CHANNEL"
   PS3="$(print_msg plain "$PROMPT_SELECT_OPTION")"

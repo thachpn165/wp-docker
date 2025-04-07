@@ -4,6 +4,53 @@
 # 🌱 Environment Variable Utilities
 # ============================================
 
+# Declare functions if not already declared
+if ! declare -f log_with_time > /dev/null; then
+  log_with_time() {
+      local message="$1"
+      local formatted_time
+      formatted_time="$(date '+%Y-%m-%d %H:%M:%S') - $message"
+
+      # Output to terminal
+      echo -e "$formatted_time"
+      # Write to file if DEBUG_LOG variable is set
+      if [[ -n "$DEBUG_LOG" ]]; then
+          echo -e "$formatted_time" >> "$DEBUG_LOG"
+      fi
+  }
+fi
+
+if ! declare -f print_and_debug > /dev/null; then
+  print_and_debug() {
+      local type="$1"       # info, error, warning,...
+      local message="$2"
+
+      print_msg "$type" "$message"
+
+      if [[ "$DEBUG_MODE" == "true" ]]; then
+          local source_file="${BASH_SOURCE[1]}"
+          local line_number="${BASH_LINENO[0]}"
+          local func_name="${FUNCNAME[1]}"
+          log_with_time "🐛 [$type] $source_file:$line_number [$func_name] → $message"
+      fi
+  }
+fi
+
+if ! declare -f debug_log > /dev/null; then
+    debug_log() {
+        local message="$1"
+        if [[ "$DEBUG_MODE" == "true" ]]; then
+            # Lấy thông tin file và dòng gọi hàm debug_log
+            local source_file="${BASH_SOURCE[1]}"
+            local line_number="${BASH_LINENO[0]}"
+            local func_name="${FUNCNAME[1]}"
+
+            log_with_time "🐛 [DEBUG] $source_file:$line_number [$func_name] → $message"
+        fi
+    }
+fi
+
+
 # Load config if not already loaded
 if [[ -z "$PROJECT_DIR" ]]; then
   print_and_debug error "$ERROR_PROJECT_DIR_NOT_SET"

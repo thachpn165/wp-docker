@@ -19,7 +19,7 @@ core_display_version_logic() {
             latest_version=$(core_version_dev_cache)
             ;;
         *)
-            print_msg error "$(printf "$ERROR_VERSION_CHANNEL_INVALID_CHANNEL" "$channel")"
+            print_msg error "$ERROR_VERSION_CHANNEL_INVALID_CHANNEL - $channel"
             return 1
             ;;
     esac
