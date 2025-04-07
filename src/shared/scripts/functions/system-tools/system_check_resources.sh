@@ -1,22 +1,34 @@
 system_check_resources_logic() {
-    # Collect resource information
-    cpu_memory_usage=$(docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}" 2>/dev/null | sed '1d')
-    memory_usage=$(free -h 2>/dev/null | awk 'NR==2{print $3"/"$2}')
-    disk_usage=$(df -h / 2>/dev/null | awk 'NR==2{print $3"/"$2}')
-    uptime_info=$(uptime -p 2>/dev/null)
-    
-    # Check operating system to get correct information
-    os_type=$(uname)
-    if [[ "$os_type" == "Darwin" ]]; then
-        memory_usage=$(vm_stat | awk -F':' '{gsub(" ", ""); print $2}' | sed -n '2p')
-        disk_usage=$(df -h / | awk 'NR==2{print $3"/"$2}')
-        uptime_info=$(uptime | awk -F', ' '{print $1}' | sed 's/^.*up //')
-    fi
+  local cpu_memory_usage memory_usage disk_usage uptime_info os_type
 
-    # Return resource information
-    echo -e "🔹 ${BOLD}CPU% USAGE & CONTAINER RAM:${NC}"
-    echo -e "$cpu_memory_usage"
-    echo -e "${SAVE} ${BOLD}Total RAM:${NC} $memory_usage"
-    echo -e "🗄️  ${BOLD}Disk Usage:${NC} $disk_usage"
-    echo -e "⏳ ${BOLD}Uptime:${NC} $uptime_info"
+  # 🐳 Get Docker container resource usage
+  cpu_memory_usage=$(docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}" 2>/dev/null | sed '1d')
+
+  # 🧠 Default memory and disk usage (Linux)
+  memory_usage=$(free -h 2>/dev/null | awk 'NR==2{print $3"/"$2}')
+  disk_usage=$(df -h / 2>/dev/null | awk 'NR==2{print $3"/"$2}')
+  uptime_info=$(uptime -p 2>/dev/null)
+
+  os_type=$(uname -s)
+  debug_log "[SYSTEM] Detected OS: $os_type"
+
+  if [[ "$os_type" == "Darwin" ]]; then
+    # 🧠 macOS-specific memory usage
+    local page_size=$(sysctl -n hw.pagesize)
+    local free_pages=$(vm_stat | grep "Pages free" | awk '{print $3}' | sed 's/\.//')
+    local inactive_pages=$(vm_stat | grep "Pages inactive" | awk '{print $3}' | sed 's/\.//')
+    local speculative_pages=$(vm_stat | grep "Pages speculative" | awk '{print $3}' | sed 's/\.//')
+    local free_bytes=$(( (free_pages + inactive_pages + speculative_pages) * page_size ))
+    local total_mem=$(sysctl -n hw.memsize)
+    memory_usage="$(numfmt --to=iec $((total_mem - free_bytes))) / $(numfmt --to=iec $total_mem)"
+
+    disk_usage=$(df -h / | awk 'NR==2{print $3"/"$2}')
+    uptime_info=$(uptime | awk -F', ' '{print $1}' | sed 's/^.*up //')
+  fi
+
+  print_msg title "$TITLE_SYSTEM_RESOURCES"
+  echo -e "$cpu_memory_usage"
+  print_msg label "$(printf "$LABEL_TOTAL_RAM" "$memory_usage")"
+  print_msg label "$(printf "$LABEL_DISK_USAGE" "$disk_usage")"
+  print_msg label "$(printf "$LABEL_UPTIME" "$uptime_info")"
 }

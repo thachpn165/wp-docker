@@ -1,41 +1,28 @@
-# Ensure the script is executed in a Bash shell
-if [ -z "$BASH_VERSION" ]; then
-    echo "${CROSSMARK} This script must be run in a Bash shell." >&2
-    exit 1
-fi
+# =============================================
+# 🚀 WP Docker Main Entry Script
+# ---------------------------------------------
+# This script is the main entry point of the WP Docker system.
+# It loads global configurations, imports all menu modules,
+# and displays the interactive CLI menu for managing WordPress projects.
+#
+# Features:
+# - System setup initialization
+# - System information and Docker status overview
+# - Access to all feature menus (Website, SSL, Backup, PHP, Rclone, etc.)
+# - Supports i18n, DEBUG_MODE, and DEV_MODE
+# =============================================
 
-# === 🧠 Auto-detect PROJECT_DIR (source code root) ===
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
+  fi
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 
-# If PROJECT_DIR is not set, attempt to find the project root (from anywhere)
-if [[ -z "$PROJECT_DIR" ]]; then
-    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-
-    # Go upwards from the script location to find 'config.sh'
-    while [[ "$SCRIPT_PATH" != "/" ]]; do
-        if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-            PROJECT_DIR="$SCRIPT_PATH"
-            break
-        fi
-        SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-    done
-fi
-
-# === ${CHECKMARK} Load config.sh from PROJECT_DIR ===
-
-# Check if we found the project directory and config file
-if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
-fi
-
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-    exit 1
-fi
-source "$CONFIG_FILE"
-
-# Import menu functions
+# 📦 Import all menu modules
 source "$MENU_DIR/menu_utils.sh"
 source "$MENU_DIR/website_management_menu.sh"
 source "$MENU_DIR/wordpress_tools_menu.sh"
@@ -46,53 +33,53 @@ source "$MENU_DIR/ssl_menu.sh"
 source "$MENU_DIR/php_menu.sh"
 source "$MENU_DIR/database_menu.sh"
 source "$FUNCTIONS_DIR/core_loader.sh"
-# **Run system setup before displaying menu**
-bash "$SCRIPTS_DIR/setup-system.sh"
-# ✔️ ${CROSSMARK} **Status Icons**
-CHECKMARK="${GREEN}${CHECKMARK}${NC}"
-CROSSMARK="${RED}${CROSSMARK}${NC}"
+# ⚙️ Run initial system setup (timezone, permissions, etc.)
+source "$SCRIPTS_DIR/setup-system.sh"
 
-# 🏆 **Display Header**
+# 🏆 Display system information and version header
 print_header() {
     clear
     #echo -e "\n\n\n"
     get_system_info
     echo -e "${MAGENTA}==============================================${NC}"
-    echo -e "${MAGENTA}        ${CYAN}WordPress Docker 🐳            ${NC}"
+    print_msg title "$TITLE_MENU_WELCOME"
     echo -e "${MAGENTA}==============================================${NC}"
     echo ""
     
-    echo -e "${BLUE}🐳 Docker Status:${NC}"
-    echo -e "  🌐 Docker Network: $(check_docker_network)"
-    echo -e "  🚀 NGINX Proxy: $(check_nginx_status)"
+    print_msg label "$LABEL_DOCKER_STATUS"
+    print_msg sub-label "- $LABEL_DOCKER_NETWORK_STATUS: $(check_docker_network)"
+    print_msg sub-label "- $LABEL_DOCKER_NGINX_STATUS: $(check_nginx_status)"
 
     echo ""
-    echo -e "${BLUE}📊 System Information:${NC}"
-    echo -e "  🖥  CPU: ${GREEN}${CPU_MODEL} (${TOTAL_CPU} cores)${NC}"
-    echo -e "  ${SAVE} RAM: ${YELLOW}${USED_RAM}MB / ${TOTAL_RAM}MB${NC}"
-    echo -e "  📀 Disk: ${YELLOW}${DISK_USAGE}${NC}"
-    echo -e "  🌍 IP Address: ${CYAN}${IP_ADDRESS}${NC}"
+    print_msg label "$LABEL_SYSTEM_INFO"
+    print_msg sub-label "- ${STRONG}$LABEL_CPU${NC}: ${CPU_MODEL} (${TOTAL_CPU} cores)"
+    print_msg sub-label "- ${STRONG}$LABEL_RAM${NC}: ${USED_RAM}MB / ${TOTAL_RAM}MB"
+    print_msg sub-label "- ${STRONG}$LABEL_DISK${NC}: ${DISK_USAGE}"
+    print_msg sub-label "- ${STRONG}$LABEL_IPADDR${NC}: ${IP_ADDRESS}"
     echo ""
-    echo -e "${CYAN}📦 Version Channel:${NC} ${YELLOW}${CORE_CHANNEL}${NC}"
+    print_msg label "${STRONG}$LABEL_VERSION_CHANNEL${NC}: ${YELLOW}${CORE_CHANNEL}${NC}"
     core_display_version
     echo -e "${MAGENTA}==============================================${NC}"
 }
 
-
-
-# 🎯 **Display Main Menu**
+# 🎯 Main interactive menu loop
 while true; do
     print_header
-    echo -e "${BLUE}MAIN MENU:${NC}"
-    echo -e "  ${GREEN}[1]${NC} WordPress Website Management    ${GREEN}[6]${NC} Website Backup Management"
-    echo -e "  ${GREEN}[2]${NC} SSL Certificate Management      ${GREEN}[7]${NC} WordPress Cache Management"
-    echo -e "  ${GREEN}[3]${NC} System Tools                    ${GREEN}[8]${NC} PHP Management"
-    echo -e "  ${GREEN}[4]${NC} Rclone Management               ${GREEN}[9]${NC} Database Management"
-    echo -e "  ${GREEN}[5]${NC} WordPress Tools                 ${GREEN}[10]${NC} Check for Updates"
-    echo -e "  ${GREEN}[11]${NC} ${CROSSMARK} Exit                                                      "                                               
-    echo ""
+    print_msg title "$TITLE_MENU_MAIN"
+    print_msg label "${GREEN}[1]${NC} ${STRONG}$LABEL_MENU_MAIN_WEBSITE${NC}"
+    print_msg label "${GREEN}[2]${NC} ${STRONG}$LABEL_MENU_MAIN_SSL${NC}"
+    print_msg label "${GREEN}[3]${NC} ${STRONG}$LABEL_MENU_MAIN_SYSTEM${NC}"
+    print_msg label "${GREEN}[4]${NC} ${STRONG}$LABEL_MENU_MAIN_RCLONE${NC}"
+    print_msg label "${GREEN}[5]${NC} ${STRONG}$LABEL_MENU_MAIN_WORDPRESS${NC}"
+    print_msg label "${GREEN}[6]${NC} ${STRONG}$LABEL_MENU_MAIN_BACKUP${NC}"
+    print_msg label "${GREEN}[7]${NC} ${STRONG}$LABEL_MENU_MAIN_WORDPRESS_CACHE${NC}"
+    print_msg label "${GREEN}[8]${NC} ${STRONG}$LABEL_MENU_MAIN_PHP${NC}"
+    print_msg label "${GREEN}[9]${NC} ${STRONG}$LABEL_MENU_MAIN_DATABASE${NC}"
+    print_msg label "${GREEN}[10]${NC} ${STRONG}$LABEL_MENU_MAIN_UPDATE${NC}"
+    print_msg label "${GREEN}[11]${NC} ${RED}$MSG_EXIT${NC}"
 
-    [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-10): " choice
+    [[ "$TEST_MODE" != true ]] && read -p "${MSG_SELECT_OPTION}: " choice
+    # 🧭 Handle user menu selection
     case "$choice" in
         1) website_management_menu ;;
         2) ssl_menu ;;
@@ -100,13 +87,13 @@ while true; do
         4) rclone_menu ;;
         5) wordpress_tools_menu ;;
         6) backup_menu ;;
-        7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "Press Enter to continue..." ;;
+        7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         8) php_menu ;;
         9) database_menu ;;
-        10) bash "$MENU_DIR/core/core_update_menu.sh" ;;  # Call function to display version and update
-        11) echo -e "${GREEN}${CROSSMARK} Exiting program.${NC}" && exit 0 ;;
+        10) echo "coming soon" ;;  # Call function to display version and update
+        11) print_msg progress "$MSG_EXITING" && exit 0 ;;
         *) 
-            echo -e "${RED}${WARNING} Invalid option! Please select from [1-10].${NC}"
+            print_msg error "$ERROR_SELECT_OPTION_INVALID"
             sleep 2 
             ;;
     esac

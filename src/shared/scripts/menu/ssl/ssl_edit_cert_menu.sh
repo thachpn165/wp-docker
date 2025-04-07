@@ -27,7 +27,7 @@ source "$FUNCTIONS_DIR/ssl_loader.sh"
 # === Select Website ===
 select_website
 if [[ -z "$domain" ]]; then
-  echo "${CROSSMARK} No website selected."
+  print_msf error "$ERROR_NO_WEBSITE_SELECTED"
   exit 1
 fi
 

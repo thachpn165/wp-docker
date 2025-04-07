@@ -1,65 +1,46 @@
-# This script is used to restore a website from backup files. It ensures the script is run in a Bash shell,
-# validates the required environment variables and parameters, and sources necessary configuration files
-# before executing the restoration logic.
-
-# Prerequisites:
-# - The script must be executed in a Bash shell.
-# - The environment variable `PROJECT_DIR` must be set or determinable from the script's directory structure.
-# - The configuration file `config.sh` must exist in the `shared/config` directory relative to `PROJECT_DIR`.
-# - The `backup_loader.sh` script must be available in the directory specified by the `FUNCTIONS_DIR` variable.
-
-# Command-line Parameters:
-# --domain=example.tld         (Required) The name of the site to restore.
-# --code_backup_file=<file_path>  (Optional) Path to the code backup file.
-# --db_backup_file=<file_path>    (Optional) Path to the database backup file.
-# --test_mode=<true|false>        (Optional) Flag to indicate whether to run in test mode.
-
-# Script Workflow:
-# 1. Validates that the script is run in a Bash shell.
-# 2. Determines the `PROJECT_DIR` by searching for the `config.sh` file in the directory hierarchy.
-# 3. Sources the `config.sh` configuration file and the `backup_loader.sh` script.
-# 4. Parses command-line arguments to extract parameters.
-# 5. Validates that the `site_name` parameter is provided.
-# 6. Calls the `backup_restore_web_logic` function with the provided parameters to perform the restoration.
-
-# Exit Codes:
-# 0  - Success.
-# 1  - Failure due to missing prerequisites, invalid parameters, or errors during execution.
-
-# Usage Example:
-# ./backup_restore_web.sh --domain=my_site --code_backup_file=/path/to/code.tar.gz --db_backup_file=/path/to/db.sql --test_mode=true
 #!/bin/bash
+# This script is used to restore a website from backup files. It supports restoring both code and database backups.
+#
+# 🔧 Auto-detects the base directory and loads global configuration files.
+#
+# === Command Line Flags ===
+# --domain=<domain_name>
+#   (Required) The domain name of the website to restore. Example: --domain=example.tld
+#
+# --code_backup_file=<path_to_code_backup>
+#   (Optional) The file path to the code backup archive (e.g., .tar.gz). Example: --code_backup_file=/path/to/code_backup.tar.gz
+#
+# --db_backup_file=<path_to_db_backup>
+#   (Optional) The file path to the database backup file (e.g., .sql). Example: --db_backup_file=/path/to/db_backup.sql
+#
+# --test_mode=<true|false>
+#   (Optional) A flag to indicate whether to run the script in test mode. Example: --test_mode=true
+#
+# === Behavior ===
+# - The script ensures that the `--domain` parameter is provided. If missing, it will display an error and exit.
+# - If provided, the script will call the `backup_restore_web_logic` function, passing the domain, code backup file, 
+#   database backup file, and test mode as arguments.
+#
+# === Error Handling ===
+# - If an unknown parameter is passed, the script will display an error message with examples of valid parameters.
+# - If the required `--domain` parameter is missing, the script will display an error message and exit.
+#
+# === Dependencies ===
+# - Requires `load_config.sh` to load global configurations.
+# - Requires `backup_loader.sh` for backup-related functions.
+#
+# === Example Usage ===
+# ./backup_restore_web.sh --domain=example.tld --code_backup_file=/path/to/code_backup.tar.gz --db_backup_file=/path/to/db_backup.sql --test_mode=true
 
-
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  
-  # Iterate upwards from the current script directory to find 'config.sh'
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-
-  # Handle error if config file is not found
-  if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
   fi
-fi
-
-# Load the config file if PROJECT_DIR is set
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-
-# Source the config file
-source "$CONFIG_FILE"
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 source "$FUNCTIONS_DIR/backup_loader.sh"
 
 # === Parse command line flags ===
@@ -82,7 +63,9 @@ while [[ "$#" -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Unknown parameter: $1"
+      #echo "Unknown parameter: $1"
+      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
+      print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld\n  --code_backup_file=/path/to/code_backup.tar.gz\n  --db_backup_file=/path/to/db_backup.sql\n  --test_mode=true/false"
       exit 1
       ;;
   esac
@@ -90,7 +73,9 @@ done
 
 # Ensure domain is passed, but code_backup_file and db_backup_file can be optional
 if [[ -z "$domain" ]]; then
-  echo "${CROSSMARK} Missing site_name parameter."
+  #echo "${CROSSMARK} Missing site_name parameter."
+  print_and_debug error "$ERROR_MISSING_PARAM: --domain"
+  print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld\n  --code_backup_file=/path/to/code_backup.tar.gz\n  --db_backup_file=/path/to/db_backup.sql\n  --test_mode=true/false"
   exit 1
 fi
 

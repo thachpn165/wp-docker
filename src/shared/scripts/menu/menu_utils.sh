@@ -29,26 +29,26 @@ get_system_info() {
 # 🐳 **Check Docker Status**
 check_docker_status() {
     if docker info &>/dev/null; then
-        echo -e "$CHECKMARK Docker"
+        print_msg success "$SUCCESS_DOCKER_STATUS"
     else
-        echo -e "$CROSSMARK Docker"
+        print_msg error "$ERROR_DOCKER_STATUS"
     fi
 }
 
 # 🌐 **Check Docker Network Status**
 check_docker_network() {
     if docker network inspect "$DOCKER_NETWORK" &>/dev/null; then
-        echo -e "$CHECKMARK Docker Network ($DOCKER_NETWORK)"
+        print_msg success "$SUCCESS_DOCKER_NETWORK_STATUS ($DOCKER_NETWORK)"
     else
-        echo -e "$CROSSMARK Docker Network ($DOCKER_NETWORK)"
+        print_msg error "$ERROR_DOCKER_NETWORK_STATUS ($DOCKER_NETWORK)"
     fi
 }
 
 # 🚀 **Check NGINX Proxy Status**
 check_nginx_status() {
     if is_container_running "$NGINX_PROXY_CONTAINER"; then
-        echo -e "$CHECKMARK NGINX Proxy"
+        print_msg success "$SUCCESS_DOCKER_NGINX_STATUS ($NGINX_PROXY_CONTAINER)"
     else
-        echo -e "$CROSSMARK NGINX Proxy"
+        print_msg error "$ERROR_DOCKER_NGINX_STATUS ($NGINX_PROXY_CONTAINER)"
     fi
 }

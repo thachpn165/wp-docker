@@ -1,64 +1,68 @@
-# database_import_logic – Logic to import database (restore)
 database_import_logic() {
     local domain="$1"
     local backup_file="$2"
 
-    # Ensure PROJECT_DIR is set
     if [[ -z "$SITES_DIR" ]]; then
-        echo "${CROSSMARK} SITES_DIR is not set. Ensure config.sh is sourced correctly."
+        print_msg error "$ERROR_CONFIG_SITES_DIR_NOT_SET"
         return 1
     fi
 
-    # Ensure $domain is set
     if [[ -z "$domain" ]]; then
-        echo "${CROSSMARK} Missing site name parameter."
+        print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
         return 1
     fi
 
-    # Ensure the backup file exists
     if [[ ! -f "$backup_file" ]]; then
-        echo "${CROSSMARK} The backup file does not exist: $backup_file"
+        print_msg error "$MSG_NOT_FOUND: $backup_file"
         return 1
     fi
 
-    # Fetch database credentials from the website's .env file
+    local db_container
+    db_container=$(fetch_env_variable "$SITES_DIR/$domain/.env" "CONTAINER_DB")
+    if [[ -z "$db_container" ]]; then
+        print_msg error "$(printf "$ERROR_ENV_NOT_FOUND" "$SITES_DIR/$domain/.env")"
+        return 1
+    fi
+
+    debug_log "[DB IMPORT] Domain: $domain"
+    debug_log "[DB IMPORT] Backup file: $backup_file"
+
     local db_info
     db_info=$(db_fetch_env "$domain")
-
-    # Check if fetching database credentials was successful
     if [[ $? -ne 0 ]]; then
-        echo "${CROSSMARK} Failed to fetch database credentials for site '$domain'."
+        print_msg error "$(printf "$ERROR_DB_FETCH_CREDENTIALS" "$domain")"
         return 1
     fi
 
-    # Parse the database credentials
     local db_name db_user db_password
     IFS=' ' read -r db_name db_user db_password <<< "$db_info"
+    debug_log "[DB IMPORT] db_name=$db_name, db_user=$db_user"
 
-    # Check if MariaDB container is running
     if ! is_mariadb_running "$domain"; then
-        echo "${CROSSMARK} MariaDB container for site '$domain' is not running. Please check!"
+        print_msg error "$(printf "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING" "$db_container")"
         return 1
     fi
-    # Drop and recreate the database
-    docker cp "$backup_file" ${domain}-mariadb:/tmp/restore.sql
-    docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb \
-    mysql -u "$db_user" -e "DROP DATABASE IF EXISTS \`$db_name\`; CREATE DATABASE \`$db_name\`;" > /dev/null 2>&1
-    # Import database from copied SQL file
-    if ! docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb \
+
+    local formatted_msg_restoring_database
+    formatted_msg_restoring_database="$(printf "$MSG_BACKUP_RESTORING_DB" "$backup_file" "$domain")"
+    print_msg step "$formatted_msg_restoring_database"
+
+    docker cp "$backup_file" "$db_container:/tmp/restore.sql"
+    debug_log "[DB IMPORT] Copied SQL file to container: /tmp/restore.sql"
+
+    local sql_cmd="DROP DATABASE IF EXISTS \`$db_name\`; CREATE DATABASE \`$db_name\`;"
+    docker exec --env MYSQL_PWD="$db_password" "$db_container" \
+        mysql -u "$db_user" -e "$sql_cmd"
+    debug_log "[DB IMPORT] SQL Command: $sql_cmd"
+    
+    if ! docker exec --env MYSQL_PWD="$db_password" "$db_container" \
         sh -c "mysql -u $db_user $db_name < /tmp/restore.sql"; then
-        echo "${CROSSMARK} Failed to import the database '$db_name' in container."
-    return 1
-    fi
-    docker exec ${domain}-mariadb rm -f /tmp/restore.sql   
-    # Proceed to restore the database from the backup file
-    echo "Restoring database: $db_name for site: $domain from file: $backup_file..."
-
-    # Run the import command inside the container
-    if ! docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb mysql -u $db_user $db_name < "$backup_file"; then
-        echo "${CROSSMARK} Failed to import the database '$db_name' in container."
+        print_msg error "$(printf "$ERROR_BACKUP_RESTORE_FAILED" "$db_name")"
         return 1
     fi
 
-    echo "${CHECKMARK} Database import completed!"
+    docker exec "$db_container" rm -f /tmp/restore.sql
+    debug_log "[DB IMPORT] Removed temp SQL file"
+
+    print_msg success "$(printf "$SUCCESS_BACKUP_RESTORED_DB" "$db_name")"
 }

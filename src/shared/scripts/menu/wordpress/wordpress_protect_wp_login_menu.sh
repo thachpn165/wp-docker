@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# === Load config & system_loader.sh ===
+# === Load config & wordpress_loader.sh ===
 if [[ -z "$PROJECT_DIR" ]]; then
   SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
   while [[ "$SCRIPT_PATH" != "/" ]]; do
@@ -14,33 +14,36 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
+  echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
+
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# 📋 Display the list of websites to select (using select_website)
+# 📋 Select website
 select_website
 if [[ -z "$domain" ]]; then
-  echo -e "${RED}${CROSSMARK} No website selected.${NC}"
+  print_msg error "$ERROR_NO_WEBSITE_SELECTED"
   exit 1
 fi
 
-# 📋 **Choose the action to enable/disable protection for wp-login.php**
-echo -e "${YELLOW}📋 Choose an action for the website '$domain':${NC}"
-echo "1) Enable protection for wp-login.php"
-echo "2) Disable protection for wp-login.php"
-read -p "Enter the number corresponding to the action: " action_choice
+# 📋 Choose action
+echo ""
+print_msg question "$(printf "$QUESTION_PROTECT_WPLOGIN_ACTION" "$domain")"
+echo "1) $LABEL_PROTECT_WPLOGIN_ENABLE"
+echo "2) $LABEL_PROTECT_WPLOGIN_DISABLE"
 
-if [ "$action_choice" == "1" ]; then
+action_choice=$(get_input_or_test_value "$PROMPT_ENTER_ACTION_NUMBER" "${TEST_ACTION:-1}")
+
+if [[ "$action_choice" == "1" ]]; then
     action="enable"
-elif [ "$action_choice" == "2" ]; then
+elif [[ "$action_choice" == "2" ]]; then
     action="disable"
 else
-    echo -e "${RED}${CROSSMARK} Invalid choice.${NC}"
+    print_msg error "$ERROR_INVALID_CHOICE"
     exit 1
 fi
 
-# Pass parameters to CLI
-bash "$SCRIPTS_DIR/cli/wordpress_protect_wp_login.sh" --domain="$domain" --action="$action"
+# ▶️ Run CLI
+bash "$CLI_DIR/wordpress_protect_wp_login.sh" --domain="$domain" --action="$action"

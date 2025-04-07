@@ -27,48 +27,49 @@
 #   - Returns 1 if the `.env` file is missing or if no PHP version is provided.
 php_change_version_logic() {
   local domain="$1"
-  local php_version="$2"  # This will be passed from CLI
+  local php_version="$2"
 
-  # Set paths
   local site_dir="$SITES_DIR/$domain"
   local env_file="$site_dir/.env"
   local docker_compose_file="$site_dir/docker-compose.yml"
 
-  # Ensure .env exists
+  debug_log "[PHP] Changing PHP version for domain: $domain"
+  debug_log "[PHP] New version: $php_version"
+  debug_log "[PHP] .env file path: $env_file"
+  debug_log "[PHP] docker-compose path: $docker_compose_file"
+
   if [[ ! -f "$env_file" ]]; then
-    echo -e "${RED}${CROSSMARK} .env file not found for website ${domain}!${NC}"
+    print_and_debug error "$ERROR_ENV_NOT_FOUND: $env_file"
     return 1
   fi
 
-  # Check if PHP version was provided
   if [[ -z "$php_version" ]]; then
-    echo -e "${RED}${CROSSMARK} No PHP version provided! Please provide a PHP version in the CLI input.${NC}"
+    print_and_debug error "$ERROR_PHP_VERSION_REQUIRED"
     return 1
   fi
 
-  # Update .env file
-  echo -e "${YELLOW}🔧 Updating .env with new PHP version...${NC}"
+  print_msg step "$STEP_PHP_UPDATING_ENV"
   sed -i.bak "s/^PHP_VERSION=.*/PHP_VERSION=$php_version/" "$env_file"
-  echo -e "${GREEN}${CHECKMARK} Updated PHP version in .env: $php_version${NC}"
+  print_msg success "$(printf "$SUCCESS_PHP_ENV_UPDATED" "$php_version")"
 
-  # Update docker-compose.yml if it exists
   if [[ -f "$docker_compose_file" ]]; then
-    echo -e "${YELLOW}🔧 Updating docker-compose.yml with new PHP version...${NC}"
+    print_msg step "$STEP_PHP_UPDATING_DOCKER_COMPOSE"
     sed -i.bak -E "s|^( *image: *bitnami/php-fpm:)[^ ]+|\1${php_version}|" "$docker_compose_file"
+
     if grep -q "bitnami/php-fpm:$php_version" "$docker_compose_file"; then
-      echo -e "${GREEN}${CHECKMARK} docker-compose.yml has been updated successfully.${NC}"
+      print_msg success "$SUCCESS_PHP_DOCKER_COMPOSE_UPDATED"
     else
-      echo -e "${RED}${CROSSMARK} Image line not found for update. Please check manually.${NC}"
+      print_and_debug warning "$WARNING_PHP_IMAGE_LINE_NOT_FOUND"
     fi
   else
-    echo -e "${RED}${CROSSMARK} docker-compose.yml not found for update!${NC}"
+    print_and_debug error "$ERROR_PHP_DOCKER_COMPOSE_NOT_FOUND"
+    return 1
   fi
 
-  # Restart PHP container
-  echo -e "${YELLOW}🔄 Restarting PHP container to apply changes...${NC}"
+  print_msg step "$STEP_PHP_RESTARTING"
   run_in_dir "$site_dir" docker compose stop php
   run_in_dir "$site_dir" docker rm -f "${domain}-php" 2>/dev/null || true
   run_in_dir "$site_dir" docker compose up -d php
 
-  echo -e "${GREEN}${CHECKMARK} Website $domain is now running with PHP: $php_version${NC}"
+  print_msg success "$(printf "$SUCCESS_PHP_CHANGED" "$domain" "$php_version")"
 }

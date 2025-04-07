@@ -1,33 +1,41 @@
+#!/bin/bash
+# This script is used to change the PHP version for a specified domain in a Docker-based LEMP stack.
+#
+# 🔧 Auto-detect BASE_DIR and load global configuration:
+# The script dynamically determines its base directory and sources the global configuration file
+# located at `shared/config/load_config.sh`. It also loads PHP-related functions from `php_loader.sh`.
+#
+# === Command Line Flags ===
+# The script accepts the following command-line arguments:
+#   --domain=<domain_name>      : Specifies the domain name for which the PHP version should be changed.
+#   --php_version=<php_version> : Specifies the target PHP version to switch to.
+#
+# === Usage ===
+# Example usage of the script:
+#   ./php_change_version.sh --domain=example.com --php_version=8.1
+#
+# === Validation ===
+# The script validates that both `--domain` and `--php_version` parameters are provided.
+# If either parameter is missing, it will print an error message and exit.
+#
+# === Logic ===
+# After parsing and validating the input parameters, the script calls the `php_change_version_logic`
+# function, passing the domain and PHP version as arguments. This function is expected to handle
+# the actual logic for changing the PHP version.
+#
+# === Error Handling ===
+# - If an unknown parameter is provided, the script will print an error message and display usage instructions.
+# - If required parameters are missing, the script will print an error message and exit.
 
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  
-  # Iterate upwards from the current script directory to find 'config.sh'
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-
-  # Handle error if config file is not found
-  if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
   fi
-fi
-
-# Load the config file if PROJECT_DIR is set
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-
-# Source the config file
-source "$CONFIG_FILE"
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 source "$FUNCTIONS_DIR/php_loader.sh"
 
 # === Parse command line flags ===
@@ -42,7 +50,8 @@ while [[ "$#" -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Unknown parameter: $1"
+      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
+      print_and_debug info "Usage: $0 --domain=<domain_name> --php_version=<php_version>"
       exit 1
       ;;
   esac
@@ -50,7 +59,7 @@ done
 
 # Validate parameters
 if [[ -z "$domain" || -z "$php_version" ]]; then
-  echo "${CROSSMARK} Missing parameters. Please provide --domain and --php_version."
+  print_and_debug error "$ERROR_MISSING_PARAM: --domain or --php_version"
   exit 1
 fi
 

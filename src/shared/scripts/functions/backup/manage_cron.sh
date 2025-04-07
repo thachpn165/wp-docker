@@ -1,4 +1,17 @@
 #!/bin/bash
+# Convert weekday from number to text
+convert_weekday() {
+    case $1 in
+        0) echo "$LABEL_SUNDAY" ;;
+        1) echo "$LABEL_MONDAY" ;;
+        2) echo "$LABEL_TUESDAY" ;;
+        3) echo "$LABEL_WEDNESDAY" ;;
+        4) echo "$LABEL_THURSDAY" ;;
+        5) echo "$LABEL_FRIDAY" ;;
+        6) echo "$LABEL_SATURDAY" ;;
+        *) echo "Unknown" ;;
+    esac
+}
 
 # Convert cron time to human-readable format
 cron_translate() {
@@ -16,30 +29,16 @@ cron_translate() {
 
     # Determine frequency
     if [[ "$day" == "*" && "$month" == "*" && "$weekday" == "*" ]]; then
-        schedule="Daily at $time"
+        schedule="$LABEL_EVERYDAY $LABEL_TIME_AT $time"
     elif [[ "$day" == "*" && "$month" == "*" && "$weekday" != "*" ]]; then
-        schedule="Weekly at $time, on $(convert_weekday "$weekday")"
+        schedule="$LABEL_EVERY_WEEK $LABEL_TIME_AT $time $LABEL_DATE_ON $(convert_weekday "$weekday")"
     elif [[ "$day" != "*" && "$month" == "*" ]]; then
-        schedule="Monthly at $time, on day $day"
+        schedule="$LABEL_EVERY_MONTH $LABEL_TIME_AT $time, $LABEL_DATE_ON $day"
     else
-        schedule="Custom schedule: $cron_exp"
+        schedule="$LABEL_CUSTOM_SCHEDULE: $cron_exp"
     fi
 
     echo "$schedule"
-}
-
-# Convert weekday from number to text
-convert_weekday() {
-    case $1 in
-        0) echo "Sunday" ;;
-        1) echo "Monday" ;;
-        2) echo "Tuesday" ;;
-        3) echo "Wednesday" ;;
-        4) echo "Thursday" ;;
-        5) echo "Friday" ;;
-        6) echo "Saturday" ;;
-        *) echo "Unknown" ;;
-    esac
 }
 
 # Display list of websites with backup schedules and allow viewing details

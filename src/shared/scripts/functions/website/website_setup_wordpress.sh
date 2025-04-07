@@ -6,7 +6,7 @@ website_setup_wordpress_logic() {
   local auto_generate="${2:-true}"
 
   if [[ -z "$domain" ]]; then
-    echo -e "${RED}${CROSSMARK} Missing domain.${NC}"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
     return 1
   fi
 
@@ -15,14 +15,20 @@ website_setup_wordpress_logic() {
 
   # 📄 Load .env (fallback to TMP_DIR if necessary)
   if [[ ! -f "$ENV_FILE" ]]; then
+    debug_log "ENV file not found at $ENV_FILE. Attempting to find fallback path in TMP_DIR..."
+
     local tmp_env_path
     tmp_env_path=$(find "$TMP_DIR" -maxdepth 1 -type d -name "${domain}_*" | head -n 1)
+
+    debug_log "Fallback search result: $tmp_env_path"
+
     if [[ -n "$tmp_env_path" && -f "$tmp_env_path/.env" ]]; then
       ENV_FILE="$tmp_env_path/.env"
       SITE_DIR="$tmp_env_path"
+      debug_log "Using fallback ENV file: $ENV_FILE"
     else
-      echo -e "${RED}${CROSSMARK} .env file not found for domain '$domain'${NC}"
-      return 1
+      print_and_debug error "$MSG_NOT_FOUND .env: $domain"
+      exit 1
     fi
   fi
 
@@ -37,8 +43,8 @@ website_setup_wordpress_logic() {
   DB_PASS=$(fetch_env_variable "$ENV_FILE" "MYSQL_PASSWORD")
   PHP_VERSION=$(fetch_env_variable "$ENV_FILE" "PHP_VERSION")
 
-  local PHP_CONTAINER="${domain}-php"
-  local DB_CONTAINER="${domain}-mariadb"
+  PHP_CONTAINER=$(fetch_env_variable "$ENV_FILE" "CONTAINER_PHP")
+  DB_CONTAINER=$(fetch_env_variable "$ENV_FILE" "CONTAINER_DB")
   local SITE_URL="https://$DOMAIN"
 
   # 🔐 Create admin account
@@ -56,75 +62,77 @@ website_setup_wordpress_logic() {
     ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
     ADMIN_EMAIL="admin@$domain.local"
   else
-    read -p "👤 Enter admin username: " ADMIN_USER
+    read -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " ADMIN_USER
     while [[ -z "$ADMIN_USER" ]]; do
-      echo "${WARNING} Cannot be empty."
-      read -p "👤 Enter admin username: " ADMIN_USER
+      print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
+      read -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " ADMIN_USER
     done
 
-    read -s -p "🔐 Enter admin password: " ADMIN_PASSWORD; echo
-    read -s -p "🔐 Confirm password: " CONFIRM_PASSWORD; echo
+    read -s -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " ADMIN_PASSWORD; echo
+    read -s -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " CONFIRM_PASSWORD; echo
     while [[ "$ADMIN_PASSWORD" != "$CONFIRM_PASSWORD" || -z "$ADMIN_PASSWORD" ]]; do
-      echo "${WARNING} Passwords do not match or are empty. Please try again."
-      read -s -p "🔐 Enter admin password: " ADMIN_PASSWORD; echo
-      read -s -p "🔐 Confirm password: " CONFIRM_PASSWORD; echo
+      print_msg warning "$WARNING_ADMIN_PASSWORD_MISMATCH"
+      read -s -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " ADMIN_PASSWORD; echo
+      read -s -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " CONFIRM_PASSWORD; echo
     done
 
-    read -p "📧 Enter admin email (ENTER to use admin@$domain.local): " ADMIN_EMAIL
+    read -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL " ADMIN_EMAIL
     ADMIN_EMAIL="${ADMIN_EMAIL:-admin@$domain.local}"
   fi
 
-  # ✨ Install WordPress
-  echo -e "${BLUE}▹ Starting WordPress installation for '$domain'...${NC}"
-  echo -e "${YELLOW}⏳ Waiting for PHP container '$PHP_CONTAINER' to start...${NC}"
-  local timeout=30
-  while ! is_container_running "$PHP_CONTAINER"; do
-    sleep 1
-    ((timeout--))
-    if (( timeout <= 0 )); then
-      echo -e "${RED}${CROSSMARK} PHP container '$PHP_CONTAINER' not ready after 30s.${NC}"
-      return 1
-    fi
-    echo -ne "⏳ Waiting for PHP container... ($((30-timeout))/30)\r"
-  done
-
-  # 📦 Download WordPress if not already present
-  if [[ ! -f "$SITE_DIR/wordpress/index.php" ]]; then
-    echo -e "${YELLOW}📦 Downloading WordPress...${NC}"
-    docker exec -i "$PHP_CONTAINER" sh -c "mkdir -p /var/www/html && chown -R nobody:nogroup /var/www/html"
-    docker exec -i "$PHP_CONTAINER" sh -c "curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
-      tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && rm /var/www/html/wordpress.tar.gz"
-    echo -e "${GREEN}${CHECKMARK} WordPress source code downloaded.${NC}"
+  # 🐳 Check if PHP container is running
+  local php_ready_ok
+  if is_container_running "$PHP_CONTAINER"; then
+    php_ready_ok=true
   else
-    echo -e "${GREEN}${CHECKMARK} WordPress source code already exists.${NC}"
+    php_ready_ok=false
   fi
-
-  # ⚙️ Configure wp-config
-  wp_set_wpconfig "$PHP_CONTAINER" "$DB_NAME" "$DB_USER" "$DB_PASS" "$DB_CONTAINER"
-
-  # 🚀 Install WordPress
-  wp_install "$PHP_CONTAINER" "$SITE_URL" "$domain" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
-  if [[ $? -ne 0 ]]; then
-    echo -e "${RED}${CROSSMARK} WordPress installation failed.${NC}"
+  if [[ "$php_ready_ok" == false ]]; then
+    print_msg error "$ERROR_PHP_CONTAINER_NOT_READY $PHP_CONTAINER"
     return 1
   fi
 
-  # 🧑‍🔧 Set directory permissions
-  if is_container_running "$PHP_CONTAINER"; then
-    docker exec -u root "$PHP_CONTAINER" chown -R nobody:nogroup "/var/www/" || {
-      echo -e "${RED}${CROSSMARK} Permission setting failed.${NC}"
-      return 1
-    }
+  # ✨ Install WordPress
+  print_msg info "$INFO_START_WP_INSTALL $domain"
+  print_msg progress "$INFO_WAITING_PHP_CONTAINER $PHP_CONTAINER"
+
+  if [[ "$php_ready_ok" == false ]]; then
+    stop_loading
+    print_msg error "$ERROR_PHP_CONTAINER_NOT_READY $PHP_CONTAINER"
+    return 1
+  fi
+
+  stop_loading
+
+  # 📦 Download WordPress if not already present
+  if [[ ! -f "$SITE_DIR/wordpress/index.php" ]]; then
+    print_msg progress "$INFO_DOWNLOADING_WP"
+    run_cmd "docker_exec_php \"mkdir -p /var/www/html && chown -R nobody:nogroup /var/www/html\"" true
+    run_cmd "docker_exec_php \"curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
+      tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && rm /var/www/html/wordpress.tar.gz\"" true
+    stop_loading
+    print_msg success "$SUCCESS_WP_SOURCE_DOWNLOADED"
   else
-    echo -e "${RED}${CROSSMARK} Skipping chown as container is not ready.${NC}"
+    print_msg success "$SUCCESS_WP_SOURCE_EXISTS"
+  fi
+
+  # ⚙️ Configure wp-config
+  print_msg step "$STEP_WEBSITE_SETUP_WORDPRESS: $domain"
+  run_cmd "wp_set_wpconfig \"$PHP_CONTAINER\" \"$DB_NAME\" \"$DB_USER\" \"$DB_PASS\" \"$DB_CONTAINER\"" true
+  run_cmd "wp_install \"$PHP_CONTAINER\" \"$SITE_URL\" \"$domain\" \"$ADMIN_USER\" \"$ADMIN_PASSWORD\" \"$ADMIN_EMAIL\"" true
+
+  print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
+  if [[ "$php_ready_ok" == true ]]; then
+    run_cmd "docker_exec_php \"chown -R nobody:nogroup /var/www/\"" true
+  else
+    print_msg warning "$WARNING_SKIP_CHOWN"
   fi
 
   # 🔁 Configure permalinks
-  wp_set_permalinks "$PHP_CONTAINER" "$SITE_URL"
-  # wp_plugin_install_performance_lab "$PHP_CONTAINER" # Optional
-
-  echo -e "${YELLOW}${CHECKMARK} WordPress installation completed.${NC}"
+  print_msg step "$STEP_WEBSITE_SETUP_ESSENTIALS: $domain"
+  run_cmd "wp_set_permalinks \"$PHP_CONTAINER\" \"$SITE_URL\""
   website_print_wp_info "$SITE_URL" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
+  print_msg completed "$SUCCESS_WP_INSTALL_DONE"
 }
 
 website_print_wp_info() {
@@ -133,9 +141,9 @@ website_print_wp_info() {
   local admin_password="$3"
   local admin_email="$4"
   
-  echo -e "${YELLOW}🌐 Site URL: $site_url${NC}"
-  echo -e "${YELLOW}👤 Admin URL: $site_url/wp-admin${NC}"
-  echo -e "${YELLOW}👤 Admin User: $admin_user${NC}"
-  echo -e "${YELLOW}🔐 Admin Password: $admin_password${NC}"
-  echo -e "${YELLOW}📧 Admin Email: $admin_email${NC}"
+  print_msg info "$INFO_SITE_URL: $site_url"
+  print_msg info "$INFO_ADMIN_URL: $site_url/wp-admin"
+  print_msg info "$INFO_ADMIN_USER: $admin_user"
+  print_msg info "$INFO_ADMIN_PASSWORD: $admin_password"
+  print_msg info "$INFO_ADMIN_EMAIL: $admin_email"
 }

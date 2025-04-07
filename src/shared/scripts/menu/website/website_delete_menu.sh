@@ -1,64 +1,49 @@
 #!/usr/bin/env bash
 
-# =============================================
-# 🗑️ website_delete_menu.sh – Delete a website
-# =============================================
+# ========================================
+# 🧩 website_delete_menu.sh – Website deletion with optional backup
+# ========================================
 
-# Auto-detect PROJECT_DIR
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-fi
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
+  fi
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-source "$CONFIG_FILE"
-source "$FUNCTIONS_DIR/website_loader.sh"
+# === Load required functions ===
+source "$FUNCTIONS_DIR/backup_loader.sh"
 
-echo -e "${BLUE}===== DELETE A WEBSITE =====${NC}"
+# === UI ===
+print_msg title "$TITLE_WEBSITE_DELETE"
+
+# Select website
 domain=""
 select_website
 if [[ -z "$domain" ]]; then
-  echo "${CROSSMARK} No website selected."
+  print_msg error "$ERROR_NO_WEBSITE_SELECTED"
   exit 1
 fi
 
-# Prompt the user for backup confirmation
-backup_enabled=true
-if [[ "$TEST_MODE" != true ]]; then
-  echo -e "\n${SAVE} Do you want to backup the website before deletion?"
-  read -rp "Type 'yes' to backup, or anything else to skip: " backup_confirm
-  if [[ "$backup_confirm" != "yes" ]]; then
-    backup_enabled=false
-  fi
-else
-  backup_enabled=false
+# Ask for backup before delete
+backup_enabled=true  # default
+backup_confirm=$(get_input_or_test_value "$PROMPT_BACKUP_BEFORE_DELETE $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "yes")
+[[ "$backup_confirm" != "yes" ]] && backup_enabled=false
+debug_log "[DEBUG] Backup before delete: $backup_enabled"
+
+# Ask for final delete confirmation
+delete_confirm=$(get_input_or_test_value "$PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
+if [[ "$delete_confirm" != "yes" ]]; then
+  print_msg warning "$WARNING_ACTION_CANCELLED"
+  exit 0
 fi
 
-echo -e "\n${WARNING}  Are you sure you want to delete site '${YELLOW}$domain${NC}'?"
-read -rp "Type 'yes' to confirm: " confirm
-if [[ "$confirm" != "yes" ]]; then
-  echo "${CROSSMARK} Cancelled."
-  exit 1
-fi
+# Run deletion logic
+cmd="bash \"$SCRIPTS_DIR/cli/website_delete.sh\" --domain=\"$domain\""
+[[ "$backup_enabled" == true ]] && cmd+=" --backup_enabled=true"
+debug_log "[DEBUG] Command sent to cli/website_delete.sh: $cmd"
 
-# === Run deletion logic ===
-if [[ -n "$domain" ]]; then
-  if [[ "$backup_enabled" == true ]]; then
-    bash "$SCRIPTS_DIR/cli/website_delete.sh" --domain="$domain" --backup_enabled=true
-  else
-    bash "$SCRIPTS_DIR/cli/website_delete.sh" --domain="$domain"
-  fi
-else
-  echo "${CROSSMARK} Missing required parameters to delete website." >&2
-  exit 1
-fi
+eval "$cmd"

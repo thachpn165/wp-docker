@@ -1,53 +1,47 @@
 #!/bin/bash
-
-# === 🧠 Auto-detect PROJECT_DIR (source code root) ===
-
-if [[ -z "$PROJECT_DIR" ]]; then
-    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-    while [[ "$SCRIPT_PATH" != "/" && ! -f "$SCRIPT_PATH/shared/config/config.sh" ]]; do
-        SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-    done
-    PROJECT_DIR="$SCRIPT_PATH"
-fi
-
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-    exit 1
-fi
-source "$CONFIG_FILE"
-
 # Import backup functions
-source "$SCRIPTS_FUNCTIONS_DIR/backup/manage_cron.sh"
+# ✅ Load configuration from any directory
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
+    break
+  fi
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+done
 
+# Load functions for website management
+source "$FUNCTIONS_DIR/backup_loader.sh"
 # Function to display backup management menu
 backup_menu() {
     while true; do
-        echo -e "${BLUE}============================${NC}"
-        echo -e "${BLUE}   🛠️ WEBSITE BACKUP MANAGEMENT   ${NC}"
-        echo -e "${BLUE}============================${NC}"
-        echo -e "  ${GREEN}[1]${NC} Backup website now"
-        echo -e "  ${GREEN}[2]${NC} Manage Backup (Cleanup, List)"
-        echo -e "  ${GREEN}[3]${NC} Schedule automatic backup"
-        echo -e "  ${GREEN}[4]${NC} Manage backup schedule (Crontab)"
-        echo -e "  ${GREEN}[5]${NC} Restore website from backup"
-        echo -e "  ${GREEN}[6]${NC} ${CROSSMARK} Exit"
-        echo -e "${BLUE}============================${NC}"
+        echo -e "${CYAN}============================${NC}"
+        print_msg title "$TITLE_MENU_BACKUP"
+        echo -e "${CYAN}============================${NC}"
+        print_msg label "${GREEN}1)${NC} $LABEL_MENU_BACKUP_NOW"
+        print_msg label "${GREEN}2)${NC} $LABEL_MENU_BACKUP_MANAGE"
+        print_msg label "${GREEN}3)${NC} $LABEL_MENU_BACKUP_SCHEDULE"
+        print_msg label "${GREEN}4)${NC} $LABEL_MENU_BACKUP_SCHEDULE_MANAGE"
+        print_msg label "${GREEN}5)${NC} $LABEL_MENU_BACKUP_RESTORE"
+        print_msg label "${GREEN}6)${NC} $MSG_BACK"
+        echo -e "${CYAN}============================${NC}"
         
-        [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-6): " choice
+        read -p "$MSG_SELECT_OPTION " choice
 
+    
         case "$choice" in
-            1) bash "$MENU_DIR/backup/backup_website_menu.sh" ;;
-            2) bash "$MENU_DIR/backup/backup_manage_menu.sh" ;;
+            1) bash "$MENU_DIR/backup/backup_website_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+            2) bash "$MENU_DIR/backup/backup_manage_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
             3) bash "$MENU_DIR/backup/backup_scheduler_create_menu.sh" ;;
-            4) manage_cron_menu ;;
-            5) bash "$MENU_DIR/backup/backup_restore_web_menu.sh" ;;
+            4) manage_cron_menu; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+            5) bash "$MENU_DIR/backup/backup_restore_web_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
             6) 
-                echo -e "${GREEN}👋 Exiting Backup menu!${NC}"
                 break
                 ;;
             *)
-                echo -e "${RED}${CROSSMARK} Invalid option, please try again!${NC}"
+                print_msg error "$ERROR_SELECT_OPTION_INVALID"
                 ;;
         esac
     done

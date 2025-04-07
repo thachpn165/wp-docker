@@ -16,13 +16,13 @@ website_management_info_logic() {
 
     # Check if website exists
     if ! is_directory_exist "$site_dir"; then
-        echo -e "${RED}${CROSSMARK} Website '$domain' does not exist.${NC}"
+        print_and_debug error "$ERROR_NOT_EXIST: $domain"
         return 1
     fi
 
     # Check if .env file exists
     if ! is_file_exist "$env_file"; then
-        echo -e "${RED}${CROSSMARK} .env file for website '$domain' not found!${NC}"
+        print_and_debug error "$ERROR_ENV_NOT_FOUND: $env_file"
         return 1
     fi
 
@@ -32,10 +32,14 @@ website_management_info_logic() {
     db_user=$(fetch_env_variable "$env_file" "MYSQL_USER")
     db_pass=$(fetch_env_variable "$env_file" "MYSQL_PASSWORD")
 
+
     # Display website information
-    echo -e "${GREEN}Website Information for '$domain':${NC}"
-    echo -e "  ${YELLOW}Domain:${NC} $domain"
-    echo -e "  ${YELLOW}Database Name:${NC} $db_name"
-    echo -e "  ${YELLOW}Database User:${NC} $db_user"
-    echo -e "  ${YELLOW}Database Password:${NC} $db_pass"
+    #echo -e "${GREEN}Website Information for '$domain':${NC}"
+    print_msg label "$LABEL_WEBSITE_INFO: $domain"
+    print_msg sub-label "$LABEL_WEBSITE_DOMAIN: $domain"
+    print_msg sub-label "$LABEL_WEBSITE_DB_NAME: $db_name"
+    print_msg sub-label "$LABEL_WEBSITE_DB_USER: $db_user"
+    print_msg sub-label "$LABEL_WEBSITE_DB_PASS: $db_pass"
+    print_msg sub-label "$LABEL_SITE_DIR: $site_dir"
+
 }

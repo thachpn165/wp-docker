@@ -48,89 +48,71 @@ wordpress_cache_setup_logic() {
     local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
     local PHP_CONTAINER="$domain-php"
 
-    # Ensure the site directory exists
-    if [ ! -d "$site_dir" ]; then
-        echo -e "${RED}${CROSSMARK} Website directory does not exist: $site_dir${NC}"
+    if [[ ! -d "$site_dir" ]]; then
+        print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$site_dir")"
         return 1
     fi
 
-    # Deactivate existing cache plugins
     local cache_plugins=("wp-super-cache" "nginx-helper" "w3-total-cache" "redis-cache" "wp-fastest-cache")
     local active_plugins
     active_plugins=$(docker_exec_php "wp plugin list --status=active --field=name --path=$PHP_CONTAINER_WP_PATH")
 
     for plugin in "${cache_plugins[@]}"; do
-        # Check if the plugin is active
         if echo "$active_plugins" | grep -q "$plugin"; then
-            echo -e "${YELLOW}${WARNING} Plugin $plugin is active, it will be deactivated.${NC}"
-            # Only deactivate if the plugin is active
+            print_msg warning "$(printf "$WARNING_PLUGIN_ACTIVE_DEACTIVATING" "$plugin")"
             if docker_exec_php "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH"; then
-                echo -e "${GREEN}${CHECKMARK} Plugin $plugin deactivated successfully.${NC}"
+                print_msg success "$(printf "$SUCCESS_PLUGIN_DEACTIVATED" "$plugin")"
             else
-                echo -e "${RED}${CROSSMARK} An error occurred while deactivating the plugin: $plugin${NC}"
+                print_and_debug error "$(printf "$ERROR_PLUGIN_DEACTIVATION" "$plugin")"
             fi
-        else
-            # If the plugin is not active, skip deactivation
-            echo -e "Plugin $plugin is not active, skipping deactivation."
         fi
     done
 
-    # Handle "no-cache" option
     if [[ "$cache_type" == "no-cache" ]]; then
-        echo -e "${YELLOW}🧹 Removing cache plugins and disabling WP_CACHE...${NC}"
+        print_msg warning "$WARNING_CACHE_REMOVING"
         for plugin in "${cache_plugins[@]}"; do
-            # Check if the plugin is active
             if echo "$active_plugins" | grep -q "$plugin"; then
-                echo -e "${YELLOW}${WARNING} Plugin $plugin is active, deactivating and deleting...${NC}"
-
-                # Deactivate and delete the plugin in one block
+                print_msg warning "$(printf "$WARNING_PLUGIN_ACTIVE_DELETING" "$plugin")"
                 if docker_exec_php "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH" && \
                    docker_exec_php "wp plugin delete $plugin --path=$PHP_CONTAINER_WP_PATH"; then
-                    echo -e "${GREEN}${CHECKMARK} Plugin $plugin deactivated and deleted successfully.${NC}"
+                    print_msg success "$(printf "$SUCCESS_PLUGIN_DELETED" "$plugin")"
                 else
-                    echo -e "${RED}${CROSSMARK} Error occurred while deactivating or deleting plugin: $plugin${NC}"
+                    print_and_debug error "$(printf "$ERROR_PLUGIN_DELETION" "$plugin")"
                     return 1
                 fi
-            else
-                echo -e "${GREEN}Plugin $plugin is not active, skipping deactivation and deletion.${NC}"
             fi
         done
 
-        # Remove WP_CACHE definition from wp-config.php
         if ! sedi "/define('WP_CACHE', true);/d" "$wp_config_file"; then
-            echo -e "${RED}${CROSSMARK} Error occurred while removing WP_CACHE from wp-config.php.${NC}"
+            print_and_debug error "$ERROR_REMOVE_WP_CACHE_DEFINE"
             return 1
         fi
 
-        # Update NGINX configuration for no-cache
         if grep -q "include /etc/nginx/cache/" "$nginx_conf_file"; then
             if ! sedi "s|include /etc/nginx/cache/.*;|include /etc/nginx/cache/no-cache.conf;|" "$nginx_conf_file"; then
-                echo -e "${RED}${CROSSMARK} Error occurred while updating NGINX configuration for no-cache.${NC}"
+                print_and_debug error "$ERROR_UPDATE_NGINX_NO_CACHE"
                 return 1
             fi
         fi
 
-        # Reload NGINX
-        if ! nginx_reload; then
-            echo -e "${RED}${CROSSMARK} Error occurred while reloading NGINX.${NC}"
+        nginx_reload || {
+            print_and_debug error "$ERROR_NGINX_RELOAD"
             return 1
-        fi
+        }
 
-        echo -e "${GREEN}${CHECKMARK} Cache has been disabled and NGINX reloaded.${NC}"
+        print_msg success "$SUCCESS_CACHE_DISABLED"
         return 0
     fi
 
-    # Configure NGINX to include the proper cache configuration
     if grep -q "include /etc/nginx/cache/" "$nginx_conf_file"; then
         sedi "s|include /etc/nginx/cache/.*;|include /etc/nginx/cache/${cache_type}.conf;|" "$nginx_conf_file"
-        exit_if_error $? "${CROSSMARK} An error occurred while updating NGINX configuration for cache type: $cache_type"
-        echo -e "${GREEN}${CHECKMARK} NGINX configuration updated for cache type: $cache_type${NC}"
+        exit_if_error $? "$ERROR_UPDATE_NGINX_CACHE_TYPE"
+        print_msg success "$(printf "$SUCCESS_UPDATE_NGINX_CACHE_TYPE" "$cache_type")"
     else
-        echo -e "${RED}${CROSSMARK} Could not find cache include line in NGINX configuration!${NC}"
+        print_and_debug error "$ERROR_NGINX_INCLUDE_NOT_FOUND"
         return 1
     fi
 
-    # Install and activate the chosen cache plugin
     local plugin_slug
     case "$cache_type" in
         "wp-super-cache") plugin_slug="wp-super-cache" ;;
@@ -139,77 +121,52 @@ wordpress_cache_setup_logic() {
         "wp-fastest-cache") plugin_slug="wp-fastest-cache" ;;
     esac
 
-    #docker_exec_php "wp plugin install $plugin_slug --activate --path=$PHP_CONTAINER_WP_PATH"
-    bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" plugin install "$plugin_slug" --activate
-    exit_if_error $? "${CROSSMARK} An error occurred while installing and activating the plugin: $plugin_slug"
+    bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin install "$plugin_slug" --activate
+    exit_if_error $? "$(printf "$ERROR_PLUGIN_INSTALL" "$plugin_slug")"
 
-    docker exec -u root -i "$PHP_CONTAINER" chown -R $PHP_USER /var/www/html/wp-content # Need root to change ownership
-    exit_if_error $? "${CROSSMARK} An error occurred while changing ownership of wp-content directory."
+    docker exec -u root -i "$PHP_CONTAINER" chown -R "$PHP_USER" /var/www/html/wp-content
+    exit_if_error $? "$ERROR_CHOWN_WPCONTENT"
 
-    # Handle FastCGI cache and Redis options
     if [[ "$cache_type" == "fastcgi-cache" || "$cache_type" == "w3-total-cache" ]]; then
-        # Check if fastcgi_cache_path is configured in nginx.conf
         if ! grep -q "fastcgi_cache_path" "$NGINX_MAIN_CONF"; then
-            # Add fastcgi_cache_path configuration to nginx.conf directly on host
             sedi "/http {/a\\
-            fastcgi_cache_path /var/cache/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS:100m inactive=60m use_temp_path=off;" "$NGINX_MAIN_CONF"
-            exit_if_error $? "${CROSSMARK} An error occurred while adding fastcgi_cache_path to NGINX main configuration."
-            echo -e "${GREEN}${CHECKMARK} FastCGI Cache configuration added to NGINX.${NC}"
+fastcgi_cache_path /var/cache/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS:100m inactive=60m use_temp_path=off;" "$NGINX_MAIN_CONF"
+            exit_if_error $? "$ERROR_ADD_FASTCGI_PATH"
+            print_msg success "$SUCCESS_FASTCGI_PATH_ADDED"
         fi
 
-        # Update options for Nginx Helper Plugin
-        #docker_exec_php "wp option update rt_wp_nginx_helper_options '{\"enable_purge\":true}' --format=json --path=$PHP_CONTAINER_WP_PATH"
-        bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json
-        exit_if_error $? "${CROSSMARK} An error occurred while updating Nginx Helper options."
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json
+        exit_if_error $? "$ERROR_UPDATE_NGINX_HELPER"
     fi
 
     if [[ "$cache_type" == "fastcgi-cache" ]]; then
         if ! grep -q "WP_REDIS_HOST" "$wp_config_file"; then
             sedi "/<?php/a\\
-            define('WP_REDIS_HOST', 'redis-cache');\\
-            define('WP_REDIS_PORT', 6379);\\
-            define('WP_REDIS_DATABASE', 0);" "$wp_config_file"
+define('WP_REDIS_HOST', 'redis-cache');\\
+define('WP_REDIS_PORT', 6379);\\
+define('WP_REDIS_DATABASE', 0);" "$wp_config_file"
         fi
-        bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" plugin install redis-cache --activate
-        exit_if_error $? "${CROSSMARK} An error occurred while installing and activating Redis Cache plugin."
 
-        bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" redis update-dropin
-        exit_if_error $? "${CROSSMARK} An error occurred while updating Redis Cache drop-in."
-        
-        bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" option update redis-cache
-        exit_if_error $? "${CROSSMARK} An error occurred while updating Redis Cache options."
-        
-        
-        bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" redis enable
-        exit_if_error $? "${CROSSMARK} An error occurred while enabling Redis Cache."
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin install redis-cache --activate
+        exit_if_error $? "$ERROR_REDIS_PLUGIN_INSTALL"
+
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- redis update-dropin
+        exit_if_error $? "$ERROR_REDIS_UPDATE_DROPIN"
+
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- option update redis-cache
+        exit_if_error $? "$ERROR_REDIS_UPDATE_OPTIONS"
+
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- redis enable
+        exit_if_error $? "$ERROR_REDIS_ENABLE"
     fi
 
-    # Reload NGINX to apply new cache settings
     nginx_reload
-    exit_if_error $? "${CROSSMARK} An error occurred while reloading NGINX."
-    echo -e "${GREEN}${CHECKMARK} NGINX reloaded to apply new cache settings.${NC}"
+    exit_if_error $? "$ERROR_NGINX_RELOAD"
+    print_msg success "$SUCCESS_NGINX_RELOADED"
 
-    # Provide the instructions based on cache type
-    if [[ "$cache_type" == "wp-super-cache" ]]; then
-        echo -e "${YELLOW}${WARNING} Instructions to complete WP Super Cache setup:${NC}"
-        echo -e "  1️⃣ Go to WordPress Admin -> Settings -> WP Super Cache."
-        echo -e "  2️⃣ Enable 'Caching On' to activate caching."
-        echo -e "  3️⃣ Select 'Expert' in 'Cache Delivery Method'."
-        echo -e "  4️⃣ Save the settings and verify cache is working."
-    fi
-
-    if [[ "$cache_type" == "w3-total-cache" ]]; then
-        echo -e "${YELLOW}${WARNING} Instructions to complete W3 Total Cache setup:${NC}"
-        echo -e "  1️⃣ Go to WordPress Admin -> Performance -> General Settings."
-        echo -e "  2️⃣ Enable all relevant caching options (Page Cache, Object Cache, Database Cache)."
-        echo -e "  3️⃣ Save the settings and verify cache is working."
-    fi
-
-    if [[ "$cache_type" == "wp-fastest-cache" ]]; then
-        echo -e "${YELLOW}${WARNING} Instructions to complete WP Fastest Cache setup:${NC}"
-        echo -e "  1️⃣ Go to WordPress Admin -> WP Fastest Cache."
-        echo -e "  2️⃣ Enable the 'Enable Cache' option."
-        echo -e "  3️⃣ Choose the appropriate 'Cache System'."
-        echo -e "  4️⃣ Save the settings and verify cache is working."
-    fi
+    case "$cache_type" in
+        "wp-super-cache") print_msg info "$TIP_WP_SUPER_CACHE" ;;
+        "w3-total-cache") print_msg info "$TIP_W3_TOTAL_CACHE" ;;
+        "wp-fastest-cache") print_msg info "$TIP_WP_FASTEST_CACHE" ;;
+    esac
 }

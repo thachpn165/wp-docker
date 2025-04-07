@@ -1,22 +1,4 @@
 #!/bin/bash
-
-# =====================================
-# 💡 php_menu.sh – PHP Management Menu for WordPress Websites
-# =====================================
-
-CONFIG_FILE="shared/config/config.sh"
-
-# Determine absolute path of `config.sh`
-while [ ! -f "$CONFIG_FILE" ]; do
-    CONFIG_FILE="../$CONFIG_FILE"
-    if [ "$(pwd)" = "/" ]; then
-        echo "${CROSSMARK} Error: config.sh not found!" >&2
-        exit 1
-    fi
-done
-
-source "$CONFIG_FILE"
-export BASE_DIR
 source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
 source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
 
@@ -24,23 +6,23 @@ source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
 # 📋 Main PHP Management Menu
 php_menu() {
   while true; do
-    clear
-    echo -e "${CYAN}===== PHP VERSION MANAGEMENT =====${NC}"
-    echo -e "${GREEN}[1]${NC} 🔀 Change PHP Version"
-    echo -e "${GREEN}[2]${NC} 🔁 Rebuild PHP Container"
-    echo -e "${GREEN}[3]${NC} ⚙️  Edit php-fpm.conf"
-    echo -e "${GREEN}[4]${NC} 🛠️  Edit php.ini"
-    echo -e "${GREEN}[5]${NC} ⬅️ Back"
+    print_msg title "$TITLE_MENU_PHP"
+    print_msg label "${GREEN}1)${NC} $LABEL_MENU_PHP_CHANGE"
+    print_msg label "${GREEN}2)${NC} $LABEL_MENU_PHP_REBUILD"
+    print_msg label "${GREEN}3)${NC} $LABEL_MENU_PHP_EDIT_CONF"
+    print_msg label "${GREEN}4)${NC} $LABEL_MENU_PHP_EDIT_INI"
+    print_msg label "${GREEN}5)${NC} $MSG_BACK"
     echo ""
 
-    [[ "$TEST_MODE" != true ]] && read -p "Select a function (1-5): " choice
-    case $choice in
-      1) bash "$MENU_DIR/php/php_change_version_menu.sh"; read -p "Press Enter to continue..." ;;
-      2) bash "$MENU_DIR/php/php_rebuild_container_menu.sh"; read -p "Press Enter to continue..." ;;
-      3) edit_php_fpm_conf; read -p "Press Enter to continue..." ;;
-      4) edit_php_ini; read -p "Press Enter to continue..." ;;
-      5) break ;;
-      *) echo -e "${RED}${WARNING} Invalid option!${NC}"; sleep 2 ;;
-    esac
+    read -p "$MSG_SELECT_OPTION " choice
+    
+      case $choice in
+        1) bash "$MENU_DIR/php/php_change_version_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+        2) bash "$MENU_DIR/php/php_rebuild_container_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+        3) edit_php_fpm_conf; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+        4) edit_php_ini; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+        5) break ;;
+        *) print_msg error "$ERROR_SELECT_OPTION_INVALID" ;;
+      esac
   done
 }

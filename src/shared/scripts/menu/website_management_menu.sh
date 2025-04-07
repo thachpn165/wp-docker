@@ -9,28 +9,31 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 website_management_menu() {
   while true; do
     clear
-    echo -e "${YELLOW}===== WORDPRESS WEBSITE MANAGEMENT =====${NC}"
-    echo -e "${GREEN}[1]${NC} ➕ Create New Website"
-    echo -e "${GREEN}[2]${NC} 🗑️ Delete Website"
-    echo -e "${GREEN}[3]${NC} 📋 List Websites"
-    echo -e "${GREEN}[4]${NC} 🔄 Restart Website"
-    echo -e "${GREEN}[5]${NC} 📄 View Website Logs"
-    echo -e "${GREEN}[6]${NC} 🔍 View Website Information"
-    echo -e "${GREEN}[7]${NC} 🔄 Update Website Configuration Template"
-    echo -e "${GREEN}[8]${NC} ⬅️ Back"
+    print_msg title "$TITLE_MENU_WEBSITE"
+    print_msg label "${GREEN}[1]${NC} $LABEL_MENU_WEBISTE_CREATE"
+    print_msg label "${GREEN}[2]${NC} $LABEL_MENU_WEBSITE_DELETE"
+    print_msg label "${GREEN}[3]${NC} $LABEL_MENU_WEBSITE_LIST"
+    print_msg label "${GREEN}[4]${NC} $LABEL_MENU_WEBSITE_RESTART"
+    print_msg label "${GREEN}[5]${NC} $LABEL_MENU_WEBSITE_LOGS"
+    print_msg label "${GREEN}[6]${NC} $LABEL_MENU_WEBSITE_INFO"
+    print_msg label "${GREEN}[7]${NC} $LABEL_MENU_WEBSITE_UPDATE_TEMPLATE"
+    print_msg label "${GREEN}[8]${NC} $MSG_BACK"
     echo ""
 
-    [[ "$TEST_MODE" != true ]] && read -p "Select a function (1-7): " sub_choice
+    read -p "$MSG_SELECT_OPTION " sub_choice
     case $sub_choice in
-      1) bash "$MENU_DIR/website/website_create_menu.sh"; read -p "Press Enter to continue..." ;;
-      2) bash "$MENU_DIR/website/website_delete_menu.sh"; read -p "Press Enter to continue..." ;;
-      3) bash "$MENU_DIR/website/website_list_menu.sh"; read -p "Press Enter to continue..." ;;
-      4) bash "$MENU_DIR/website/website_restart_menu.sh"; read -p "Press Enter to continue..." ;;
-      5) bash "$MENU_DIR/website/website_logs_menu.sh"; read -p "Press Enter to continue..." ;;
-      6) bash "$MENU_DIR/website/website_info_menu.sh"; read -p "Press Enter to continue..." ;;
-      7) bash "$MENU_DIR/website/website_update_template_menu.sh"; read -p "Press Enter to continue..." ;;
+    1) source "$MENU_DIR/website/website_create_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      2) bash "$MENU_DIR/website/website_delete_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      3) bash "$MENU_DIR/website/website_list_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      4) bash "$MENU_DIR/website/website_restart_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      5) bash "$MENU_DIR/website/website_logs_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      6) bash "$MENU_DIR/website/website_info_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      7) bash "$MENU_DIR/website/website_update_template_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
       8) break ;;
-      *) echo -e "${RED}${WARNING} Invalid option! Please select from [1-7].${NC}"; sleep 2 ;;
+      *)
+        print_msg error "$ERROR_SELECT_OPTION_INVALID"
+        sleep 1
+        ;;
     esac
   done
 }

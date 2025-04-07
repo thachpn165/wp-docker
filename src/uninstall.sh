@@ -3,20 +3,20 @@
 # =====================================
 # ${CROSSMARK} uninstall.sh – Completely remove WP Docker from the system
 # =====================================
-
-set -euo pipefail
-CONFIG_FILE="shared/config/config.sh"
-
-# Determine absolute path of `config.sh`
-while [ ! -f "$CONFIG_FILE" ]; do
-    CONFIG_FILE="../$CONFIG_FILE"
-    if [ "$(pwd)" = "/" ]; then
-        echo "${CROSSMARK} Error: config.sh not found!" >&2
-        exit 1
-    fi
+# ✅ Load configuration from any directory
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
+    break
+  fi
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
 
-source "$CONFIG_FILE"
+# Load functions for website management
+source "$FUNCTIONS_DIR/website_loader.sh"
 
 BACKUP_DIR="$BASE_DIR/archives/backups_before_remove"
 TMP_BACKUP_DIR="$BASE_DIR/tmp"
@@ -106,7 +106,12 @@ remove_all_except_backup() {
   for item in "$BASE_DIR"/*; do
     [[ "$item" == "$BACKUP_DIR" ]] && continue
     [[ "$item" == "$BASE_DIR/.git" || "$item" == "$BASE_DIR/.github" ]] && continue
-    rm -rf "$item" || { echo "${CROSSMARK} Command failed at line 104"; exit 1; }
+    if [[ -e "$item" ]]; then
+        remove_file "$item" || { echo "${CROSSMARK} Command failed at line 104"; exit 1; }
+      else
+        debug_log "[remove_all_except_backup] Skipping non-existent item: $item"
+      fi
+    done
   done
 }
 

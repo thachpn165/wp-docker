@@ -3,50 +3,60 @@ website_management_create_logic() {
     local php_version="$2"
 
     SITE_DIR="$SITES_DIR/$domain"  # Use domain for directory naming
-    CONTAINER_PHP="${domain}-php"  # Container name using domain
-    CONTAINER_DB="${domain}-mariadb"
-    MARIADB_VOLUME="${domain//./}_mariadb_data"
+    CONTAINER_PHP="${domain}${PHP_CONTAINER_SUFFIX}"
+    CONTAINER_DB="${domain}${DB_CONTAINER_SUFFIX}"
+    MARIADB_VOLUME="${domain//./}${DB_VOLUME_SUFFIX}"
     LOG_FILE="$LOGS_DIR/${domain}-setup.log"
     
     # Function to clean up resources in case of error
     cleanup() {
-        echo "⚠️ Cleaning up..."
+        print_msg cancel "$MSG_CLEANING_UP"
         # Remove any files or directories that were created
         if [[ -d "$SITE_DIR" ]]; then
-            rm -rf "$SITE_DIR"
-            echo "Removed site directory: $SITE_DIR"
+            run_cmd "rm -rf $SITE_DIR"
+            print_msg success "$SUCCESS_DIRECTORY_REMOVE: $SITE_DIR"
         fi
         if docker ps -a --filter "name=${CONTAINER_PHP}" --format '{{.Names}}' | grep -q "${CONTAINER_PHP}"; then
-            docker stop "$CONTAINER_PHP" && docker rm "$CONTAINER_PHP"
-            echo "Stopped and removed container: $CONTAINER_PHP"
+            run_cmd "docker stop $CONTAINER_PHP && docker rm $CONTAINER_PHP" true
+            print_and_debug success "$SUCCESS_CONTAINER_STOP: $CONTAINER_PHP"
         fi
         if docker ps -a --filter "name=${CONTAINER_DB}" --format '{{.Names}}' | grep -q "${CONTAINER_DB}"; then
-            docker stop "$CONTAINER_DB" && docker rm "$CONTAINER_DB"
-            echo "Stopped and removed container: $CONTAINER_DB"
+            #docker stop "$CONTAINER_DB" && docker rm "$CONTAINER_DB"
+            run_cmd "docker stop $CONTAINER_DB && docker rm $CONTAINER_DB" true
+            print_and_debug success "$SUCCESS_CONTAINER_STOP: $CONTAINER_DB"
         fi
         if docker volume ls --format '{{.Name}}' | grep -q "$MARIADB_VOLUME"; then
-            docker volume rm "$MARIADB_VOLUME"
-            echo "Removed MariaDB volume: $MARIADB_VOLUME"
+            #docker volume rm "$MARIADB_VOLUME"
+            run_cmd "docker volume rm $MARIADB_VOLUME" true
+            print_and_debug success "$SUCCESS_CONTAINER_VOLUME_REMOVE: $MARIADB_VOLUME"
         fi
         if [[ -d "$SSL_DIR" ]]; then
             rm -rf "$SSL_DIR"
-            echo "Removed SSL directory: $SSL_DIR"
+            #echo "Removed SSL directory: $SSL_DIR"
+            print_and_debug success "$SUCCESS_DIRECTORY_REMOVE: $SSL_DIR"
         fi
     }
 
     # Trap to catch errors and execute cleanup function
-    trap cleanup ERR
-
+    trap '
+    err_func="${FUNCNAME[1]:-MAIN}"
+    err_line="${BASH_LINENO[0]}"
+    print_and_debug error "$ERROR_TRAP_LOG: $err_func (line $err_line)"
+    cleanup
+    ' ERR SIGINT
+    
+    
     # Check if site already exists
     if is_directory_exist "$SITE_DIR" false; then
-        echo -e "${RED}${CROSSMARK} Website '$domain' already exists.${NC}"
+        #echo -e "${RED}${CROSSMARK} Website '$domain' already exists.${NC}"
+        print_msg cancel "$MSG_WEBSITE_EXISTS: $domain"
         return 1
     fi
 
     # 🧹 Remove existing volume if exists
     if docker volume ls --format '{{.Name}}' | grep -q "^$MARIADB_VOLUME$"; then
-        echo -e "${YELLOW}${WARNING} Existing MariaDB volume '$MARIADB_VOLUME' found. Removing to ensure clean setup...${NC}"
-        docker volume rm "$MARIADB_VOLUME"
+        print_msg warning "$MSG_DOCKER_VOLUME_FOUND: $MARIADB_VOLUME"
+        run_cmd "docker volume rm $MARIADB_VOLUME" true
     fi
 
     # 🗘️ Create log and directory structure
@@ -57,62 +67,70 @@ website_management_create_logic() {
     # Copy .template_version file if exists
     TEMPLATE_VERSION_FILE="$TEMPLATES_DIR/.template_version"
     if is_file_exist "$TEMPLATE_VERSION_FILE"; then
-        cp "$TEMPLATE_VERSION_FILE" "$SITE_DIR/.template_version"
-        echo -e "${GREEN}${CHECKMARK} Copied .template_version to $SITE_DIR${NC}"
+        run_cmd "cp \"$TEMPLATE_VERSION_FILE\" \"$SITE_DIR/.template_version\""
+        
+        print_msg copy "$SUCCESS_COPY $TEMPLATE_VERSION_FILE → $SITE_DIR/.template_version"
     else
-        echo -e "${YELLOW}${WARNING} No .template_version file found in shared/templates.${NC}"
+        print_msg warning "$MSG_NOT_FOUND: $TEMPLATE_VERSION_FILE"
     fi
 
     # 🔧 Configure NGINX
-    nginx_add_mount_docker "$domain" || return 1
+    print_msg step "$STEP_WEBSITE_SETUP_NGINX: $domain"
+    run_cmd "nginx_add_mount_docker \"$domain\"" true
     export domain php_version
-    bash "$SCRIPTS_FUNCTIONS_DIR/setup-website/setup-nginx.sh" || return 1
-
+    run_cmd "website_setup_nginx" true
     # ⚙️ Create configurations
-    copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini" || return 1
-    apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf" || return 1
-    create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf" || return 1
-    website_create_env "$SITE_DIR" "$domain" "$php_version" || return 1
+    print_msg step "$STEP_WEBSITE_SETUP_COPY_CONFIG: $domain"
+    run_cmd "copy_file \"$TEMPLATES_DIR/php.ini.template\" \"$SITE_DIR/php/php.ini\"" true
+    
+    print_msg step "$STEP_WEBSITE_SETUP_APPLY_CONFIG: $domain"
+    run_cmd "apply_mariadb_config \"$SITE_DIR/mariadb/conf.d/custom.cnf\"" true
+    run_cmd "create_optimized_php_fpm_config \"$SITE_DIR/php/php-fpm.conf\"" true
+    
+    print_msg step "$STEP_WEBSITE_SETUP_CREATE_ENV: $domain"
+    run_cmd "website_create_env \"$SITE_DIR\" \"$domain\" \"$php_version\"" true
 
-    # SSL
-    generate_ssl_cert "$domain" "$SSL_DIR" || return 1
+    print_msg step "$STEP_WEBSITE_SETUP_CREATE_SSL: $domain"
+    run_cmd "generate_ssl_cert \"$domain\" \"$SSL_DIR\"" true
+    
     # 🛠️ Create docker-compose.yml
+    print_msg step "$STEP_WEBSITE_SETUP_CREATE_DOCKER_COMPOSE: $domain"
     TEMPLATE_FILE="$TEMPLATES_DIR/docker-compose.yml.template"
     TARGET_FILE="$SITE_DIR/docker-compose.yml"
     if is_file_exist "$TEMPLATE_FILE"; then
         set -o allexport && source "$SITE_DIR/.env" && set +o allexport
-        envsubst < "$TEMPLATE_FILE" > "$TARGET_FILE" || return 1
-        echo -e "${GREEN}${CHECKMARK} Created docker-compose.yml${NC}"
+        php_version="$php_version" envsubst < "$TEMPLATE_FILE" > "$TARGET_FILE"
+        print_msg success "$MSG_CREATED: $TARGET_FILE"
     else
-        echo -e "${RED}${CROSSMARK} docker-compose.yml template not found${NC}"
-        return 1
+        print_msg error "$MSG_NOT_FOUND: $TEMPLATE_FILE"
+        exit 1
     fi
 
     # 🚀 Start containers
-    run_in_dir "$SITE_DIR" \
-        docker compose up -d || return 1
+    print_msg step "$MSG_START_CONTAINER: $domain"
+    run_in_dir "$SITE_DIR" docker compose up -d || {
+        print_msg error "$ERROR_COMMAND_FAILED: docker compose up -d"
+        return 1
+    }
+    print_msg progress "$MSG_CHECKING_CONTAINER"
 
-    echo -e "${YELLOW}⏳ Checking container startup...${NC}"
-    for i in {1..30}; do
-        if is_container_running "$CONTAINER_PHP" && is_container_running "$CONTAINER_DB"; then
-            echo -e "${GREEN}${CHECKMARK} Container is ready.${NC}"
-            break
-        fi
-        sleep 1
-    done
-
-    if ! is_container_running "$CONTAINER_PHP" || ! is_container_running "$CONTAINER_DB"; then
-        echo -e "${RED}${CROSSMARK} Container not ready after 30 seconds.${NC}"
+    debug_log "  ➤ CONTAINER_PHP: $CONTAINER_PHP"
+    debug_log "  ➤ CONTAINER_DB: $CONTAINER_DB"
+    
+    if ! is_container_running "$CONTAINER_PHP" "$CONTAINER_DB"; then
+        stop_loading
+        print_msg error "$ERROR_CONTAINER_NOT_READY_AFTER_30S"
         return 1
     fi
-
+    stop_loading
+    print_msg success "$MSG_CONTAINER_READY"
+    
     # 🔁 Restart NGINX
-    nginx_restart || return 1
+    print_msg step "$MSG_DOCKER_NGINX_RESTART"
+    nginx_restart
 
     # 🧑‍💻 Permissions
-    if is_container_running "$CONTAINER_PHP"; then
-        docker exec -u root "$CONTAINER_PHP" chown -R nobody:nogroup /var/www/ || return 1
-    else
-        echo -e "${YELLOW}${WARNING} Container PHP not running, skipping permissions.${NC}"
-    fi
+    print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
+    run_cmd "docker exec -u root $CONTAINER_PHP chown -R nobody:nogroup /var/www/"
+    debug_log "✅ website_management_create_logic completed"
 }

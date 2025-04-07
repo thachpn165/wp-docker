@@ -1,29 +1,40 @@
 # 📌 WordPress Tools Menu
 wordpress_tools_menu() {
-    echo -e "${BLUE}===== WordPress Tools =====${NC}"
-    echo -e "  ${GREEN}[1]${NC} Reset Admin Password"
-    echo -e "  ${GREEN}[2]${NC} Edit User Roles"
-    echo -e "  ${GREEN}[3]${NC} Enable/Disable Auto-update for All Plugins"
-    echo -e "  ${GREEN}[4]${NC} Protect wp-login.php"
-    echo -e "  ${GREEN}[5]${NC} WordPress Migration"
-    echo ""
-    [[ "$TEST_MODE" != true ]] && read -p "Select function (or press Enter to exit): " wp_tool_choice
+    while true; do
+        print_msg title "$TITLE_MENU_WORDPRESS"
+        print_msg label "${GREEN}[1]${NC} ${STRONG}$LABEL_MENU_WORDPRESS_RESET_ADMPASSWD${NC}"
+        print_msg label "${GREEN}[2]${NC} ${STRONG}$LABEL_MENU_WORDPRESS_EDIT_USER_ROLE${NC}"
+        print_msg label "${GREEN}[3]${NC} ${STRONG}$LABEL_MENU_WORDPRESS_AUTO_UPDATE_PLUGIN${NC}"
+        print_msg label "${GREEN}[4]${NC} ${STRONG}$LABEL_MENU_WORDPRESS_PROTECT_WPLOGIN${NC}"
+        print_msg label "${GREEN}[5]${NC} ${STRONG}$LABEL_MENU_WORDPRESS_MIGRATION${NC}"
+        print_msg label "${GREEN}[6]${NC} ${STRONG}$MSG_EXIT${NC}"
+        echo ""
+        read -p "$MSG_SELECT_OPTION " choice
 
-    case $wp_tool_choice in
-        1)
-            bash "$MENU_DIR/wordpress/wordpress_reset_admin_passwd_menu.sh"; read -p "Press Enter to continue..."
-            ;;
-        2)
-            bash "$MENU_DIR/wordpress/wordpress_reset_user_role_menu.sh"; read -p "Press Enter to continue..."
-            ;;
-        3)
-            bash "$MENU_DIR/wordpress/wordpress_auto_update_plugin_menu.sh" ; read -p "Press Enter to continue..."
-            ;;
-        4)
-            bash "$MENU_DIR/wordpress/wordpress_protect_wp_login_menu.sh" ; read -p "Press Enter to continue..."
-            ;;
-        *)
-            echo -e "${RED}${CROSSMARK} Invalid option or you have exited.${NC}"
-            ;;
-    esac
+        
+            case $choice in
+                1)
+                    bash "$MENU_DIR/wordpress/wordpress_reset_admin_passwd_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    ;;
+                2)
+                    bash "$MENU_DIR/wordpress/wordpress_reset_user_role_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    ;;
+                3)
+                    bash "$MENU_DIR/wordpress/wordpress_auto_update_plugin_menu.sh" ; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    ;;
+                4)
+                    bash "$MENU_DIR/wordpress/wordpress_protect_wp_login_menu.sh" ; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    ;;
+                5) 
+                    bash "$MENU_DIR/wordpress/wordpress_migration_menu.sh" ; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    ;;
+                6)
+                    break
+                    ;;
+                *)
+                    #echo -e "${RED}${CROSSMARK} Invalid option or you have exited.${NC}"
+                    print_msg error "$ERROR_SELECT_OPTION_INVALID"
+                    ;;
+            esac
+    done
 }

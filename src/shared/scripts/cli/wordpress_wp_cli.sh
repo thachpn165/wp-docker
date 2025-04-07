@@ -2,47 +2,56 @@
 # ======================================
 # CLI wrapper: Run WP-CLI inside container for a given site
 # ======================================
+# ✅ Load configuration from any directory
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
+    break
+  fi
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+done
 
-# === Load config & loader ===
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-fi
-
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-source "$CONFIG_FILE"
+# Load functions for website management
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 # === Parse arguments ===
 domain=""
 params=()
+parse_wp_args=false
 
 for arg in "$@"; do
-  case $arg in
-    --domain=*) domain="${arg#*=}" ;;
-    *) params+=("$arg") ;;
-  esac
+  if [[ "$arg" == "--" ]]; then
+    parse_wp_args=true
+    continue
+  fi
+
+  if [[ "$parse_wp_args" == true ]]; then
+    params+=("$arg")
+  else
+    case $arg in
+      --domain=*) domain="${arg#*=}" ;;
+      --domain) shift; domain="$1" ;;
+      *)
+        print_and_debug error "$ERROR_UNKNOW_PARAM: $arg"
+        print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld -- plugin list"
+        exit 1
+        ;;
+    esac
+  fi
 done
 
 if [[ -z "$domain" ]]; then
-  echo -e "${RED}${CROSSMARK} Missing required --domain=SITE_DOMAIN parameter.${NC}"
-  echo "Usage: $0 --domain=SITE_DOMAIN wp-cli-commands..."
+  print_and_debug error "$ERROR_MISSING_PARAM: --domain"
+  print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld -- plugin list"
   exit 1
 fi
 
 if [[ ${#params[@]} -eq 0 ]]; then
-  echo -e "${RED}${CROSSMARK} You must provide a WP-CLI command to run.${NC}"
-  echo "Example: $0 --domain=wpdocker.dev plugin list"
+  print_and_debug error "$ERROR_WPCLI_INVALID_PARAMS"
+  print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld -- plugin list"
   exit 1
 fi
 

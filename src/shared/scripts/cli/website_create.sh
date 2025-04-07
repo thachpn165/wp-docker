@@ -41,35 +41,19 @@
 #
 # -----------------------------------------------------------------------------
 
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  
-  # Iterate upwards from the current script directory to find 'config.sh'
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-
-  # Handle error if config file is not found
-  if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
+# ✅ Load configuration from any directory
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
+    break
   fi
-fi
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+done
 
-# Load the config file if PROJECT_DIR is set
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-
-# Source the config file
-source "$CONFIG_FILE"
+# Load functions for website management
 source "$FUNCTIONS_DIR/website_loader.sh"
 
 # === Input handling ===
@@ -79,18 +63,27 @@ while [[ "$#" -gt 0 ]]; do
     --domain=*) domain="${1#*=}" ;;
     --php=*) php_version="${1#*=}" ;;
     --auto_generate=*) auto_generate="${1#*=}" ;;
-    *) echo "${CROSSMARK} Unknown option: $1" ; exit 1 ;;
+    *)
+      print_msg error "$ERROR_UNKNOW_PARAM: $1"
+      print_msg info "$INFO_PARAM_EXAMPLE:\n  --domain=example.com --php=8.2"
+      exit 1
+      ;;
   esac
   shift
 done
 #if [[ -z "$domain" || ]] 
 if [[ -z "$domain" || -z "$php_version" ]]; then
-  echo "${CROSSMARK} Missing parameters. Usage:"
-  echo "  $0 --domain=abc.com --php=8.2"
+  #echo "${CROSSMARK} Missing parameters. Usage:"
+  print_msg error "$ERROR_MISSING_PARAM: --domain & --php"
   exit 1
 fi
+
 
 website_management_create_logic "$domain" "$php_version"
 website_setup_wordpress_logic "$domain" "$auto_generate"
 
-echo "${CHECKMARK} DONE_CREATE_WEBSITE: $domain"
+## Debugging
+debug_log "Domain: $domain"
+debug_log "PHP Version: $php_version"
+debug_log "Auto-generate: $auto_generate"
+debug_log "Website creation process completed."

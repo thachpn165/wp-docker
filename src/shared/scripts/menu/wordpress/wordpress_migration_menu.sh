@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # === Load config & wordpress_loader.sh ===
 if [[ -z "$PROJECT_DIR" ]]; then
   SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -20,30 +21,30 @@ fi
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-echo -e "${CYAN}🌐 WordPress Migration Tool${NC}"
+# === Display welcome message ===
+print_msg title "$TITLE_MIGRATION_TOOL"
+echo ""
+print_msg warning "$WARNING_MIGRATION_PREPARE"
+echo "  - $TIP_MIGRATION_FOLDER_PATH: ${BLUE}$INSTALL_DIR/archives/domain.ltd${NC}"
+echo "  - $TIP_MIGRATION_FOLDER_CONTENT"
+echo "     - $TIP_MIGRATION_SOURCE"
+echo "     - $TIP_MIGRATION_SQL"
 echo ""
 
-# Inform the user about the migration process
-echo -e "${YELLOW} ${WARNING} Please prepare your migration source files before continuing:${NC}"
-echo -e "  - Create a folder named after your domain at: ${BLUE}$INSTALL_DIR/archives/domain.ltd (replace domain.ltd with your domain) ${NC}"
-echo -e "  - Inside that folder, place:"
-echo -e "     - A .zip or .tar.gz file containing your website source code"
-echo -e "     - A .sql file containing the database export"
-echo ""
-
-read -rp "Have you prepared the archive folder and files correctly? (y/n): " ready
+# === Confirm user is ready ===
+ready=$(get_input_or_test_value "$QUESTION_MIGRATION_READY" "${TEST_READY:-y}")
 if [[ "$ready" != "y" && "$ready" != "Y" ]]; then
-  echo -e "${RED}${CROSSMARK} Migration canceled. Please prepare the necessary files first.${NC}"
+  print_msg error "$ERROR_MIGRATION_CANCEL"
   exit 1
 fi
 
 echo ""
-read -rp "👉 Enter domain name to migrate (must match folder name in 'archives/'): " domain
+domain=$(get_input_or_test_value "$PROMPT_ENTER_DOMAIN_TO_MIGRATE" "${TEST_DOMAIN:-example.com}")
 if [[ -z "$domain" ]]; then
-  echo -e "${RED}${CROSSMARK} Domain is required.${NC}"
+  print_msg error "$ERROR_DOMAIN_REQUIRED"
   exit 1
 fi
 
 echo ""
-echo -e "${YELLOW}⚙️ Starting migration process for '${domain}'...${NC}"
+print_msg info "$(printf "$INFO_MIGRATION_STARTING" "$domain")"
 bash "$CLI_DIR/wordpress_migration.sh" --domain="$domain"

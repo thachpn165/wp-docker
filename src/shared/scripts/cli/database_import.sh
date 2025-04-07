@@ -1,34 +1,13 @@
 #!/bin/bash
-
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  
-  # Iterate upwards from the current script directory to find 'config.sh'
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-
-  # Handle error if config file is not found
-  if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
   fi
-fi
-
-# Load the config file if PROJECT_DIR is set
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-
-# Source the config file
-source "$CONFIG_FILE"
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 source "$FUNCTIONS_DIR/database_loader.sh"
 
 # Parse parameters
@@ -36,16 +15,25 @@ while [[ "$#" -gt 0 ]]; do
     case "$1" in
         --domain=*) domain="${1#*=}" ;;
         --backup_file=*) backup_file="${1#*=}" ;;
-        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        #*) echo "Unknown parameter passed: $1"; exit 1 ;;
+        *)
+            print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
+            print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld\n  --backup_file=/path/to/backup.sql"
+            exit 1
+            ;;
     esac
     shift
 done
 
 # Ensure domain and backup_file are provided
 if [[ -z "$domain" || -z "$backup_file" ]]; then
-    echo "${CROSSMARK} Missing required parameters: --domain or --backup_file."
+    #echo "${CROSSMARK} Missing required parameters: --domain or --backup_file."
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain & --backup_file"
     exit 1
 fi
+
+debug_log "Domain: $domain"
+debug_log "Backup file: $backup_file"
 
 # Call the logic function to import the database
 database_import_logic "$domain" "$backup_file"

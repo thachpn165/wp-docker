@@ -35,35 +35,15 @@
 #   Backup to cloud storage:
 #     ./backup_website.sh --domain=mywebsite --storage=cloud --rclone_storage=mycloud
 
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  
-  # Iterate upwards from the current script directory to find 'config.sh'
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-
-  # Handle error if config file is not found
-  if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
   fi
-fi
-
-# Load the config file if PROJECT_DIR is set
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-
-# Source the config file
-source "$CONFIG_FILE"
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 source "$FUNCTIONS_DIR/backup_loader.sh"
 
 # === Parse command line flags ===
@@ -82,7 +62,8 @@ while [[ "$#" -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Unknown parameter: $1"
+      #echo "Unknown parameter: $1"
+      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
       exit 1
       ;;
   esac
@@ -90,13 +71,17 @@ done
 
 # Ensure valid parameters are passed
 if [[ -z "$domain" || ( "$storage" != "local" && "$storage" != "cloud" ) ]]; then
-  echo "${CROSSMARK} Missing or invalid parameters. Ensure --domain, --storage, and --rclone_storage are correctly provided."
+  #echo "${CROSSMARK} Missing or invalid parameters. Ensure --domain, --storage, and --rclone_storage are correctly provided."
+  print_and_debug error "$ERROR_UNKNOW_PARAM: --domain or --storage"
+  print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld\n  --storage=local/cloud\n  --rclone_storage=<rclone_storage_name>"
   exit 1
 fi
 
 # If storage is cloud, ensure rclone_storage is provided
 if [[ "$storage" == "cloud" && -z "$rclone_storage" ]]; then
-  echo "${CROSSMARK} Missing --rclone_storage for cloud storage. Please specify the storage name."
+  #echo "${CROSSMARK} Missing --rclone_storage for cloud storage. Please specify the storage name."
+  print_and_debug error "$ERROR_MISSING_PARAM: --rclone_storage"
+  print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld\n  --storage=cloud\n  --rclone_storage=<rclone_storage_name>"
   exit 1
 fi
 

@@ -1,77 +1,43 @@
 #!/bin/bash
 # backup_file.sh
 #
-# This script is used to back up files for a specific site within a project directory.
-# It ensures the script is executed in a Bash shell, validates the project directory,
-# loads necessary configuration and functions, and processes command-line arguments
-# to perform the backup operation.
+# This script is used to back up files for a specified domain in a WordPress Docker LEMP stack.
 #
-# Usage:
+# 🔧 Features:
+# - Automatically detects the base directory and loads global configuration.
+# - Parses command-line arguments to specify the domain for which the backup is to be created.
+# - Loads backup-related functions from external scripts.
+# - Validates input parameters and provides error messages for incorrect usage.
+# - Executes the backup logic for the specified domain.
+#
+# 🛠 Usage:
 #   ./backup_file.sh --domain=example.tld
 #
-# Parameters:
-#   --domain=example.tld : (Required) The name of the site to back up.
+# Command-line Arguments:
+#   --domain=<domain>   Specifies the domain for which the backup is to be created.
 #
-# Behavior:
-#   - Ensures the script is executed directly in a Bash shell.
-#   - Determines the PROJECT_DIR by traversing the directory structure.
-#   - Validates the presence of the configuration file and functions directory.
-#   - Loads the configuration file and backup-related functions.
-#   - Parses the command-line arguments to extract the site name.
-#   - Calls the `backup_file_logic` function to perform the backup operation.
+# Error Handling:
+# - If an unknown parameter is passed, the script displays an error message and an example of correct usage.
+# - If the required `--domain` parameter is missing, the script exits with an error message.
 #
-# Prerequisites:
-#   - The script must be executed directly, not sourced.
-#   - The PROJECT_DIR must contain the `shared/config/config.sh` file.
-#   - The `shared/scripts/functions/backup_loader.sh` script must exist and be valid.
-#
-# Exit Codes:
-#   1 : If the script is not executed in a Bash shell.
-#   1 : If the script is sourced instead of executed directly.
-#   1 : If the PROJECT_DIR cannot be determined.
-#   1 : If the configuration file is missing.
-#   1 : If the functions directory is missing.
-#   1 : If an unknown parameter is passed.
-#   1 : If the required `--domain` parameter is missing.
-#
-# Example:
-#   ./backup_file.sh --domain=my_site
+# Dependencies:
+# - Requires `load_config.sh` to load global configurations.
+# - Requires `backup_loader.sh` to load backup-related functions.
 #
 # Notes:
-#   - Ensure the directory structure and required files are correctly set up
-#     before executing this script.
-#   - The `backup_file_logic` function must be defined in the loaded functions
-#     to handle the actual backup process.
+# - Ensure that the `FUNCTIONS_DIR` variable is correctly set in the global configuration.
+# - The script relies on the `backup_file_logic` function to perform the actual backup operation.
 
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  
-  # Iterate upwards from the current script directory to find 'config.sh'
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
 
-  # Handle error if config file is not found
-  if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
   fi
-fi
-
-# Load the config file if PROJECT_DIR is set
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-
-# Source the config file
-source "$CONFIG_FILE"
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 
 # Load backup-related scripts
 source "$FUNCTIONS_DIR/backup_loader.sh"
@@ -84,7 +50,8 @@ while [[ "$#" -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Unknown parameter: $1"
+      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
+      print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld"
       exit 1
       ;;
   esac
@@ -92,7 +59,9 @@ done
 
 # Ensure valid parameters are passed
 if [ -z "$domain" ]; then
-  echo "${CROSSMARK} Missing required parameter: --domain"
+  #print_msg error "$ERROR_MISSING_PARAM: --domain"
+  print_and_debug error "$ERROR_UNKNOW_PARAM: --domain"
+  print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld"
   exit 1
 fi
 

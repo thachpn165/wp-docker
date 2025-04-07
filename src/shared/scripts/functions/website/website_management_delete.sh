@@ -4,14 +4,12 @@
 
 website_management_delete_logic() {
   local domain="$1"
-  local backup_enabled="${2:-false}"  # Tham số backup_enabled mặc định là false
-
-  if [[ "$TEST_MODE" == true ]]; then
-    backup_enabled=false
-  fi
+  local backup_enabled="$2"
+  
 
   if [[ -z "$domain" ]]; then
-    echo -e "${RED}${CROSSMARK} Missing domain parameter.${NC}"
+    #echo -e "${RED}${CROSSMARK} Missing domain parameter.${NC}"
+    print_msg error "$ERROR_MISSING_PARAM: --domain"
     return 1
   fi
 
@@ -23,39 +21,44 @@ website_management_delete_logic() {
     return 1
   fi
 
-  if ! is_file_exist "$ENV_FILE"; then
-    echo -e "${RED}${CROSSMARK} Website .env file not found!${NC}"
-    return 1
-  fi
+  #if ! is_file_exist "$ENV_FILE"; then
+  #  echo -e "${RED}${CROSSMARK} Website .env file not found!${NC}"
+  #  return 1
+  #fi
 
-  DOMAIN=$(fetch_env_variable "$ENV_FILE" "DOMAIN")
-  MARIADB_VOLUME="${domain//./}_mariadb_data"
+  #domain=$(fetch_env_variable "$ENV_FILE" "DOMAIN")
+  MARIADB_VOLUME="${domain//./}${DB_VOLUME_SUFFIX}"
   SITE_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$domain.conf"
 
-  # Nếu backup_enabled=true thì tiến hành backup
+  # Debug mode
+  debug_log "Deleting website '$domain'..."
+  debug_log "MariaDB Volume: $MARIADB_VOLUME"
+  debug_log "Site conf file: $SITE_CONF_FILE"
+  debug_log "Site directory: $SITE_DIR"
+  debug_log "backup_enabled: $backup_enabled"
+  
+  # backup before removing
   if [[ "$backup_enabled" == true ]]; then
-    echo -e "${YELLOW}📦 Creating backup before deletion...${NC}"
+    print_msg step "$MSG_WEBSITE_BACKUP_BEFORE_REMOVE: $domain"
+
     ARCHIVE_DIR="$ARCHIVES_DIR/old_website/${domain}-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$ARCHIVE_DIR"
 
-    DB_NAME=$(fetch_env_variable "$ENV_FILE" "MYSQL_DATABASE")
-    DB_USER=$(fetch_env_variable "$ENV_FILE" "MYSQL_USER")
-    DB_PASS=$(fetch_env_variable "$ENV_FILE" "MYSQL_PASSWORD")
+    # Backup Database
+    print_msg step "$MSG_WEBSITE_BACKING_UP_DB: $domain"
+    run_cmd "bash $CLI_DIR/database_export.sh --domain=$domain --save_location=$ARCHIVE_DIR/${domain}_db.sql" true
 
-    if [[ -n "$DB_NAME" && -n "$DB_USER" && -n "$DB_PASS" ]]; then
-      echo -e "${YELLOW}📦 Backing up database...${NC}"
-      docker exec "${domain}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" \
-        > "$ARCHIVE_DIR/${domain}_db.sql" 2>/dev/null || true
-    fi
+    # Backup Source Files
+    print_msg step "$MSG_WEBSITE_BACKING_UP_FILES: $SITE_DIR/wordpress"
+    run_cmd "bash $CLI_DIR/backup_file.sh --domain=$domain" true
 
-    echo -e "${YELLOW}📦 Compressing WordPress source code...${NC}"
-    tar -czf "$ARCHIVE_DIR/${domain}_wordpress.tar.gz" -C "$SITE_DIR/wordpress" . || true
-
-    echo -e "${GREEN}${CHECKMARK} Website backup created at: $ARCHIVE_DIR${NC}"
+    print_msg success "$MSG_WEBSITE_BACKUP_FILE_CREATED: $ARCHIVE_DIR"
   fi
 
   # 🛑 Stop containers
-  run_in_dir "$SITE_DIR" docker compose down
+  print_msg step "$MSG_WEBSITE_STOPPING_CONTAINERS: $domain"
+  run_cmd "docker compose -f \"$SITE_DIR/docker-compose.yml\" down"
+  debug_log "Stopped containers for website '$domain'."
 
   # 🧹 Remove override entry before deleting directory using nginx_remove_mount_docker
   OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
@@ -63,26 +66,32 @@ website_management_delete_logic() {
   MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
 
   if [ -f "$OVERRIDE_FILE" ]; then
+      print_msg step "$MSG_NGINX_REMOVE_MOUNT: $domain"
       nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
   fi
 
   # 🗂️ Delete website directory
-  remove_directory "$SITE_DIR"
-  echo -e "${GREEN}${CHECKMARK} Deleted website directory: $SITE_DIR${NC}"
+  print_msg step "$MSG_WEBSITE_DELETING_DIRECTORY: $SITE_DIR"
+  run_cmd "rm -rf $SITE_DIR"
+  print_msg success "$SUCCESS_DIRECTORY_REMOVE: $SITE_DIR"
 
   # 🔐 Delete SSL certificate
-  remove_file "$SSL_DIR/$DOMAIN.crt"
-  remove_file "$SSL_DIR/$DOMAIN.key"
-  echo -e "${GREEN}${CHECKMARK} Deleted SSL certificate (if any).${NC}"
+  print_msg step "$MSG_WEBSITE_DELETING_SSL: $domain"
+  run_cmd "rm -rf $SSL_DIR/$domain.crt"
+  run_cmd "rm -rf $SSL_DIR/$domain.key"
+  print_msg success "$SUCCESS_SSL_CERTIFICATE_REMOVED: $domain"
 
   # 🗃️ Delete DB volume
-  remove_volume "$MARIADB_VOLUME"
-  echo -e "${GREEN}${CHECKMARK} Deleted DB volume: $MARIADB_VOLUME${NC}"
+  #remove_volume "$MARIADB_VOLUME"
+  print_msg step "$MSG_WEBSITE_DELETING_VOLUME: $MARIADB_VOLUME"
+  run_cmd "docker volume rm \"$MARIADB_VOLUME\""
+  print_msg success "$SUCCESS_CONTAINER_VOLUME_REMOVE: $MARIADB_VOLUME"
 
   # 🧾 Delete NGINX configuration
   if is_file_exist "$SITE_CONF_FILE"; then
+    print_msg step "$MSG_WEBSITE_DELETING_NGINX_CONF: $SITE_CONF_FILE"
     remove_file "$SITE_CONF_FILE"
-    echo -e "${GREEN}${CHECKMARK} Deleted NGINX configuration file.${NC}"
+    print_msg success "$SUCCESS_FILE_REMOVED: $SITE_CONF_FILE"
   fi
 
   # 🕒 Delete cronjob if exists
@@ -91,10 +100,10 @@ website_management_delete_logic() {
     crontab -l | grep -v "$domain" > "$tmp_cron"
     crontab "$tmp_cron"
     rm -f "$tmp_cron"
-    echo -e "${GREEN}${CHECKMARK} Deleted cronjob related to site.${NC}"
+    print_msg success "$SUCCESS_CRON_REMOVED: $domain"
   fi
 
   # 🔁 Restart NGINX Proxy
   nginx_restart
-  echo -e "${GREEN}${CHECKMARK} Website '$domain' deleted successfully.${NC}"
+  print_msg success "$SUCCESS_WEBSITE_REMOVED: $domain"
 }

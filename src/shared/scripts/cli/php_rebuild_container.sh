@@ -1,34 +1,44 @@
 #!/bin/bash
+# This script is used to rebuild the PHP container for a specified domain.
+# It auto-detects the base directory, loads global configurations, and executes
+# the necessary logic to rebuild the PHP container.
 
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  
-  # Iterate upwards from the current script directory to find 'config.sh'
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
+# === Script Details ===
 
-  # Handle error if config file is not found
-  if [[ -z "$PROJECT_DIR" ]]; then
-    echo "${CROSSMARK} Unable to determine PROJECT_DIR. Please check the script's directory structure." >&2
-    exit 1
+# === Functionality ===
+# 1. Auto-detects the base directory of the script and loads the global configuration.
+# 2. Parses command-line flags to extract the required parameters.
+# 3. Validates the provided parameters to ensure correctness.
+# 4. Calls the logic function to rebuild the PHP container for the specified domain.
+
+# === Command-Line Parameters ===
+# --domain=<domain_name>
+#   - Required: Specifies the domain name for which the PHP container should be rebuilt.
+#   - Example: --domain=example.tld
+
+# === Error Handling ===
+# - If an unknown parameter is provided, the script will display an error message
+#   and an example of the correct usage, then exit with a status code of 1.
+# - If the required --domain parameter is missing, the script will display an error
+#   message and exit with a status code of 1.
+
+# === Dependencies ===
+# - Requires the `php_loader.sh` script to be sourced for PHP-related functions.
+# - Relies on the `php_rebuild_container_logic` function to perform the rebuild operation.
+
+# === Usage Example ===
+# ./php_rebuild_container.sh --domain=example.tld
+
+
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
   fi
-fi
-
-# Load the config file if PROJECT_DIR is set
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-
-# Source the config file
-source "$CONFIG_FILE"
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 source "$FUNCTIONS_DIR/php_loader.sh"
 
 # === Parse command line flags ===
@@ -39,7 +49,9 @@ while [[ "$#" -gt 0 ]]; do
       shift
       ;;
     *)
-      echo "Unknown parameter: $1"
+      #echo "Unknown parameter: $1"
+      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
+      print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld"
       exit 1
       ;;
   esac
@@ -47,7 +59,8 @@ done
 
 # Ensure valid parameters are passed
 if [[ -z "$domain" ]]; then
-  echo "${CROSSMARK} Missing --domain parameter. Please provide the site name."
+  #echo "${CROSSMARK} Missing --domain parameter. Please provide the site name."
+  print_and_debug error "$ERROR_MISSING_PARAM: --domain"
   exit 1
 fi
 
