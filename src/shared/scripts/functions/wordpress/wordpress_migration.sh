@@ -70,7 +70,7 @@ wordpress_migration_logic() {
   bash "$CLI_DIR/database_import.sh" --domain="$domain" --backup_file="$sql_file"
 
   # Check prefix in DB
-  print_msg step "🔍 Kiểm tra table_prefix trong database..."
+  print_msg step "$STEP_WORDPRESS_CHECK_DB_PREFIX"
   read db_name db_user db_pass < <(db_fetch_env "$domain") || return 1
   local prefix
   prefix=$(docker exec --env MYSQL_PWD="$db_pass" "$mariadb_container" \
@@ -84,36 +84,36 @@ wordpress_migration_logic() {
     config_prefix=$(grep "table_prefix" "$config_file" | grep -o "'[^']*'" | sed "s/'//g")
 
     if [[ "$prefix" != "$config_prefix" ]]; then
-      print_msg warning "⚠️ table_prefix không khớp: DB='$prefix' | wp-config='$config_prefix'. Đang cập nhật..."
+      print_msg warning "$(printf "$WARNING_TABLE_PREFIX_MISMATCH" "$prefix" "$config_prefix")"
       sedi "s/\\$table_prefix *= *'[^']*'/\\$table_prefix = '$prefix'/" "$config_file"
-      print_msg success "Đã cập nhật table_prefix: $prefix"
+      print_msg success "$SUCCESS_WORDPRESS_UPDATE_PREFIX: $prefix"
     fi
 
-    print_msg step "✏️ Đang cập nhật thông tin database..."
+    print_msg step "$STEP_WORDPRESS_UPDATE_CONFIG_DB"
     read db_name db_user db_pass < <(db_fetch_env "$domain") || return 1
 
     sedi "s/define( *'DB_NAME'.*/define('DB_NAME', '$db_name');/" "$config_file"
     sedi "s/define( *'DB_USER'.*/define('DB_USER', '$db_user');/" "$config_file"
     sedi "s/define( *'DB_PASSWORD'.*/define('DB_PASSWORD', '$db_pass');/" "$config_file"
-    print_msg success "Đã cập nhật thông tin kết nối trong wp-config.php"
+    print_msg success "$SUCCESS_WP_CONFIG_DONE"
   else
     print_and_debug error "$(printf "$ERROR_FILE_NOT_FOUND" "$config_file")"
     return 1
   fi
 
   # Install SSL
-  print_msg step "🔐 SSL Installation (Let's Encrypt)"
+  print_msg step "$STEP_SSL_LETSENCRYPT"
   print_msg info "$(printf "$INFO_LE_DOMAIN" "$domain")"
   confirm_action "$QUESTION_INSTALL_SSL"
   if [[ $? -eq 0 ]]; then
-    print_msg info "Installing SSL cho $domain..."
+    print_msg info "$(printf "$INFO_INSTALLING_SSL" "$domain")"
     bash "$CLI_DIR/ssl_install_letsencrypt.sh" --domain="$domain"
   else
-    print_msg info "Bỏ qua bước cài SSL."
+    print_msg info "$INFO_SKIP_SSL_INSTALL"
   fi
 
   # Check DNS
-  print_msg step "🌐 Kiểm tra trỏ domain..."
+  print_msg step "$STEP_WEBSITE_CHECK_DNS"
   if ! dig +short "$domain" | grep -q "$server_ip"; then
     print_msg warning "$(printf "$ERROR_DOMAIN_NOT_POINT_TO_SERVER" "$domain" "$server_ip")"
   else
