@@ -84,7 +84,7 @@ website_management_delete_logic() {
   # 🗃️ Delete DB volume
   #remove_volume "$MARIADB_VOLUME"
   print_msg step "$MSG_WEBSITE_DELETING_VOLUME: $MARIADB_VOLUME"
-  run_cmd "remove_volume \"$MARIADB_VOLUME\""
+  run_cmd "docker volume rm \"$MARIADB_VOLUME\""
   print_msg success "$SUCCESS_CONTAINER_VOLUME_REMOVE: $MARIADB_VOLUME"
 
   # 🧾 Delete NGINX configuration
