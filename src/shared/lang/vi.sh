@@ -609,3 +609,7 @@ readonly ERROR_NGINX_PROXY_START_FAILED="Không thể khởi động nginx-proxy
 readonly ERROR_NGINX_PROXY_LOG_HINT="Vui lòng kiểm tra cấu hình, volume hoặc cổng đang sử dụng."
 readonly SUCCESS_SYSTEM_READY="Hệ thống đã sẵn sàng để sử dụng WP Docker LEMP."
 readonly ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED="Không tìm thấy tên container database trong .env. Vui lòng kiểm tra lại."
+readonly TITLE_BACKUP_UPLOAD="UPLOAD BACKUP LÊN CLOUD"
+readonly PROMPT_RCLONE_STORAGE_NAME="Nhập tên Storage Rclone bạn muốn upload: "
+readonly ERROR_BACKUP_FOLDER_NOT_FOUND_FOR_SITE="Không tìm thấy tập tin backup cho website %s"
+readonly LABEL_MENU_BACKUP_UPLOAD="Upload backup lên cloud (Rclone)"

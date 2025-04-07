@@ -11,25 +11,23 @@ rclone_menu() {
         print_msg title "$TITLE_MENU_RCLONE"
         echo -e "${CYAN}============================${NC}"
         print_msg label "${GREEN}[1]${NC} ${STRONG}$LABEL_MENU_RCLONE_SETUP${NC}"
-        print_msg label "${GREEN}[2]${NC} ${STRONG}$LABEL_MENU_RCLONE_UPLOAD_BACKUP${NC}"
-        print_msg label "${GREEN}[3]${NC} ${STRONG}$LABEL_MENU_RCLONE_LIST_STORAGE${NC}"
-        print_msg label "${GREEN}[4]${NC} ${STRONG}$LABEL_MENU_RCLONE_DELETE_STORAGE${NC}"
-        print_msg label "${GREEN}[5]${NC} ${STRONG}$MSG_EXIT${NC}"
+        print_msg label "${GREEN}[2]${NC} ${STRONG}$LABEL_MENU_RCLONE_LIST_STORAGE${NC}"
+        print_msg label "${GREEN}[3]${NC} ${STRONG}$LABEL_MENU_RCLONE_DELETE_STORAGE${NC}"
+        print_msg label "${GREEN}[4]${NC} ${STRONG}$MSG_EXIT${NC}"
         
         read -p "$MSG_SELECT_OPTION" choice
 
         case "$choice" in
             1) rclone_setup ;;
-            2) bash "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh" ;;
-            3)
+            2)
                 echo ""
                 print_msg label "$LABEL_MENU_RCLONE_AVAILABLE_STORAGE"
                 echo ""
                 rclone_storage_list
                 echo ""
                 ;;
-            4) rclone_storage_delete ;;
-            5)
+            3) rclone_storage_delete ;;
+            4)
                 #print_msg progress "$MSG_EXITING"
                 break
                 ;;

@@ -69,30 +69,44 @@ select_backup_files() {
 
   debug_log "[UPLOAD] Selecting backup files from: $backup_dir"
 
+  # Kiểm tra thư mục tồn tại
   if ! is_directory_exist "$backup_dir"; then
     print_and_debug error "$ERROR_NOT_EXIST: $backup_dir"
     return 1
   fi
 
-  local backup_files=($(ls -1 "$backup_dir" 2>/dev/null))
+  # Lấy danh sách file backup
+  mapfile -t backup_files < <(ls -1 "$backup_dir" 2>/dev/null)
   if [[ ${#backup_files[@]} -eq 0 ]]; then
     print_and_debug error "$ERROR_BACKUP_FILE_NOT_FOUND"
     return 1
   fi
 
+  # Tạo danh sách hiển thị cho dialog
   for file in "${backup_files[@]}"; do
     choice_list+=("$file" "$file" "off")
   done
 
-  selected_files=$(dialog --stdout --separate-output --checklist "$PROMPT_SELECT_BACKUP_FILES" 15 60 10 "${choice_list[@]}")
-  if [[ -z "$selected_files" ]]; then
+  # Dùng dialog để chọn file
+  local selected_raw
+  selected_raw=$(dialog --stdout --separate-output --checklist "$PROMPT_SELECT_BACKUP_FILES" 15 60 10 "${choice_list[@]}")
+
+  if [[ $? -ne 0 ]]; then
+    print_and_debug warning "$WARNING_BACKUP_DIALOG_CANCELED"
+    return 1
+  fi
+
+  if [[ -z "$selected_raw" ]]; then
+    # Nếu không chọn gì, dùng toàn bộ file
     selected_files=("${backup_files[@]}")
     debug_log "[UPLOAD] No file selected, fallback to all files"
   else
-    IFS=$'\n' read -r -d '' -a selected_files <<< "$(echo "$selected_files" | tr -d '\r')"
+    # Nếu có chọn, xử lý nhiều dòng output thành mảng
+    IFS=$'\n' read -r -d '' -a selected_files <<< "$(echo "$selected_raw" | tr -d '\r')"$'\0'
   fi
 
-  echo "${selected_files[@]}"
+  # Trả về kết quả qua stdout
+  printf "%s\n" "${selected_files[@]}"
 }
 
 upload_backup() {
@@ -171,3 +185,7 @@ upload_backup() {
 
   print_msg success "$SUCCESS_RCLONE_UPLOAD_DONE" | tee -a "$log_file"
 }
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    upload_backup "$@"
+fi
