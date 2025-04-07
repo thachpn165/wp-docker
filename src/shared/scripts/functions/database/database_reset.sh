@@ -1,44 +1,46 @@
+#!/bin/bash
+
+# === Logic: Reset database ===
 database_reset_logic() {
     local domain="$1"
 
-    # Fetch database credentials from the website's .env file
-    local db_info
+    # Validate domain
+    if [[ -z "$domain" ]]; then
+        print_and_debug error "$ERROR_PARAM_SITE_NAME_REQUIRED"
+        return 1
+    fi
+
+    # Fetch DB credentials
+    local db_info db_name db_user db_password
     db_info=$(db_fetch_env "$domain")
-    
-    # Check if fetching database credentials was successful
     if [[ $? -ne 0 ]]; then
-        echo "${CROSSMARK} Failed to fetch database credentials for site '$domain'."
+        print_and_debug error "$(printf "$ERROR_DB_FETCH_CREDENTIALS" "$domain")"
         return 1
     fi
-
-    # Parse the database credentials
-    local db_name db_user db_password
     IFS=' ' read -r db_name db_user db_password <<< "$db_info"
+    debug_log "[DB RESET] db_name=$db_name, db_user=$db_user"
 
-    # Check if MariaDB container is running
+    # Check DB container status
     if ! is_mariadb_running "$domain"; then
-        echo "${CROSSMARK} MariaDB container for site '$domain' is not running. Please check!"
+        print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING: ${domain}-mariadb"
         return 1
     fi
 
-    # Warning and user confirmation
-    echo "${IMPORTANT} WARNING: This will RESET the database '$db_name' for site '$domain'. All data in the database will be lost permanently!"
-    read -rp "Are you sure you want to proceed? (y/n): " confirm
+    # Confirm with user
+    print_msg important "$(printf "$QUESTION_DB_RESET_CONFIRM" "$db_name" "$domain")"
+    get_input_or_test_value "n" "$CONFIRM_DB_RESET" confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-        echo "${CROSSMARK} Action canceled. No changes were made."
+        print_msg cancel "$MSG_OPERATION_CANCELLED"
         return 0
     fi
 
-    # Proceed to reset the database
-    echo "${IMPORTANT}${NC} Resetting database: $db_name for site: $domain..."
-    
-    # Use --env to securely pass the password to the container
-    docker exec -i --env MYSQL_PWD="$db_password" ${domain}-mariadb mysql -u$db_user -e "DROP DATABASE IF EXISTS $db_name; CREATE DATABASE $db_name;"
-
-    if [[ $? -ne 0 ]]; then
-        echo "${CROSSMARK} Failed to reset the database '$db_name'."
+    # Proceed reset
+    print_msg step "$(printf "$STEP_DB_RESETTING" "$db_name" "$domain")"
+    if ! docker exec -i --env MYSQL_PWD="$db_password" ${domain}-mariadb \
+        mysql -u$db_user -e "DROP DATABASE IF EXISTS $db_name; CREATE DATABASE $db_name;"; then
+        print_msg error "$(printf "$ERROR_DB_RESET_FAILED" "$db_name")"
         return 1
     fi
 
-    echo "${CHECKMARK} Database has been reset successfully!"
+    print_msg success "$(printf "$SUCCESS_DB_RESET_DONE" "$db_name")"
 }

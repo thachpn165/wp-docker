@@ -2,7 +2,7 @@
 
 core_version_main_cache() {
   local cache_file="$BASE_DIR/latest_version_main.txt"
-  local url="${CORE_LATEST_VERSION}"
+  local url="$CORE_LATEST_VERSION"
   local expiration=43200 # 12h
 
   if [[ -f "$cache_file" ]]; then
@@ -16,11 +16,11 @@ core_version_main_cache() {
     local age=$((now - last_modified))
 
     if [[ $age -gt $expiration ]]; then
-      echo "${WARNING} Cache for main version is outdated. Fetching again..."
+      print_msg warning "$WARNING_CORE_CACHE_OUTDATED"
       curl -s "$url" -o "$cache_file"
     fi
   else
-    echo "${INFO} No cache for main version. Fetching..."
+    print_msg info "$INFO_CORE_CACHE_NOT_FOUND"
     curl -s "$url" -o "$cache_file"
   fi
 
@@ -28,15 +28,17 @@ core_version_main_cache() {
 }
 
 core_display_main_version() {
-  local current_version=$(cat "$BASE_DIR/version.txt")
-  local latest_version=$(core_version_main_cache)
+  local current_version
+  current_version=$(cat "$BASE_DIR/version.txt")
+  local latest_version
+  latest_version=$(core_version_main_cache)
 
   core_compare_versions "$current_version" "$latest_version"
   result=$?
 
   if [[ $result -eq 2 ]]; then
-    echo -e "📦 WP Docker Version: ${current_version} ${RED}(new version available: $latest_version)${NC}"
+    printf "$WARNING_CORE_VERSION_NEW_AVAILABLE\n" "$current_version" "$latest_version"
   else
-    echo -e "${BLUE}📦 WP Docker Version:${NC} ${current_version} ${GREEN}(latest)${NC}"
+    printf "$INFO_CORE_VERSION_LATEST\n" "$current_version"
   fi
 }

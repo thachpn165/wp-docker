@@ -90,7 +90,7 @@ print_header() {
         7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         8) php_menu ;;
         9) database_menu ;;
-        10) bash "$MENU_DIR/core/core_update_menu.sh" ;;  # Call function to display version and update
+        10) echo "coming soon" ;;  # Call function to display version and update
         11) print_msg progress "$MSG_EXITING" && exit 0 ;;
         *) 
             print_msg error "$ERROR_SELECT_OPTION_INVALID"

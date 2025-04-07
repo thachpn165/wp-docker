@@ -1,78 +1,68 @@
-# database_export_logic – Logic to export database (backup)
-
 database_export_logic() {
     local domain="$1"
-    local save_location="$2"  # Đã được truyền từ file cli
+    local save_location="$2"
 
-    # Ensure PROJECT_DIR is set
     if [[ -z "$SITES_DIR" ]]; then
-        echo -e "${CROSSMARK} SITES_DIR is not set. Ensure config.sh is sourced correctly."
+        print_msg error "$ERROR_CONFIG_SITES_DIR_NOT_SET"
         return 1
     fi
 
-    # Ensure $domain is set
     if [[ -z "$domain" ]]; then
-        echo -e "${CROSSMARK} Missing site name parameter."
+        print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
         return 1
     fi
 
-    # Ensure the backup directory exists
-    local backup_dir=$(dirname "$save_location")
+    local backup_dir
+    backup_dir="$(dirname "$save_location")"
     if [[ ! -d "$backup_dir" ]]; then
-        echo -e "${CROSSMARK} Backup directory does not exist. Creating directory: $backup_dir"
-        mkdir -p "$backup_dir" || { echo -e "${CROSSMARK} Failed to create backup directory."; return 1; }
+        print_msg warning "$(printf "$WARNING_BACKUP_DIR_NOT_EXIST_CREATE" "$backup_dir")"
+        mkdir -p "$backup_dir" || {
+            print_msg error "$ERROR_BACKUP_CREATE_DIR_FAILED"
+            return 1
+        }
     fi
 
-    # Fetch database credentials from the website's .env file
     local db_info
     db_info=$(db_fetch_env "$domain")
-    
-    # Check if fetching database credentials was successful
     if [[ $? -ne 0 ]]; then
-        echo -e "${CROSSMARK} Failed to fetch database credentials for site '$domain'."
+        print_msg error "$(printf "$ERROR_DB_FETCH_CREDENTIALS" "$domain")"
         return 1
     fi
 
-    # Parse the database credentials
     local db_name db_user db_password
     IFS=' ' read -r db_name db_user db_password <<< "$db_info"
 
-    # Check if MariaDB container is running
     if ! is_mariadb_running "$domain"; then
-        echo -e "${CROSSMARK} MariaDB container for site '$domain' is not running. Please check!"
+        print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     fi
 
-    # Proceed to backup the database
-    echo -e "${SAVE} Backing up database: $db_name for site: $domain..."
+    print_msg step "$(printf "$STEP_BACKUP_DATABASE" "$db_name")"
+    debug_log "[Backup] Running mysqldump for: $db_name → $save_location"
 
-    # Run mysqldump inside the container with the --env flag to securely pass the password
-    # Export the backup file directly into the save_location on the host
-    if ! docker exec --env MYSQL_PWD="$db_password" ${domain}-mariadb mysqldump -u$db_user $db_name > "$save_location"; then
-        echo -e "${CROSSMARK} Failed to backup the database '$db_name' in container."
+    if ! docker exec --env MYSQL_PWD="$db_password" "${domain}-mariadb" \
+        mysqldump -u"$db_user" "$db_name" > "$save_location"; then
+        print_msg error "$(printf "$ERROR_BACKUP_DB_DUMP_FAILED" "$db_name")"
         return 1
     fi
 
-    echo -e "${CHECKMARK} Backup completed successfully"
+    print_msg success "$SUCCESS_BACKUP_RESTORED_DB: $db_name"
 
-    # Get file details: name, creation time, and size in MB
-    file_name=$(basename "$save_location")
-    file_size=$(du -sh "$save_location" | cut -f1)
+    local file_name file_size file_time
+    file_name="$(basename "$save_location")"
+    file_size="$(du -sh "$save_location" | cut -f1)"
 
-    # Check if we are on macOS or Linux to use the appropriate stat command
     if [[ "$(uname)" == "Darwin" ]]; then
-        # macOS stat
         file_time=$(stat -f %SB -t "%Y-%m-%d %H:%M:%S" "$save_location")
     else
-        # Linux stat
         file_time=$(stat -c %y "$save_location")
     fi
-    echo -e ""
-    echo -e "${GREEN}File Name:${NC} $file_name"
-    echo -e "${GREEN}File Size:${NC} $file_size"
-    echo -e "${GREEN}File Creation Time:${NC} $file_time"
-    echo -e "${GREEN}Backup file saved at:${NC} $save_location"
 
-    # Return the path of the backup file
+    echo ""
+    print_msg info "📦 File Name: $file_name"
+    print_msg info "📐 File Size: $file_size"
+    print_msg info "🕒 File Creation Time: $file_time"
+    print_msg info "💾 Saved at: $save_location"
+
     echo "$save_location"
 }

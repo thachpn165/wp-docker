@@ -5,6 +5,8 @@ core_version_dev_cache() {
   local url="${CORE_NIGHTLY_VERSION}"
   local expiration=43200 # 12h
 
+  debug_log "[core_version_dev_cache] Checking cache file: $cache_file"
+
   if [[ -f "$cache_file" ]]; then
     local last_modified
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -15,28 +17,36 @@ core_version_dev_cache() {
     local now=$(date +%s)
     local age=$((now - last_modified))
 
+    debug_log "[core_version_dev_cache] Cache age: $age seconds"
+
     if [[ $age -gt $expiration ]]; then
-      echo "${WARNING} Cache for dev version is outdated. Fetching again..."
-      curl -s "$url" -o "$cache_file"
+      print_msg warning "$WARNING_CORE_DEV_CACHE_OUTDATED"
+      run_cmd "curl -s \"$url\" -o \"$cache_file\"" true
     fi
   else
-    echo "${INFO} No cache for dev version. Fetching..."
-    curl -s "$url" -o "$cache_file"
+    print_msg info "$INFO_CORE_DEV_CACHE_MISSING"
+    run_cmd "curl -s \"$url\" -o \"$cache_file\"" true
   fi
 
   cat "$cache_file"
 }
 
 core_display_dev_version() {
-  local current_version=$(cat "$BASE_DIR/version.txt")
-  local latest_version=$(core_version_dev_cache)
+  local current_version
+  local latest_version
+
+  current_version=$(cat "$BASE_DIR/version.txt")
+  latest_version=$(core_version_dev_cache)
+
+  debug_log "[core_display_dev_version] Current version: $current_version"
+  debug_log "[core_display_dev_version] Latest version (dev): $latest_version"
 
   core_compare_versions "$current_version" "$latest_version"
   result=$?
 
   if [[ $result -eq 2 ]]; then
-    echo -e "📦 WP Docker Version: ${current_version} ${RED}(new version available: $latest_version)${NC}"
+    print_msg warning "$(printf "$WARNING_CORE_VERSION_NEW_AVAILABLE" "$current_version" "$latest_version")"
   else
-    echo -e "${BLUE}📦 WP Docker Version:${NC} ${current_version} ${GREEN}(latest)${NC}"
+    print_msg info "$(printf "$INFO_CORE_VERSION_LATEST" "$current_version")"
   fi
 }
