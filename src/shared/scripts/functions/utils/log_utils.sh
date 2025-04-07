@@ -11,7 +11,7 @@ debug_log() {
         local line_number="${BASH_LINENO[0]}"
         local func_name="${FUNCNAME[1]}"
 
-        log_with_time "🐛 [DEBUG] $source_file:$line_number [$func_name] →\n $message"
+        log_with_time "🐛 [DEBUG] $source_file:$line_number [$func_name] → $message"
     fi
 }
 
@@ -60,7 +60,7 @@ run_cmd() {
         local source_file="${BASH_SOURCE[1]}"
         local line_number="${BASH_LINENO[0]}"
         local func_name="${FUNCNAME[1]}"
-        log_with_time "🐛 [CMD] $source_file:$line_number [$func_name] →\n $cmd"
+        log_with_time "🐛 [CMD] $source_file:$line_number [$func_name] → $cmd"
         eval "$cmd" 2>&1 | tee -a "$DEBUG_LOG"
     else
         eval "$cmd" &>/dev/null

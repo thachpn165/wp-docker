@@ -12,5 +12,5 @@ generate_ssl_cert() {
         -out "$ssl_dir/$domain.crt" \
         -subj "/C=US/ST=State/L=City/O=Organization/CN=$domain"
 
-    echo "${CHECKMARK} SSL certificate has been created at $ssl_dir"
+    print_and_debug success "$SUCCESS_SSL_INSTALLED $domain"
 }

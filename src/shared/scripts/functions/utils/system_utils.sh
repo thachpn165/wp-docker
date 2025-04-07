@@ -1,45 +1,44 @@
-# 📌 Get total RAM capacity (MB), works on both Linux & macOS
+# ==================================================
+# 🧠 System & CLI Utilities – Refactored for i18n
+# ==================================================
+
 get_total_ram() {
-    if command -v free >/dev/null 2>&1; then
-        free -m | awk '/^Mem:/{print $2}'
-    else
-        sysctl -n hw.memsize | awk '{print $1 / 1024 / 1024}'
-    fi
+  if command -v free >/dev/null 2>&1; then
+    free -m | awk '/^Mem:/{print $2}'
+  else
+    sysctl -n hw.memsize | awk '{print $1 / 1024 / 1024}'
+  fi
 }
 
-# 📌 Get total CPU cores, works on both Linux & macOS
 get_total_cpu() {
-    if command -v nproc >/dev/null 2>&1; then
-        nproc
-    else
-        sysctl -n hw.ncpu
-    fi
+  if command -v nproc >/dev/null 2>&1; then
+    nproc
+  else
+    sysctl -n hw.ncpu
+  fi
 }
 
-# 🧩 macOS/Linux compatible sed function
 sedi() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "$@"
-    else
-        sed -i "$@"
-    fi
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' "$@"
+  else
+    sed -i "$@"
+  fi
 }
 
-# Check and set Vietnam timezone on the server
 setup_timezone() {
-    if [[ "$OSTYPE" != "darwin"* ]]; then
-        current_tz=$(timedatectl | grep "Time zone" | awk '{print $3}')
-        if [[ "$current_tz" != "Asia/Ho_Chi_Minh" ]]; then
-            echo -e "${YELLOW}🌏 Setting system timezone to Asia/Ho_Chi_Minh...${NC}"
-            timedatectl set-timezone Asia/Ho_Chi_Minh
-            echo -e "${GREEN}${CHECKMARK} System timezone has been changed.${NC}"
-        fi
+  if [[ "$OSTYPE" != "darwin"* ]]; then
+    current_tz=$(timedatectl | grep "Time zone" | awk '{print $3}')
+    if [[ "$current_tz" != "Asia/Ho_Chi_Minh" ]]; then
+      print_msg warning "$WARNING_TIMEZONE_NOT_VIETNAM"
+      timedatectl set-timezone Asia/Ho_Chi_Minh
+      print_msg success "$SUCCESS_TIMEZONE_SET"
     fi
+  fi
 }
 
-# Function to choose text editor for file editing
 choose_editor() {
-  echo -e "${CYAN}🛠️ Checking available text editors...${NC}"
+  print_msg info "$INFO_CHECKING_EDITORS"
 
   AVAILABLE_EDITORS=()
   [[ -x "$(command -v nano)" ]] && AVAILABLE_EDITORS+=("nano")
@@ -49,102 +48,76 @@ choose_editor() {
   [[ -x "$(command -v code)" ]] && AVAILABLE_EDITORS+=("code")
 
   if [[ ${#AVAILABLE_EDITORS[@]} -eq 0 ]]; then
-    echo -e "${RED}${CROSSMARK} No text editors found! Please install nano or vim first.${NC}"
+    print_and_debug error "$ERROR_NO_EDITOR_FOUND"
     return 1
   fi
 
-  echo -e "${YELLOW}📋 Available text editors:${NC}"
+  print_msg info "$INFO_AVAILABLE_EDITORS"
   for i in "${!AVAILABLE_EDITORS[@]}"; do
-    echo -e "  ${GREEN}[$i]${NC} ${AVAILABLE_EDITORS[$i]}"
+    echo -e "  $((i + 1))) ${AVAILABLE_EDITORS[$i]}"
   done
 
-  [[ "$TEST_MODE" != true ]] && read -p "🔹 Select number corresponding to text editor: " editor_index
+  get_input_or_test_value "$PROMPT_SELECT_EDITOR" "" editor_index
 
-  if ! [[ "$editor_index" =~ ^[0-9]+$ ]] || (( editor_index < 0 || editor_index >= ${#AVAILABLE_EDITORS[@]} )); then
-    echo -e "${RED}${WARNING} Invalid selection! Defaulting to nano if available.${NC}"
+  if ! [[ "$editor_index" =~ ^[0-9]+$ ]] || (( editor_index < 1 || editor_index > ${#AVAILABLE_EDITORS[@]} )); then
+    print_msg warning "$WARNING_EDITOR_INVALID_SELECT"
     EDITOR_CMD="nano"
   else
-    EDITOR_CMD="${AVAILABLE_EDITORS[$editor_index]}"
+    EDITOR_CMD="${AVAILABLE_EDITORS[$((editor_index - 1))]}"
   fi
 
-  echo -e "${CYAN}📘 ${EDITOR_CMD} Usage Guide:${NC}"
-  case "$EDITOR_CMD" in
-    nano)
-      echo -e "  🖋️  Ctrl + O → Save file"
-      echo -e "  ${CROSSMARK}  Ctrl + X → Exit"
-      ;;
-    vi|vim)
-      echo -e "  🖋️  Press 'i' → Enter edit mode"
-      echo -e "  ${SAVE}  ESC → Type :w to save"
-      echo -e "  ${CROSSMARK}  ESC → Type :q to exit"
-      ;;
-    micro)
-      echo -e "  🖋️  Ctrl + S → Save file"
-      echo -e "  ${CROSSMARK}  Ctrl + Q → Exit"
-      ;;
-    code)
-      echo -e "  💡 Opens Visual Studio Code in GUI mode"
-      echo -e "  🔁 Auto-saves on changes (if enabled)"
-      ;;
-    *)
-      echo -e "${YELLOW}${WARNING} Unknown editor, you'll handle the operations yourself :)${NC}"
-      ;;
-  esac
+  print_msg info "$(printf "$INFO_EDITOR_USAGE_GUIDE" "$EDITOR_CMD")"
 
-  echo ""
-  [[ "$TEST_MODE" != true ]] && read -p "❓ Would you like to start editing with ${EDITOR_CMD}? [Y/n]: " confirm
+  get_input_or_test_value "$PROMPT_CONFIRM_EDITOR" "y" confirm
   if [[ "$confirm" =~ ^[Nn]$ ]]; then
-    echo -e "${YELLOW}⏩ Edit operation cancelled.${NC}"
+    print_msg warning "$WARNING_EDITOR_CANCELLED"
     return 1
   fi
 
   return 0
 }
 
-# Function to check and install required commands
 check_required_commands() {
-    echo -e "${YELLOW}🔍 Checking required commands...${NC}"
+  print_msg info "$INFO_CHECKING_COMMANDS"
 
-    # List of required commands
-    required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab)
+  required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab)
 
-    for cmd in "${required_cmds[@]}"; do
-        # Special case: check if docker compose is a plugin
-        if [[ "$cmd" == "docker compose" ]]; then
-            if docker compose version &> /dev/null; then
-                echo -e "${GREEN}${CHECKMARK} 'docker compose' is available.${NC}"
-                continue
-            else
-                echo -e "${YELLOW}${WARNING} 'docker compose' is not installed. Installing...${NC}"
-                install_docker_compose
-                continue
-            fi
-        fi
+  for cmd in "${required_cmds[@]}"; do
+    if [[ "$cmd" == "docker compose" ]]; then
+      if docker compose version &> /dev/null; then
+        print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
+        continue
+      else
+        print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
+        install_docker_compose
+        continue
+      fi
+    fi
 
-        if ! command -v $(echo "$cmd" | awk '{print $1}') &> /dev/null; then
-            echo -e "${YELLOW}${WARNING} Command '$cmd' is not installed. Installing...${NC}"
+    if ! command -v $(echo "$cmd" | awk '{print $1}') &> /dev/null; then
+      print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
 
-            if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-                if command -v apt &> /dev/null; then
-                    apt update -y && apt install -y $(echo "$cmd" | awk '{print $1}')
-                elif command -v yum &> /dev/null; then
-                    yum install -y $(echo "$cmd" | awk '{print $1}')
-                elif command -v dnf &> /dev/null; then
-                    dnf install -y $(echo "$cmd" | awk '{print $1}')
-                else
-                    echo -e "${RED}${CROSSMARK} No suitable package manager found to install '$cmd'.${NC}"
-                fi
-            elif [[ "$OSTYPE" == "darwin"* ]]; then
-                if ! command -v brew &> /dev/null; then
-                    echo -e "${YELLOW}🍺 Homebrew is not installed. Installing Homebrew...${NC}"
-                    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-                fi
-                brew install $(echo "$cmd" | awk '{print $1}')
-            else
-                echo -e "${RED}${CROSSMARK} Operating system not supported for installing '$cmd'.${NC}"
-            fi
+      if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        if command -v apt &> /dev/null; then
+          apt update -y && apt install -y $(echo "$cmd" | awk '{print $1}')
+        elif command -v yum &> /dev/null; then
+          yum install -y $(echo "$cmd" | awk '{print $1}')
+        elif command -v dnf &> /dev/null; then
+          dnf install -y $(echo "$cmd" | awk '{print $1}')
         else
-            echo -e "${GREEN}${CHECKMARK} Command '$cmd' is available.${NC}"
+          print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
         fi
-    done
+      elif [[ "$OSTYPE" == "darwin"* ]]; then
+        if ! command -v brew &> /dev/null; then
+          print_msg warning "$WARNING_HOMEBREW_MISSING"
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
+        brew install $(echo "$cmd" | awk '{print $1}')
+      else
+        print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
+      fi
+    else
+      print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
+    fi
+  done
 }

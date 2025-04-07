@@ -1,45 +1,50 @@
 #!/bin/bash
 
-# Check if a port is in use
+# ==========================================================
+# 🌐 Network & Internet Utilities (Refactored for v1.1.7-beta)
+# ==========================================================
+
+# ✅ Kiểm tra port đang được sử dụng hay không
 is_port_in_use() {
-    local port="$1"
-    netstat -tuln | grep -q ":$port "
+  local port="$1"
+  netstat -tuln | grep -q ":$port "
 }
 
-# Check Internet connection
+# ✅ Kiểm tra kết nối Internet
 is_internet_connected() {
-    ping -c 1 8.8.8.8 &> /dev/null
+  ping -c 1 8.8.8.8 &> /dev/null
 }
 
-# Check if a domain is resolvable
+# ✅ Kiểm tra domain có phân giải được không
 is_domain_resolvable() {
-    local domain="$1"
-    if command -v timeout &>/dev/null; then
+  local domain="$1"
+  if command -v timeout &>/dev/null; then
     timeout 3 nslookup "$domain" &> /dev/null
-    else
+  else
     nslookup "$domain" | grep -q "Name:"
-    fi
+  fi
 }
 
-# Function to check if a Docker network exists
+# ✅ Kiểm tra Docker network tồn tại không
 is_network_exists() {
-    local network_name="$1"
-    if docker network ls --format '{{.Name}}' | grep -q "^${network_name}$"; then
-        return 0  # Network exists
-    else
-        return 1  # Network does not exist
-    fi
+  local network_name="$1"
+  if docker network ls --format '{{.Name}}' | grep -q "^${network_name}$"; then
+    debug_log "$(printf "$DEBUG_DOCKER_NETWORK_EXISTS" "$network_name")"
+    return 0
+  else
+    debug_log "$(printf "$DEBUG_DOCKER_NETWORK_NOT_EXISTS" "$network_name")"
+    return 1
+  fi
 }
 
-# Set up Docker network
+# ✅ Tạo Docker network nếu chưa có
 create_docker_network() {
-    local network_name="$1"
-    if ! docker network ls | grep -q "$network_name"; then
-        echo -e "${YELLOW}🔧 Creating network $network_name...${NC}"
-        docker network create "$network_name"
-        echo -e "${GREEN}${CHECKMARK} Network $network_name has been created.${NC}"
-    else
-        echo -e "${GREEN}${CHECKMARK} Network $network_name already exists.${NC}"
-    fi
+  local network_name="$1"
+  if ! is_network_exists "$network_name"; then
+    print_msg info "$(printf "$INFO_CREATE_DOCKER_NETWORK" "$network_name")"
+    docker network create "$network_name"
+    print_msg success "$(printf "$SUCCESS_DOCKER_NETWORK_CREATED" "$network_name")"
+  else
+    print_msg success "$(printf "$SUCCESS_DOCKER_NETWORK_EXISTS" "$network_name")"
+  fi
 }
-

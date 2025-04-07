@@ -174,6 +174,7 @@ fetch_env_variable() {
         grep -E "^${var_name}=" "$env_file" | cut -d'=' -f2 | tr -d '\r'
     else
         echo -e "${RED}${CROSSMARK} Error: .env file does not exist: $env_file${NC}" >&2
+        debug_log "[fetch_env_variable] Error: .env file does not exist: $env_file"
         return 1
     fi
 }
