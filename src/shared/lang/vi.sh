@@ -702,3 +702,5 @@ readonly TIP_WP_SUPER_CACHE="Hướng dẫn cấu hình WP Super Cache: Vào WP 
 readonly TIP_W3_TOTAL_CACHE="Hướng dẫn cấu hình W3 Total Cache: Vào WP Admin → Performance → General Settings, bật Page/Object/Database Cache."
 readonly TIP_WP_FASTEST_CACHE="Hướng dẫn cấu hình WP Fastest Cache: Vào WP Admin → WP Fastest Cache, bật 'Enable Cache' và chọn hệ thống phù hợp."
 readonly PROMPT_WORDPRESS_ENTER_USER_ID="Nhập ID của tài khoản cần thao tác: "
+readonly PROMPT_WORDPRESS_CHOOSE_CACHE="Hãy chọn loại Cache mà bạn muốn sử dụng: "
+readonly SUCCESS_WORDPRESS_CHOOSE_CACHE="Loại cache đã chọn: "
