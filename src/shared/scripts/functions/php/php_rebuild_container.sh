@@ -1,32 +1,29 @@
-# 🔁 Rebuild PHP container (does not affect database)
 php_rebuild_container_logic() {
-  local domain="$1" 
+  local domain="$1"
 
-  # Check if SITE_DOMAIN is set
   if [[ -z "$domain" ]]; then
-    echo -e "${RED}${CROSSMARK} Error: SITE_DOMAIN is not set!${NC}"
+    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
     return 1
   fi
 
-  echo -e "${YELLOW}🔁 Restarting PHP container for site: $domain${NC}"
-  
-  # Check if the container is running before stopping
-  if docker ps -q -f name="$domain-php" &> /dev/null; then
-    docker compose -f "$SITES_DIR/$domain/docker-compose.yml" stop php
-    echo -e "${GREEN}${CHECKMARK} Stopped the PHP container successfully.${NC}"
+  print_msg step "$(printf "$STEP_WEBSITE_RESTARTING" "$domain")"
+
+  local compose_file="$SITES_DIR/$domain/docker-compose.yml"
+
+  if docker ps -q -f name="$domain-php" &>/dev/null; then
+    docker compose -f "$compose_file" stop php
+    print_msg success "$SUCCESS_CONTAINER_STOP"
   else
-    echo -e "${YELLOW}${WARNING} PHP container is not running. Skipping stop operation.${NC}"
+    print_msg warning "$WARNING_PHP_NOT_RUNNING"
   fi
-  
-  # Remove the old PHP container
-  docker rm -f "$domain-php" 2>/dev/null || true
-  echo -e "${GREEN}${CHECKMARK} Removed the old PHP container (if it existed).${NC}"
 
-  # Rebuild and restart the PHP container
-  if ! docker compose -f "$SITES_DIR/$domain/docker-compose.yml" up -d php --build; then
-    echo -e "${RED}${CROSSMARK} Failed to rebuild the PHP container.${NC}"
+  docker rm -f "$domain-php" 2>/dev/null || true
+  print_msg success "$SUCCESS_CONTAINER_OLD_REMOVED"
+
+  if ! docker compose -f "$compose_file" up -d php --build; then
+    print_msg error "$ERROR_PHP_REBUILD_FAILED"
     return 1
   fi
 
-  echo -e "${GREEN}${CHECKMARK} PHP container has been rebuilt and restarted successfully.${NC}"
+  print_msg success "$SUCCESS_WEBSITE_RESTART"
 }
