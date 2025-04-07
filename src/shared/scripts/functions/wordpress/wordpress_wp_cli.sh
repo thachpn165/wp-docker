@@ -7,7 +7,8 @@ wordpress_wp_cli_logic() {
     local domain="$1"
     shift
     local wp_command="$*"
-    local php_container="${domain}-php"
+    local env_file="$SITES_DIR/$domain/.env"
+    local php_container="$(php_get_container "$env_file" "$domain")"
     local user="${PHP_USER:-nobody}"
 
     if ! docker ps --format '{{.Names}}' | grep -q "^$php_container$"; then

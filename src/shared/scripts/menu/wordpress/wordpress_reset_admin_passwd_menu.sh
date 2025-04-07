@@ -34,7 +34,7 @@ bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- user list --role=admin
 echo ""
 
 # 🔐 Nhập user ID
-get_input_or_test_value "$PROMPT_ENTER_ADMIN_USER_ID" user_id
+user_id=$(get_input_or_test_value "$PROMPT_WORDPRESS_ENTER_USER_ID" "${TEST_USER_ID:-0}")
 if [[ -z "$user_id" ]]; then
   print_msg error "$ERROR_INPUT_REQUIRED"
   exit 1

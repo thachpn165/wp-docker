@@ -8,8 +8,8 @@ reset_user_role_logic() {
     PHP_CONTAINER="$domain-php"
 
     # **Chạy lệnh WP CLI để reset lại quyền**
-    echo -e "${YELLOW}🔄 Đang thiết lập lại quyền Administrator về mặc định...${NC}"
-    docker exec -u root "$PHP_CONTAINER" wp role reset --all --allow-root --path=/var/www/html
-
-    echo -e "${GREEN}${CHECKMARK} Quyền Administrator trên website '$domain' đã được thiết lập lại thành công.${NC}"
+    print_msg step "$STEP_WORDPRESS_RESET_ROLE"
+    bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- role reset --all
+    exit_if_error "$?" "$ERROR_WORDPRESS_RESET_ROLE"
+    print_msg success "$(printf "$SUCCESS_WORDPRESS_RESET_ROLE" "$domain")"
 }
