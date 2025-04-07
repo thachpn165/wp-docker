@@ -70,7 +70,7 @@ run_cmd() {
         log_with_time "🐛 ${BLUE}[CMD]${NC} $source_file:$line_number [$func_name] → $cmd"
         bash -c "$cmd" 2>&1 | tee -a "$DEBUG_LOG"
     else
-        bash -c "$cmd" &>/dev/null
+        eval "$cmd" &>/dev/null
     fi
 
     local exit_code=$?
