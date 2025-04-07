@@ -49,6 +49,10 @@ jobs:
           git commit -m "🔄 Update latest_version_dev.txt to $DEV_VERSION"
           git push origin HEAD:dev
 
+          # ⚠️ Force update the 'nightly' tag to point to current dev commit
+          git tag -f nightly
+          git push origin -f nightly
+
       - name: 🧼 Clean up & package
         run: |
           mkdir -p dist
