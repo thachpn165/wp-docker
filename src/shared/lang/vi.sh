@@ -419,6 +419,7 @@ readonly LABEL_BACKUP_LOCAL="Lưu trên máy chủ (local)"
 readonly LABEL_BACKUP_CLOUD="Lưu vào Storage đã cấu hình"
 readonly LABEL_FREQUENCY="Tần suất"
 readonly LABEL_LOG_PATH="Đường dẫn log"
+readonly SUCCESS_BACKUP_LOCAL_SAVED="Đã hoàn tất backup và lưu trên local tại thư mục %s"
 
 readonly SUCCESS_BACKUP_CLEAN="Đã dọn dẹp backup hoàn tất"
 readonly SUCCESS_BACKUP_RESTORED_FILE="Dã khôi phục mã nguồn thành công"
