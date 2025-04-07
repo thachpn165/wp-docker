@@ -724,3 +724,13 @@ readonly ERROR_FILE_SOURCE_NOT_FOUND="Không tìm thấy tập tin nguồn: %s"
 readonly ERROR_DIRECTORY_NOT_FOUND="Không tìm thấy thư mục: %s"
 readonly SUCCESS_FILE_REMOVED="Đã xóa tập tin"
 readonly SUCCESS_CRON_REMOVED="Đã xóa cron liên quan của website"
+
+
+# =============================================
+# 🌍 ĐA NGÔN NGỮ
+# =============================================
+readonly INFO_AVAILABLE_LANGUAGES="Danh sách ngôn ngữ khả dụng:"
+readonly PROMPT_SELECT_LANGUAGE="Chọn ngôn ngữ bạn muốn sử dụng:"
+readonly ERROR_LANG_CODE_REQUIRED="Thiếu mã ngôn ngữ. Vui lòng nhập mã hoặc chọn ngôn ngữ."
+readonly SUCCESS_LANG_CODE_UPDATED="Đã cập nhật mã ngôn ngữ thành công: %s.  Hãy thoát menu và truy cập lại để áp dụng ngôn ngữ mới."
+readonly LABEL_MENU_SYSTEM_CHANGE_LANG="Thay đổi ngôn ngữ"

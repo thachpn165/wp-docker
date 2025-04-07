@@ -38,6 +38,7 @@ source "$BASE_DIR/shared/lang/lang_loader.sh"
 source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
 
 # ==== 5. Define core system variables ====
+LANG_LIST=("vi" "en")
 INSTALL_DIR="${INSTALL_DIR:-/opt/wp-docker}"
 TMP_DIR="${TMP_DIR:-$BASE_DIR/tmp}"
 LOGS_DIR="${LOGS_DIR:-$BASE_DIR/logs}"

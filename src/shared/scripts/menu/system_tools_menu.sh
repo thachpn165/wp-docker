@@ -15,7 +15,8 @@ system_tools_menu() {
         print_msg label "${GREEN}2)${NC} $LABEL_MENU_SYSTEM_MANAGE_DOCKER"
         print_msg label "${GREEN}3)${NC} $LABEL_MENU_SYSTEM_CLEANUP_DOCKER"
         print_msg label "${GREEN}4)${NC} $LABEL_MENU_SYSTEM_REBUILD_NGINX"
-        print_msg label "${GREEN}[5]${NC} ${STRONG}$MSG_EXIT${NC}"
+        print_msg label "${GREEN}5)${NC} $LABEL_MENU_SYSTEM_CHANGE_LANG"
+        print_msg label "${GREEN}[6]${NC} ${STRONG}$MSG_EXIT${NC}"
         echo ""
         read -p "$MSG_SELECT_OPTION " choice
 
@@ -34,6 +35,9 @@ system_tools_menu() {
                     bash "$CLI_DIR/system_nginx_rebuild.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 5)
+                    core_change_lang_logic
+                    ;;
+                6)
                     break
                     ;;
                 *)
