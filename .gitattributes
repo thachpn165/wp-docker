@@ -1,2 +1,3 @@
 src/latest_version_dev.txt merge=ours
 src/latest_version_main.txt merge=ours
+src/version.txt merge=ours
