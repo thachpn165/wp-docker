@@ -4,29 +4,28 @@
 
 # Function to display logs when DEBUG_MODE=true
 debug_log() {
-    local message="$1"
-    if [[ "$DEBUG_MODE" == "true" ]]; then
-        # Lấy thông tin file và dòng gọi hàm debug_log
-        local source_file="${BASH_SOURCE[1]}"
-        local line_number="${BASH_LINENO[0]}"
-        local func_name="${FUNCNAME[1]}"
-
-        log_with_time "🐛 [DEBUG] $source_file:$line_number [$func_name] → $message"
-    fi
+  local message="$1"
+  if [[ "$DEBUG_MODE" == "true" ]]; then
+    local source_file="${BASH_SOURCE[1]}"
+    local line_number="${BASH_LINENO[0]}"
+    local func_name="${FUNCNAME[1]}"
+    log_with_time "🐛 [DEBUG] $source_file:$line_number [$func_name] → $message"
+  fi
 }
 
 # Function to log with a timestamp (output to terminal + file)
 log_with_time() {
-    local message="$1"
-    local formatted_time
-    formatted_time="$(date '+%Y-%m-%d %H:%M:%S') - $message"
+  local message="$1"
+  local formatted_time
+  formatted_time="$(date '+%Y-%m-%d %H:%M:%S') - $message"
 
-    # Output to terminal
-    echo -e "$formatted_time"
-    # Write to file if DEBUG_LOG variable is set
-    if [[ -n "$DEBUG_LOG" ]]; then
-        echo -e "$formatted_time" >> "$DEBUG_LOG"
-    fi
+  # Output to terminal as STDERR to tránh gây ảnh hưởng tới stdout
+  echo -e "$formatted_time" >&2
+
+  # Ghi vào log file nếu có
+  if [[ -n "$DEBUG_LOG" ]]; then
+    echo -e "$formatted_time" >> "$DEBUG_LOG"
+  fi
 }
 
 # Function to print messages with a specific type (info, error, etc.)

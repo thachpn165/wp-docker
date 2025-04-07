@@ -19,7 +19,6 @@ calculate_php_fpm_values() {
   min_spare_servers=$((min_spare_servers > 1 ? min_spare_servers : 1))
   max_spare_servers=$((max_spare_servers > 4 ? max_spare_servers : 4))
 
-  debug_log "$(printf "$DEBUG_PHP_FPM_CALCULATED" "$total_ram" "$total_cpu" "$max_children" "$start_servers" "$min_spare_servers" "$max_spare_servers")"
   echo "$max_children $start_servers $min_spare_servers $max_spare_servers"
 }
 

@@ -16,7 +16,7 @@ reset_admin_password_logic() {
 
     # Cập nhật mật khẩu
     #docker exec "$PHP_CONTAINER" wp user update "$user_id" --user_pass="$new_password" --path=/var/www/html
-    bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" user update "$user_id" --user_pass="$new_password"
+    bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" -- user update "$user_id" --user_pass="$new_password"
     if [ $? -ne 0 ]; then
         echo -e "${RED}${CROSSMARK} Không thể cập nhật mật khẩu cho tài khoản ID $user_id.${NC}"
         exit 1

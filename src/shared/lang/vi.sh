@@ -608,3 +608,4 @@ readonly ERROR_NGINX_PROXY_NOT_RUNNING="Container nginx-proxy KHÔNG chạy đư
 readonly ERROR_NGINX_PROXY_START_FAILED="Không thể khởi động nginx-proxy bằng docker compose."
 readonly ERROR_NGINX_PROXY_LOG_HINT="Vui lòng kiểm tra cấu hình, volume hoặc cổng đang sử dụng."
 readonly SUCCESS_SYSTEM_READY="Hệ thống đã sẵn sàng để sử dụng WP Docker LEMP."
+readonly ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED="Không tìm thấy tên container database trong .env. Vui lòng kiểm tra lại."

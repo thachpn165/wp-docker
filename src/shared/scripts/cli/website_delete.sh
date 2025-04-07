@@ -53,16 +53,24 @@ done
 source "$FUNCTIONS_DIR/website_loader.sh"
 
 # === Parse argument ===
-for arg in "$@"; do
-  case $arg in
-    --domain=*) DOMAIN="${arg#*=}" ;;
+domain=""
+backup_enabled="false"
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --domain=*) domain="${1#*=}" ;;
+    --backup_enabled=*) backup_enabled="${1#*=}" ;;
+    *)
+      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
+      exit 1
+      ;;
   esac
+  shift
 done
 
-if [[ -z "$DOMAIN" ]]; then
+if [[ -z "$domain" ]]; then
   print_msg error "$ERROR_MISSING_PARAM: --domain"
   exit 1
 fi
 
 # === Run deletion logic ===
-website_management_delete_logic "$DOMAIN"
+website_management_delete_logic "$domain" "$backup_enabled"

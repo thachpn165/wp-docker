@@ -4,11 +4,8 @@
 
 website_management_delete_logic() {
   local domain="$1"
-  local backup_enabled="${2:-false}"  # Tham số backup_enabled mặc định là false
-
-  if [[ "$TEST_MODE" == true ]]; then
-    backup_enabled=false
-  fi
+  local backup_enabled="$2"
+  
 
   if [[ -z "$domain" ]]; then
     #echo -e "${RED}${CROSSMARK} Missing domain parameter.${NC}"
@@ -38,26 +35,22 @@ website_management_delete_logic() {
   debug_log "MariaDB Volume: $MARIADB_VOLUME"
   debug_log "Site conf file: $SITE_CONF_FILE"
   debug_log "Site directory: $SITE_DIR"
-
-  # Nếu backup_enabled=true thì tiến hành backup
+  debug_log "backup_enabled: $backup_enabled"
+  
+  # backup before removing
   if [[ "$backup_enabled" == true ]]; then
     print_msg step "$MSG_WEBSITE_BACKUP_BEFORE_REMOVE: $domain"
+
     ARCHIVE_DIR="$ARCHIVES_DIR/old_website/${domain}-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$ARCHIVE_DIR"
 
-    DB_NAME=$(fetch_env_variable "$ENV_FILE" "MYSQL_DATABASE")
-    DB_USER=$(fetch_env_variable "$ENV_FILE" "MYSQL_USER")
-    DB_PASS=$(fetch_env_variable "$ENV_FILE" "MYSQL_PASSWORD")
+    # Backup Database
+    print_msg step "$MSG_WEBSITE_BACKING_UP_DB: $domain"
+    run_cmd "bash $CLI_DIR/database_export.sh --domain=$domain --save_location=$ARCHIVE_DIR/${domain}_db.sql" true
 
-    if [[ -n "$DB_NAME" && -n "$DB_USER" && -n "$DB_PASS" ]]; then
-      #echo -e "${YELLOW}📦 Backing up database...${NC}"
-      print_msg step "$MSG_WEBSITE_BACKING_UP_DB: $DB_NAME"
-      run_cmd "docker exec \"${domain}-mariadb\" sh -c 'exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME' > \"$ARCHIVE_DIR/${domain}_db.sql\"" true
-    fi
-
-    #echo -e "${YELLOW}📦 Compressing WordPress source code...${NC}"
+    # Backup Source Files
     print_msg step "$MSG_WEBSITE_BACKING_UP_FILES: $SITE_DIR/wordpress"
-    tar -czf "$ARCHIVE_DIR/${domain}_wordpress.tar.gz" -C "$SITE_DIR/wordpress" . || true
+    run_cmd "bash $CLI_DIR/backup_file.sh --domain=$domain" true
 
     print_msg success "$MSG_WEBSITE_BACKUP_FILE_CREATED: $ARCHIVE_DIR"
   fi

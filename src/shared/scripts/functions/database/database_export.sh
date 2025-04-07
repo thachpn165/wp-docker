@@ -22,6 +22,7 @@ database_export_logic() {
         }
     fi
 
+    # Fetch DB credentials
     local db_info
     db_info=$(db_fetch_env "$domain")
     if [[ $? -ne 0 ]]; then
@@ -30,7 +31,7 @@ database_export_logic() {
     fi
 
     local db_name db_user db_password
-    IFS=' ' read -r db_name db_user db_password <<< "$db_info"
+    read -r db_name db_user db_password <<< "$db_info"
 
     if ! is_mariadb_running "$domain"; then
         print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
@@ -40,7 +41,14 @@ database_export_logic() {
     print_msg step "$(printf "$STEP_BACKUP_DATABASE" "$db_name")"
     debug_log "[Backup] Running mysqldump for: $db_name → $save_location"
 
-    if ! docker exec --env MYSQL_PWD="$db_password" "${domain}-mariadb" \
+    local db_container
+    db_container=$(fetch_env_variable "$SITES_DIR/$domain/.env" "CONTAINER_DB")
+    if [[ -z "$db_container" ]]; then
+        print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED"
+        return 1
+    fi
+
+    if ! docker exec --env MYSQL_PWD="$db_password" "$db_container" \
         mysqldump -u"$db_user" "$db_name" > "$save_location"; then
         print_msg error "$(printf "$ERROR_BACKUP_DB_DUMP_FAILED" "$db_name")"
         return 1

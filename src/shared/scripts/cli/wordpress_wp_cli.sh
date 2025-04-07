@@ -20,35 +20,38 @@ source "$FUNCTIONS_DIR/wordpress_loader.sh"
 # === Parse arguments ===
 domain=""
 params=()
+parse_wp_args=false
 
 for arg in "$@"; do
-  case $arg in
-    --domain=*) domain="${arg#*=}" ;;
-    #*) params+=("$arg") ;;
-    *)
-      if [[ "$arg" == --* ]]; then
+  if [[ "$arg" == "--" ]]; then
+    parse_wp_args=true
+    continue
+  fi
+
+  if [[ "$parse_wp_args" == true ]]; then
+    params+=("$arg")
+  else
+    case $arg in
+      --domain=*) domain="${arg#*=}" ;;
+      --domain) shift; domain="$1" ;;
+      *)
         print_and_debug error "$ERROR_UNKNOW_PARAM: $arg"
+        print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld -- plugin list"
         exit 1
-      else
-        params+=("$arg")
-      fi
-      ;;
-  esac
+        ;;
+    esac
+  fi
 done
 
 if [[ -z "$domain" ]]; then
-  #echo -e "${RED}${CROSSMARK} Missing required --domain=SITE_DOMAIN parameter.${NC}"
   print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-  #echo "Usage: $0 --domain=SITE_DOMAIN wp-cli-commands..."
-  print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld wp plugin list"
+  print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld -- plugin list"
   exit 1
 fi
 
 if [[ ${#params[@]} -eq 0 ]]; then
-  #echo -e "${RED}${CROSSMARK} You must provide a WP-CLI command to run.${NC}"
   print_and_debug error "$ERROR_WPCLI_INVALID_PARAMS"
-  #echo "Example: $0 --domain=wpdocker.dev plugin list"
-  print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld plugin list"
+  print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld -- plugin list"
   exit 1
 fi
 

@@ -18,10 +18,6 @@
 calculate_mariadb_config() {
   local total_ram=$(get_total_ram)
   local total_cpu=$(get_total_cpu)
-
-  debug_log "[MARIADB CONFIG] Total RAM: $total_ram MB"
-  debug_log "[MARIADB CONFIG] Total CPU: $total_cpu cores"
-
   max_connections=$((total_ram / 4))
   query_cache_size=32
   innodb_buffer_pool_size=$((total_ram / 2))
@@ -71,7 +67,6 @@ apply_mariadb_config() {
   local mariadb_conf_path="$1"
 
   if [[ -f "$mariadb_conf_path" ]]; then
-    debug_log "Removing old MariaDB config: $mariadb_conf_path"
     rm -f "$mariadb_conf_path"
   fi
 
@@ -163,6 +158,7 @@ db_get_name() {
     if ! db_info=$(db_fetch_env "$domain"); then return 1; fi
     local db_name
     read -r db_name _ _ <<< "$db_info"
+    debug_log "[db_get_name] domain=$domain → db_name=$db_name"
     echo "$db_name"
 }
 
@@ -174,6 +170,7 @@ db_get_user() {
     if ! db_info=$(db_fetch_env "$domain"); then return 1; fi
     local _ db_user _
     read -r _ db_user _ <<< "$db_info"
+    debug_log "[db_get_user] domain=$domain → db_user=$db_user"
     echo "$db_user"
 }
 
