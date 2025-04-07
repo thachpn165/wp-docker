@@ -1,12 +1,13 @@
 # WP Docker
 
-[![Version](https://img.shields.io/badge/version-v1.1.6--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Version](https://img.shields.io/badge/version-v1.1.7--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker)](./LICENSE)
 
-> **Note**: Version `v1.1.6-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
+> **Note**: Version `v1.1.7-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
+---
 
 ![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
 
@@ -30,59 +31,49 @@ By simplifying multi-stage environment replication (dev → staging → prod), W
 
 Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
-## Latest Release - v1.1.6-beta
-Release date: 2025-04-05
-
+---
+## Latest Release - v1.1.7-beta
+Release date: 2025-04-07
 ### 🚀 Added
-- **WordPress Migration Tool**:
-  - New feature to restore a full WordPress website (code & database) from `archives/$domain/`.
-  - Automatically validates prefix, updates `wp-config.php`, checks DNS, and installs SSL.
-  - Menu-driven with confirmation prompts and error recovery logic.
-  - Display reminder to configure cache via main menu.
-  
-- **Version Channel Management**:
-  - Introduced `.env` based `CORE_CHANNEL` to manage release channels: `official` or `nightly`.
-  - Added CLI `core_channel_set.sh` and helpers to modify/read `.env` automatically.
-  
-- **Improved version update system**:
-  - Rewritten into standardized 3-step structure: logic + cli + menu.
-  - Separated version check for `official` and `nightly` via `core_version_main.sh` and `core_version_dev.sh`.
-  - Auto-detection and display of latest version at startup menu.
-  - `core_display_version.sh` now adapts to `CORE_CHANNEL` for accurate fetch.
 
-- **New subcommand: `wpdocker system`**:
-  - Includes:
-    - `wpdocker system check`: view Docker resources.
-    - `wpdocker system manage`: manage Docker containers.
-    - `wpdocker system cleanup`: clean up Docker.
-    - `wpdocker system nginx rebuild/restart`: manage NGINX proxy.
+- Integrated i18n (multi-language) system across the project:
+  - All CLI messages are managed in centralized files: `shared/lang/vi.sh` and `en.sh`.
+  - `LANG_CODE` defined in `.env` allows dynamic language switching.
+- New language switch feature (`core_change_lang_logic`) in System Tools menu.
+- Integrated global `DEBUG_MODE` and `DEV_MODE`:
+  - `DEBUG_MODE=true`: displays full log and commands being executed.
+  - `DEV_MODE=true`: shows under-development features.
+- Added `print_msg`, `print_and_debug`, and `debug_log` for unified CLI output.
+- New feature: Restore website from backup (`backup_restore_web_menu.sh`), with support for selecting `.tar.gz` and `.sql` files.
+- Enhanced cron job summary with readable format using `cron_translate()`.
+- The `core_change_lang_logic` now dynamically loads supported languages from `LANG_LIST`.
+- Updated GitHub Actions `dev-build.yml` to automatically generate `nightly` release.
+
+---
 
 ### 🐞 Fixed
-- **404 error with WP Fastest Cache**:
-  - Fixed by appending `try_files $uri $uri/ /index.php?$args;` into `@cachemiss`.
 
-- **NGINX rebuild CLI path**:
-  - Corrected script path issue in system tools menu.
+- Fixed issue where `run_cmd` silently failed when `DEBUG_MODE=false` (added `eval` fallback).
+- Resolved incorrect detection of relative backup file paths during restore.
+- Fixed conflict in GitHub Actions builds caused by concurrent edits to `latest_version_dev.txt`.
+- Resolved MySQL error caused by invalid `mysql < db_name` syntax.
 
-- **`env_set_value` compatibility**:
-  - Updated to use portable `sedi` helper for macOS/Linux sed compatibility.
-
-- **Ensure prefix updated correctly in wp-config.php** after restoring database.
-- **Fix access denied error** when checking tables prefix due to missing `MYSQL_PWD`.
+---
 
 ### ♻️ Changed
-- **Dev build workflow now uses `nightly` as tag** instead of `dev`.
-- **Improved GitHub Actions** for CI/CD:
-  - `dev-build.yml` and `release.yml` now update `version.txt` and push to repo.
-  - `dev` version follows `vX.X.X-dev-timestamp` format.
-- **Database reset during import**:
-  - `database_import_logic` now resets database by dropping and recreating it cleanly.
-- **Improved logic isolation**:
-  - Various logic modules split from CLI for consistency and testability.
+
+- All scripts in `menu/` and `cli/` have been refactored:
+  - Replaced all `read -p` with `get_input_or_test_value` for test compatibility.
+  - Standardized `PROJECT_DIR` detection and sourcing `load_config.sh`.
+- All CLI display logic switched to `print_msg` with i18n support.
+- Refactored path resolution to ensure backup file paths are absolute.
+- Fully refactored all `wordpress_*` logic scripts to adopt i18n/debug/dev standards.
+- All inline CLI messages have been moved to language files (i18n) to eliminate hardcoded text.
 
 
 *For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
 
+---
 ## Prerequisites
 
 ### System Requirements
@@ -98,6 +89,8 @@ Docker on macOS **cannot mount any folder** outside of the shared file system li
 After installation, you **must add `/opt`** to Docker → Settings → Resources → File Sharing:
 
 [Docker File Sharing Documentation](https://docs.docker.com/desktop/settings/mac/#file-sharing)
+
+---
 
 ## Installation
 
@@ -121,6 +114,7 @@ This command opens the interactive terminal menu for managing your WordPress sit
 - Create and manage multiple WordPress installations simultaneously
 - Configure independent PHP versions for individual sites
 - Implement multilingual and multisite configurations
+- Restore WordPress source code and database from backup interactively
 
 ### Security Features
 - Automatic SSL certificate deployment (Let's Encrypt, custom, or self-signed)
@@ -130,17 +124,22 @@ This command opens the interactive terminal menu for managing your WordPress sit
 ### Backup and Recovery
 - Execute comprehensive backup solutions with cloud integration (via Rclone)
 - Schedule automated periodic backups through cron functionality
+- Human-readable cron schedule descriptions when setting backups
 - Restore sites from previous backup points with file and database recovery
 
 ### Configuration and Monitoring
 - Directly modify configuration files including `php.ini` and `php-fpm.conf`
 - Monitor site health through SSL verification and log analysis
 - Performance optimization tools for NGINX and PHP-FPM
+- **Switch system language dynamically from the System Tools menu**
+- **Full multilingual support (i18n) for CLI prompts and messages**
 
 ### System Administration
 - Perform complete site removal including containers, files, and SSL certificates
 - Update Docker images and system components
 - Access container shells for advanced troubleshooting
+- Enable global Debug Mode to show internal commands and logs
+- Enable Dev Mode to preview unreleased or under-development features
 
 ## Advanced Configuration
 
@@ -154,7 +153,7 @@ After modifying configuration files, restart the affected services through the s
 
 ## 🚀 WP Docker Roadmap (2025)
 
-### ✅ Current Version: `v1.1.6` (Beta)
+### ✅ Current Version: `v1.1.7` (Beta)
 - Planned release of the first stable version (v1.2.0-stable): 2025-04-15
 
 ### Core Features Completed:
@@ -195,6 +194,9 @@ After modifying configuration files, restart the affected services through the s
 - Isolated sFTP/SSH access per website
 - Automatically transfer site data to another server proactively
 ```
+
+---
+
 ## Acknowledgments
 
 I would like to extend my sincere appreciation to **[@sonpython](https://github.com/sonpython)** for his valuable contributions to this project. My heartfelt thanks also go to my colleagues at **[AZDIGI](https://azdigi.com)**: **[@dotrungquan](https://github.com/dotrungquan)** , **[@BamBo355](https://github.com/BamBo355)** , **[@phongdh262](https://github.com/phongdh262)**, and **[@RakunFatalis](https://github.com/RakunFatalis)** for their unwavering support throughout the development process.
@@ -214,9 +216,12 @@ Furthermore, I am grateful for the innovative AI tools **ChatGPT** and **Cursor*
 - For bugs or feature requests, please open an issue in the GitHub repository
 - Include detailed information about your environment and steps to reproduce any bugs
 
+---
+
 ## Documentation
 Coming soon
 
+---
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
