@@ -33,6 +33,11 @@ php_change_version_logic() {
   local env_file="$site_dir/.env"
   local docker_compose_file="$site_dir/docker-compose.yml"
 
+  debug_log "[PHP] Changing PHP version for domain: $domain"
+  debug_log "[PHP] New version: $php_version"
+  debug_log "[PHP] .env file path: $env_file"
+  debug_log "[PHP] docker-compose path: $docker_compose_file"
+
   if [[ ! -f "$env_file" ]]; then
     print_and_debug error "$ERROR_ENV_NOT_FOUND: $env_file"
     return 1
@@ -50,13 +55,15 @@ php_change_version_logic() {
   if [[ -f "$docker_compose_file" ]]; then
     print_msg step "$STEP_PHP_UPDATING_DOCKER_COMPOSE"
     sed -i.bak -E "s|^( *image: *bitnami/php-fpm:)[^ ]+|\1${php_version}|" "$docker_compose_file"
+
     if grep -q "bitnami/php-fpm:$php_version" "$docker_compose_file"; then
       print_msg success "$SUCCESS_PHP_DOCKER_COMPOSE_UPDATED"
     else
-      print_msg warning "$WARNING_PHP_IMAGE_LINE_NOT_FOUND"
+      print_and_debug warning "$WARNING_PHP_IMAGE_LINE_NOT_FOUND"
     fi
   else
-    print_msg error "$ERROR_PHP_DOCKER_COMPOSE_NOT_FOUND"
+    print_and_debug error "$ERROR_PHP_DOCKER_COMPOSE_NOT_FOUND"
+    return 1
   fi
 
   print_msg step "$STEP_PHP_RESTARTING"

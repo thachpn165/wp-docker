@@ -52,14 +52,16 @@ select_backup_files() {
   local choice_list=()
   local selected_files=()
 
+  debug_log "[UPLOAD] Selecting backup files from: $backup_dir"
+
   if ! is_directory_exist "$backup_dir"; then
-    print_msg error "$ERROR_NOT_EXIST: $backup_dir"
+    print_and_debug error "$ERROR_NOT_EXIST: $backup_dir"
     return 1
   fi
 
   local backup_files=($(ls -1 "$backup_dir" 2>/dev/null))
   if [[ ${#backup_files[@]} -eq 0 ]]; then
-    print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND"
+    print_and_debug error "$ERROR_BACKUP_FILE_NOT_FOUND"
     return 1
   fi
 
@@ -67,9 +69,10 @@ select_backup_files() {
     choice_list+=("$file" "$file" "off")
   done
 
-  selected_files=$(dialog --stdout --separate-output --checklist "Select backup files to upload using Spacebar, confirm with Enter:" 15 60 10 "${choice_list[@]}")
+  selected_files=$(dialog --stdout --separate-output --checklist "$PROMPT_SELECT_BACKUP_FILES" 15 60 10 "${choice_list[@]}")
   if [[ -z "$selected_files" ]]; then
     selected_files=("${backup_files[@]}")
+    debug_log "[UPLOAD] No file selected, fallback to all files"
   else
     IFS=$'\n' read -r -d '' -a selected_files <<< "$(echo "$selected_files" | tr -d '\r')"
   fi
@@ -81,8 +84,8 @@ upload_backup() {
   print_msg info "$INFO_RCLONE_UPLOAD_START"
 
   if [[ $# -lt 1 ]]; then
-    print_msg error "$ERROR_RCLONE_STORAGE_REQUIRED"
-    echo -e "📌 Usage: upload_backup <storage> [file1 file2 ...]"
+    print_and_debug error "$ERROR_RCLONE_STORAGE_REQUIRED"
+    echo "Usage: upload_backup <storage> [file1 file2 ...]"
     return 1
   fi
 
@@ -93,15 +96,18 @@ upload_backup() {
   if [[ $# -eq 0 ]]; then
     print_msg info "$INFO_BACKUP_NO_FILES_PASSED"
 
-    local found_dir=$(find "$SITES_DIR" -type d -name backups | head -n1)
+    local found_dir
+    found_dir=$(find "$SITES_DIR" -type d -name backups | head -n1)
+    debug_log "[UPLOAD] Found backups directory: $found_dir"
+
     if [[ -z "$found_dir" ]]; then
-      print_msg error "$ERROR_BACKUP_FOLDER_NOT_FOUND"
+      print_and_debug error "$ERROR_BACKUP_FOLDER_NOT_FOUND"
       return 1
     fi
 
     selected_files=($(select_backup_files "$found_dir"))
     if [[ ${#selected_files[@]} -eq 0 ]]; then
-      print_msg error "$ERROR_BACKUP_NO_FILE_SELECTED"
+      print_and_debug error "$ERROR_BACKUP_NO_FILE_SELECTED"
       return 1
     fi
 
@@ -113,10 +119,14 @@ upload_backup() {
   fi
 
   local first_file="${selected_files[0]}"
-  local domain=$(echo "$first_file" | awk -F '/' '{for(i=1;i<=NF;i++) if($i=="sites") print $(i+1)}')
+  local domain
+  domain=$(echo "$first_file" | awk -F '/' '{for(i=1;i<=NF;i++) if($i=="sites") print $(i+1)}')
+
+  debug_log "[UPLOAD] First file: $first_file"
+  debug_log "[UPLOAD] Detected domain: $domain"
 
   if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_RCLONE_CANNOT_DETECT_SITE"
+    print_and_debug error "$ERROR_RCLONE_CANNOT_DETECT_SITE"
     return 1
   fi
 
@@ -125,21 +135,22 @@ upload_backup() {
 
   print_msg info "$INFO_RCLONE_UPLOAD_LIST"
   for file in "${selected_files[@]}"; do
-    echo "   ➜ $file" | tee -a "$log_file"
+    echo "   → $file" | tee -a "$log_file"
   done
 
   if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
-    print_msg error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
+    print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi
 
   for file in "${selected_files[@]}"; do
     print_msg run "$(printf "$INFO_RCLONE_UPLOADING" "$file")" | tee -a "$log_file"
     rclone --config "$RCLONE_CONFIG_FILE" copy "$file" "$storage:backup-folder" --progress --log-file "$log_file"
+
     if [[ $? -eq 0 ]]; then
       print_msg success "$(printf "$SUCCESS_RCLONE_UPLOAD_SINGLE" "$file")" | tee -a "$log_file"
     else
-      print_msg error "$(printf "$ERROR_RCLONE_UPLOAD_FAILED_SINGLE" "$file")" | tee -a "$log_file"
+      print_and_debug error "$(printf "$ERROR_RCLONE_UPLOAD_FAILED_SINGLE" "$file")" | tee -a "$log_file"
     fi
   done
 
