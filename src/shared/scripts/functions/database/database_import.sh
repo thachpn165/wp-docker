@@ -50,9 +50,11 @@ database_import_logic() {
     docker cp "$backup_file" "$db_container:/tmp/restore.sql"
     debug_log "[DB IMPORT] Copied SQL file to container: /tmp/restore.sql"
 
+    local sql_cmd="DROP DATABASE IF EXISTS \`$db_name\`; CREATE DATABASE \`$db_name\`;"
     docker exec --env MYSQL_PWD="$db_password" "$db_container" \
-        mysql -u "$db_user" -e "DROP DATABASE IF EXISTS \\`$db_name\\`; CREATE DATABASE \\`$db_name\\`;"
-
+        mysql -u "$db_user" -e "$sql_cmd"
+    debug_log "[DB IMPORT] SQL Command: $sql_cmd"
+    
     if ! docker exec --env MYSQL_PWD="$db_password" "$db_container" \
         sh -c "mysql -u $db_user $db_name < /tmp/restore.sql"; then
         print_msg error "$(printf "$ERROR_BACKUP_RESTORE_FAILED" "$db_name")"

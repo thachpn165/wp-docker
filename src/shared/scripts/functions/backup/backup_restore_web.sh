@@ -12,7 +12,7 @@ backup_restore_web_logic() {
         return 1
     fi
 
-    # === Restore Source Code ===
+# === Restore Source Code ===
     if [[ -n "$code_backup_file" ]]; then
         # Check if filename has relative path, convert to absolute path
         if [[ ! "$code_backup_file" =~ ^/ ]]; then
