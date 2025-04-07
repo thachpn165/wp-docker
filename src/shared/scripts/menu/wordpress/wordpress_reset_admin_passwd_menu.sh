@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # === Load config & wordpress_loader.sh ===
 if [[ -z "$PROJECT_DIR" ]]; then
   SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -13,28 +14,31 @@ fi
 
 CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
+  echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
+
 source "$CONFIG_FILE"
 source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# 📋 Hiển thị danh sách website để chọn (dùng select_website)
+# 📋 Chọn website
 select_website
 if [[ -z "$domain" ]]; then
-  echo -e "${RED}${CROSSMARK} No website selected.${NC}"
+  print_msg error "$ERROR_NO_WEBSITE_SELECTED"
   exit 1
 fi
 
-SITE_DIR="$SITES_DIR/$domain"
-PHP_CONTAINER="$domain-php"
-
-# 📋 Lấy danh sách tài khoản Admin
-echo -e "${YELLOW}📋 Danh sách tài khoản Admin:${NC}"
-#docker exec -u "$PHP_USER" "$PHP_CONTAINER" wp user list --role=administrator --fields=ID,user_login --format=table --path=/var/www/html
-bash $CLI_DIR/wordpress_wp_cli.sh --domain="${domain}" -- user list --role=administrator --fields=ID,user_login --format=table
+# 📋 Hiển thị danh sách admin
+print_msg info "$INFO_WORDPRESS_LIST_ADMINS"
+bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- user list --role=administrator --fields=ID,user_login --format=table
 echo ""
-read -p "Nhập ID của tài khoản cần reset mật khẩu: " user_id
 
-# Truyền tham số vào CLI
-bash "$SCRIPTS_DIR/cli/wordpress_reset_admin_passwd.sh" --domain="$domain" --user_id="$user_id"
+# 🔐 Nhập user ID
+get_input_or_test_value "$PROMPT_ENTER_ADMIN_USER_ID" user_id
+if [[ -z "$user_id" ]]; then
+  print_msg error "$ERROR_INPUT_REQUIRED"
+  exit 1
+fi
+
+# ▶️ Gọi CLI thực hiện reset
+bash "$CLI_DIR/wordpress_reset_admin_passwd.sh" --domain="$domain" --user_id="$user_id"

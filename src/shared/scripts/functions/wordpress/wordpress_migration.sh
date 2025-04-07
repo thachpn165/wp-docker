@@ -4,59 +4,61 @@ wordpress_migration_logic() {
   local domain="$1"
 
   if [[ -z "$domain" ]]; then
-    echo -e "${RED}${CROSSMARK} Domain is required.${NC}"
+    print_and_debug error "$ERROR_DOMAIN_REQUIRED"
     return 1
   fi
 
   local archive_dir="$BASE_DIR/archives/$domain"
   local site_dir="$SITES_DIR/$domain"
   local web_root="$site_dir/wordpress"
-  local sql_file
-  local archive_file
+  local sql_file archive_file server_ip
   local mariadb_container="$domain-mariadb"
 
+  server_ip=$(curl -s ifconfig.me)
+
   # Check archive directory
-  is_directory_exist "$archive_dir"
+  if ! is_directory_exist "$archive_dir"; then
+    print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$archive_dir")"
+    return 1
+  fi
 
   # Find SQL and source files
   sql_file=$(find "$archive_dir" -type f -name "*.sql" | head -n1)
   archive_file=$(find "$archive_dir" -type f \( -name "*.zip" -o -name "*.tar.gz" \) | head -n1)
 
   if [[ ! -f "$sql_file" ]]; then
-    echo -e "${RED}${CROSSMARK} No .sql file found in $archive_dir${NC}"
+    print_and_debug error "$(printf "$ERROR_FILE_NOT_FOUND" "$archive_dir/*.sql")"
     return 1
   fi
 
   if [[ ! -f "$archive_file" ]]; then
-    echo -e "${RED}${CROSSMARK} No source archive (.zip or .tar.gz) found in $archive_dir${NC}"
+    print_and_debug error "$(printf "$ERROR_FILE_NOT_FOUND" "$archive_dir/*.zip hoặc *.tar.gz")"
     return 1
   fi
 
   if [[ -d "$site_dir" ]]; then
-    echo -e "${YELLOW}${WARNING} Website '$domain' already exists.${NC}"
-    confirm_action "Do you want to reset it before migration?"
-    if [[ $? -ne 0 ]]; then
-      echo -e "${YELLOW}${WARNING} Migration cancelled.${NC}"
+    print_msg warning "$(printf "$MSG_WEBSITE_EXIST" "$domain")"
+    confirm_action "$QUESTION_OVERWRITE_SITE" || {
+      print_msg warning "$MSG_OPERATION_CANCELLED"
       return 0
-    fi
+    }
 
-    echo -e "${CYAN}🔄 Removing existing files at ${web_root}...${NC}"
+    print_msg step "🔄 Xoá mã nguồn cũ tại $web_root..."
     rm -rf "$web_root"
     mkdir -p "$web_root"
-    echo -e "${GREEN}${CHECKMARK} Existing files removed.${NC}"
+    print_msg success "$SUCCESS_DIRECTORY_REMOVE"
   else
-    echo -e "${YELLOW}${WARNING} Website '$domain' does not exist yet.${NC}"
-    confirm_action "Do you want to create it before migration?"
-    if [[ $? -ne 0 ]]; then
-      echo -e "${YELLOW}${WARNING} Migration cancelled.${NC}"
+    print_msg warning "$(printf "$ERROR_SITE_NOT_EXIST" "$domain")"
+    confirm_action "$(printf "$PROMPT_WEBSITE_CREATE_CONFIRM" "$domain")" || {
+      print_msg warning "$MSG_OPERATION_CANCELLED"
       return 0
-    fi
+    }
 
     bash "$MENU_DIR/website/website_create_menu.sh"
   fi
 
   # Extract source
-  echo -e "${CYAN}📦 Extracting source files to $web_root${NC}"
+  print_msg step "📦 Đang giải nén mã nguồn..."
   if [[ "$archive_file" == *.zip ]]; then
     unzip -q "$archive_file" -d "$web_root"
   else
@@ -64,16 +66,17 @@ wordpress_migration_logic() {
   fi
 
   # Import SQL
-  echo -e "${CYAN}🧠 Importing database...${NC}"
+  print_msg step "🧠 Đang import database..."
   bash "$CLI_DIR/database_import.sh" --domain="$domain" --backup_file="$sql_file"
 
   # Check prefix in DB
-  echo -e "${CYAN}🔍 Checking table prefix...${NC}"
+  print_msg step "🔍 Kiểm tra table_prefix trong database..."
   read db_name db_user db_pass < <(db_fetch_env "$domain") || return 1
   local prefix
   prefix=$(docker exec --env MYSQL_PWD="$db_pass" "$mariadb_container" \
     mysql -u "$db_user" "$db_name" -e "SHOW TABLES;" \
     | tail -n +2 | awk -F_ '/_/ {print $1"_" ; exit}')
+
   # Update wp-config.php
   local config_file="$web_root/wp-config.php"
   if [[ -f "$config_file" ]]; then
@@ -81,47 +84,43 @@ wordpress_migration_logic() {
     config_prefix=$(grep "table_prefix" "$config_file" | grep -o "'[^']*'" | sed "s/'//g")
 
     if [[ "$prefix" != "$config_prefix" ]]; then
-      echo -e "${YELLOW}${WARNING} Detected table prefix mismatch: DB uses '$prefix' but wp-config.php uses '$config_prefix'. Updating...${NC}"
+      print_msg warning "⚠️ table_prefix không khớp: DB='$prefix' | wp-config='$config_prefix'. Đang cập nhật..."
       sedi "s/\\$table_prefix *= *'[^']*'/\\$table_prefix = '$prefix'/" "$config_file"
-      echo -e "${CHECKMARK}${GREEN} Table prefix updated in wp-config.php to: $prefix${NC}"
+      print_msg success "Đã cập nhật table_prefix: $prefix"
     fi
 
-    echo -e "${CYAN}✏️ Updating database credentials in wp-config.php...${NC}"
-    local db_user db_pass
+    print_msg step "✏️ Đang cập nhật thông tin database..."
     read db_name db_user db_pass < <(db_fetch_env "$domain") || return 1
 
     sedi "s/define( *'DB_NAME'.*/define('DB_NAME', '$db_name');/" "$config_file"
     sedi "s/define( *'DB_USER'.*/define('DB_USER', '$db_user');/" "$config_file"
     sedi "s/define( *'DB_PASSWORD'.*/define('DB_PASSWORD', '$db_pass');/" "$config_file"
-    echo -e "${GREEN}${CHECKMARK} wp-config.php has been updated with new database credentials.${NC}"
+    print_msg success "Đã cập nhật thông tin kết nối trong wp-config.php"
   else
-    echo -e "${RED}${CROSSMARK} wp-config.php not found at $config_file. Cannot update DB credentials.${NC}"
+    print_and_debug error "$(printf "$ERROR_FILE_NOT_FOUND" "$config_file")"
     return 1
   fi
 
-  # Install SSL (optional)
-  echo -e "${CYAN}🔐 SSL Installation (Let's Encrypt)${NC}"
-  echo -e "${YELLOW}To install SSL, the domain '${domain}' must point to the server IP: ${server_ip}${NC}"
-  confirm_action "Do you want to install a free SSL certificate from Let's Encrypt now?"
+  # Install SSL
+  print_msg step "🔐 SSL Installation (Let's Encrypt)"
+  print_msg info "$(printf "$INFO_LE_DOMAIN" "$domain")"
+  confirm_action "$QUESTION_INSTALL_SSL"
   if [[ $? -eq 0 ]]; then
-    echo -e "${CYAN}Installing Let's Encrypt SSL for $domain...${NC}"
+    print_msg info "Installing SSL cho $domain..."
     bash "$CLI_DIR/ssl_install_letsencrypt.sh" --domain="$domain"
   else
-    echo -e "${YELLOW} Skipped SSL installation.${NC}"
+    print_msg info "Bỏ qua bước cài SSL."
   fi
 
   # Check DNS
-  echo -e "${CYAN}🌐 Checking if $domain is pointing to this server IP...${NC}"
-  local server_ip
-  server_ip=$(curl -s ifconfig.me)
+  print_msg step "🌐 Kiểm tra trỏ domain..."
   if ! dig +short "$domain" | grep -q "$server_ip"; then
-    echo -e "${YELLOW}${WARNING} Domain does NOT point to this server ($server_ip). Please update your DNS settings.${NC}"
+    print_msg warning "$(printf "$ERROR_DOMAIN_NOT_POINT_TO_SERVER" "$domain" "$server_ip")"
   else
-    echo -e "${GREEN}${CHECKMARK} Domain points to server IP: $server_ip${NC}"
+    print_msg success "$(printf "$SUCCESS_DOMAIN_POINTS_TO_IP" "$domain" "$server_ip")"
   fi
 
   echo ""
-  echo -e "${GREEN} Migration completed for '$domain'. Please ensure DNS is correctly configured.${NC}"
-  echo -e "${YELLOW}${INFO} To optimize website performance, please run ${CYAN}wpdocker${NC} and choose option ${GREEN}7) WordPress Cache Management${NC} from the menu.${NC}"
-  
+  print_msg success "$(printf "$SUCCESS_MIGRATION_DONE" "$domain")"
+  print_msg tip "$TIP_MIGRATION_COMPLETE_USE_CACHE"
 }
