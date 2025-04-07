@@ -416,7 +416,7 @@ readonly LABEL_MENU_BACKUP_UPLOAD="Upload backup lên cloud (Rclone)"
 readonly LABEL_BACKUP_FILE_LIST="File Backup"
 readonly LABEL_BACKUP_DB_LIST="Database Backup"
 readonly LABEL_BACKUP_LOCAL="Lưu trên máy chủ (local)"
-readonly LABEL_BACKUP_CLOUD="Lưu vào Storage đã cấu hình"
+readonly LABEL_BACKUP_CLOUD="Lưu vào Storage Rclone đã cấu hình"
 readonly LABEL_FREQUENCY="Tần suất"
 readonly LABEL_LOG_PATH="Đường dẫn log"
 readonly SUCCESS_BACKUP_LOCAL_SAVED="Đã hoàn tất backup và lưu trên local tại thư mục %s"
@@ -467,6 +467,18 @@ readonly STEP_CLEANING_OLD_BACKUPS="Đang dọn dẹp các bản backup cũ hơn
 readonly STEP_BACKUP_DATABASE="Đang sao lưu database: %s"
 readonly MSG_BACKUP_RESTORING_FILE="Đang khôi phục mã nguồn từ %s đến %s"
 readonly MSG_BACKUP_RESTORING_DB="Đang khôi phục dữ liệu từ %s vào %s"
+
+readonly SUCCESS_CRON_JOB_CREATED="Lịch backup đã được tạo thành công!"
+readonly TITLE_CRON_SUMMARY="📅 Tổng quan lịch backup"
+readonly LABEL_CRON_DOMAIN="Domain"
+readonly LABEL_CRON_SCHEDULE="Lịch trình"
+readonly LABEL_CRON_STORAGE="Storage"
+readonly LABEL_CRON_LOG="Log File"
+readonly LABEL_CRON_LINE="Lệnh cron"
+
+readonly LABEL_CRON_EVERY_DAY_3AM="Mỗi ngày lúc 3 giờ sáng"
+readonly LABEL_CRON_EVERY_SUNDAY_2AM="Chủ nhật hàng tuần lúc 2 giờ sáng"
+readonly LABEL_CRON_EVERY_MONDAY_1AM="Thứ hai hàng tuần lúc 1 giờ sáng"
 
 # =============================================
 # 🐘 QUẢN LÝ PHP
@@ -572,7 +584,7 @@ readonly INFO_RCLONE_CREATING_CONF="Đang tạo file cấu hình Rclone mới: %
 readonly INFO_RCLONE_SELECT_STORAGE_TYPE="Chọn loại storage bạn muốn thiết lập:"
 readonly INFO_RCLONE_DRIVE_AUTH_GUIDE="Chạy lệnh: rclone authorize drive trên máy tính của bạn để lấy token OAuth."
 
-readonly PROMPT_ENTER_STORAGE_NAME="Nhập tên Storage muốn sử dụng:"
+readonly PROMPT_ENTER_STORAGE_NAME="Chọn storage muốn sử dụng: "
 readonly STEP_RCLONE_SETTING_UP="Đang thiết lập Storage: %s..."
 
 # =============================================
@@ -698,7 +710,9 @@ readonly LABEL_EVERY_4_HOURS="Mỗi 4 giờ"
 readonly LABEL_EVERY_6_HOURS="Mỗi 6 giờ"
 readonly LABEL_EVERY_12_HOURS="Mỗi 12 giờ"
 readonly LABEL_EVERY_24_HOURS="Mỗi 24 giờ"
-
+readonly LABEL_CUSTOM_SCHEDULE="Lịch trình tùy chỉnh"
+readonly LABEL_DATE_ON="vào ngày"
+readonly LABEL_TIME_AT="lúc"
 # =============================================
 # 🔄 QUẢN LÝ FILE & THƯ MỤC
 # =============================================

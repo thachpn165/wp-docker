@@ -14,7 +14,7 @@ backup_website_logic() {
     local log_file="$log_dir/wp-backup.log"
 
     # Ensure backup and logs directories exist
-    is_directory_exist "$backup_dir"
+is_directory_exist "$backup_dir"
     is_directory_exist "$log_dir"
 
     # Log start of backup process
