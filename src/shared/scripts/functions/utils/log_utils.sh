@@ -9,7 +9,7 @@ debug_log() {
     local source_file="${BASH_SOURCE[1]}"
     local line_number="${BASH_LINENO[0]}"
     local func_name="${FUNCNAME[1]}"
-    log_with_time "🐛 [DEBUG] $source_file:$line_number [$func_name] → $message"
+    log_with_time "🐛 ${BLUE}[DEBUG]${NC} $source_file:$line_number [$func_name] → $message"
   fi
 }
 
@@ -39,7 +39,7 @@ print_and_debug() {
     local source_file="${BASH_SOURCE[1]}"
     local line_number="${BASH_LINENO[0]}"
     local func_name="${FUNCNAME[1]}"
-    log_with_time "🐛 [$type] $source_file:$line_number [$func_name] → $message"
+    log_with_time "🐛 ${BLUE}[$type]${NC} $source_file:$line_number [$func_name] → $message"
   fi
 }
 
@@ -54,23 +54,29 @@ run_cmd() {
     local cmd="$1"
     local exit_on_fail="${2:-false}"  # Optional: set to "true" to exit on failure
 
-    # Log the command if in DEBUG mode
+    # Lấy thông tin gọi hàm
+    local source_file="${BASH_SOURCE[1]}"
+    local line_number="${BASH_LINENO[0]}"
+    local func_name="${FUNCNAME[1]}"
+
+    # Kiểm tra không được gọi lại chính script đang chạy
+    if [[ "$cmd" == *"$0"* ]]; then
+        print_and_debug error "❌ Detected self-invoking command → $cmd"
+        return 1
+    fi
+
+    # Ghi log nếu bật DEBUG_MODE
     if [[ "$DEBUG_MODE" == "true" ]]; then
-        local source_file="${BASH_SOURCE[1]}"
-        local line_number="${BASH_LINENO[0]}"
-        local func_name="${FUNCNAME[1]}"
-        log_with_time "🐛 [CMD] $source_file:$line_number [$func_name] → $cmd"
-        eval "$cmd" 2>&1 | tee -a "$DEBUG_LOG"
+        log_with_time "🐛 ${BLUE}[CMD]${NC} $source_file:$line_number [$func_name] → $cmd"
+        bash -c "$cmd" 2>&1 | tee -a "$DEBUG_LOG"
     else
-        eval "$cmd" &>/dev/null
+        bash -c "$cmd" &>/dev/null
     fi
 
     local exit_code=$?
     if [[ $exit_code -ne 0 ]]; then
         print_and_debug error "$ERROR_COMMAND_FAILED: $cmd"
-        if [[ "$exit_on_fail" == "true" ]]; then
-            exit 1
-        fi
+        [[ "$exit_on_fail" == "true" ]] && exit 1
         return 1
     fi
 

@@ -16,7 +16,7 @@ done
 source "$FUNCTIONS_DIR/backup_loader.sh"
 # Function to display backup management menu
 backup_menu() {
-    
+    while true; do
         echo -e "${CYAN}============================${NC}"
         print_msg title "$TITLE_MENU_BACKUP"
         echo -e "${CYAN}============================${NC}"
@@ -30,7 +30,7 @@ backup_menu() {
         
         read -p "$MSG_SELECT_OPTION " choice
 
-    while true; do
+    
         case "$choice" in
             1) bash "$MENU_DIR/backup/backup_website_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
             2) bash "$MENU_DIR/backup/backup_manage_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;

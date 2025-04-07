@@ -47,6 +47,21 @@
 # Exit Codes:
 # - 0: Success.
 # - 1: Failure due to errors such as missing arguments, missing directories, or upload failures.
+# ✅ Load configuration from any directory
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
+    break
+  fi
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+done
+
+# Load functions for website management
+source "$FUNCTIONS_DIR/backup_loader.sh"
+
 select_backup_files() {
   local backup_dir="$1"
   local choice_list=()
@@ -156,7 +171,3 @@ upload_backup() {
 
   print_msg success "$SUCCESS_RCLONE_UPLOAD_DONE" | tee -a "$log_file"
 }
-
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  upload_backup "$@"
-fi

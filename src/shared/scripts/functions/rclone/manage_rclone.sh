@@ -66,7 +66,7 @@
 #     Success: Storage 'storage1' has been removed.
 # Function to display list of configured storages
 rclone_storage_list() {
-  local rclone_config="$BASE_DIR/$RCLONE_CONFIG_FILE"
+  local rclone_config="$RCLONE_CONFIG_FILE"
 
   debug_log "[RCLONE] Config path: $rclone_config"
 

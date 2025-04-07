@@ -5,6 +5,7 @@ source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
 
 # 📋 Main PHP Management Menu
 php_menu() {
+  while true; do
     print_msg title "$TITLE_MENU_PHP"
     print_msg label "${GREEN}1)${NC} $LABEL_MENU_PHP_CHANGE"
     print_msg label "${GREEN}2)${NC} $LABEL_MENU_PHP_REBUILD"
@@ -14,7 +15,7 @@ php_menu() {
     echo ""
 
     read -p "$MSG_SELECT_OPTION " choice
-    while true; do
+    
       case $choice in
         1) bash "$MENU_DIR/php/php_change_version_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         2) bash "$MENU_DIR/php/php_rebuild_container_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
