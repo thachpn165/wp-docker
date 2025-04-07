@@ -1,127 +1,98 @@
 #!/bin/bash
 
-# === 🧠 Auto-detect PROJECT_DIR (project root path) ===
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-fi
-
-# === ${CHECKMARK} Load config.sh from PROJECT_DIR ===
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} config.sh not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-source "$CONFIG_FILE"
-
-
-
 # Function to setup Rclone
 rclone_setup() {
-    # Ensure configuration directory exists
-    is_directory_exist "$RCLONE_CONFIG_DIR" || mkdir -p "$RCLONE_CONFIG_DIR"
+  is_directory_exist "$RCLONE_CONFIG_DIR" || mkdir -p "$RCLONE_CONFIG_DIR"
 
-    # Check if Rclone is not installed, proceed with installation
-    if ! command -v rclone &> /dev/null; then
-        echo -e "${YELLOW}${WARNING} Rclone is not installed. Proceeding with installation...${NC}"
-        
-        if [[ "$(uname)" == "Darwin" ]]; then
-            brew install rclone || { echo -e "${RED}${CROSSMARK} Error: Failed to install Rclone!${NC}"; exit 1; }
-        else
-            curl https://rclone.org/install.sh | sudo bash || { echo -e "${RED}${CROSSMARK} Error: Failed to install Rclone!${NC}"; exit 1; }
-        fi
+  if ! command -v rclone &> /dev/null; then
+    print_msg warning "$WARNING_RCLONE_NOT_INSTALLED"
 
-        echo -e "${GREEN}${CHECKMARK} Rclone installation successful!${NC}"
+    if [[ "$(uname)" == "Darwin" ]]; then
+      brew install rclone || {
+        print_msg error "$ERROR_RCLONE_INSTALL_FAILED"
+        return 1
+      }
     else
-        echo -e "${GREEN}${CHECKMARK} Rclone is already installed.${NC}"
+      curl https://rclone.org/install.sh | sudo bash || {
+        print_msg error "$ERROR_RCLONE_INSTALL_FAILED"
+        return 1
+      }
     fi
 
-    echo -e "${BLUE}🚀 Setting up Rclone Storage${NC}"
+    print_msg success "$SUCCESS_RCLONE_INSTALLED"
+  else
+    print_msg success "$SUCCESS_RCLONE_ALREADY_INSTALLED"
+  fi
 
-    # Check if configuration file exists
-    if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
-        echo -e "${YELLOW}📄 Creating new Rclone configuration file: $RCLONE_CONFIG_FILE${NC}"
-        touch "$RCLONE_CONFIG_FILE" || { echo -e "${RED}${CROSSMARK} Cannot create file $RCLONE_CONFIG_FILE${NC}"; exit 1; }
+  print_msg run "$INFO_RCLONE_SETUP_START"
+
+  if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
+    print_msg info "$(printf "$INFO_RCLONE_CREATING_CONF" "$RCLONE_CONFIG_FILE")"
+    touch "$RCLONE_CONFIG_FILE" || {
+      print_msg error "$(printf "$ERROR_RCLONE_CREATE_CONF_FAILED" "$RCLONE_CONFIG_FILE")"
+      return 1
+    }
+  fi
+
+  while true; do
+    [[ "$TEST_MODE" != true ]] && read -p "📌 Nhập tên Storage (không dấu, không khoảng trắng): " STORAGE_NAME
+    STORAGE_NAME=$(echo "$STORAGE_NAME" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | tr -cd '[:alnum:]_-')
+
+    if grep -q "^\[$STORAGE_NAME\]" "$RCLONE_CONFIG_FILE"; then
+      print_msg error "$(printf "$ERROR_RCLONE_STORAGE_EXISTED" "$STORAGE_NAME")"
+    else
+      break
     fi
+  done
 
-    # Enter storage name (no accents, no spaces, no special characters)
-    while true; do
-        [[ "$TEST_MODE" != true ]] && read -p "📌 Enter storage name (no accents, no spaces, no special characters): " STORAGE_NAME
-        STORAGE_NAME=$(echo "$STORAGE_NAME" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | tr -cd '[:alnum:]_-')
+  print_msg info "$INFO_RCLONE_SELECT_STORAGE_TYPE"
+  echo -e "  ${GREEN}[1]${NC} Google Drive"
+  echo -e "  ${GREEN}[2]${NC} Dropbox"
+  echo -e "  ${GREEN}[3]${NC} AWS S3"
+  echo -e "  ${GREEN}[4]${NC} DigitalOcean Spaces"
+  echo -e "  ${GREEN}[5]${NC} Thoát"
 
-        if grep -q "^\[$STORAGE_NAME\]" "$RCLONE_CONFIG_FILE"; then
-            echo -e "${RED}${CROSSMARK} Storage name '$STORAGE_NAME' already exists. Please enter a different name.${NC}"
-        else
-            break
-        fi
-    done
+  [[ "$TEST_MODE" != true ]] && read -p "$PROMPT_SELECT_OPTION" choice
 
-    # Display list of supported Rclone services
-    echo -e "${GREEN}Select the type of storage you want to set up:${NC}"
-    echo -e "  ${GREEN}[1]${NC} Google Drive"
-    echo -e "  ${GREEN}[2]${NC} Dropbox"
-    echo -e "  ${GREEN}[3]${NC} AWS S3"
-    echo -e "  ${GREEN}[4]${NC} DigitalOcean Spaces"
-    echo -e "  ${GREEN}[5]${NC} Exit"
-    echo ""
+  case "$choice" in
+    1) STORAGE_TYPE="drive" ;;
+    2) STORAGE_TYPE="dropbox" ;;
+    3|4) STORAGE_TYPE="s3" ;;
+    5) print_msg cancel "$MSG_EXITING"; return ;;
+    *) print_msg error "$ERROR_SELECT_OPTION_INVALID"; return ;;
+  esac
 
-    [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-5): " choice
+  print_msg step "$(printf "$STEP_RCLONE_SETTING_UP" "$STORAGE_NAME")"
 
-    case "$choice" in
-        1) STORAGE_TYPE="drive" ;;
-        2) STORAGE_TYPE="dropbox" ;;
-        3) STORAGE_TYPE="s3" ;;
-        4) STORAGE_TYPE="s3" ;;
-        5) echo -e "${GREEN}${CROSSMARK} Exiting setup.${NC}"; return ;;
-        *) echo -e "${RED}${CROSSMARK} Invalid option!${NC}"; return ;;
-    esac
+  {
+    echo "[$STORAGE_NAME]"
+    echo "type = $STORAGE_TYPE"
+  } >> "$RCLONE_CONFIG_FILE"
 
-    echo -e "${BLUE}📂 Setting up Storage: $STORAGE_NAME...${NC}"
+  if [[ "$STORAGE_TYPE" == "drive" ]]; then
+    print_msg recommend "$INFO_RCLONE_DRIVE_AUTH_GUIDE"
+    [[ "$TEST_MODE" != true ]] && read -p "🔑 Dán OAuth JSON token vào đây: " AUTH_JSON
+    echo "token = $AUTH_JSON" >> "$RCLONE_CONFIG_FILE"
+    print_msg success "$SUCCESS_RCLONE_DRIVE_SETUP"
 
-    # Save configuration to rclone.conf file
+  elif [[ "$STORAGE_TYPE" == "dropbox" ]]; then
+    echo "token = $(rclone authorize dropbox)" >> "$RCLONE_CONFIG_FILE"
+
+  elif [[ "$STORAGE_TYPE" == "s3" ]]; then
+    [[ "$TEST_MODE" != true ]] && read -p "🔑 Nhập Access Key ID: " ACCESS_KEY
+    [[ "$TEST_MODE" != true ]] && read -p "🔑 Nhập Secret Access Key: " SECRET_KEY
+    [[ "$TEST_MODE" != true ]] && read -p "🌍 Nhập Region (vd: us-east-1): " REGION
+
     {
-        echo "[$STORAGE_NAME]"
-        echo "type = $STORAGE_TYPE"
+      echo "provider = AWS"
+      echo "access_key_id = $ACCESS_KEY"
+      echo "secret_access_key = $SECRET_KEY"
+      echo "region = $REGION"
     } >> "$RCLONE_CONFIG_FILE"
+  fi
 
-    if [[ "$STORAGE_TYPE" == "drive" ]]; then
-        echo -e "${YELLOW}📢 Run the following command on your computer to authorize Google Drive:${NC}"
-        echo -e "${GREEN}rclone authorize drive${NC}"
-        echo ""
-        echo -e "${YELLOW}📌 Rclone installation guide for different operating systems:${NC}"
-        echo -e "  ${GREEN}Linux:${NC} Run: ${GREEN}curl https://rclone.org/install.sh | sudo bash${NC}"
-        echo -e "  ${GREEN}macOS:${NC} Run: ${GREEN}brew install rclone${NC}"
-        echo -e "  ${GREEN}Windows:${NC} Download from: ${CYAN}https://rclone.org/downloads/${NC}"
-        echo -e "           After installation, open Command Prompt (cmd) and run: ${GREEN}rclone authorize drive${NC}"
-        echo ""
-        [[ "$TEST_MODE" != true ]] && read -p "🔑 Paste OAuth JSON token here: " AUTH_JSON
-        echo "token = $AUTH_JSON" >> "$RCLONE_CONFIG_FILE"
-
-        echo -e "${GREEN}${CHECKMARK} Google Drive has been set up successfully!${NC}"
-
-    elif [[ "$STORAGE_TYPE" == "dropbox" ]]; then
-        echo "token = $(rclone authorize dropbox)" >> "$RCLONE_CONFIG_FILE"
-    elif [[ "$STORAGE_TYPE" == "s3" ]]; then
-        [[ "$TEST_MODE" != true ]] && read -p "🔑 Enter Access Key ID: " ACCESS_KEY
-        [[ "$TEST_MODE" != true ]] && read -p "🔑 Enter Secret Access Key: " SECRET_KEY
-        [[ "$TEST_MODE" != true ]] && read -p "🌍 Enter Region (e.g., us-east-1): " REGION
-
-        {
-            echo "provider = AWS"
-            echo "access_key_id = $ACCESS_KEY"
-            echo "secret_access_key = $SECRET_KEY"
-            echo "region = $REGION"
-        } >> "$RCLONE_CONFIG_FILE"
-    fi
-
-    echo -e "${GREEN}${CHECKMARK} Storage $STORAGE_NAME has been set up successfully!${NC}"
-    echo -e "${GREEN}📄 Configuration saved at: $BASE_DIR/$RCLONE_CONFIG_FILE${NC}"
+  print_msg success "$(printf "$SUCCESS_RCLONE_STORAGE_ADDED" "$STORAGE_NAME")"
+  print_msg info "📄 Config: $BASE_DIR/$RCLONE_CONFIG_FILE"
 }
 
 # Do not execute function by default when calling script
