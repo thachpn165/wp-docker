@@ -47,14 +47,26 @@ curl -L "$DOWNLOAD_URL" -o "$ZIP_NAME" || { echo "Command failed at line 35"; ex
 echo "📁 Extracting to $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
 unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
-rm "$ZIP_NAME" || { echo "Command failed at line 40"; exit 1; }
+rm -rf "$ZIP_NAME" || { echo "Command failed at line 40"; exit 1; }
 
 # ========================
 # ✅ Load config & setup system
 # ========================
 if [[ -f "$INSTALL_DIR/shared/config/load_config.sh" ]]; then
-  source "$INSTALL_DIR/shared/config/load_config.sh"
-  load_config_file
+  # ✅ Load configuration from any directory
+  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+  SEARCH_PATH="$SCRIPT_PATH"
+  while [[ "$SEARCH_PATH" != "/" ]]; do
+    if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+      source "$SEARCH_PATH/shared/config/load_config.sh"
+      load_config_file
+      break
+    fi
+    SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+  done
+
+  # Load functions for website management
+  source "$FUNCTIONS_DIR/website_loader.sh"
 fi
 
 if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
