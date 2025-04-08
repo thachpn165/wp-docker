@@ -776,3 +776,5 @@ readonly CONFIRM_UPDATE_CORE="Do you want to update WP Docker to the latest vers
 readonly INFO_CORE_VERSION_CURRENT="Current version"
 readonly INFO_CORE_VERSION_LATEST="Latest version"
 readonly WARNING_DEV_MODE_NO_UPDATE="In development mode, no updates will be applied."
+readonly SUCCESS_CORE_IS_LATEST="You are using the latest version of WP Docker."
+readonly WARNING_CORE_SOURCE_REPO_NO_UPDATE="You are using a source repository in DEV_MODE. No updates will be applied."

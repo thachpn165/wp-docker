@@ -4,9 +4,7 @@
 core_update_system() {
   local force_update=false
   for arg in "$@"; do
-    if [[ "$arg" == "--force" ]]; then
-      force_update=true
-    fi
+    [[ "$arg" == "--force" ]] && force_update=true
   done
 
   # === Nếu DEV_MODE=true thì cảnh báo và không cho update
@@ -17,6 +15,12 @@ core_update_system() {
     print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
     print_msg info "$INFO_CORE_VERSION_LATEST: $version_remote"
     print_msg warning "$WARNING_DEV_MODE_NO_UPDATE"
+    return 0
+  fi
+
+  # === Nếu PROJECT_DIR/src tồn tại → là source repo → không update
+  if [[ -d "$PROJECT_DIR/src" ]]; then
+    print_msg warning "$WARNING_CORE_IS_SOURCE_REPO"
     return 0
   fi
 
@@ -46,11 +50,11 @@ core_update_system() {
   print_msg important "$INFO_UPDATING_CORE: $version_local ➔ $version_remote"
   get_user_confirmation "$CONFIRM_UPDATE_CORE"
 
-  local tmp_dir tmp_zip backup_dir
+  local tmp_dir tmp_zip
   tmp_dir="$(mktemp -d)"
   tmp_zip="$tmp_dir/$zip_name"
-  print_msg info "$INFO_DOWNLOADING_CORE_UPDATE"
 
+  print_msg info "$INFO_DOWNLOADING_CORE_UPDATE"
   if ! curl -L "$zip_url" -o "$tmp_zip"; then
     print_msg error "$ERROR_DOWNLOAD_FAILED: $zip_url"
     rm -rf "$tmp_dir"
@@ -60,18 +64,17 @@ core_update_system() {
   print_msg step "$STEP_EXTRACT_AND_UPDATE"
   unzip -q "$tmp_zip" -d "$tmp_dir"
 
-  if [[ ! -d "$tmp_dir/src" ]]; then
-    print_msg error "$ERROR_EXTRACT_FAILED"
-    rm -rf "$tmp_dir"
-    return 1
-  fi
+  # === Backup src trước khi update
+  core_backup_current_src
 
-  backup_dir="${PROJECT_DIR}/.backup-$(date +%Y%m%d-%H%M%S)"
-  mv "$PROJECT_DIR/src" "$backup_dir"
-  mv "$tmp_dir/src" "$PROJECT_DIR/src"
+  # === Copy mã nguồn mới, loại trừ thư mục người dùng
+  rsync -a --exclude="sites/" \
+            --exclude="backups/" \
+            --exclude="logs/" \
+            --exclude="archives/" \
+            "$tmp_dir/" "$PROJECT_DIR/"
+
   print_msg success "$SUCCESS_CORE_UPDATED"
-  print_msg info "$INFO_BACKUP_OLD_SRC: $backup_dir"
-
   rm -rf "$tmp_dir"
   return 0
 }
