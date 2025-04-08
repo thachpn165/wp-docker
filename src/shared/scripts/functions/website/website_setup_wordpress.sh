@@ -113,6 +113,7 @@ website_setup_wordpress_logic() {
       rm /var/www/html/wordpress.tar.gz'
 
     docker_exec_php "$wp_download_cmd"
+    exit_if_error $? "failed to download WordPress"
     print_msg success "$SUCCESS_WP_SOURCE_DOWNLOADED"
   else
     print_msg success "$SUCCESS_WP_SOURCE_EXISTS"
