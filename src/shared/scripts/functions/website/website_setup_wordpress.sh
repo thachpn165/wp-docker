@@ -62,22 +62,22 @@ website_setup_wordpress_logic() {
     ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
     ADMIN_EMAIL="admin@$domain.local"
   else
-    get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " ADMIN_USER
+    ADMIN_USER=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
     while [[ -z "$ADMIN_USER" ]]; do
       print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
-      get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " ADMIN_USER
+      ADMIN_USER=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
     done
 
-    get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " ADMIN_PASSWORD
-    get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " CONFIRM_PASSWORD
+    ADMIN_PASSWORD=$(get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
+    CONFIRM_PASSWORD=$(get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
     while [[ "$ADMIN_PASSWORD" != "$CONFIRM_PASSWORD" || -z "$ADMIN_PASSWORD" ]]; do
       print_msg warning "$WARNING_ADMIN_PASSWORD_MISMATCH"
-      get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " ADMIN_PASSWORD
-      get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " CONFIRM_PASSWORD
+      ADMIN_PASSWORD=$(get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
+      CONFIRM_PASSWORD=$(get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
     done
 
-    get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL" ADMIN_EMAIL
-    ADMIN_EMAIL="${ADMIN_EMAIL:-admin@$domain.local}"
+    #get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL" ADMIN_EMAIL
+    ADMIN_EMAIL=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL" "${ADMIN_EMAIL:-admin@$domain}")
   fi
 
   # 🐳 Check if PHP container is running

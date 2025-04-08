@@ -92,6 +92,22 @@ get_input_or_test_value() {
   fi
 }
 
+# 🧪 Prompt user for secret input or use fallback in TEST_MODE
+get_input_or_test_value_secret() {
+  local prompt="$1"
+  local fallback="$2"
+  local input=""
+
+  if is_test_mode; then
+    echo "$fallback"
+  else
+    printf "%s" "$prompt"
+    read -s input
+    echo
+    echo "${input:-$fallback}"
+  fi
+}
+
 # 🔢 Prompt user to select from a list (or auto-select in test mode)
 # Usage:
 #   selected=$(select_from_list "Choose option:" "${options[@]}")
