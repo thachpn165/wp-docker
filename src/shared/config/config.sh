@@ -19,6 +19,7 @@ fi
 PROJECT_DIR=$BASE_DIR
 # ==== 2. Load .env file ====
 CORE_ENV="${CORE_ENV:-$BASE_DIR/.env}"
+JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 # Load env loader first
 source "$BASE_DIR/shared/scripts/functions/utils/env_utils.sh"
@@ -31,11 +32,15 @@ LANG_CODE="${LANG_CODE:-vi}"
 DEBUG_MODE="${DEBUG_MODE:-false}"
 DEV_MODE="${DEV_MODE:-$DEV_MODE}"
 
-# ==== 3. Load i18n language file ====
-source "$BASE_DIR/shared/lang/lang_loader.sh"
+source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
 
 # ==== 4. Load log/debug helpers ====
 source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
+
+# ==== 3. Load i18n language file ====
+source "$BASE_DIR/shared/lang/lang_loader.sh"
+
+
 
 # ==== 5. Define core system variables ====
 LANG_LIST=("vi" "en")
@@ -118,3 +123,4 @@ source "$FUNCTIONS_DIR/utils/db_utils.sh"
 source "$FUNCTIONS_DIR/utils/website_utils.sh"
 source "$FUNCTIONS_DIR/utils/misc_utils.sh"
 source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
+

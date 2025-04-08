@@ -57,7 +57,7 @@
   - Rewritten into standardized 3-step structure: logic + cli + menu.
   - Separated version check for `official` and `nightly` via `core_version_main.sh` and `core_version_dev.sh`.
   - Auto-detection and display of latest version at startup menu.
-  - `core_display_version.sh` now adapts to `CORE_CHANNEL` for accurate fetch.
+  - `core_version_display.sh` now adapts to `CORE_CHANNEL` for accurate fetch.
 
 - **New subcommand: `wpdocker system`**:
   - Includes:

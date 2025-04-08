@@ -92,6 +92,22 @@ get_input_or_test_value() {
   fi
 }
 
+# 🧪 Prompt user for secret input or use fallback in TEST_MODE
+get_input_or_test_value_secret() {
+  local prompt="$1"
+  local fallback="$2"
+  local input=""
+
+  if is_test_mode; then
+    echo "$fallback"
+  else
+    printf "%s" "$prompt"
+    read -s input
+    echo
+    echo "${input:-$fallback}"
+  fi
+}
+
 # 🔢 Prompt user to select from a list (or auto-select in test mode)
 # Usage:
 #   selected=$(select_from_list "Choose option:" "${options[@]}")
@@ -228,7 +244,7 @@ print_msg() {
     success)     emoji="✅" color="$GREEN" ;;
     error)       emoji="❌" color="$RED" ;;
     warning)     emoji="⚠️"  color="$YELLOW" ;;
-    info)        emoji="ℹ️"  color="$WHITE" ;;
+    info)        emoji=""  color="$WHITE" ;;
     save)        emoji="💾" color="$WHITE" ;;
     important)   emoji="🚨" color="$RED" ;;
     step)        emoji="➤"  color="$MAGENTA" ;;
@@ -242,7 +258,8 @@ print_msg() {
     title)     emoji="" color="$CYAN" ;;
     label)     emoji="" color="$BLUE" ;;
     sub_label) emoji="" color="$WHITE" ;;
-    copy)      emoji="→" color="$GREEN";; 
+    copy)      emoji="→" color="$GREEN";;
+    tip)     emoji="💡" color="$YELLOW";;
     
     progress)
       emoji="🚀"

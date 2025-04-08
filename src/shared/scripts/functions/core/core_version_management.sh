@@ -1,20 +1,32 @@
 # =====================================
-# 🧠 core_version_management.sh – Version Utilities (Refactored)
+# 🧠 core_version_management.sh – Version Utilities (Refactored to use .config.json)
 # =====================================
 
-# === Get current version from local file
-core_get_current_version() {
-  local version_file="$PROJECT_DIR/version.txt"
+# === Get current version from config JSON
+core_version_get_current() {
+  local channel
+  channel="$(core_channel_get)"
 
-  if [[ -f "$version_file" ]]; then
-    cat "$version_file"
+  if [[ "$channel" == "dev" ]]; then
+    debug_log "[core_version_get_current] Channel is dev → version=dev"
+    core_set_installed_version "dev"
+    echo "dev"
+    return
+  fi
+
+  local version
+  version="$(core_get_installed_version)"
+
+  if [[ -n "$version" && "$version" != "null" ]]; then
+    debug_log "[core_version_get_current] Current version (from config): $version"
+    echo "$version"
   else
-    print_msg warning "$WARNING_VERSION_FILE_NOT_FOUND"
+    print_msg warning "$WARNING_VERSION_NOT_FOUND"
     local latest_version
-    latest_version="$(core_get_latest_version)"
+    latest_version="$(core_version_get_latest 2>/dev/null)"  # tránh lỗi màu hóa
     if [[ -n "$latest_version" ]]; then
-      echo "$latest_version" > "$version_file"
-      print_msg info "$(printf "$INFO_VERSION_FILE_RESTORED" "$version_file")"
+      core_set_installed_version "$latest_version"
+      print_msg info "$(printf "$INFO_VERSION_FILE_RESTORED" "$JSON_CONFIG_FILE")"
       echo "$latest_version"
     else
       print_msg error "$ERROR_FETCH_LATEST_VERSION_FAILED"
@@ -24,38 +36,51 @@ core_get_current_version() {
 }
 
 # === Get latest version from remote GitHub (main/dev based on channel)
-core_get_latest_version() {
+core_version_get_latest() {
   local channel version_url latest_version
 
-  channel="$(core_get_channel)"
+  channel="$(core_channel_get)"
 
   if [[ "$channel" == "official" ]]; then
     version_url="https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/src/version.txt"
   elif [[ "$channel" == "nightly" ]]; then
     version_url="https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/dev/src/version.txt"
+  elif [[ "$channel" == "dev" ]]; then
+    debug_log "[core_version_get_latest] Channel is dev → skip fetching"
+    echo "dev"
+    return 0
   else
-    print_msg error "❌ Invalid CORE_CHANNEL: $channel"
+    print_msg error "❌ Invalid core channel in config: $channel"
     return 1
   fi
 
   latest_version=$(curl -fsSL "$version_url" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9]+)*(\+[0-9]+)?' | head -n1)
 
-  debug_log "[core_get_latest_version] Channel: $channel"
-  debug_log "[core_get_latest_version] Version URL: $version_url"
-  debug_log "[core_get_latest_version] Latest version: $latest_version"
+  debug_log "[core_version_get_latest] Channel       : $channel"
+  debug_log "[core_version_get_latest] Version URL   : $version_url"
+  debug_log "[core_version_get_latest] Latest Ver    : $latest_version"
 
   echo "$latest_version"
 }
 
 # === Compare versions: returns 0 if equal, 1 if v1 > v2, 2 if v1 < v2
-core_compare_versions() {
-  local v1=$(echo "$1" | sed 's/^v//')
-  local v2=$(echo "$2" | sed 's/^v//')
+core_version_compare() {
+  local v1="${1#v}"
+  local v2="${2#v}"
+
+  # Strip build metadata
+  v1="${v1%%+*}"
+  v2="${v2%%+*}"
+
+  # Detect pre-release (contains -) and add "-stable" if không có
+  [[ "$v1" != *-* ]] && v1="${v1}-stable"
+  [[ "$v2" != *-* ]] && v2="${v2}-stable"
 
   if [[ "$v1" == "$v2" ]]; then return 0; fi
 
   local sorted
   sorted=$(printf "%s\n%s" "$v1" "$v2" | sort -V | head -n1)
+
   if [[ "$sorted" == "$v1" ]]; then
     return 2  # $1 < $2
   else
@@ -63,44 +88,54 @@ core_compare_versions() {
   fi
 }
 
-# === Get core channel from .env
-core_get_channel() {
-  local env_file="$PROJECT_DIR/.env"
-  fetch_env_variable "$env_file" "CORE_CHANNEL" | tr -d '"'
+# === Get core channel from config JSON
+core_channel_get() {
+  json_get_value '.core.channel'
 }
 
 # === Get download URL based on channel (main/dev)
 core_get_download_url() {
   local channel repo_tag zip_name zip_url
 
-  channel="$(core_get_channel)"
+  channel="$(core_channel_get)"
   zip_name="wp-docker.zip"
 
   if [[ "$channel" == "official" ]]; then
     repo_tag="latest"
   elif [[ "$channel" == "nightly" ]]; then
     repo_tag="nightly"
+  elif [[ "$channel" == "dev" ]]; then
+    debug_log "[core_get_download_url] Dev channel → skip download"
+    return 1
   else
-    print_msg error "❌ Invalid CORE_CHANNEL: $channel"
+    print_msg error "❌ Invalid core channel: $channel"
     return 1
   fi
 
   zip_url="https://github.com/thachpn165/wp-docker/releases/download/$repo_tag/$zip_name"
+  debug_log "[core_get_download_url] Download URL: $zip_url"
   echo "$zip_url"
 }
 
-core_display_version() {
+# === Display local and remote version
+core_version_display_logic() {
   local channel version_local version_remote
 
   channel="$(core_get_channel)"
   version_local="$(core_get_current_version)"
+
+  if [[ "$channel" == "dev" ]]; then
+    print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
+    print_msg info "$INFO_CORE_VERSION_DEV_MODE"
+    return 0
+  fi
+
   version_remote="$(core_get_latest_version)"
 
-  debug_log "[core_display_version_logic] Channel       : $channel"
-  debug_log "[core_display_version_logic] Current ver   : $version_local"
-  debug_log "[core_display_version_logic] Latest  ver   : $version_remote"
+  debug_log "[core_version_display] Channel       : $channel"
+  debug_log "[core_version_display] Current ver   : $version_local"
+  debug_log "[core_version_display] Latest  ver   : $version_remote"
 
-  # Kiểm tra lỗi fetch
   if [[ -z "$version_remote" ]]; then
     print_msg error "$(printf "$ERROR_VERSION_CHANNEL_FAILED_FETCH_LATEST" "$channel")"
     return 1
@@ -118,6 +153,9 @@ core_display_version() {
     print_msg success "$SUCCESS_CORE_IS_LATEST"
   fi
 }
+core_version_display() {
+  core_version_display_logic
+}
 
 # === Backup current src directory
 core_backup_current_src() {
@@ -125,11 +163,9 @@ core_backup_current_src() {
   timestamp="$(date +%Y%m%d-%H%M%S)"
   local backup_dir="${PROJECT_DIR}/.backup-${timestamp}"
 
-  # Nếu có thư mục src → người dùng đang dùng dạng clone
   if [[ -d "$PROJECT_DIR/src" ]]; then
     mv "$PROJECT_DIR/src" "$backup_dir"
   else
-    # Người dùng dùng bản build zip: backup toàn bộ nhưng loại trừ file .env và thư mục backup cũ
     mkdir -p "$backup_dir"
     rsync -a --exclude=".env" --exclude=".backup*" "$PROJECT_DIR/" "$backup_dir/"
   fi

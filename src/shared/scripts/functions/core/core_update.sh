@@ -10,8 +10,8 @@ core_update_system() {
   # === Nếu DEV_MODE=true thì cảnh báo và không cho update
   if [[ "$DEV_MODE" == "true" ]]; then
     local version_local version_remote
-    version_local="$(core_get_current_version)"
-    version_remote="$(core_get_latest_version)"
+    version_local="$(core_version_get_current)"
+    version_remote="$(core_version_get_latest)"
     print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
     print_msg info "$INFO_CORE_VERSION_LATEST: $version_remote"
     print_msg warning "$WARNING_DEV_MODE_NO_UPDATE"
@@ -19,15 +19,15 @@ core_update_system() {
   fi
 
   # === Nếu PROJECT_DIR/src tồn tại → là source repo → không update
-  if [[ -d "$PROJECT_DIR/src" ]]; then
+  if [[ -d "$PROJECT_DIR/src" ]] || core_is_dev_mode; then
     print_msg warning "$WARNING_CORE_IS_SOURCE_REPO"
     return 0
   fi
 
   local channel version_local version_remote zip_url zip_name
-  channel="$(core_get_channel)"
-  version_local="$(core_get_current_version)"
-  version_remote="$(core_get_latest_version)"
+  channel="$(core_channel_get)"
+  version_local="$(core_version_get_current)"
+  version_remote="$(core_version_get_latest)"
   zip_url="$(core_get_download_url)"
   zip_name="wp-docker.zip"
 
@@ -35,7 +35,7 @@ core_update_system() {
   debug_log "Latest version [$channel]: $version_remote"
   debug_log "Force update?           : $force_update"
 
-  core_compare_versions "$version_local" "$version_remote"
+  core_version_compare "$version_local" "$version_remote"
   local cmp_result=$?
 
   if [[ "$cmp_result" -ne 2 ]]; then
