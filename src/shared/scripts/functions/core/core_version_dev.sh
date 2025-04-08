@@ -21,11 +21,11 @@ core_version_dev_cache() {
 
     if [[ $age -gt $expiration ]]; then
       print_msg warning "$WARNING_CORE_DEV_CACHE_OUTDATED"
-      run_cmd "curl -s \"$url\" -o \"$cache_file\"" true
+      run_cmd curl -s "$url" -o "$cache_file" true
     fi
   else
     print_msg info "$INFO_CORE_DEV_CACHE_MISSING"
-    run_cmd "curl -s \"$url\" -o \"$cache_file\"" true
+    run_cmd curl -s "$url" -o "$cache_file" true
   fi
 
   cat "$cache_file"

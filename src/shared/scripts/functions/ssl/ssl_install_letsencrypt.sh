@@ -11,7 +11,7 @@ ssl_install_lets_encrypt_logic() {
   if [[ -z "$DOMAIN" ]]; then
     print_and_debug error "$ERROR_ENV_DOMAIN_NOT_FOUND"
     debug_log "$INFO_ENV_FILE_CONTENT"
-    run_cmd "cat \"$ENV_FILE\""
+    run_cmd cat "$ENV_FILE"
     return 1
   fi
 

@@ -121,3 +121,35 @@ check_required_commands() {
     fi
   done
 }
+
+
+check_and_add_alias() {
+  local shell_config cli_dir_abs alias_line
+
+  cli_dir_abs=$(realpath "$INSTALL_DIR/shared/bin")
+  alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
+
+  if [[ "$SHELL" == *"zsh"* ]]; then
+    shell_config="$HOME/.zshrc"
+  else
+    shell_config="$HOME/.bashrc"
+  fi
+
+  if grep -q "alias wpdocker=" "$shell_config"; then
+    echo "🧹 Removing existing alias from $shell_config..."
+    sed -i.bak '/alias wpdocker=/d' "$shell_config"
+  fi
+
+  echo "$alias_line" >> "$shell_config"
+  echo "✅ Added alias for wpdocker to $shell_config"
+
+  if [[ "$SHELL" == *"zsh"* ]]; then
+    echo "🔄 Reloading .zshrc..."
+    source "$HOME/.zshrc"
+  elif [[ "$SHELL" == *"bash"* ]]; then
+    echo "🔄 Reloading .bashrc..."
+    source "$HOME/.bashrc"
+  else
+    echo "⚠️ Unsupported shell. Please reload shell config manually."
+  fi
+}

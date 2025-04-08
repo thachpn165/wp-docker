@@ -1,6 +1,7 @@
 # =====================================
 # 🌐 nginx_utils.sh – NGINX Proxy utility functions
 # =====================================
+
 nginx_add_mount_docker() {
     local domain="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
@@ -15,7 +16,7 @@ nginx_add_mount_docker() {
 
     if [ ! -f "$OVERRIDE_FILE" ]; then
         print_msg info "$INFO_DOCKER_NGINX_CREATING_DOCKER_COMPOSE_OVERRIDE"
-        cat > "$OVERRIDE_FILE" <<EOF #get NGINX_PROXY_CONTAINER from config.sh
+        cat > "$OVERRIDE_FILE" <<EOF
 services:
   $NGINX_PROXY_CONTAINER:
     volumes:
@@ -30,7 +31,7 @@ EOF
     if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
         if ! echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null; then
             print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
-            run_cmd "nginx_remove_mount_docker \"$OVERRIDE_FILE\" \"$MOUNT_ENTRY\" \"$MOUNT_LOGS\""
+            nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
@@ -42,7 +43,7 @@ EOF
     if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
         if ! echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null; then
             print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
-            run_cmd "nginx_remove_mount_docker \"$OVERRIDE_FILE\" \"$MOUNT_ENTRY\" \"$MOUNT_LOGS\""
+            nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
@@ -51,27 +52,20 @@ EOF
     fi
 }
 
-# Helper function to remove entries from docker-compose.override.yml
 nginx_remove_mount_docker() {
     local override_file="$1"
     local mount_entry="$2"
     local mount_logs="$3"
 
-    # Escape slashes (/) and dots (.) by replacing them with another delimiter (e.g., #)
     local safe_mount_entry="${mount_entry//\//\\\/}"
     safe_mount_entry="${safe_mount_entry//./\\\.}"
     local safe_mount_logs="${mount_logs//\//\\\/}"
     safe_mount_logs="${safe_mount_logs//./\\\.}"
 
-    # If the override file exists
     if [ -f "$override_file" ]; then
-        # Create a temporary file to store the modified content
         temp_file=$(mktemp)
-
-        # Remove the lines containing mount_entry and mount_logs
         grep -vF "$mount_entry" "$override_file" | grep -vF "$mount_logs" > "$temp_file"
 
-        # If the content was changed, replace the original file with the modified one
         if ! diff "$override_file" "$temp_file" > /dev/null; then
             mv "$temp_file" "$override_file"
             print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_REMOVED"
@@ -85,40 +79,38 @@ nginx_remove_mount_docker() {
     fi
 }
 
-# 🔁 Restart NGINX Proxy (use when changing docker-compose, mount volume, etc.)
 nginx_restart() {
   start_loading "$INFO_DOCKER_NGINX_STARTING"
   pushd "$NGINX_PROXY_DIR" > /dev/null
 
   run_cmd "docker compose down"
-    if [[ $? -ne 0 ]]; then
-        print_msg error "$ERROR_DOCKER_NGINX_STOP $NGINX_PROXY_CONTAINER"
-        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-        popd > /dev/null
-        return 1
-    fi
+  if [[ $? -ne 0 ]]; then
+      print_msg error "$ERROR_DOCKER_NGINX_STOP $NGINX_PROXY_CONTAINER"
+      run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+      popd > /dev/null
+      return 1
+  fi
+
   run_cmd "docker compose up -d --force-recreate"
-    if [[ $? -ne 0 ]]; then
-        print_msg error "$ERROR_DOCKER_NGINX_START $NGINX_PROXY_CONTAINER"
-        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-        popd > /dev/null
-        return 1
-    fi
+  if [[ $? -ne 0 ]]; then
+      print_msg error "$ERROR_DOCKER_NGINX_START $NGINX_PROXY_CONTAINER"
+      run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+      popd > /dev/null
+      return 1
+  fi
+
   popd > /dev/null
   stop_loading
   print_msg success "$SUCCESS_DOCKER_NGINX_RESTART"
 }
 
-
-# 🔄 Reload NGINX (use when changing config/nginx.conf/nginx site)
 nginx_reload() {
-  #echo -e "${YELLOW}🔄 Reloading NGINX Proxy...${NC}"
   start_loading "$INFO_DOCKER_NGINX_RELOADING"
   run_cmd "docker exec \"$NGINX_PROXY_CONTAINER\" nginx -s reload"
-    if [[ $? -ne 0 ]]; then
-        print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
-        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-        return 1
-    fi
-    print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
+  if [[ $? -ne 0 ]]; then
+      print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
+      run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+      return 1
+  fi
+  print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
 }
