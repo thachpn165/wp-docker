@@ -1,8 +1,9 @@
 #!/bin/bash
 
 INSTALL_DIR="/opt/wp-docker"
-REPO_URL="https://github.com/thachpn165/wp-docker"
 ZIP_NAME="wp-docker.zip"
+REPO_TAG=""
+DOWNLOAD_URL=""
 DEV_REPO_DIR="$HOME/wp-docker"
 DEV_MODE=${DEV_MODE:-false}
 
@@ -17,9 +18,9 @@ read -rp "Please select an option (1, 2 or 3, default is 1): " version_choice
 version_choice=${version_choice:-1}
 
 if [[ "$version_choice" == "2" ]]; then
-  ZIP_NAME="wp-docker-dev.zip"
+  REPO_TAG="nightly"
+  DOWNLOAD_URL="https://github.com/thachpn165/wp-docker/releases/download/$REPO_TAG/$ZIP_NAME"
   echo "🛠 Installing Nightly (Testing Only) version"
-  DOWNLOAD_URL="$REPO_URL/releases/download/nightly/$ZIP_NAME"
   INSTALL_CHANNEL="nightly"
   DEV_MODE=false
 elif [[ "$version_choice" == "3" ]]; then
@@ -27,8 +28,9 @@ elif [[ "$version_choice" == "3" ]]; then
   INSTALL_CHANNEL="dev"
   DEV_MODE=true
 else
+  REPO_TAG="latest"
+  DOWNLOAD_URL="https://github.com/thachpn165/wp-docker/releases/download/$REPO_TAG/$ZIP_NAME"
   echo "🛠 Installing Official version"
-  DOWNLOAD_URL="$REPO_URL/releases/latest/download/$ZIP_NAME"
   INSTALL_CHANNEL="official"
   DEV_MODE=false
 fi
