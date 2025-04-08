@@ -62,21 +62,21 @@ website_setup_wordpress_logic() {
     ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
     ADMIN_EMAIL="admin@$domain.local"
   else
-    read -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " ADMIN_USER
+    get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " ADMIN_USER
     while [[ -z "$ADMIN_USER" ]]; do
       print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
-      read -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " ADMIN_USER
+      get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " ADMIN_USER
     done
 
-    read -s -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " ADMIN_PASSWORD; echo
-    read -s -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " CONFIRM_PASSWORD; echo
+    get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " ADMIN_PASSWORD
+    get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " CONFIRM_PASSWORD
     while [[ "$ADMIN_PASSWORD" != "$CONFIRM_PASSWORD" || -z "$ADMIN_PASSWORD" ]]; do
       print_msg warning "$WARNING_ADMIN_PASSWORD_MISMATCH"
-      read -s -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " ADMIN_PASSWORD; echo
-      read -s -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " CONFIRM_PASSWORD; echo
+      get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " ADMIN_PASSWORD
+      get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " CONFIRM_PASSWORD
     done
 
-    read -p "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL " ADMIN_EMAIL
+    get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL" ADMIN_EMAIL
     ADMIN_EMAIL="${ADMIN_EMAIL:-admin@$domain.local}"
   fi
 
@@ -104,15 +104,15 @@ website_setup_wordpress_logic() {
 
   stop_loading
 
-  # 📦 Download WordPress if not already present
+  # 📆 Download WordPress if not already present
   if [[ ! -f "$SITE_DIR/wordpress/index.php" ]]; then
     print_msg step "$INFO_DOWNLOADING_WP"
-    run_cmd docker_exec_php "chown -R nobody:nogroup /var/www/" true
+    docker_exec_php "chown -R nobody:nogroup /var/www/"
     wp_download_cmd='curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
       tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && \
       rm /var/www/html/wordpress.tar.gz'
 
-    run_cmd docker_exec_php "$wp_download_cmd" true
+    docker_exec_php "$wp_download_cmd"
     print_msg success "$SUCCESS_WP_SOURCE_DOWNLOADED"
   else
     print_msg success "$SUCCESS_WP_SOURCE_EXISTS"
@@ -120,19 +120,19 @@ website_setup_wordpress_logic() {
 
   # ⚙️ Configure wp-config
   print_msg step "$STEP_WEBSITE_SETUP_WORDPRESS: $domain"
-run_cmd wp_set_wpconfig "$PHP_CONTAINER" "$DB_NAME" "$DB_USER" "$DB_PASS" "$DB_CONTAINER" true
-run_cmd wp_install "$PHP_CONTAINER" "$SITE_URL" "$domain" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL" true
+  wp_set_wpconfig "$PHP_CONTAINER" "$DB_NAME" "$DB_USER" "$DB_PASS" "$DB_CONTAINER"
+  wp_install "$PHP_CONTAINER" "$SITE_URL" "$domain" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
 
   print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
   if [[ "$php_ready_ok" == true ]]; then
-    run_cmd docker_exec_php "chown -R nobody:nogroup /var/www/"
+    docker_exec_php "chown -R nobody:nogroup /var/www/"
   else
     print_msg warning "$WARNING_SKIP_CHOWN"
   fi
 
   # 🔁 Configure permalinks
   print_msg step "$STEP_WEBSITE_SETUP_ESSENTIALS: $domain"
-  run_cmd wp_set_permalinks "$PHP_CONTAINER" "$SITE_URL"
+  wp_set_permalinks "$PHP_CONTAINER" "$SITE_URL"
   website_print_wp_info "$SITE_URL" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
   print_msg completed "$SUCCESS_WP_INSTALL_DONE"
 }
@@ -142,10 +142,10 @@ website_print_wp_info() {
   local admin_user="$2"
   local admin_password="$3"
   local admin_email="$4"
-  
-  print_msg info "$INFO_SITE_URL: $site_url"
-  print_msg info "$INFO_ADMIN_URL: $site_url/wp-admin"
-  print_msg info "$INFO_ADMIN_USER: $admin_user"
-  print_msg info "$INFO_ADMIN_PASSWORD: $admin_password"
-  print_msg info "$INFO_ADMIN_EMAIL: $admin_email"
+
+  print_msg info "$INFO_SITE_URL: ${GREEN}$site_url${NC}"
+  print_msg info "$INFO_ADMIN_URL: ${GREEN}$site_url/wp-admin${NC}"
+  print_msg info "$INFO_ADMIN_USER: ${GREEN}$admin_user${NC}"
+  print_msg info "$INFO_ADMIN_PASSWORD: ${GREEN}$admin_password${NC}"
+  print_msg info "$INFO_ADMIN_EMAIL: ${GREEN}$admin_email${NC}"
 }
