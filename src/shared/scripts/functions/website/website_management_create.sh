@@ -67,7 +67,7 @@ website_management_create_logic() {
     # Copy .template_version file if exists
     TEMPLATE_VERSION_FILE="$TEMPLATES_DIR/.template_version"
     if is_file_exist "$TEMPLATE_VERSION_FILE"; then
-        run_cmd "cp \"$TEMPLATE_VERSION_FILE\" \"$SITE_DIR/.template_version\""
+       run_cmd cp "$TEMPLATE_VERSION_FILE" "$SITE_DIR/.template_version"
         
         print_msg copy "$SUCCESS_COPY $TEMPLATE_VERSION_FILE → $SITE_DIR/.template_version"
     else
@@ -76,22 +76,22 @@ website_management_create_logic() {
 
     # 🔧 Configure NGINX
     print_msg step "$STEP_WEBSITE_SETUP_NGINX: $domain"
-    run_cmd "nginx_add_mount_docker \"$domain\"" true
+    run_cmd nginx_add_mount_docker "$domain" true
     export domain php_version
     run_cmd "website_setup_nginx" true
     # ⚙️ Create configurations
     print_msg step "$STEP_WEBSITE_SETUP_COPY_CONFIG: $domain"
-    run_cmd "copy_file \"$TEMPLATES_DIR/php.ini.template\" \"$SITE_DIR/php/php.ini\"" true
+    run_cmd copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini" true
     
     print_msg step "$STEP_WEBSITE_SETUP_APPLY_CONFIG: $domain"
-    run_cmd "apply_mariadb_config \"$SITE_DIR/mariadb/conf.d/custom.cnf\"" true
-    run_cmd "create_optimized_php_fpm_config \"$SITE_DIR/php/php-fpm.conf\"" true
+    run_cmd apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf" true
+    run_cmd create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf" true
     
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_ENV: $domain"
-    run_cmd "website_create_env \"$SITE_DIR\" \"$domain\" \"$php_version\"" true
+    run_cmd website_create_env "$SITE_DIR" "$domain" "$php_version" true
 
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_SSL: $domain"
-    run_cmd "generate_ssl_cert \"$domain\" \"$SSL_DIR\"" true
+    run_cmd generate_ssl_cert "$domain" "$SSL_DIR" true
     
     # 🛠️ Create docker-compose.yml
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_DOCKER_COMPOSE: $domain"

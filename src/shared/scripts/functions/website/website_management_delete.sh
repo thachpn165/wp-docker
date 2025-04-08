@@ -57,7 +57,7 @@ website_management_delete_logic() {
 
   # 🛑 Stop containers
   print_msg step "$MSG_WEBSITE_STOPPING_CONTAINERS: $domain"
-  run_cmd "docker compose -f \"$SITE_DIR/docker-compose.yml\" down"
+  run_cmd docker compose -f "$SITE_DIR/docker-compose.yml" down
   debug_log "Stopped containers for website '$domain'."
 
   # 🧹 Remove override entry before deleting directory using nginx_remove_mount_docker
@@ -84,7 +84,7 @@ website_management_delete_logic() {
   # 🗃️ Delete DB volume
   #remove_volume "$MARIADB_VOLUME"
   print_msg step "$MSG_WEBSITE_DELETING_VOLUME: $MARIADB_VOLUME"
-  run_cmd "docker volume rm \"$MARIADB_VOLUME\""
+  run_cmd docker volume rm "$MARIADB_VOLUME"
   print_msg success "$SUCCESS_CONTAINER_VOLUME_REMOVE: $MARIADB_VOLUME"
 
   # 🧾 Delete NGINX configuration

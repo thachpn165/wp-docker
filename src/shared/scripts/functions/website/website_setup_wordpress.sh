@@ -106,11 +106,13 @@ website_setup_wordpress_logic() {
 
   # 📦 Download WordPress if not already present
   if [[ ! -f "$SITE_DIR/wordpress/index.php" ]]; then
-    print_msg progress "$INFO_DOWNLOADING_WP"
+    print_msg step "$INFO_DOWNLOADING_WP"
     run_cmd docker_exec_php "chown -R nobody:nogroup /var/www/" true
-    run_cmd "docker_exec_php \"curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
-      tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && rm /var/www/html/wordpress.tar.gz\"" true
-    stop_loading
+    wp_download_cmd='curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
+      tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && \
+      rm /var/www/html/wordpress.tar.gz'
+
+    run_cmd docker_exec_php "$wp_download_cmd" true
     print_msg success "$SUCCESS_WP_SOURCE_DOWNLOADED"
   else
     print_msg success "$SUCCESS_WP_SOURCE_EXISTS"
@@ -118,8 +120,8 @@ website_setup_wordpress_logic() {
 
   # ⚙️ Configure wp-config
   print_msg step "$STEP_WEBSITE_SETUP_WORDPRESS: $domain"
-  run_cmd "wp_set_wpconfig \"$PHP_CONTAINER\" \"$DB_NAME\" \"$DB_USER\" \"$DB_PASS\" \"$DB_CONTAINER\"" true
-  run_cmd "wp_install \"$PHP_CONTAINER\" \"$SITE_URL\" \"$domain\" \"$ADMIN_USER\" \"$ADMIN_PASSWORD\" \"$ADMIN_EMAIL\"" true
+run_cmd wp_set_wpconfig "$PHP_CONTAINER" "$DB_NAME" "$DB_USER" "$DB_PASS" "$DB_CONTAINER" true
+run_cmd wp_install "$PHP_CONTAINER" "$SITE_URL" "$domain" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL" true
 
   print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
   if [[ "$php_ready_ok" == true ]]; then
@@ -130,7 +132,7 @@ website_setup_wordpress_logic() {
 
   # 🔁 Configure permalinks
   print_msg step "$STEP_WEBSITE_SETUP_ESSENTIALS: $domain"
-  run_cmd "wp_set_permalinks \"$PHP_CONTAINER\" \"$SITE_URL\""
+  run_cmd wp_set_permalinks "$PHP_CONTAINER" "$SITE_URL"
   website_print_wp_info "$SITE_URL" "$ADMIN_USER" "$ADMIN_PASSWORD" "$ADMIN_EMAIL"
   print_msg completed "$SUCCESS_WP_INSTALL_DONE"
 }

@@ -30,7 +30,7 @@ EOF
     if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
         if ! echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null; then
             print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
-            run_cmd "nginx_remove_mount_docker \"$OVERRIDE_FILE\" \"$MOUNT_ENTRY\" \"$MOUNT_LOGS\""
+            run_cmd nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
@@ -42,7 +42,7 @@ EOF
     if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
         if ! echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null; then
             print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
-            run_cmd "nginx_remove_mount_docker \"$OVERRIDE_FILE\" \"$MOUNT_ENTRY\" \"$MOUNT_LOGS\""
+            run_cmd nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
@@ -114,7 +114,7 @@ nginx_restart() {
 nginx_reload() {
   #echo -e "${YELLOW}🔄 Reloading NGINX Proxy...${NC}"
   start_loading "$INFO_DOCKER_NGINX_RELOADING"
-  run_cmd "docker exec \"$NGINX_PROXY_CONTAINER\" nginx -s reload"
+  run_cmd docker exec "$NGINX_PROXY_CONTAINER" nginx -s reload
     if [[ $? -ne 0 ]]; then
         print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
         run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"

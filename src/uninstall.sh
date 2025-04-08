@@ -60,8 +60,7 @@ backup_all_sites() {
     IFS=' ' read -r DB_NAME DB_USER DB_PASS <<< "$db_info"
 
     local db_backup_file="$backup_target_dir/${site}_db.sql"
-    run_cmd "docker exec ${site}-mariadb sh -c 'exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME'" true > "$db_backup_file" || {
-      print_msg warning "$(printf "$ERROR_DB_BACKUP_FAILED" "$site")"
+    run_cmd docker exec "${site}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" true > "$db_backup_file" || {      print_msg warning "$(printf "$ERROR_DB_BACKUP_FAILED" "$site")"
       continue
     }
 

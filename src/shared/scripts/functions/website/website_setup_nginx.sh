@@ -15,7 +15,7 @@ website_setup_nginx() {
   # === Remove existing config file if exists ===
   if is_file_exist "$NGINX_CONF"; then
       print_and_debug warning "$WARNING_REMOVE_OLD_NGINX_CONF: $NGINX_CONF"
-      run_cmd "rm -f \"$NGINX_CONF\""
+      run_cmd rm -f "$NGINX_CONF"
   fi
 
   # === Check and copy template ===
@@ -25,9 +25,9 @@ website_setup_nginx() {
           exit 1
       fi
 
-      run_cmd "cp \"$NGINX_TEMPLATE\" \"$NGINX_CONF\"" true
-      run_cmd "sedi \"s|\\\${DOMAIN}|$domain|g\" \"$NGINX_CONF\"" true
-      run_cmd "sedi \"s|\\\${PHP_CONTAINER}|$domain-php|g\" \"$NGINX_CONF\"" true
+    run_cmd cp "$NGINX_TEMPLATE" "$NGINX_CONF" true
+    run_cmd sedi "s|\${DOMAIN}|$domain|g" "$NGINX_CONF" true
+    run_cmd sedi "s|\${PHP_CONTAINER}|$domain-php|g" "$NGINX_CONF" true
 
       print_and_debug success "$SUCCESS_NGINX_CONF_CREATED: $NGINX_CONF"
   else
