@@ -23,7 +23,7 @@ version_choice=${version_choice:-1}
 if [[ "$version_choice" == "2" ]]; then
   ZIP_NAME="wp-docker-dev.zip"
   echo "🛠 Installing Nightly (Testing Only) version"
-  DOWNLOAD_URL="$REPO_URL/releases/download/dev/$ZIP_NAME"
+  DOWNLOAD_URL="$REPO_URL/releases/download/nightly/$ZIP_NAME"
   INSTALL_CHANNEL="nightly"
 else
   echo "🛠 Installing Official version"
