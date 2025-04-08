@@ -85,6 +85,7 @@ SEARCH_PATH="$SCRIPT_PATH"
 while [[ "$SEARCH_PATH" != "/" ]]; do
   if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
     source "$SEARCH_PATH/shared/config/load_config.sh"
+    source "$FUNCTIONS_DIR/system/system_utils.sh"
     load_config_file
     break
   fi
