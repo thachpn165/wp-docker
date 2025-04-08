@@ -80,20 +80,19 @@ fi
 # ========================
 # ✅ Load config & run setup-system.sh
 # ========================
-if [[ -f "$INSTALL_DIR/shared/config/load_config.sh" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  SEARCH_PATH="$SCRIPT_PATH"
-  while [[ "$SEARCH_PATH" != "/" ]]; do
-    if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
-      source "$SEARCH_PATH/shared/config/load_config.sh"
-      load_config_file
-      break
-    fi
-    SEARCH_PATH="$(dirname "$SEARCH_PATH")"
-  done
-fi
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
+    break
+  fi
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+done
 
 if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
+  chmod +x "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"
   bash "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"
 fi
 
@@ -106,36 +105,6 @@ chown -R "$USER" "$INSTALL_DIR"
 # ========================
 # 🔗 Setup global alias
 # ========================
-check_and_add_alias() {
-  local shell_config cli_dir_abs alias_line
-
-  cli_dir_abs=$(realpath "$INSTALL_DIR/shared/bin")
-  alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
-
-  if [[ "$SHELL" == *"zsh"* ]]; then
-    shell_config="$HOME/.zshrc"
-  else
-    shell_config="$HOME/.bashrc"
-  fi
-
-  if grep -q "alias wpdocker=" "$shell_config"; then
-    echo "🧹 Removing existing alias from $shell_config..."
-    sed -i.bak '/alias wpdocker=/d' "$shell_config"
-  fi
-
-  echo "$alias_line" >> "$shell_config"
-  echo "✅ Added alias for wpdocker to $shell_config"
-
-  if [[ "$SHELL" == *"zsh"* ]]; then
-    echo "🔄 Reloading .zshrc..."
-    source "$HOME/.zshrc"
-  elif [[ "$SHELL" == *"bash"* ]]; then
-    echo "🔄 Reloading .bashrc..."
-    source "$HOME/.bashrc"
-  else
-    echo "⚠️ Unsupported shell. Please reload shell config manually."
-  fi
-}
 check_and_add_alias
 
 # ========================
