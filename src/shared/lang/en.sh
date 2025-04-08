@@ -676,7 +676,6 @@ readonly PROMPT_ENTER_ACTION_NUMBER="Enter the number corresponding to the actio
 readonly PROMPT_ENTER_DOMAIN_TO_MIGRATE="👉 Enter domain name to migrate:"
 
 readonly TIP_CORE_UPDATE_COMMAND="Run command: wpdocker core update to update the system."
-readonly INFO_CORE_VERSION_LATEST="You are using the latest version: %s"
 readonly INFO_CORE_DEV_CACHE_MISSING="Dev version cache not found. Downloading..."
 readonly TIP_MIGRATION_FOLDER_PATH="Create a folder with domain name at:"
 readonly TIP_MIGRATION_FOLDER_CONTENT="In that folder, place the following files:"
@@ -761,3 +760,19 @@ readonly INFO_UNINSTALL_NOTICE="Including all sites, containers, volumes, SSL, s
 readonly INFO_SKIP_BACKUP="Skipping backup step."
 readonly SUCCESS_SYSTEM_UNINSTALLED="WP Docker has been completely removed. Backups (if any) can be found at: %s"
 readonly INFO_RESTORE_INSTRUCTION="You can restore sites from the backup folder: %s"
+readonly INFO_UPDATING_CORE="Updating WP Docker system"
+readonly CONFIRM_UPDATE_CORE="Are you sure you want to update WP Docker?"
+readonly INFO_DOWNLOADING_CORE_UPDATE="Downloading the latest update from GitHub..."
+readonly STEP_EXTRACT_AND_UPDATE="Extracting and replacing source code..."
+readonly SUCCESS_CORE_UPDATED="🎉 WP Docker has been updated successfully!"
+readonly INFO_BACKUP_OLD_SRC="Previous source has been backed up to"
+
+readonly ERROR_DOWNLOAD_FAILED="Download failed from"
+readonly ERROR_EXTRACT_FAILED="Failed to extract the update file"
+
+readonly SKIP_CORE_ALREADY_LATEST="You already have the latest version. No update needed."
+readonly WARNING_FORCE_UPDATE_SAME_VERSION="Forcing update even though the current version matches the latest one."
+readonly CONFIRM_UPDATE_CORE="Do you want to update WP Docker to the latest version?"
+readonly INFO_CORE_VERSION_CURRENT="Current version"
+readonly INFO_CORE_VERSION_LATEST="Latest version"
+readonly WARNING_DEV_MODE_NO_UPDATE="In development mode, no updates will be applied."

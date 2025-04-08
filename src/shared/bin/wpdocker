@@ -130,6 +130,15 @@ handle_wordpress() {
     esac
 }
 
+handle_core() {
+    # wpdocker core
+    case "$1" in
+        version) bash "$CLI_DIR/core_display_version.sh" "${@:2}" ;;
+        update) bash "$CLI_DIR/core_update.sh" "${@:2}" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for core: $1" ;;
+    esac
+}
+
 
 # Main subcommands handler
 if [[ -z "$1" ]]; then
@@ -145,6 +154,7 @@ else
         database) handle_database "$2" "${@:3}" ;;
         system) handle_system "$2" "${@:3}" ;;
         wordpress) handle_wordpress "$2" "${@:3}" ;;
+        core) handle_core "$2" "${@:3}" ;;
         *)
             echo "${CROSSMARK} Unknown subcommand: $1"
             #bash "$INSTALL_DIR/main.sh"

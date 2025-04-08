@@ -170,8 +170,12 @@ stop_loading() {
 fetch_env_variable() {
     local env_file="$1"
     local var_name="$2"
+
     if [ -f "$env_file" ]; then
-        grep -E "^${var_name}=" "$env_file" | cut -d'=' -f2 | tr -d '\r'
+        grep -E "^${var_name}=" "$env_file" \
+          | cut -d'=' -f2- \
+          | tr -d '\r' \
+          | sed 's/^"\(.*\)"$/\1/'
     else
         echo -e "${RED}${CROSSMARK} Error: .env file does not exist: $env_file${NC}" >&2
         debug_log "[fetch_env_variable] Error: .env file does not exist: $env_file"
@@ -253,4 +257,19 @@ print_msg() {
   esac
 
   echo -e "${color}${emoji} ${message}${NC}"
+}
+
+get_user_confirmation() {
+  local message="$1"
+  local confirm
+
+  while true; do
+    get_input_or_test_value "$message (y/n): " "y"
+    confirm="$REPLY"
+    case "$confirm" in
+      [Yy]*) return 0 ;;
+      [Nn]*) return 1 ;;
+      *) print_msg warning "$WARNING_INVALID_YN";;
+    esac
+  done
 }

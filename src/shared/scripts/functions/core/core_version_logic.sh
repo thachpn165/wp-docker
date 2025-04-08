@@ -1,44 +1,32 @@
+# =====================================
+# 🧾 core_display_version_logic – Hiển thị phiên bản hiện tại và mới nhất
+# =====================================
 core_display_version_logic() {
-    local channel="${1:-official}"
-    local current_version_file="$BASE_DIR/version.txt"
-    local latest_version=""
+  local channel version_local version_remote
 
-    debug_log "[core_display_version_logic] Channel: $channel"
-    debug_log "[core_display_version_logic] Current version file: $current_version_file"
+  channel="$(core_get_channel)"
+  version_local="$(core_get_current_version)"
+  version_remote="$(core_get_latest_version)"
 
-    if [[ ! -f "$current_version_file" ]]; then
-        print_msg error "$ERROR_VERSION_CHANNEL_FILE_NOT_FOUND"
-        return 1
-    fi
+  debug_log "[core_display_version_logic] Channel       : $channel"
+  debug_log "[core_display_version_logic] Current ver   : $version_local"
+  debug_log "[core_display_version_logic] Latest  ver   : $version_remote"
 
-    case "$channel" in
-        official)
-            latest_version=$(core_version_main_cache)
-            ;;
-        nightly)
-            latest_version=$(core_version_dev_cache)
-            ;;
-        *)
-            print_msg error "$ERROR_VERSION_CHANNEL_INVALID_CHANNEL - $channel"
-            return 1
-            ;;
-    esac
+  # Kiểm tra lỗi fetch
+  if [[ -z "$version_remote" ]]; then
+    print_msg error "$(printf "$ERROR_VERSION_CHANNEL_FAILED_FETCH_LATEST" "$channel")"
+    return 1
+  fi
 
-    CURRENT_VERSION=$(cat "$current_version_file")
-    debug_log "[core_display_version_logic] Current version: $CURRENT_VERSION"
-    debug_log "[core_display_version_logic] Latest version: $latest_version"
+  print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
+  print_msg info "$INFO_CORE_VERSION_LATEST: $version_remote"
 
-    if [[ -z "$latest_version" ]]; then
-        print_msg error "$(printf "$ERROR_VERSION_CHANNEL_FAILED_FETCH_LATEST" "$channel")"
-        return 1
-    fi
+  core_compare_versions "$version_local" "$version_remote"
+  local result=$?
 
-    core_compare_versions "$CURRENT_VERSION" "$latest_version"
-    result=$?
-
-    if [[ "$result" -eq 2 ]]; then
-        print_msg warning "$(printf "$WARNING_CORE_VERSION_NEW_AVAILABLE" "$CURRENT_VERSION" "$latest_version")"
-    else
-        print_msg info "$(printf "$INFO_CORE_VERSION_LATEST" "$CURRENT_VERSION")"
-    fi
+  if [[ "$result" -eq 2 ]]; then
+    print_msg warning "$(printf "$WARNING_CORE_VERSION_NEW_AVAILABLE" "$version_local" "$version_remote")"
+  else
+    print_msg success "$SUCCESS_CORE_IS_LATEST"
+  fi
 }
