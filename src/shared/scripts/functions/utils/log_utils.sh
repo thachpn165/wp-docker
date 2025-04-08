@@ -52,25 +52,37 @@ print_and_debug() {
 
 run_cmd() {
     local cmd="$1"
-    local exit_on_fail="${2:-false}"  # Optional: set to "true" to exit on failure
+    local exit_on_fail="${2:-false}"
 
-    # Lấy thông tin gọi hàm
     local source_file="${BASH_SOURCE[1]}"
     local line_number="${BASH_LINENO[0]}"
     local func_name="${FUNCNAME[1]}"
 
-    # Kiểm tra không được gọi lại chính script đang chạy
     if [[ "$cmd" == *"$0"* ]]; then
         print_and_debug error "❌ Detected self-invoking command → $cmd"
         return 1
     fi
 
-    # Ghi log nếu bật DEBUG_MODE
+    # === Detect if it's a bash function ===
+    local is_function=false
+    if declare -f "${cmd%% *}" >/dev/null 2>&1; then
+        is_function=true
+    fi
+
     if [[ "$DEBUG_MODE" == "true" ]]; then
         log_with_time "🐛 ${BLUE}[CMD]${NC} $source_file:$line_number [$func_name] → $cmd"
-        bash -c "$cmd" 2>&1 | tee -a "$DEBUG_LOG"
+    fi
+
+    if [[ "$is_function" == "true" ]]; then
+        # 👉 Call the function directly with args
+        eval "$cmd"
     else
-        eval "$cmd" &>/dev/null
+        # 👉 Run as bash command
+        if [[ "$DEBUG_MODE" == "true" ]]; then
+            bash -c "$cmd" 2>&1 | tee -a "$DEBUG_LOG"
+        else
+            eval "$cmd" &>/dev/null
+        fi
     fi
 
     local exit_code=$?
