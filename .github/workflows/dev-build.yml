@@ -34,16 +34,15 @@ jobs:
           timestamp=$(date +%Y%m%d%H%M%S)
           DEV_VERSION="${main_version}-dev-${timestamp}"
           echo "$DEV_VERSION" > version.txt
-          echo "$DEV_VERSION" > latest_version_dev.txt
           echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_ENV
 
-          mv version.txt latest_version_dev.txt src/
-          git add src/version.txt src/latest_version_dev.txt
+          mv version.txt src/
+          git add src/version.txt -f
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git commit -m "🔄 Update latest_version_dev.txt to $DEV_VERSION"
+          git commit -m "🔄 Update version.txt to $DEV_VERSION"
           git push origin HEAD:dev
 
           # ⚠️ Force update the 'nightly' tag to point to current dev commit

@@ -1,14 +1,35 @@
 #!/bin/bash
-# 🔧 Auto-detect BASE_DIR and load global configuration
+# =====================================
+# ⚙️ CLI Wrapper – core_update.sh
+# =====================================
+
+# ✅ Load configuration from any location
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-while [[ "$SCRIPT_PATH" != "/" ]]; do
-  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
-    source "$SCRIPT_PATH/shared/config/load_config.sh"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
     break
   fi
-  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
 source "$FUNCTIONS_DIR/core_loader.sh"
 
-# === Execute logic ===
-core_update_system_logic
+# === Parse Arguments ===
+force_update=false
+
+for arg in "$@"; do
+  case "$arg" in
+    --force)
+      force_update=true
+      ;;
+  esac
+done
+
+# === Run Update Logic ===
+if [[ "$force_update" == true ]]; then
+  core_update_system --force
+else
+  core_update_system
+fi
