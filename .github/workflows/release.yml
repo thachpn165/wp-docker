@@ -26,12 +26,11 @@ jobs:
       - name: ✍️ Insert version to version.txt & latest_version_main.txt
         run: |
           echo "${{ github.ref_name }}" > src/version.txt
-          echo "${{ github.ref_name }}" > src/latest_version_main.txt
 
       - name: 💾 Commit and Push version files
         run: |
-          git add src/version.txt src/latest_version_main.txt -f
-          git commit -m "🔖 Update version.txt and latest_version_main.txt to ${{ github.ref_name }}"
+          git add src/version.txt -f
+          git commit -m "🔖 Update version.txt to ${{ github.ref_name }}"
           git push origin HEAD:main
 
       - name: 🧼 Cleanup & Build
