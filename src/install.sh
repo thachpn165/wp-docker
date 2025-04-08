@@ -6,18 +6,13 @@ ZIP_NAME="wp-docker.zip"
 DEV_MODE=false
 CORE_ENV="$INSTALL_DIR/.env"
 
-source "$INSTALL_DIR/shared/scripts/functions/core/env_utils.sh"
 # ========================
 # ⚙️ Command Line Parameter Processing
 # ========================
-# Ask the user to choose version: Official or Nightly (Testing Only)
 echo "❓ What version would you like to install?"
 echo "1) Official"
 echo "2) Nightly (Testing Only)"
-
 read -rp "Please select an option (1 or 2, default is 1): " version_choice
-
-# Set default option to Official (1) if no input is provided
 version_choice=${version_choice:-1}
 
 if [[ "$version_choice" == "2" ]]; then
@@ -35,7 +30,7 @@ fi
 # 🧹 Check if directory exists
 # ========================
 if [[ -d "$INSTALL_DIR" ]]; then
-  echo "${WARNING} Directory $INSTALL_DIR already exists."
+  echo "⚠️ Directory $INSTALL_DIR already exists."
   read -rp "❓ Do you want to delete and overwrite it? [y/N]: " confirm
   if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
     echo "Installation cancelled."
@@ -55,71 +50,75 @@ unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
 rm "$ZIP_NAME" || { echo "Command failed at line 40"; exit 1; }
 
 # ========================
-# Set permissions for current user
+# ✅ Load config & setup system
+# ========================
+if [[ -f "$INSTALL_DIR/shared/config/load_config.sh" ]]; then
+  source "$INSTALL_DIR/shared/config/load_config.sh"
+  load_config_file
+fi
+
+if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
+  bash "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"
+fi
+
+# ========================
+# Set permissions
 # ========================
 echo "🔐 Setting permissions for user: $USER"
 chown -R "$USER" "$INSTALL_DIR"
 
 # ========================
-# 🔗 Create global alias if not in dev mode
+# 🔗 Create global alias
 # ========================
-# Check if alias is already set in ~/.bashrc or ~/.zshrc
 check_and_add_alias() {
   local shell_config
   local alias_line
-  # Get the absolute path of the bin directory
   local cli_dir_abs=$(realpath "$INSTALL_DIR/shared/bin")
   alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
 
-  # Check if using Zsh or Bash
   if [[ "$SHELL" == *"zsh"* ]]; then
     shell_config="$HOME/.zshrc"
   else
     shell_config="$HOME/.bashrc"
   fi
 
-  # Check if the alias is already present
   if ! grep -q "$alias_line" "$shell_config"; then
     echo "Adding alias for wpdocker to $shell_config..."
     echo "$alias_line" >> "$shell_config"
   else
-    echo "${WARNING} Alias 'wpdocker' already exists in $shell_config"
-  fi
-  
-  # Reload the shell configuration file to apply changes
-  if [[ "$SHELL" == *"zsh"* ]]; then
-      # If the current shell is zsh, source .zshrc
-      echo "Sourcing .zshrc to reload Zsh configuration..."
-      source "$HOME/.zshrc"
-  elif [[ "$SHELL" == *"bash"* ]]; then
-      # If the current shell is bash, source .bashrc
-      echo "Sourcing .bashrc to reload Bash configuration..."
-      source "$HOME/.bashrc"
-  else
-      echo "Unsupported shell: $SHELL. Please reload your shell configuration manually."
+    echo "⚠️ Alias 'wpdocker' already exists in $shell_config"
   fi
 
+  if [[ "$SHELL" == *"zsh"* ]]; then
+    source "$HOME/.zshrc"
+  elif [[ "$SHELL" == *"bash"* ]]; then
+    source "$HOME/.bashrc"
+  else
+    echo "Unsupported shell: $SHELL. Please reload your shell configuration manually."
+  fi
 }
 check_and_add_alias
 
-echo "Installation successful at: $INSTALL_DIR"
+# Save install channel to .env (manual fallback if env_set_value not ready)
+if grep -q "^CORE_CHANNEL=" "$CORE_ENV" 2>/dev/null; then
+  sed -i.bak "s/^CORE_CHANNEL=.*/CORE_CHANNEL=$INSTALL_CHANNEL/" "$CORE_ENV"
+else
+  echo "CORE_CHANNEL=$INSTALL_CHANNEL" >> "$CORE_ENV"
+fi
 
-# Save install channel to .env
-env_set_value "CORE_CHANNEL" "$INSTALL_CHANNEL"
+echo "✅ Installation successful at: $INSTALL_DIR"
 
 # ========================
-# 📢 Special warning for macOS (Docker Desktop)
+# 📢 Special warning for macOS
 # ========================
 if [[ "$OSTYPE" == "darwin"* ]]; then
   echo ""
-  echo "${WARNING}  ${YELLOW}IMPORTANT NOTE FOR macOS USERS${NC}"
+  echo "⚠️  IMPORTANT NOTE FOR macOS USERS"
   echo "💡 Docker on macOS requires manual sharing of the /opt directory with Docker Desktop."
   echo "🔧 Please follow these steps:"
-  echo ""
   echo "1. Open Docker Desktop → Settings → Resources → File Sharing"
-  echo "2. Click the '+' button and add the path: /opt"
-  echo "3. Click Apply & Restart to restart Docker"
-  echo ""
-  echo "👉 See official guide: https://docs.docker.com/desktop/settings/mac/#file-sharing"
+  echo "2. Add the path: /opt"
+  echo "3. Click Apply & Restart"
+  echo "👉 Guide: https://docs.docker.com/desktop/settings/mac/#file-sharing"
   echo ""
 fi
