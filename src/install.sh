@@ -84,29 +84,37 @@ chown -R "$USER" "$INSTALL_DIR"
 # ========================
 check_and_add_alias() {
   local shell_config
-  local alias_line
-  local cli_dir_abs=$(realpath "$INSTALL_DIR/shared/bin")
+  local cli_dir_abs alias_line
+
+  cli_dir_abs=$(realpath "$INSTALL_DIR/shared/bin")
   alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
 
+  # Detect shell type
   if [[ "$SHELL" == *"zsh"* ]]; then
     shell_config="$HOME/.zshrc"
   else
     shell_config="$HOME/.bashrc"
   fi
 
-  if ! grep -q "$alias_line" "$shell_config"; then
-    echo "Adding alias for wpdocker to $shell_config..."
-    echo "$alias_line" >> "$shell_config"
-  else
-    echo "⚠️ Alias 'wpdocker' already exists in $shell_config"
+  # Remove old alias if it exists
+  if grep -q "alias wpdocker=" "$shell_config"; then
+    echo "🧹 Found existing 'wpdocker' alias in $shell_config. Removing old entry..."
+    sedi "/alias wpdocker=/d" "$shell_config"
   fi
 
+  # Create new alias
+  echo "$alias_line" >> "$shell_config"
+  echo "✅ Added alias for wpdocker to $shell_config"
+
+  # Reload shell config
   if [[ "$SHELL" == *"zsh"* ]]; then
+    echo "🔄 Sourcing .zshrc..."
     source "$HOME/.zshrc"
   elif [[ "$SHELL" == *"bash"* ]]; then
+    echo "🔄 Sourcing .bashrc..."
     source "$HOME/.bashrc"
   else
-    echo "Unsupported shell: $SHELL. Please reload your shell configuration manually."
+    echo "⚠️ Unsupported shell: $SHELL. Please reload your shell configuration manually."
   fi
 }
 check_and_add_alias
