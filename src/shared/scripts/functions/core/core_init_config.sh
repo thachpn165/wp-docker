@@ -24,7 +24,7 @@ core_init_config() {
       esac
     done
   else
-    debug_log "[core_init_config] core.channel đã tồn tại: $(core_get_channel)"
+    debug_log "[core_init_config] core.channel đã tồn tại: $(core_channel_get)"
   fi
 
   # 2.2 Khởi tạo core.installed_version nếu cần

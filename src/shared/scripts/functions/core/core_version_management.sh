@@ -3,12 +3,12 @@
 # =====================================
 
 # === Get current version from config JSON
-core_get_current_version() {
+core_version_get_current() {
   local channel
-  channel="$(core_get_channel)"
+  channel="$(core_channel_get)"
 
   if [[ "$channel" == "dev" ]]; then
-    debug_log "[core_get_current_version] Channel is dev → version=dev"
+    debug_log "[core_version_get_current] Channel is dev → version=dev"
     core_set_installed_version "dev"
     echo "dev"
     return
@@ -18,12 +18,12 @@ core_get_current_version() {
   version="$(core_get_installed_version)"
 
   if [[ -n "$version" && "$version" != "null" ]]; then
-    debug_log "[core_get_current_version] Current version (from config): $version"
+    debug_log "[core_version_get_current] Current version (from config): $version"
     echo "$version"
   else
     print_msg warning "$WARNING_VERSION_NOT_FOUND"
     local latest_version
-    latest_version="$(core_get_latest_version 2>/dev/null)"  # tránh lỗi màu hóa
+    latest_version="$(core_version_get_latest 2>/dev/null)"  # tránh lỗi màu hóa
     if [[ -n "$latest_version" ]]; then
       core_set_installed_version "$latest_version"
       print_msg info "$(printf "$INFO_VERSION_FILE_RESTORED" "$JSON_CONFIG_FILE")"
@@ -36,17 +36,17 @@ core_get_current_version() {
 }
 
 # === Get latest version from remote GitHub (main/dev based on channel)
-core_get_latest_version() {
+core_version_get_latest() {
   local channel version_url latest_version
 
-  channel="$(core_get_channel)"
+  channel="$(core_channel_get)"
 
   if [[ "$channel" == "official" ]]; then
     version_url="https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/src/version.txt"
   elif [[ "$channel" == "nightly" ]]; then
     version_url="https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/dev/src/version.txt"
   elif [[ "$channel" == "dev" ]]; then
-    debug_log "[core_get_latest_version] Channel is dev → skip fetching"
+    debug_log "[core_version_get_latest] Channel is dev → skip fetching"
     echo "dev"
     return 0
   else
@@ -56,15 +56,15 @@ core_get_latest_version() {
 
   latest_version=$(curl -fsSL "$version_url" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9]+)*(\+[0-9]+)?' | head -n1)
 
-  debug_log "[core_get_latest_version] Channel       : $channel"
-  debug_log "[core_get_latest_version] Version URL   : $version_url"
-  debug_log "[core_get_latest_version] Latest Ver    : $latest_version"
+  debug_log "[core_version_get_latest] Channel       : $channel"
+  debug_log "[core_version_get_latest] Version URL   : $version_url"
+  debug_log "[core_version_get_latest] Latest Ver    : $latest_version"
 
   echo "$latest_version"
 }
 
 # === Compare versions: returns 0 if equal, 1 if v1 > v2, 2 if v1 < v2
-core_compare_versions() {
+core_version_compare() {
   local v1=$(echo "$1" | sed 's/^v//')
   local v2=$(echo "$2" | sed 's/^v//')
 
@@ -80,7 +80,7 @@ core_compare_versions() {
 }
 
 # === Get core channel from config JSON
-core_get_channel() {
+core_channel_get() {
   json_get_value '.core.channel'
 }
 
@@ -88,7 +88,7 @@ core_get_channel() {
 core_get_download_url() {
   local channel repo_tag zip_name zip_url
 
-  channel="$(core_get_channel)"
+  channel="$(core_channel_get)"
   zip_name="wp-docker.zip"
 
   if [[ "$channel" == "official" ]]; then
@@ -109,11 +109,11 @@ core_get_download_url() {
 }
 
 # === Display local and remote version
-core_display_version() {
+core_version_display() {
   local channel version_local version_remote
 
-  channel="$(core_get_channel)"
-  version_local="$(core_get_current_version)"
+  channel="$(core_channel_get)"
+  version_local="$(core_version_get_current)"
 
   print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
 
@@ -122,11 +122,11 @@ core_display_version() {
     return 0
   fi
 
-  version_remote="$(core_get_latest_version)"
+  version_remote="$(core_version_get_latest)"
 
-  debug_log "[core_display_version] Channel       : $channel"
-  debug_log "[core_display_version] Current ver   : $version_local"
-  debug_log "[core_display_version] Latest  ver   : $version_remote"
+  debug_log "[core_version_display] Channel       : $channel"
+  debug_log "[core_version_display] Current ver   : $version_local"
+  debug_log "[core_version_display] Latest  ver   : $version_remote"
 
   # Kiểm tra lỗi fetch
   if [[ -z "$version_remote" ]]; then
@@ -136,7 +136,7 @@ core_display_version() {
 
   print_msg info "$INFO_CORE_VERSION_LATEST: $version_remote"
 
-  core_compare_versions "$version_local" "$version_remote"
+  core_version_compare "$version_local" "$version_remote"
   local result=$?
 
   if [[ "$result" -eq 2 ]]; then

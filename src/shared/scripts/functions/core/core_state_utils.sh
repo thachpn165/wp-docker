@@ -7,7 +7,7 @@ core_set_installed_version() {
   json_set_value '.core.installed_version' "$version"
 }
 
-core_get_channel() {
+core_channel_get() {
   json_get_value '.core.channel'
 }
 
@@ -22,6 +22,6 @@ core_set_channel() {
 
 core_is_dev_mode() {
   local channel
-  channel="$(core_get_channel)"
+  channel="$(core_channel_get)"
   [[ "$channel" == "dev" ]]
 }

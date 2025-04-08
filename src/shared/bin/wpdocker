@@ -123,7 +123,7 @@ handle_wordpress() {
 handle_core() {
     # wpdocker core
     case "$1" in
-        version) bash "$CLI_DIR/core_display_version.sh" "${@:2}" ;;
+        version) bash "$CLI_DIR/core_version_display.sh" "${@:2}" ;;
         update) bash "$CLI_DIR/core_update.sh" "${@:2}" ;;
         lang) 
             case "$2" in
