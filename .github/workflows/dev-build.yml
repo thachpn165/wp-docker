@@ -64,10 +64,10 @@ jobs:
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          name: "wp-docker-dev Release"
+          name: "wp-docker nightly"
           tag_name: "nightly"
           body: "Release for development version: ${{ env.DEV_VERSION }}"
-          files: dist/wp-docker-dev.zip
+          files: dist/wp-docker.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
