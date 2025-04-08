@@ -39,7 +39,7 @@ fi
 # 🧹 Clean if existed (with Dev Mode awareness)
 # ========================
 if [[ "$DEV_MODE" == "true" ]]; then
-  # If in Dev Mode → remove symlink only
+  # Remove symlink or dir in dev mode
   if [[ -L "$INSTALL_DIR" || -d "$INSTALL_DIR" ]]; then
     echo "⚠️ $INSTALL_DIR already exists (may be a symlink in Dev Mode)."
     read -rp "❓ Do you want to remove this symlink and re-create? [y/N]: " confirm
@@ -50,7 +50,7 @@ if [[ "$DEV_MODE" == "true" ]]; then
     rm -rf "$INSTALL_DIR"
   fi
 else
-  # If not in Dev Mode → remove the entire directory
+  # Remove full directory if not in dev mode
   if [[ -d "$INSTALL_DIR" ]]; then
     echo "⚠️ Directory $INSTALL_DIR already exists."
     read -rp "❓ Do you want to delete and overwrite it? [y/N]: " confirm
@@ -82,17 +82,10 @@ fi
 # ========================
 # ✅ Load config & run setup-system.sh
 # ========================
-SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-SEARCH_PATH="$SCRIPT_PATH"
-while [[ "$SEARCH_PATH" != "/" ]]; do
-  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
-    source "$SEARCH_PATH/shared/config/load_config.sh"
-    source "$FUNCTIONS_DIR/system/system_utils.sh"
-    load_config_file
-    break
-  fi
-  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
-done
+if [[ -f "$INSTALL_DIR/shared/config/load_config.sh" ]]; then
+  source "$INSTALL_DIR/shared/config/load_config.sh"
+  load_config_file
+fi
 
 if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
   chmod +x "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"

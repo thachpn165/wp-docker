@@ -107,7 +107,7 @@ website_setup_wordpress_logic() {
   # 📦 Download WordPress if not already present
   if [[ ! -f "$SITE_DIR/wordpress/index.php" ]]; then
     print_msg progress "$INFO_DOWNLOADING_WP"
-    run_cmd "docker_exec_php \"mkdir -p /var/www/html && chown -R nobody:nogroup /var/www/html\"" true
+    run_cmd docker_exec_php "chown -R nobody:nogroup /var/www/" true
     run_cmd "docker_exec_php \"curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
       tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && rm /var/www/html/wordpress.tar.gz\"" true
     stop_loading
@@ -123,7 +123,7 @@ website_setup_wordpress_logic() {
 
   print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
   if [[ "$php_ready_ok" == true ]]; then
-    run_cmd "docker_exec_php \"chown -R nobody:nogroup /var/www/\"" true
+    run_cmd docker_exec_php "chown -R nobody:nogroup /var/www/"
   else
     print_msg warning "$WARNING_SKIP_CHOWN"
   fi
