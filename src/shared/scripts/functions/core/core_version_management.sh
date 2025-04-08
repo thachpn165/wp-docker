@@ -65,13 +65,22 @@ core_version_get_latest() {
 
 # === Compare versions: returns 0 if equal, 1 if v1 > v2, 2 if v1 < v2
 core_version_compare() {
-  local v1=$(echo "$1" | sed 's/^v//')
-  local v2=$(echo "$2" | sed 's/^v//')
+  local v1="${1#v}"
+  local v2="${2#v}"
+
+  # Strip build metadata
+  v1="${v1%%+*}"
+  v2="${v2%%+*}"
+
+  # Detect pre-release (contains -) and add "-stable" if không có
+  [[ "$v1" != *-* ]] && v1="${v1}-stable"
+  [[ "$v2" != *-* ]] && v2="${v2}-stable"
 
   if [[ "$v1" == "$v2" ]]; then return 0; fi
 
   local sorted
   sorted=$(printf "%s\n%s" "$v1" "$v2" | sort -V | head -n1)
+
   if [[ "$sorted" == "$v1" ]]; then
     return 2  # $1 < $2
   else
@@ -109,34 +118,33 @@ core_get_download_url() {
 }
 
 # === Display local and remote version
-core_version_display() {
+core_version_display_logic() {
   local channel version_local version_remote
 
-  channel="$(core_channel_get)"
-  version_local="$(core_version_get_current)"
-
-  print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
+  channel="$(core_get_channel)"
+  version_local="$(core_get_current_version)"
 
   if [[ "$channel" == "dev" ]]; then
-    print_msg warning "$INFO_CORE_VERSION_DEV_MODE"
+    print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
+    print_msg info "$INFO_CORE_VERSION_DEV_MODE"
     return 0
   fi
 
-  version_remote="$(core_version_get_latest)"
+  version_remote="$(core_get_latest_version)"
 
   debug_log "[core_version_display] Channel       : $channel"
   debug_log "[core_version_display] Current ver   : $version_local"
   debug_log "[core_version_display] Latest  ver   : $version_remote"
 
-  # Kiểm tra lỗi fetch
   if [[ -z "$version_remote" ]]; then
     print_msg error "$(printf "$ERROR_VERSION_CHANNEL_FAILED_FETCH_LATEST" "$channel")"
     return 1
   fi
 
+  print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
   print_msg info "$INFO_CORE_VERSION_LATEST: $version_remote"
 
-  core_version_compare "$version_local" "$version_remote"
+  core_compare_versions "$version_local" "$version_remote"
   local result=$?
 
   if [[ "$result" -eq 2 ]]; then
@@ -144,6 +152,9 @@ core_version_display() {
   else
     print_msg success "$SUCCESS_CORE_IS_LATEST"
   fi
+}
+core_version_display() {
+  core_version_display_logic
 }
 
 # === Backup current src directory
