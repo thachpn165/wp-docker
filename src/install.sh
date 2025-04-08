@@ -93,6 +93,23 @@ if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
   bash "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"
 fi
 
+
+# =============================================
+# 🔧 Initialize .config.json if not exists
+# =============================================
+if [[ -z "$BASE_DIR" ]]; then
+  echo "❌ BASE_DIR not defined. Please load config.sh first." >&2
+  exit 1
+fi
+
+
+if [[ ! -f "$CONFIG_JSON_FILE" ]]; then
+  echo "{}" > "$CONFIG_JSON_FILE"
+  echo "✅ Created initial config file: $CONFIG_JSON_FILE"
+else
+  echo "ℹ️ Config file already exists: $CONFIG_JSON_FILE"
+fi
+
 # ========================
 # 🔐 Set Permissions
 # ========================
@@ -105,20 +122,16 @@ chown -R "$USER" "$INSTALL_DIR"
 check_and_add_alias
 
 # ========================
-# 💾 Set CORE_CHANNEL in .env
+# 💾 Set core.channel in .config.json
 # ========================
-CORE_ENV="$INSTALL_DIR/.env"
-if [[ -f "$CORE_ENV" ]]; then
-  if grep -q "^CORE_CHANNEL=" "$CORE_ENV"; then
-    sed -i.bak "s/^CORE_CHANNEL=.*/CORE_CHANNEL=$INSTALL_CHANNEL/" "$CORE_ENV"
-  else
-    echo "CORE_CHANNEL=$INSTALL_CHANNEL" >> "$CORE_ENV"
-  fi
+if [[ -n "$INSTALL_CHANNEL" ]]; then
+  core_set_channel "$INSTALL_CHANNEL"
+  print_msg success "$(printf "$SUCCESS_CORE_CHANNEL_SET" "$INSTALL_CHANNEL" "$JSON_CONFIG_FILE")"
 else
-  echo "CORE_CHANNEL=$INSTALL_CHANNEL" > "$CORE_ENV"
+  print_msg warning "⚠️ Không có giá trị INSTALL_CHANNEL để lưu channel."
 fi
 
-echo "✅ Installation successful at: $INSTALL_DIR"
+print_msg success "✅ Installation successful at: $INSTALL_DIR"
 
 # ========================
 # 📢 macOS warning

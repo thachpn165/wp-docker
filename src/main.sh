@@ -57,7 +57,7 @@ print_header() {
     print_msg sub-label "- ${STRONG}$LABEL_DISK${NC}: ${DISK_USAGE}"
     print_msg sub-label "- ${STRONG}$LABEL_IPADDR${NC}: ${IP_ADDRESS}"
     echo ""
-    print_msg label "${STRONG}$LABEL_VERSION_CHANNEL${NC}: ${YELLOW}${CORE_CHANNEL}${NC}"
+    #print_msg label "${STRONG}$LABEL_VERSION_CHANNEL${NC}: ${YELLOW}${CORE_CHANNEL}${NC}"
     core_display_version
     echo -e "${MAGENTA}==============================================${NC}"
 }

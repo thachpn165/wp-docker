@@ -19,7 +19,7 @@ core_update_system() {
   fi
 
   # === Nếu PROJECT_DIR/src tồn tại → là source repo → không update
-  if [[ -d "$PROJECT_DIR/src" ]]; then
+  if [[ -d "$PROJECT_DIR/src" ]] || core_is_dev_mode; then
     print_msg warning "$WARNING_CORE_IS_SOURCE_REPO"
     return 0
   fi

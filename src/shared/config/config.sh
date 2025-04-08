@@ -19,6 +19,7 @@ fi
 PROJECT_DIR=$BASE_DIR
 # ==== 2. Load .env file ====
 CORE_ENV="${CORE_ENV:-$BASE_DIR/.env}"
+JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 # Load env loader first
 source "$BASE_DIR/shared/scripts/functions/utils/env_utils.sh"
@@ -118,3 +119,4 @@ source "$FUNCTIONS_DIR/utils/db_utils.sh"
 source "$FUNCTIONS_DIR/utils/website_utils.sh"
 source "$FUNCTIONS_DIR/utils/misc_utils.sh"
 source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
+source "$FUNCTIONS_DIR/utils/json_utils.sh"

@@ -78,7 +78,7 @@ src/shared/bin/wp-cli.phar
 # 🚀 BUILD DIRECTORY
 dist/*
 wp-docker-lemp/
-
+/.config.json
 
 
 # Testing

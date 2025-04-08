@@ -620,7 +620,7 @@ readonly LABEL_MENU_MAIN_UPDATE="Kiểm tra & Cập nhật WP Docker"
 readonly INFO_LABEL_CORE_VERSION="Phiên bản WP Docker"
 
 readonly SUCCESS_TIMEZONE_SET="Múi giờ hệ thống đã được thiết lập về Asia/Ho_Chi_Minh."
-readonly SUCCESS_CORE_CHANNEL_SET="CORE_CHANNEL đã được thiết lập thành '%s' tại %s."
+readonly SUCCESS_CORE_CHANNEL_SET="Kênh phiên bản đã được thiết lập thành '%s' tại %s."
 readonly SUCCESS_COMMAND_AVAILABLE="Lệnh '%s' đã được cài đặt và khả dụng."
 readonly SUCCESS_SYSTEM_READY="Hệ thống đã sẵn sàng để sử dụng WP Docker LEMP."
 
@@ -671,7 +671,7 @@ readonly WARNING_MIGRATION_PREPARE="Vui lòng chuẩn bị các tệp nguồn tr
 
 readonly PROMPT_SELECT_EDITOR="Chọn số tương ứng với trình soạn thảo bạn muốn dùng:"
 readonly PROMPT_CONFIRM_EDITOR="Bạn có muốn mở trình soạn thảo này để chỉnh sửa không?"
-readonly PROMPT_SELECT_CHANNEL="Vui lòng chọn kênh phát hành để sử dụng:"
+readonly PROMPT_SELECT_CHANNEL="Vui lòng chọn kênh phiên bản để sử dụng:"
 readonly PROMPT_SELECT_OPTION="Chọn tuỳ chọn: "
 readonly PROMPT_ENTER_ACTION_NUMBER="Nhập số tương ứng với hành động:"
 readonly PROMPT_ENTER_DOMAIN_TO_MIGRATE="👉 Nhập tên domain để migrate:"
@@ -777,3 +777,5 @@ readonly INFO_CORE_VERSION_CURRENT="Phiên bản hiện tại"
 readonly INFO_CORE_VERSION_LATEST="Phiên bản mới nhất"
 readonly WARNING_DEV_MODE_NO_UPDATE="Chế độ dev không hỗ trợ cập nhật tự động. Vui lòng cập nhật thủ công với git pull hoặc git fetch."
 readonly WARNING_CORE_SOURCE_REPO_NO_UPDATE="Bạn đang ở chế độ dev. Không thể cập nhật tự động từ GitHub."
+readonly INFO_CORE_VERSION_DEV_MODE="Đang sử dụng channel dev. Không áp dụng kiểm tra phiên bản."
+readonly WARNING_VERSION_NOT_FOUND="Không tìm thấy phiên bản mới nhất. Vui lòng kiểm tra lại kết nối mạng hoặc repo."

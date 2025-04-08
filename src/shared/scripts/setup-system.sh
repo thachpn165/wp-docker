@@ -50,23 +50,12 @@ if ! grep -q "^LANG_CODE=" "$CORE_ENV"; then
   echo "LANG_CODE=\"$lang_code\"" >> "$CORE_ENV"
 fi
 
-# === Prompt for CORE_CHANNEL if not set ===
-if ! grep -q "^CORE_CHANNEL=" "$CORE_ENV"; then
-  echo -e "$PROMPT_SELECT_CHANNEL"
-  PS3="$(echo -e"$PROMPT_SELECT_OPTION")"
-  select opt in "official" "nightly"; do
-    case $opt in
-      official|nightly)
-        env_set_value "CORE_CHANNEL" "$opt"
-        echo -e "$(printf "$SUCCESS_CORE_CHANNEL_SET" "$opt" "$CORE_ENV")"
-        break
-        ;;
-      *)
-        echo -e "$ERROR_SELECT_OPTION_INVALID"
-        ;;
-    esac
-  done
-fi
+# =============================================
+# 🔧 Khởi tạo file cấu hình .config.json
+# Hàm core_init_config sẽ hỏi để thiết lập channel, ngôn ngữ,...
+# Lưu tại: $BASE_DIR/.config.json
+# =============================================
+core_init_config
 
 clear
 setup_timezone
