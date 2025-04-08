@@ -78,3 +78,8 @@ src/shared/bin/wp-cli.phar
 # 🚀 BUILD DIRECTORY
 dist/*
 wp-docker-lemp/
+
+
+
+# Testing
+sync_to_vps.sh
