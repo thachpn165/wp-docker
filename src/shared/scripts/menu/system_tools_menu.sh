@@ -35,7 +35,7 @@ system_tools_menu() {
                     bash "$CLI_DIR/system_nginx_rebuild.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 5)
-                    core_change_lang_logic
+                    core_lang_change_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 6)
                     break

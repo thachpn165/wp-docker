@@ -1,29 +1,15 @@
 #!/bin/bash
-if [ -z "$BASH_VERSION" ]; then
-    echo "${CROSSMARK} This script must be run in a Bash shell." >&2
-    exit 1
-fi
-
-# Ensure PROJECT_DIR is set
-if [[ -z "$PROJECT_DIR" ]]; then
-    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-    while [[ "$SCRIPT_PATH" != "/" ]]; do
-        if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-            PROJECT_DIR="$SCRIPT_PATH"
-            break
-        fi
-        SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-    done
-fi
-
-# Load config file
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-    exit 1
-fi
-source "$CONFIG_FILE"
-cd "$PROJECT_DIR" || exit 1
+# ✅ Load configuration from any location
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
+    break
+  fi
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+done
 
 
 # Load necessary functions
@@ -33,6 +19,10 @@ source "$FUNCTIONS_DIR/rclone/manage_rclone.sh"
 source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
 source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
 source "$FUNCTIONS_DIR/core/core_version_management.sh"
+
+
+# Load CLI functions
+source  "$CLI_DIR/core_lang.sh"
 
 # Define subcommands handlers
 handle_website() {
@@ -135,6 +125,14 @@ handle_core() {
     case "$1" in
         version) bash "$CLI_DIR/core_display_version.sh" "${@:2}" ;;
         update) bash "$CLI_DIR/core_update.sh" "${@:2}" ;;
+        lang) 
+            case "$2" in
+                change) core_lang_cli_change "${@:3}" ;;
+                check) core_lang_cli_get ;;
+                list) core_lang_cli_list ;;
+                *) echo "${CROSSMARK} Unknown subcommand for core lang: $2" ;;
+            esac
+            ;;
         *) echo "${CROSSMARK} Unknown subcommand for core: $1" ;;
     esac
 }

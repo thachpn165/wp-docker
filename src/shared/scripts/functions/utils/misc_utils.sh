@@ -228,7 +228,7 @@ print_msg() {
     success)     emoji="✅" color="$GREEN" ;;
     error)       emoji="❌" color="$RED" ;;
     warning)     emoji="⚠️"  color="$YELLOW" ;;
-    info)        emoji="ℹ️"  color="$WHITE" ;;
+    info)        emoji=""  color="$WHITE" ;;
     save)        emoji="💾" color="$WHITE" ;;
     important)   emoji="🚨" color="$RED" ;;
     step)        emoji="➤"  color="$MAGENTA" ;;
@@ -242,7 +242,8 @@ print_msg() {
     title)     emoji="" color="$CYAN" ;;
     label)     emoji="" color="$BLUE" ;;
     sub_label) emoji="" color="$WHITE" ;;
-    copy)      emoji="→" color="$GREEN";; 
+    copy)      emoji="→" color="$GREEN";;
+    tip)     emoji="💡" color="$YELLOW";;
     
     progress)
       emoji="🚀"

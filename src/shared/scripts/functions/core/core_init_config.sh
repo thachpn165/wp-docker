@@ -39,7 +39,18 @@ core_init_config() {
     debug_log "[core_init_config] Khởi tạo core.installed_version = $default_version"
   fi
 
+  # ==============================================
+  # 🌐 3 Thiết lập ngôn ngữ mặc định
   # =============================================
+  if ! json_key_exists '.core.lang'; then
+    core_lang_change_prompt
+  else
+    debug_log "[core_init_config] Ngôn ngữ đã được đặt: $(json_get_value '.core.lang')"
+  fi
+
+
+
+
   # 📌 3. (Tương lai) thêm các thiết lập mặc định khác ở đây
   # json_set_value '.core.debug_mode' false
   # json_set_value '.core.auto_update' true
