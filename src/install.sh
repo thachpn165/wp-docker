@@ -67,6 +67,7 @@ fi
 # ========================
 if [[ "$DEV_MODE" == "true" ]]; then
   echo "🚧 DEV_MODE is enabled. Cloning source to: $DEV_REPO_DIR"
+  REPO_URL="https://github.com/thachpn165/wp-docker"
   git clone "$REPO_URL" "$DEV_REPO_DIR"
   ln -sfn "$DEV_REPO_DIR/src" "$INSTALL_DIR"
 else
