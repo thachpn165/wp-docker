@@ -36,7 +36,7 @@ EOF
 }
 
 wp_install() {
-  local container="$1"
+  local domain="$1"
   local site_url="$2"
   local title="$3"
   local admin_user="$4"
@@ -45,28 +45,44 @@ wp_install() {
 
   print_msg info "$INFO_WP_INSTALLING"
   bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- core install \
-    --url="$site_url" --title="$title" --admin_user="$admin_user" \
-    --admin_password="$admin_pass" --admin_email="$admin_email"
+    --url="$site_url" --title="$title" \
+    --admin_user="$admin_user" --admin_password="$admin_pass" --admin_email="$admin_email"
   exit_if_error "$?" "$ERROR_WP_INSTALL_FAILED"
   print_msg success "$SUCCESS_WP_INSTALLED"
 }
 
 wp_set_permalinks() {
-  local container="$1"
-  local site_url="$2"
+  local domain="$1"
+  if [[ -z "$domain" ]]; then
+    print_and_debug error "❌ Missing domain in wp_set_permalinks()"
+    return 1
+  fi
+
   bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update permalink_structure '/%postname%/'
   exit_if_error "$?" "$ERROR_WP_PERMALINK_FAILED"
 }
 
 wp_plugin_install_security_plugin() {
-  local container="$1"
+  local domain="$1"
+
+  if [[ -z "$domain" ]]; then
+    print_and_debug error "❌ Missing domain in wp_plugin_install_security_plugin()"
+    return 1
+  fi
+
   bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install limit-login-attempts-reloaded --activate
   exit_if_error "$?" "$ERROR_WP_SECURITY_PLUGIN"
   print_msg success "$SUCCESS_WP_SECURITY_PLUGIN"
 }
 
 wp_plugin_install_performance_lab() {
-  local container="$1"
+  local domain="$1"
+
+  if [[ -z "$domain" ]]; then
+    print_and_debug error "❌ Missing domain in wp_plugin_install_performance_lab()"
+    return 1
+  fi
+
   bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install performance-lab --activate
   exit_if_error "$?" "$ERROR_WP_PERFORMANCE_PLUGIN"
   print_msg success "$SUCCESS_WP_PERFORMANCE_PLUGIN"

@@ -10,13 +10,13 @@ reset_admin_password_logic() {
     fi
 
     SITE_DIR="$SITES_DIR/$domain"
-    PHP_CONTAINER="$domain-php"
+    PHP_CONTAINER=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
     # 🔐 Tạo mật khẩu ngẫu nhiên 18 ký tự không có ký tự đặc biệt
     new_password=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 18)
 
     # 🔄 Cập nhật mật khẩu qua WP-CLI
-    bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- user update "$user_id" --user_pass="$new_password"
+    wordpress_wp_cli_logic "$domain" "user update $user_id --user_pass=$new_password"
     if [[ $? -ne 0 ]]; then
         print_and_debug error "$ERROR_WORDPRESS_RESET_ADMIN_PASSWD $user_id."
         exit 1

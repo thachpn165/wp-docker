@@ -121,8 +121,8 @@ core_get_download_url() {
 core_version_display_logic() {
   local channel version_local version_remote
 
-  channel="$(core_get_channel)"
-  version_local="$(core_get_current_version)"
+  channel="$(core_channel_get)"
+  version_local="$(core_version_get_current)"
 
   if [[ "$channel" == "dev" ]]; then
     print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"

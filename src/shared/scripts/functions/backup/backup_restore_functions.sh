@@ -41,8 +41,7 @@ backup_restore_files() {
 
 backup_restore_database() {
   DB_BACKUP="$1"          # Path to database backup file (.sql)
-  DB_CONTAINER="$2"       # Name of container containing database (mariadb) – now unused
-  SITE_DOMAIN="$3"        # Website name to find .env and other details
+  SITE_DOMAIN="$2"        # Website name to find .env and other details
 
   local formatted_msg_restoring_database
   formatted_msg_restoring_database="$(printf "$MSG_BACKUP_RESTORING_DB" "$DB_BACKUP" "$SITE_DOMAIN")"

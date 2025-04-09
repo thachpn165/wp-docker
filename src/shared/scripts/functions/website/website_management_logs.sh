@@ -15,6 +15,11 @@ website_management_logs_logic() {
     return 1
   fi
 
+  if ! json_key_exists ".site[\"$domain\"]"; then
+    print_msg error "$ERROR_WEBSITE_NOT_EXIST: $domain"
+    return 1
+  fi
+
   if [[ "$log_type" == "access" ]]; then
     log_file="$SITES_DIR/$domain/logs/access.log"
     echo -e "\n${CYAN}📜 Following Access Log: $log_file${NC}"

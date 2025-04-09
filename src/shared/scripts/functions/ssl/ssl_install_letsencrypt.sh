@@ -17,9 +17,9 @@ ssl_install_lets_encrypt_logic() {
 
   print_msg info "$(printf "$INFO_DOMAIN_SELECTED" "$DOMAIN")"
 
-  local WEBROOT="$SITES_DIR/$domain/wordpress"
-  if [[ ! -d "$WEBROOT" ]]; then
-    print_and_debug error "$ERROR_DIRECTORY_NOT_FOUND: $WEBROOT"
+  local webroot="$SITES_DIR/$domain/wordpress"
+  if [[ ! -d "$webroot" ]]; then
+    print_and_debug error "$ERROR_DIRECTORY_NOT_FOUND: $webroot"
     return 1
   fi
 
@@ -42,9 +42,9 @@ if ! command -v certbot &> /dev/null; then
   fi
 fi
 
-  print_msg step "$STEP_REQUEST_CERT_WEBROOT"
-  debug_log "[SSL] Running certbot for domain: $DOMAIN with webroot: $WEBROOT"
-  certbot certonly --webroot -w "$WEBROOT" -d "$DOMAIN" --non-interactive --agree-tos -m "admin@$DOMAIN"
+  print_msg step "$STEP_REQUEST_CERT_webroot"
+  debug_log "[SSL] Running certbot for domain: $DOMAIN with webroot: $webroot"
+  certbot certonly --webroot -w "$webroot" -d "$DOMAIN" --non-interactive --agree-tos -m "admin@$DOMAIN"
 
   local CERT_PATH="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
   local KEY_PATH="/etc/letsencrypt/live/$DOMAIN/privkey.pem"

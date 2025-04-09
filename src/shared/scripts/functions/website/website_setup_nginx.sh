@@ -27,7 +27,8 @@ website_setup_nginx() {
 
     cp "$NGINX_TEMPLATE" "$NGINX_CONF"
     sedi "s|\\\${DOMAIN}|$domain|g" "$NGINX_CONF"
-    sedi "s|\\\${PHP_CONTAINER}|$domain-php|g" "$NGINX_CONF"
+    php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
+    sedi "s|\\\${PHP_CONTAINER}|$php_container|g" "$NGINX_CONF"
 
     print_and_debug success "$SUCCESS_NGINX_CONF_CREATED: $NGINX_CONF"
   else

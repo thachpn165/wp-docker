@@ -9,15 +9,17 @@ php_rebuild_container_logic() {
   print_msg step "$(printf "$STEP_WEBSITE_RESTARTING" "$domain")"
 
   local compose_file="$SITES_DIR/$domain/docker-compose.yml"
+  local php_container
+  php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
-  if docker ps -q -f name="$domain-php" &>/dev/null; then
+  if docker ps -q -f name="$php_container" &>/dev/null; then
     docker compose -f "$compose_file" stop php
     print_msg success "$SUCCESS_CONTAINER_STOP"
   else
     print_msg warning "$WARNING_PHP_NOT_RUNNING"
   fi
 
-  docker rm -f "$domain-php" 2>/dev/null || true
+  docker rm -f "$php_container" 2>/dev/null || true
   print_msg success "$SUCCESS_CONTAINER_OLD_REMOVED"
 
   if ! docker compose -f "$compose_file" up -d php --build; then

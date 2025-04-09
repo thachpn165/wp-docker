@@ -148,8 +148,24 @@ check_docker_group() {
 # 🔁 Quick docker exec wrapper
 # ===========================
 docker_exec_php() {
-  docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "mkdir -p /tmp/wp-cli-cache && export WP_CLI_CACHE_DIR='/tmp/wp-cli-cache' && $1"
-  exit_if_error $? "$(printf "$ERROR_COMMAND_EXEC_FAILED" "$1")"
+  local domain="$1"
+  local cmd="$2"
+  
+  if [[ -z "$domain" || -z "$cmd" ]]; then
+    print_and_debug error "❌ Missing parameters in docker_exec_php(domain, cmd)"
+    return 1
+  fi
+
+  local container_php
+  container_php=$(json_get_site_value "$domain" "CONTAINER_PHP")
+
+  if [[ -z "$container_php" ]]; then
+    print_and_debug error "❌ Cannot find CONTAINER_PHP for site: $domain"
+    return 1
+  fi
+
+  docker exec -u "$PHP_USER" -i "$container_php" sh -c "mkdir -p /tmp/wp-cli-cache && export WP_CLI_CACHE_DIR='/tmp/wp-cli-cache' && $cmd"
+  exit_if_error $? "$(printf "$ERROR_COMMAND_EXEC_FAILED" "$cmd")"
 }
 
 # ===========================

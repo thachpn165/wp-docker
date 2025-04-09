@@ -42,7 +42,7 @@ database_export_logic() {
     debug_log "[Backup] Running mysqldump for: $db_name → $save_location"
 
     local db_container
-    db_container=$(fetch_env_variable "$SITES_DIR/$domain/.env" "CONTAINER_DB")
+    db_container=$(json_get_site_value "$domain" "CONTAINER_DB")
     if [[ -z "$db_container" ]]; then
         print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED"
         return 1

@@ -3,7 +3,7 @@ wordpress_auto_update_plugin_logic() {
     domain="$1"  # site_name will be passed from the menu file or CLI
 
     SITE_DIR="$SITES_DIR/$domain"
-    PHP_CONTAINER="$domain-php"
+    PHP_CONTAINER=$(json_get_site_value "$domain" "CONTAINER_PHP")
     
     # **Handle enabling/disabling automatic plugin updates**
     if [[ "$2" == "enable" ]]; then

@@ -518,7 +518,7 @@ readonly WARNING_CRON_PHP_VERSION_EXISTS="Cron job for php_get_version.sh alread
 
 readonly TIPS_PHP_RECOMMEND_VERSION="Recommended to use PHP 8.2 or higher!"
 
-readonly STEP_PHP_UPDATING_ENV="Updating PHP version in .env file..."
+readonly STEP_PHP_UPDATING_CONFIG="Updating PHP version in website config file"
 readonly STEP_PHP_UPDATING_DOCKER_COMPOSE="Updating PHP version in docker-compose.yml..."
 readonly STEP_PHP_RESTARTING="Restarting PHP container to apply changes..."
 readonly STEP_PHP_FETCHING_FROM_DOCKER="Downloading data from Docker Hub..."
@@ -798,3 +798,4 @@ readonly LABEL_LANG_TH="Thai"
 readonly LABEL_LANG_MY="Malaysian"
 readonly LABEL_LANG_TW="Taiwanese"
 readonly INFO_AVAILABLE_LANGS="List of available languages:"
+readonly ERROR_DOCKER_PHP_CONTAINER_NOT_FOUND="Docker PHP container not found. Please check your setup."

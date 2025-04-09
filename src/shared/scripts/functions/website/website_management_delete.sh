@@ -2,6 +2,10 @@
 # 🗑️ website_management_delete_logic – Delete a WordPress Website (Logic only)
 # =====================================
 
+# =====================================
+# 🗑️ website_management_delete_logic – Delete a WordPress Website (Logic only)
+# =====================================
+
 website_management_delete_logic() {
   local domain="$1"
   local backup_enabled="$2"
@@ -12,7 +16,6 @@ website_management_delete_logic() {
   fi
 
   SITE_DIR="$SITES_DIR/$domain"
-  ENV_FILE="$SITE_DIR/.env"
 
   if ! is_directory_exist "$SITE_DIR"; then
     print_msg error "$ERROR_WEBSITE_NOT_EXIST: $domain"
@@ -44,16 +47,16 @@ website_management_delete_logic() {
   fi
 
   print_msg step "$MSG_WEBSITE_STOPPING_CONTAINERS: $domain"
-  run_cmd "docker compose -f \"$SITE_DIR/docker-compose.yml\" down" true
+  run_cmd "docker compose -f $SITE_DIR/docker-compose.yml down" true
   debug_log "Stopped containers for website '$domain'."
 
   OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
   MOUNT_ENTRY="      - ../../sites/$domain/wordpress:/var/www/$domain"
   MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
 
-  if [ -f "$OVERRIDE_FILE" ]; then
-      print_msg step "$MSG_NGINX_REMOVE_MOUNT: $domain"
-      nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
+  if [[ -f "$OVERRIDE_FILE" ]]; then
+    print_msg step "$MSG_NGINX_REMOVE_MOUNT: $domain"
+    nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
   fi
 
   print_msg step "$MSG_WEBSITE_DELETING_DIRECTORY: $SITE_DIR"
@@ -82,6 +85,10 @@ website_management_delete_logic() {
     rm -f "$tmp_cron"
     print_msg success "$SUCCESS_CRON_REMOVED: $domain"
   fi
+
+  # Remove entry in .config.json
+  json_delete_site_key "$domain"
+  print_msg success "$SUCCESS_CONFIG_SITE_REMOVED: $domain"
 
   nginx_restart
   print_msg success "$SUCCESS_WEBSITE_REMOVED: $domain"

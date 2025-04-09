@@ -8,12 +8,20 @@ website_management_list_logic() {
     return 1
   fi
 
-  site_list=($(ls -1 "$SITES_DIR"))
+  local site_list=()
+  for dir in "$SITES_DIR"*/; do
+    [[ -d "$dir" ]] || continue
+    local domain
+    domain=$(basename "$dir")
 
-  #echo -e "${YELLOW}📋 List of Existing Websites:${NC}"
+    # Kiểm tra xem domain có tồn tại trong .config.json không
+    if json_key_exists ".site[\"$domain\"]"; then
+      site_list+=("$domain")
+    fi
+  done
+
   print_msg label "$LABEL_WEBSITE_LIST"
-  if [ ${#site_list[@]} -eq 0 ]; then
-    #echo -e "${RED}${CROSSMARK} No websites are installed.${NC}"
+  if [[ ${#site_list[@]} -eq 0 ]]; then
     print_msg error "$ERROR_NO_WEBSITES_FOUND"
     return 0
   fi

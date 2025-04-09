@@ -79,30 +79,37 @@ nginx_remove_mount_docker() {
     fi
 }
 
+# =============================================
+# 🔁 nginx_restart
+# Khởi động lại nginx-proxy bằng cách chạy docker compose trong thư mục NGINX_PROXY_DIR
+# =============================================
 nginx_restart() {
+  ensure_safe_cwd
   start_loading "$INFO_DOCKER_NGINX_STARTING"
-  pushd "$NGINX_PROXY_DIR" > /dev/null
+  
+  if [[ ! -d "$NGINX_PROXY_DIR" ]]; then
+    print_msg error "❌ NGINX_PROXY_DIR không tồn tại: $NGINX_PROXY_DIR"
+    return 1
+  fi
 
-  run_cmd "docker compose down"
+  run_cmd "docker compose -f $NGINX_PROXY_DIR/docker-compose.yml down"
   if [[ $? -ne 0 ]]; then
       print_msg error "$ERROR_DOCKER_NGINX_STOP $NGINX_PROXY_CONTAINER"
       run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-      popd > /dev/null
       return 1
   fi
 
-  run_cmd "docker compose up -d --force-recreate"
+  run_cmd "docker compose -f $NGINX_PROXY_DIR/docker-compose.yml up -d --force-recreate"
   if [[ $? -ne 0 ]]; then
       print_msg error "$ERROR_DOCKER_NGINX_START $NGINX_PROXY_CONTAINER"
       run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-      popd > /dev/null
       return 1
   fi
 
-  popd > /dev/null
   stop_loading
   print_msg success "$SUCCESS_DOCKER_NGINX_RESTART"
 }
+
 
 nginx_reload() {
   start_loading "$INFO_DOCKER_NGINX_RELOADING"

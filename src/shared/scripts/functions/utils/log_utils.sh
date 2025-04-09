@@ -51,6 +51,7 @@ print_and_debug() {
 #   run_cmd "rm somefile.txt"              # Just return 1 if failed
 
 run_cmd() {
+    ensure_safe_cwd
     local cmd="$1"
     local exit_on_fail="${2:-false}"
 
@@ -91,6 +92,6 @@ run_cmd() {
         [[ "$exit_on_fail" == "true" ]] && exit 1
         return 1
     fi
-
+    ensure_safe_cwd
     return 0
 }
