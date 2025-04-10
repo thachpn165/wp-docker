@@ -1,23 +1,13 @@
 #!/bin/bash
-
-# === Load config & website_loader.sh ===
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-fi
-
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
-  exit 1
-fi
-source "$CONFIG_FILE"
+# 🔧 Auto-detect BASE_DIR and load global configuration
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
+  fi
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 source "$FUNCTIONS_DIR/backup_loader.sh"
 
 # 📋 Hiển thị danh sách website để chọn (dùng select_website)
@@ -52,7 +42,7 @@ if [[ "$storage" == "cloud" ]]; then
     echo -e "${YELLOW}📂 Fetching storage list from rclone.conf...${NC}"
     
     # Get list of storage names from rclone.conf, removing brackets
-    rclone_storages=($(grep -o '^\[.*\]' "$RCLONE_CONFIG_FILE" | sed 's/\[\(.*\)\]/\1/g'))
+    mapfile -t rclone_storages < <(grep -o '^\[.*\]' "$RCLONE_CONFIG_FILE" | sed 's/\[\(.*\)\]/\1/g')
 
     # Check if there are storages available
     if [[ ${#rclone_storages[@]} -eq 0 ]]; then

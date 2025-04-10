@@ -130,4 +130,5 @@ website_setup_wordpress_logic() {
   wp_set_permalinks "$domain"
   website_wordpress_print "$domain" "$admin_user" "$admin_password" "$admin_email"
   print_msg completed "$SUCCESS_WP_INSTALL_DONE"
+  nginx_restart
 }
