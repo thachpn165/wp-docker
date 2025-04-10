@@ -44,6 +44,9 @@ source "$BASE_DIR/shared/lang/lang_loader.sh"
 
 # ==== 5. Define core system variables ====
 LANG_LIST=("vi" "en")
+OFFICIAL_REPO_TAG="latest"
+NIGHTLY_REPO_TAG="nightly"
+
 INSTALL_DIR="${INSTALL_DIR:-/opt/wp-docker}"
 TMP_DIR="${TMP_DIR:-$BASE_DIR/tmp}"
 LOGS_DIR="${LOGS_DIR:-$BASE_DIR/logs}"

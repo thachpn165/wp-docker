@@ -90,7 +90,7 @@ while true; do
         7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         8) php_menu ;;
         9) database_menu ;;
-        10) echo "coming soon" ;;  # Call function to display version and update
+        10) core_version_update_latest; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;  # Call function to display version and update
         11) print_msg cancel "$MSG_EXITING" && exit 0 ;;
         *) 
             print_msg error "$ERROR_SELECT_OPTION_INVALID"
