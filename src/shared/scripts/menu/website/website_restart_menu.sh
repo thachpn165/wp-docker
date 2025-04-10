@@ -1,27 +1,51 @@
 #!/usr/bin/env bash
 
-# ============================================
-# ${CHECKMARK} website_restart_menu.sh – Restart a WordPress website via Menu
-# ============================================
+# ✅ Load configuration from any directory
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+SEARCH_PATH="$SCRIPT_PATH"
+while [[ "$SEARCH_PATH" != "/" ]]; do
+  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+    source "$SEARCH_PATH/shared/config/load_config.sh"
+    load_config_file
+    break
+  fi
+  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+done
 
-# === Load config & website_loader.sh ===
-if [[ -z "$PROJECT_DIR" ]]; then
-  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
-  while [[ "$SCRIPT_PATH" != "/" ]]; do
-    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
-      PROJECT_DIR="$SCRIPT_PATH"
-      break
-    fi
-    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
-  done
-fi
+# Load functions for website management
+source "$FUNCTIONS_DIR/website_loader.sh"
 
-CONFIG_FILE="$PROJECT_DIR/shared/config/config.sh"
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
+# === Input handling ===
+auto_generate=true   # default: true
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --domain=*) domain="${1#*=}" ;;
+    --php=*) php_version="${1#*=}" ;;
+    --auto_generate=*) auto_generate="${1#*=}" ;;
+    *)
+      print_msg error "$ERROR_UNKNOW_PARAM: $1"
+      print_msg info "$INFO_PARAM_EXAMPLE:\n  --domain=example.com --php=8.2"
+      exit 1
+      ;;
+  esac
+  shift
+done
+#if [[ -z "$domain" || ]] 
+if [[ -z "$domain" || -z "$php_version" ]]; then
+  #echo "${CROSSMARK} Missing parameters. Usage:"
+  print_msg error "$ERROR_MISSING_PARAM: --domain & --php"
   exit 1
 fi
-source "$CONFIG_FILE"
+
+
+website_management_create_logic "$domain" "$php_version"
+website_setup_wordpress_logic "$domain" "$auto_generate"
+
+## Debugging
+debug_log "Domain: $domain"
+debug_log "PHP Version: $php_version"
+debug_log "Auto-generate: $auto_generate"
+debug_log "Website creation process completed."
 source "$FUNCTIONS_DIR/website_loader.sh"
 
 # === Display the list of websites to the user ===
