@@ -74,7 +74,7 @@ website_setup_wordpress_logic() {
       done
 
       # Lấy email người dùng nhập vào
-      admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL" "${admin_email:-admin@$domain}")
+      admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL: " "${admin_email:-admin@$domain}")
   fi
 
   # 🐳 Check if PHP container is running
