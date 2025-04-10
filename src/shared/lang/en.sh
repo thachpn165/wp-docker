@@ -42,6 +42,7 @@
 # =============================================
 # 🌐 MENU TITLES
 # =============================================
+# shellcheck disable=SC2034
 readonly TITLE_MENU_WELCOME="WELCOME TO WP DOCKER"
 readonly TITLE_MENU_MAIN="Main functions menu"
 readonly TITLE_MENU_WEBSITE="WEBSITE MANAGEMENT"

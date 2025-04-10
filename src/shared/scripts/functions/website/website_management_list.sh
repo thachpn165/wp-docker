@@ -12,7 +12,7 @@ website_management_list_logic() {
     return 1
   fi
 
-  site_list=($(ls -1 "$SITES_DIR"))
+  mapfile -t site_list < <(ls -1 "$SITES_DIR")
 
   #echo -e "${YELLOW}📋 List of Existing Websites:${NC}"
   print_msg label "$LABEL_WEBSITE_LIST"

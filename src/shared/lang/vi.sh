@@ -42,6 +42,7 @@
 # =============================================
 # 🌐 TIÊU ĐỀ MENU
 # =============================================
+# shellcheck disable=SC2034
 readonly TITLE_MENU_WELCOME="CHÀO MỪNG ĐẾN VỚI WP DOCKER"
 readonly TITLE_MENU_MAIN="Menu chức năng chính"
 readonly TITLE_MENU_WEBSITE="QUẢN LÝ WEBSITE"
