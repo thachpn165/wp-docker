@@ -36,7 +36,7 @@ core_version_get_current() {
 }
 
 # === Get latest version from remote GitHub (main/dev based on channel)
-core_version_get_latest() {
+core_get_latest_version() {
   local channel version_url latest_version
 
   channel="$(core_channel_get)"
@@ -144,7 +144,7 @@ core_version_display_logic() {
   print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
   print_msg info "$INFO_CORE_VERSION_LATEST: $version_remote"
 
-  core_compare_versions "$version_local" "$version_remote"
+  core_version_compare "$version_local" "$version_remote"
   local result=$?
 
   if [[ "$result" -eq 2 ]]; then
