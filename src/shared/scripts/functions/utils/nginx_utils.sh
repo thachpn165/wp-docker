@@ -117,7 +117,9 @@ nginx_reload() {
   if [[ $? -ne 0 ]]; then
       print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
       run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+      stop_loading
       return 1
   fi
+  stop_loading
   print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
 }

@@ -44,6 +44,7 @@ is_directory_exist() {
 
   if [[ ! -d "$dir" ]]; then
     if [[ "$create_if_missing" != "false" ]]; then
+      debug_log "[is_directory_exist] Directory not exist, creating: $dir"
       print_msg debug "$(printf "$INFO_DIR_CREATING" "$dir")"
       mkdir -p "$dir"
     else

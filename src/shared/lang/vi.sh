@@ -403,6 +403,7 @@ readonly STEP_SSL_REGENERATE_SELF_SIGNED="Đang tạo lại chứng chỉ SSL t�
 readonly STEP_LE_REQUESTING_CERT="Đang gửi yêu cầu chứng chỉ Let's Encrypt với phương thức webroot..."
 readonly STEP_REQUEST_CERT_WEBROOT="Đang yêu cầu chứng chỉ Let's Encrypt với phương thức webroot..."
 readonly STEP_SSL_LETSENCRYPT="Cài đặt chứng chỉ SSL miễn phí từ Let's Encrypt"
+readonly SUCCESS_SSL_LETS_ENCRYPT_ISSUED="Chứng chỉ Let's Encrypt đã cấp thành công: "
 
 # =============================================
 # 💾 SAO LƯU & KHÔI PHỤC

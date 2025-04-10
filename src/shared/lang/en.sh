@@ -235,7 +235,7 @@ readonly STEP_WEBSITE_SETUP_WORDPRESS="Installing WordPress"
 readonly STEP_WEBSITE_SETUP_ESSENTIALS="Configuring basics (permalinks, security plugins,...)"
 readonly STEP_WEBSITE_RESTARTING="Restarting website"
 readonly STEP_WEBSITE_CHECK_DNS="Checking domain pointing"
-
+readonly SUCCESS_SSL_LETS_ENCRYPT_ISSUED="Let's Encrypt certificate issued successfully: "
 # =============================================
 # 📦 WORDPRESS
 # =============================================
