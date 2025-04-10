@@ -69,12 +69,18 @@ json_delete_key() {
 json_key_exists() {
   local key="$1"
   local file="${2:-$JSON_CONFIG_FILE}"
+
   json_create_if_not_exists "$file"
+
+  # Debug log the key and file for checking
+  debug_log "[json_key_exists] Checking key: $key in file: $file"
+
+  # Check if the key exists in JSON
   if jq -e "$key != null" "$file" >/dev/null 2>&1; then
-    debug_log "json_key_exists: file=$file key=$key -> exists"
+    debug_log "[json_key_exists] Key exists: $key"
     return 0
   else
-    debug_log "json_key_exists: file=$file key=$key -> not found"
+    debug_log "[json_key_exists] Key does not exist: $key"
     return 1
   fi
 }

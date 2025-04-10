@@ -113,7 +113,8 @@ website_setup_wordpress_logic() {
 
   print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
   if [[ "$php_ready_ok" == true ]]; then
-    docker_exec_php "$domain" "chown -R nobody:nogroup /var/www/"
+    #docker_exec_php "$domain" "chown -R nobody:nogroup /var/www/"
+    run_cmd "docker exec -u root -i $php_container chown -R nobody:nogroup /var/www/"
   else
     print_msg warning "$WARNING_SKIP_CHOWN"
   fi
