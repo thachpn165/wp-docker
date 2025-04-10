@@ -7,6 +7,10 @@ website_setup_nginx() {
   # === Define paths ===
   NGINX_CONF_DIR="$NGINX_PROXY_DIR/conf.d"
   NGINX_TEMPLATE="$TEMPLATES_DIR/nginx-proxy.conf.template"
+
+  # Assign a value to the domain variable
+  domain=${1:-default_domain}
+
   NGINX_CONF="$NGINX_CONF_DIR/$domain.conf"
 
   # === Check if target directory exists ===

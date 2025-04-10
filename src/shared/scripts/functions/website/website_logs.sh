@@ -47,7 +47,7 @@ website_management_logs_logic() {
 }
 
 website_management_logs() {
-  echo -ne "Loading log"; for i in {1..5}; do echo -n "."; sleep 0.2; done; echo ""
+  echo -ne "Loading log"; for _ in {1..5}; do echo -n "."; sleep 0.2; done; echo ""
   
   # Call the main logic function with the correct parameters
   website_management_logs_logic "$domain" "$LOG_TYPE"

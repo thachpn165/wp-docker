@@ -1,17 +1,18 @@
-website_management_create_logic() {
+website_create_logic() {
     local domain="$1"
     local php_version="$2"
     export domain php_version
 
-
+    #shellcheck disable=SC2153
+    # SITES_DIR is set in config.sh ($SITES_DIR=$BASE_DIR/sites)
     SITE_DIR="$SITES_DIR/$domain"
     website_set_config "$domain" "$php_version"
     CONTAINER_PHP=$(json_get_site_value "$domain" "CONTAINER_PHP")
     CONTAINER_DB=$(json_get_site_value "$domain" "CONTAINER_DB")
     MARIADB_VOLUME="${domain//./}${DB_VOLUME_SUFFIX}"
-    LOG_FILE="$LOGS_DIR/${domain}-setup.log"
 
     # cleanup if error
+    #shellcheck disable=SC2317
     cleanup() {
         print_msg cancel "$MSG_CLEANING_UP"
         if [[ -d "$SITE_DIR" ]]; then
@@ -35,12 +36,14 @@ website_management_create_logic() {
             print_and_debug success "$SUCCESS_DIRECTORY_REMOVE: $SSL_DIR"
         fi
     }
-    #trap '
-    #err_func="${FUNCNAME[1]:-MAIN}"
-    #err_line="${BASH_LINENO[0]}"
-    #print_and_debug error "$ERROR_TRAP_LOG: $err_func (line $err_line)"
-    #cleanup
-    #' ERR SIGINT
+
+    #shellcheck disable=SC2154
+    trap '
+    err_func="${FUNCNAME[1]:-MAIN}"
+    err_line="${BASH_LINENO[0]}"
+    print_and_debug error "$ERROR_TRAP_LOG: $err_func (line $err_line)"
+    cleanup
+    ' ERR SIGINT
 
     # Create website folder
     if is_directory_exist "$SITE_DIR" false; then
@@ -69,7 +72,7 @@ website_management_create_logic() {
     # Setup NGINX
     print_msg step "$STEP_WEBSITE_SETUP_NGINX: $domain"
     nginx_add_mount_docker "$domain"
-    website_setup_nginx
+    website_setup_nginx "$domain"
 
     # Copy templates
     print_msg step "$STEP_WEBSITE_SETUP_COPY_CONFIG: $domain"
@@ -82,7 +85,6 @@ website_management_create_logic() {
 
     # Store environment variables in .config.json file
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_ENV: $domain"
-    #website_create_env "$SITE_DIR" "$domain" "$php_version"
 
     # Create self-signed SSL certificate
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_SSL: $domain"
@@ -120,7 +122,7 @@ website_management_create_logic() {
     # Set perrmissions for website folder in PHP container
     print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
     run_cmd "docker exec -u root '$CONTAINER_PHP' chown -R nobody:nogroup /var/www/"
-    debug_log "✅ website_management_create_logic completed"
+    debug_log "✅ website_create_logic completed"
 
     # Start WordPress installation in next stage
 }

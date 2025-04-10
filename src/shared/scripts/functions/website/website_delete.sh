@@ -14,7 +14,7 @@ website_management_delete_logic() {
     print_msg error "$ERROR_MISSING_PARAM: --domain"
     return 1
   fi
-
+  #shellcheck disable=SC2153
   SITE_DIR="$SITES_DIR/$domain"
 
   if ! is_directory_exist "$SITE_DIR"; then

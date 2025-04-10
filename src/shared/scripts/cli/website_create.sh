@@ -33,7 +33,7 @@
 #       - $FUNCTIONS_DIR/website_loader.sh
 #
 # Functions:
-#   - website_management_create_logic: Handles the creation of the website.
+#   - website_create_logic: Handles the creation of the website.
 #   - website_setup_wordpress_logic: Handles the setup of WordPress for the website.
 #
 # Example:
@@ -79,7 +79,7 @@ if [[ -z "$domain" || -z "$php_version" ]]; then
 fi
 
 
-website_management_create_logic "$domain" "$php_version"
+website_create_logic "$domain" "$php_version"
 website_setup_wordpress_logic "$domain" "$auto_generate"
 
 ## Debugging
