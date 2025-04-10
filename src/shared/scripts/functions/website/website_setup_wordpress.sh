@@ -49,25 +49,32 @@ website_setup_wordpress_logic() {
   fi
 
   if [[ "$auto_generate" == true ]]; then
-    admin_user="admin-$(openssl rand -base64 6 | tr -dc 'a-zA-Z0-9' | head -c 8)"
-    admin_password="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
-    admin_email="admin@$domain.local"
+      admin_user="admin-$(openssl rand -base64 6 | tr -dc 'a-zA-Z0-9' | head -c 8)"
+      admin_password="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
+      admin_email="admin@$domain.local"
   else
-    admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
-    while [[ -z "$admin_user" ]]; do
-      print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
+      # Lấy username người dùng nhập vào, nếu trống sẽ dùng giá trị mặc định
       admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
-    done
+      debug_log "Admin username entered: $admin_user"  # Thêm dòng debug ở đây
 
-    admin_password=$(get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
-    confirm_password=$(get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
-    while [[ "$admin_password" != "$confirm_password" || -z "$admin_password" ]]; do
-      print_msg warning "$WARNING_ADMIN_PASSWORD_MISMATCH"
-      admin_password=$(get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
-      confirm_password=$(get_input_or_test_value_secret "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
-    done
+      while [[ -z "$admin_user" ]]; do
+          print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
+          admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
+          debug_log "Admin username entered (again): $admin_user"  # Thêm dòng debug ở đây
+      done
 
-    admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL" "${admin_email:-admin@$domain}")
+      # Lấy password người dùng nhập vào
+      admin_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
+      confirm_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
+
+      while [[ "$admin_password" != "$confirm_password" || -z "$admin_password" ]]; do
+          print_msg warning "$WARNING_ADMIN_PASSWORD_MISMATCH"
+         admin_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
+         confirm_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
+      done
+
+      # Lấy email người dùng nhập vào
+      admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL: " "${admin_email:-admin@$domain}")
   fi
 
   # 🐳 Check if PHP container is running

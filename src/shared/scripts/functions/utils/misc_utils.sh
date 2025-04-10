@@ -105,11 +105,16 @@ get_input_or_test_value_secret() {
   local input=""
 
   if is_test_mode; then
+    # Trong chế độ test, trả về fallback mà không cần prompt
     echo "$fallback"
   else
+    # Hiển thị prompt mà không cần xuống dòng
     printf "%s" "$prompt"
+    # Đọc mật khẩu mà không hiển thị ra màn hình
     read -s input
+    # Hiển thị lại dòng mới sau khi nhập
     echo
+    # Trả về giá trị nhập hoặc fallback nếu không có giá trị
     echo "${input:-$fallback}"
   fi
 }
