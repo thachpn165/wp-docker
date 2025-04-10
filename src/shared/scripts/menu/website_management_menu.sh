@@ -1,9 +1,11 @@
 # =====================================
 # 🌍 website_management_menu.sh – WordPress Website Management Menu
 # =====================================
+#shellcheck disable=SC1091
 
 # Load website management functions
 source "$FUNCTIONS_DIR/website_loader.sh"
+source "$CLI_DIR/website_create.sh"
 
 # Display website management menu
 website_management_menu() {
@@ -22,12 +24,12 @@ website_management_menu() {
 
     read -p "$MSG_SELECT_OPTION " sub_choice
     case $sub_choice in
-    1) source "$MENU_DIR/website/website_create_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      1) website_prompt_create; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
       2) bash "$MENU_DIR/website/website_delete_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-      3) bash "$MENU_DIR/website/website_list_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-      4) bash "$MENU_DIR/website/website_restart_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-      5) bash "$MENU_DIR/website/website_logs_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-      6) bash "$MENU_DIR/website/website_info_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      3) website_cli_list; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      4) website_logic_restart; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      5) website_logic_logs; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+      6) website_logic_info; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
       7) bash "$MENU_DIR/website/website_update_template_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
       8) break ;;
       *)

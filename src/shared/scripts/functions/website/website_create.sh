@@ -1,4 +1,5 @@
-website_create_logic() {
+#shellcheck disable=SC2154
+website_logic_create() {
     local domain="$1"
     local php_version="$2"
     export domain php_version
@@ -37,13 +38,6 @@ website_create_logic() {
         fi
     }
 
-    #shellcheck disable=SC2154
-    trap '
-    err_func="${FUNCNAME[1]:-MAIN}"
-    err_line="${BASH_LINENO[0]}"
-    print_and_debug error "$ERROR_TRAP_LOG: $err_func (line $err_line)"
-    cleanup
-    ' ERR SIGINT
 
     # Create website folder
     if is_directory_exist "$SITE_DIR" false; then
@@ -117,12 +111,12 @@ website_create_logic() {
     # Restart NGINX to apply new configuration
     print_msg step "$MSG_DOCKER_NGINX_RESTART"
     
-    nginx_restart
+    nginx_reload
 
     # Set perrmissions for website folder in PHP container
     print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
     run_cmd "docker exec -u root '$CONTAINER_PHP' chown -R nobody:nogroup /var/www/"
-    debug_log "✅ website_create_logic completed"
+    debug_log "✅ website_logic_create completed"
 
     # Start WordPress installation in next stage
 }

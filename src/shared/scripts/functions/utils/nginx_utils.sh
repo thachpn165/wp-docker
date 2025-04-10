@@ -84,7 +84,8 @@ nginx_remove_mount_docker() {
 # Khởi động lại nginx-proxy bằng cách chạy docker compose trong thư mục NGINX_PROXY_DIR
 # =============================================
 nginx_restart() {
-  ensure_safe_cwd
+# TODO: Đoạn này đang gặp lỗi file override không được reload
+# TODO: Chuyển qua phương án CD vào thư mục hoặc dùng run_in_dir
   start_loading "$INFO_DOCKER_NGINX_STARTING"
   
   if [[ ! -d "$NGINX_PROXY_DIR" ]]; then
@@ -92,14 +93,18 @@ nginx_restart() {
     return 1
   fi
 
-  run_cmd "docker compose -f $NGINX_PROXY_DIR/docker-compose.yml down"
+  cd "$NGINX_PROXY_DIR" || {
+    print_msg error "$MSG_NOT_FOUND: $NGINX_PROXY_DIR"
+    return 1
+  }
+  run_cmd "docker compose down"
   if [[ $? -ne 0 ]]; then
       print_msg error "$ERROR_DOCKER_NGINX_STOP $NGINX_PROXY_CONTAINER"
       run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
       return 1
   fi
 
-  run_cmd "docker compose -f $NGINX_PROXY_DIR/docker-compose.yml up -d --force-recreate"
+  run_cmd "docker compose up -d --force-recreate"
   if [[ $? -ne 0 ]]; then
       print_msg error "$ERROR_DOCKER_NGINX_START $NGINX_PROXY_CONTAINER"
       run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
@@ -107,13 +112,16 @@ nginx_restart() {
   fi
 
   stop_loading
+  cd "$BASE_DIR" || {
+    return 1
+    print_msg error "$MSG_NOT_FOUND: $BASE_DIR"
+  }
   print_msg success "$SUCCESS_DOCKER_NGINX_RESTART"
 }
 
-
 nginx_reload() {
   start_loading "$INFO_DOCKER_NGINX_RELOADING"
-  run_cmd "docker exec \"$NGINX_PROXY_CONTAINER\" nginx -s reload"
+  run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"
   if [[ $? -ne 0 ]]; then
       print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
       run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"

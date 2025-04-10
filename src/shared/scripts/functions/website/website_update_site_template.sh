@@ -1,6 +1,6 @@
 #!/bin/bash
 
-website_management_update_site_template_logic() {
+website_logic_update_template() {
   TEMPLATE_VERSION_NEW=$(cat "$BASE_DIR/shared/templates/.template_version" 2>/dev/null || echo "unknown")
 
   outdated_sites=()

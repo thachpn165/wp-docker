@@ -1,12 +1,12 @@
 # =====================================
-# 🗑️ website_management_delete_logic – Delete a WordPress Website (Logic only)
+# 🗑️ website_logic_delete – Delete a WordPress Website (Logic only)
 # =====================================
 
 # =====================================
-# 🗑️ website_management_delete_logic – Delete a WordPress Website (Logic only)
+# 🗑️ website_logic_delete – Delete a WordPress Website (Logic only)
 # =====================================
 
-website_management_delete_logic() {
+website_logic_delete() {
   local domain="$1"
   local backup_enabled="$2"
 

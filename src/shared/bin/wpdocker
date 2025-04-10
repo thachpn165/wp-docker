@@ -1,4 +1,5 @@
 #!/bin/bash
+#shellcheck disable=SC1091
 # ✅ Load configuration from any location
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
@@ -23,6 +24,7 @@ source "$FUNCTIONS_DIR/core/core_version_management.sh"
 
 # Load CLI functions
 source  "$CLI_DIR/core_lang.sh"
+source  "$CLI_DIR/website_manage.sh"
 
 # Define subcommands handlers
 handle_website() {
@@ -30,10 +32,10 @@ handle_website() {
     case "$1" in
         create) bash "$CLI_DIR/website_create.sh" "${@:2}" ;;
         delete) bash "$CLI_DIR/website_delete.sh" "${@:2}" ;;
-        list) bash "$CLI_DIR/website_list.sh" "${@:2}" ;;
-        restart) bash "$CLI_DIR/website_restart.sh" "${@:2}" ;;
-        logs) bash "$CLI_DIR/website_logs.sh" "${@:2}" ;;
-        info) bash "$CLI_DIR/website_info.sh" "${@:2}" ;;
+        list) website_cli_list "${@:2}" ;;
+        restart) website_cli_restart "${@:2}" ;;
+        logs) website_cli_logs "${@:2}" ;;
+        info) website_cli_info "${@:2}" ;;
         update_template) bash "$CLI_DIR/website_update_template.sh" "${@:2}" ;;
         *) echo "${CROSSMARK} Unknown subcommand for website: $1" ;;
     esac

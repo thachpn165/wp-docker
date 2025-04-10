@@ -31,6 +31,16 @@ select_website() {
         fi
 
         SITE_DOMAIN="$SELECTED_WEBSITE"
+
+        # Check if the selected website exists
+        if ! json_get_site_value "$SITE_DOMAIN" "DOMAIN" > /dev/null 2>&1; then
+            print_msg error "$ERROR_WEBSITE_NOT_EXIST: $SITE_DOMAIN"
+            return 1
+        fi
+        if [[ ! -d "$SITES_DIR/$SITE_DOMAIN" ]]; then
+            print_msg error "$ERROR_WEBSITE_NOT_EXIST: $SITE_DOMAIN"
+            return 1
+        fi
     fi
     
     # Corrected assignment: no spaces around "=" in bash

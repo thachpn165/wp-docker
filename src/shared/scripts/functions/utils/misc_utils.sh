@@ -1,22 +1,4 @@
 # Define utility functions that don't belong to a specific category
-
-# =========================================
-# ✅ Check if required environment variables are defined
-# Usage:
-#   check_required_envs
-# Requires:
-#   - required_vars[]: An array of variable names to check
-# Behavior:
-#   - Exits with an error if any required variable is missing.
-check_required_envs() {
-  for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-      echo -e "${RED}${CROSSMARK} Error: Variable '$var' is not defined in config.sh${NC}"
-      exit 1
-    fi
-  done
-}
-
 ensure_safe_cwd() {
   if ! pwd &>/dev/null; then
     cd "$BASE_DIR" || cd /
@@ -209,8 +191,6 @@ fetch_env_variable() {
         return 1
     fi
 }
-
-random_string=$(date +%s)
 
 # ===========================================================
 # 🖨️ print_msg <type> <message>
