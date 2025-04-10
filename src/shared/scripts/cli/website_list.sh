@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # This script lists websites managed by the project.
 #
 # Prerequisites:
@@ -20,7 +22,6 @@
 #   - It is not run in a Bash shell.
 #   - PROJECT_DIR cannot be determined.
 #   - The 'config.sh' file is missing.
-#!/usr/bin/env bash
 
 # ✅ Load configuration from any directory
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"

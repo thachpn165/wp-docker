@@ -32,7 +32,7 @@ backup_restore_web_logic() {
         fi
 
         # Call the restore database function
-        backup_restore_database "$db_backup_file" "$db_container" "$domain"
+        backup_restore_database "$db_backup_file" "$domain"
     fi
 
     #echo -e "${GREEN}${CHECKMARK} Website '$domain' restore completed.${NC}"

@@ -105,9 +105,9 @@ fi
 
 if [[ ! -f "$CONFIG_JSON_FILE" ]]; then
   echo "{}" > "$CONFIG_JSON_FILE"
-  echo "✅ Created initial config file: $CONFIG_JSON_FILE"
+  echo "Created initial config file: $CONFIG_JSON_FILE"
 else
-  echo "ℹ️ Config file already exists: $CONFIG_JSON_FILE"
+  echo "Config file already exists: $CONFIG_JSON_FILE"
 fi
 
 # ========================

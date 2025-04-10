@@ -16,20 +16,5 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 source "$FUNCTIONS_DIR/core_loader.sh"
 
-# === Parse Arguments ===
-force_update=false
-
-for arg in "$@"; do
-  case "$arg" in
-    --force)
-      force_update=true
-      ;;
-  esac
-done
-
 # === Run Update Logic ===
-if [[ "$force_update" == true ]]; then
-  core_update_system --force
-else
-  core_update_system
-fi
+core_version_update_latest

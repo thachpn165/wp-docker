@@ -9,8 +9,13 @@ wordpress_protect_wp_login_logic() {
     local TEMPLATE_FILE="$TEMPLATES_DIR/wp-login-template.conf"
 
     if [[ -z "$domain" || -z "$action" ]]; then
-        print_msg error "$ERROR_MISSING_PARAM"
+        print_msg error "$ERROR_MISSING_PARAM: --domain, --action"
         exit 1
+    fi
+
+    if ! json_key_exists ".site[\"$domain\"]"; then
+        print_msg error "$ERROR_SITE_NOT_EXIST: $domain"
+        return 1
     fi
 
     if [[ "$action" == "enable" ]]; then
@@ -32,13 +37,9 @@ wordpress_protect_wp_login_logic() {
 
         print_msg step "$STEP_WORDPRESS_PROTECT_WP_INCLUDE_NGINX"
         if ! grep -q "include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"; then
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' "/include \/etc\/nginx\/globals\/cloudflare.conf;/a\\
-                include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"
-            else
-                sed -i "/include \/etc\/nginx\/globals\/cloudflare.conf;/a\\
-                include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"
-            fi
+            php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
+            sedi "/include \/etc\/nginx\/globals\/cloudflare.conf;/a\\
+            include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"
 
             print_msg important "$IMPORTANT_WORDPRESS_PROTECT_WP_LOGIN_INSTALLED:"
             echo -e "  ${GREEN}Username:${NC} $USERNAME"
@@ -52,15 +53,13 @@ wordpress_protect_wp_login_logic() {
             rm -f "$INCLUDE_FILE"
         fi
 
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' -e "/include \/etc\/nginx\/globals\/wp-login-$domain.conf;/d" "$NGINX_CONF_FILE"
-        else
-            sed -i -e "/include \/etc\/nginx\/globals\/wp-login-$domain.conf;/d" "$NGINX_CONF_FILE"
-        fi
+        sedi "/include \/etc\/nginx\/globals\/wp-login-$domain.conf;/d" "$NGINX_CONF_FILE"
 
         if [[ -f "$AUTH_FILE" ]]; then
             rm -f "$AUTH_FILE"
         fi
+
+        print_msg success "$SUCCESS_WORDPRESS_PROTECT_WP_LOGIN_DISABLED"
 
     else
         print_msg error "$ERROR_INVALID_CHOICE"

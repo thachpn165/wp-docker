@@ -46,7 +46,8 @@ wordpress_cache_setup_logic() {
     local site_dir="$SITES_DIR/$domain"
     local wp_config_file="$site_dir/wordpress/wp-config.php"
     local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
-    local PHP_CONTAINER="$domain-php"
+    local php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
+    local mariadb_container=$(json_get_site_value "$domain" "CONTAINER_DB")
 
     if [[ ! -d "$site_dir" ]]; then
         print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$site_dir")"
@@ -55,12 +56,12 @@ wordpress_cache_setup_logic() {
 
     local cache_plugins=("wp-super-cache" "nginx-helper" "w3-total-cache" "redis-cache" "wp-fastest-cache")
     local active_plugins
-    active_plugins=$(docker_exec_php "wp plugin list --status=active --field=name --path=$PHP_CONTAINER_WP_PATH")
+    active_plugins=$(wordpress_wp_cli_logic "$domain" "plugin list --status=active --field=name --path=$PHP_CONTAINER_WP_PATH")
 
     for plugin in "${cache_plugins[@]}"; do
         if echo "$active_plugins" | grep -q "$plugin"; then
             print_msg warning "$(printf "$WARNING_PLUGIN_ACTIVE_DEACTIVATING" "$plugin")"
-            if docker_exec_php "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH"; then
+            if docker_exec_php "$domain" "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH"; then
                 print_msg success "$(printf "$SUCCESS_PLUGIN_DEACTIVATED" "$plugin")"
             else
                 print_and_debug error "$(printf "$ERROR_PLUGIN_DEACTIVATION" "$plugin")"
@@ -73,8 +74,8 @@ wordpress_cache_setup_logic() {
         for plugin in "${cache_plugins[@]}"; do
             if echo "$active_plugins" | grep -q "$plugin"; then
                 print_msg warning "$(printf "$WARNING_PLUGIN_ACTIVE_DELETING" "$plugin")"
-                if docker_exec_php "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH" && \
-                   docker_exec_php "wp plugin delete $plugin --path=$PHP_CONTAINER_WP_PATH"; then
+                if docker_exec_php "$domain" "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH" && \
+                   docker_exec_php "$domain" "wp plugin delete $plugin --path=$PHP_CONTAINER_WP_PATH"; then
                     print_msg success "$(printf "$SUCCESS_PLUGIN_DELETED" "$plugin")"
                 else
                     print_and_debug error "$(printf "$ERROR_PLUGIN_DELETION" "$plugin")"
@@ -124,7 +125,7 @@ wordpress_cache_setup_logic() {
     bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin install "$plugin_slug" --activate
     exit_if_error $? "$(printf "$ERROR_PLUGIN_INSTALL" "$plugin_slug")"
 
-    docker exec -u root -i "$PHP_CONTAINER" chown -R "$PHP_USER" /var/www/html/wp-content
+    docker exec -u root -i "$php_container" chown -R "$PHP_USER" /var/www/html/wp-content
     exit_if_error $? "$ERROR_CHOWN_WPCONTENT"
 
     if [[ "$cache_type" == "fastcgi-cache" || "$cache_type" == "w3-total-cache" ]]; then

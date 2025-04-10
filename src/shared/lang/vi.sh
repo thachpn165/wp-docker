@@ -403,6 +403,7 @@ readonly STEP_SSL_REGENERATE_SELF_SIGNED="Đang tạo lại chứng chỉ SSL t�
 readonly STEP_LE_REQUESTING_CERT="Đang gửi yêu cầu chứng chỉ Let's Encrypt với phương thức webroot..."
 readonly STEP_REQUEST_CERT_WEBROOT="Đang yêu cầu chứng chỉ Let's Encrypt với phương thức webroot..."
 readonly STEP_SSL_LETSENCRYPT="Cài đặt chứng chỉ SSL miễn phí từ Let's Encrypt"
+readonly SUCCESS_SSL_LETS_ENCRYPT_ISSUED="Chứng chỉ Let's Encrypt đã cấp thành công: "
 
 # =============================================
 # 💾 SAO LƯU & KHÔI PHỤC
@@ -518,7 +519,7 @@ readonly WARNING_CRON_PHP_VERSION_EXISTS="Cron job cho php_get_version.sh đã t
 
 readonly TIPS_PHP_RECOMMEND_VERSION="Khuyến khích sử dụng PHP từ 8.2 trở lên!"
 
-readonly STEP_PHP_UPDATING_ENV="Đang cập nhật phiên bản PHP trong file .env..."
+readonly STEP_PHP_UPDATING_CONFIG="Đang cập nhật phiên bản PHP trong cấu hình website"
 readonly STEP_PHP_UPDATING_DOCKER_COMPOSE="Đang cập nhật phiên bản PHP trong docker-compose.yml..."
 readonly STEP_PHP_RESTARTING="Đang khởi động lại container PHP để áp dụng thay đổi..."
 readonly STEP_PHP_FETCHING_FROM_DOCKER="Đang tải dữ liệu từ Docker Hub..."
@@ -620,7 +621,7 @@ readonly LABEL_MENU_MAIN_UPDATE="Kiểm tra & Cập nhật WP Docker"
 readonly INFO_LABEL_CORE_VERSION="Phiên bản WP Docker"
 
 readonly SUCCESS_TIMEZONE_SET="Múi giờ hệ thống đã được thiết lập về Asia/Ho_Chi_Minh."
-readonly SUCCESS_CORE_CHANNEL_SET="Kênh phiên bản đã được thiết lập thành '%s' tại %s."
+readonly SUCCESS_CORE_CHANNEL_SET="CORE_CHANNEL đã được thiết lập thành '%s' tại %s."
 readonly SUCCESS_COMMAND_AVAILABLE="Lệnh '%s' đã được cài đặt và khả dụng."
 readonly SUCCESS_SYSTEM_READY="Hệ thống đã sẵn sàng để sử dụng WP Docker LEMP."
 
@@ -671,7 +672,7 @@ readonly WARNING_MIGRATION_PREPARE="Vui lòng chuẩn bị các tệp nguồn tr
 
 readonly PROMPT_SELECT_EDITOR="Chọn số tương ứng với trình soạn thảo bạn muốn dùng:"
 readonly PROMPT_CONFIRM_EDITOR="Bạn có muốn mở trình soạn thảo này để chỉnh sửa không?"
-readonly PROMPT_SELECT_CHANNEL="Vui lòng chọn kênh phiên bản để sử dụng:"
+readonly PROMPT_SELECT_CHANNEL="Vui lòng chọn kênh phát hành để sử dụng:"
 readonly PROMPT_SELECT_OPTION="Chọn tuỳ chọn: "
 readonly PROMPT_ENTER_ACTION_NUMBER="Nhập số tương ứng với hành động:"
 readonly PROMPT_ENTER_DOMAIN_TO_MIGRATE="👉 Nhập tên domain để migrate:"
@@ -731,9 +732,8 @@ readonly SUCCESS_CRON_REMOVED="Đã xóa cron liên quan của website"
 # =============================================
 readonly INFO_AVAILABLE_LANGUAGES="Danh sách ngôn ngữ khả dụng:"
 readonly PROMPT_SELECT_LANGUAGE="Chọn ngôn ngữ bạn muốn sử dụng:"
-readonly ERROR_LANG_CODE_REQUIRED="Ngôn ngữ thiết lập không hợp lệ hoặc chưa hỗ trợ"
-readonly ERROR_LANG_SET_FAILED="Không thể thiết lập ngôn ngữ. Vui lòng kiểm tra lại."
-readonly SUCCESS_LANG_CODE_UPDATED="Đã cập nhật mã ngôn ngữ thành công:"
+readonly ERROR_LANG_CODE_REQUIRED="Thiếu mã ngôn ngữ. Vui lòng nhập mã hoặc chọn ngôn ngữ."
+readonly SUCCESS_LANG_CODE_UPDATED="Đã cập nhật mã ngôn ngữ thành công: %s.  Hãy thoát menu và truy cập lại để áp dụng ngôn ngữ mới."
 readonly LABEL_MENU_SYSTEM_CHANGE_LANG="Thay đổi ngôn ngữ"
 
 # =============================================
@@ -764,6 +764,7 @@ readonly INFO_SKIP_BACKUP="Bỏ qua bước sao lưu."
 readonly SUCCESS_SYSTEM_UNINSTALLED="Đã xoá toàn bộ hệ thống. Nếu có sao lưu, hãy kiểm tra tại: %s"
 readonly INFO_RESTORE_INSTRUCTION="Bạn có thể khôi phục từ thư mục backup: %s"
 readonly INFO_UPDATING_CORE="Đang cập nhật hệ thống"
+
 readonly INFO_DOWNLOADING_CORE_UPDATE="Đang tải về bản cập nhật mới nhất từ GitHub..."
 readonly STEP_EXTRACT_AND_UPDATE="Đang giải nén và thay thế mã nguồn..."
 readonly SUCCESS_CORE_UPDATED="🎉 Đã cập nhật hệ thống thành công!"
@@ -777,25 +778,14 @@ readonly INFO_CORE_VERSION_CURRENT="Phiên bản hiện tại"
 readonly INFO_CORE_VERSION_LATEST="Phiên bản mới nhất"
 readonly WARNING_DEV_MODE_NO_UPDATE="Chế độ dev không hỗ trợ cập nhật tự động. Vui lòng cập nhật thủ công với git pull hoặc git fetch."
 readonly WARNING_CORE_SOURCE_REPO_NO_UPDATE="Bạn đang ở chế độ dev. Không thể cập nhật tự động từ GitHub."
-readonly INFO_CORE_VERSION_DEV_MODE="Đang sử dụng channel dev. Không áp dụng kiểm tra phiên bản."
-readonly WARNING_VERSION_NOT_FOUND="Không tìm thấy phiên bản mới nhất. Vui lòng kiểm tra lại kết nối mạng hoặc repo."
+readonly ERROR_DOCKER_PHP_CONTAINER_NOT_FOUND="Không tìm thấy container PHP. Vui lòng kiểm tra lại."
 
-
-#refactor v1.1.8-beta
-readonly ERROR_LANG_NOT_SET="Ngôn ngữ chưa được thiết lập. Vui lòng chọn ngôn ngữ trước khi sử dụng."
-readonly INFO_CURRENT_LANG="Ngôn ngữ hiện tại"
-readonly LABEL_LANG_EN="Tiếng Anh"
-readonly LABEL_LANG_VI="Tiếng Việt"
-readonly LABEL_LANG_JA="Tiếng Nhật"
-readonly LABEL_LANG_ZH="Tiếng Trung"
-readonly LABEL_LANG_KO="Tiếng Hàn"
-readonly LABEL_LANG_ES="Tiếng Tây Ban Nha"
-readonly LABEL_LANG_DE="Tiếng Đức"
-readonly LABEL_LANG_FR="Tiếng Pháp"
-readonly LABEL_LANG_RU="Tiếng Nga"
-readonly LABEL_LANG_ID="Tiếng Indonesia"
-readonly LABEL_LANG_TH="Tiếng Thái"
-readonly LABEL_LANG_MY="Tiếng Malaysia"
-readonly LABEL_LANG_TW="Tiếng Đài Loan"
-readonly INFO_AVAILABLE_LANGS="Danh sách ngôn ngữ khả dụng:"
-readonly TIPS_CHANGE_LANG="Bạn có thể thay đổi ngôn ngữ bằng cách chạy lệnh: wpdocker lang set <lang_code>"
+readonly WARNING_VERSION_NOT_FOUND="Không tìm thấy phiên bản hiện tại. Đang thực hiện kiểm tra trên Github để khôi phục."
+readonly INFO_VERSION_FILE_RESTORED="Thông tin phiên bản đã được khôi phục."
+readonly ERROR_FETCH_LATEST_VERSION_FAILED="Có lỗi xảy ra khi kiểm tra phiên bản trên Github."
+readonly INFO_UPDATE_PROMPT="Cập nhật phiên bản WP Docker mới nhất"
+readonly PROMPT_UPDATE_CONFIRMATION="Bạn có muốn cập nhật phiên bản WP Docker mới nhất không?"
+readonly ERROR_SYNC_FAILED="Đồng bộ thất bại."
+readonly SUCCESS_WP_DOCKER_ZIP_DOWNLOADED="Đã tải về tệp zip WP Docker thành công."
+readonly INFO_UNPACKING_ZIP="Đang giải nén mã nguồn...."
+readonly LABEL_MENU_SYSTEM_CHANGE_CHANNEL="Thay đổi kênh phiên bản"

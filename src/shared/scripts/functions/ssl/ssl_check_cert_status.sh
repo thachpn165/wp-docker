@@ -7,14 +7,13 @@ ssl_check_certificate_status_logic() {
     return 1
   fi
 
-  local env_file="$SITES_DIR/$domain/.env"
-  if [[ ! -f "$env_file" ]]; then
-    print_msg error "$ERROR_ENV_NOT_FOUND: $domain"
-    return 1
+  if ! json_key_exists ".site[\"$domain\"]"; then
+      print_msg error "$ERROR_WEBSITE_NOT_EXIST: $domain"
+      return 1
   fi
 
   local DOMAIN
-  DOMAIN=$(fetch_env_variable "$env_file" "DOMAIN")
+  DOMAIN=$(json_get_site_value "$domain" "DOMAIN")
   if [[ -z "$DOMAIN" ]]; then
     print_msg error "$ERROR_ENV_DOMAIN_NOT_FOUND"
     return 1

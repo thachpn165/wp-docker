@@ -17,6 +17,12 @@ check_required_envs() {
   done
 }
 
+ensure_safe_cwd() {
+  if ! pwd &>/dev/null; then
+    cd "$BASE_DIR" || cd /
+    debug_log "[ensure_safe_cwd] ❗️Detected invalid CWD → Recovered to $BASE_DIR"
+  fi
+}
 
 # ❌ Exit if the last command failed
 # Usage:
@@ -290,3 +296,4 @@ get_user_confirmation() {
     esac
   done
 }
+

@@ -17,38 +17,7 @@ done
 source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
 source "$FUNCTIONS_DIR/setup-aliases.sh"
-source "$FUNCTIONS_DIR/utils/env_utils.sh"
-
-# === Ensure CORE_CHANNEL is set in .env ===
-if [[ ! -f "$CORE_ENV" ]]; then
-  echo -e "$WARNING_ENV_NOT_FOUND"
-  touch "$CORE_ENV"
-fi
-
-# === Prompt language selection if LANG_CODE is not set ===
-if ! grep -q "^LANG_CODE=" "$CORE_ENV"; then
-  echo -e "\n🌐 Please select a language:"
-  options=("English (en)" "Vietnamese (vi)")
-  PS3="Select a language number: "
-  select opt in "${options[@]}"; do
-    case $REPLY in
-      1)
-        lang_code="en"
-        break
-        ;;
-      2)
-        lang_code="vi"
-        break
-        ;;
-      *)
-        echo "❌ Invalid selection. Please try again."
-        ;;
-    esac
-  done
-
-  echo "✅ Language selected: $lang_code"
-  echo "LANG_CODE=\"$lang_code\"" >> "$CORE_ENV"
-fi
+source "$FUNCTIONS_DIR/utils/env_utils.sh" #! Bỏ trong tương lai, đang dùng tạm để lưu trữ DEBUG_MODE
 
 # =============================================
 # 🔧 Khởi tạo file cấu hình .config.json
@@ -94,16 +63,16 @@ else
   echo -e "$(printf "$SUCCESS_WPCLI_EXISTS" "$WP_CLI_PATH")"
 fi
 
-pushd "$NGINX_PROXY_DIR" > /dev/null
 
-if ! docker compose ps | grep -q "nginx-proxy.*Up"; then
+# Start Nginx Proxy if not running
+if ! docker compose -f "$NGINX_PROXY_DIR/docker-compose.yml" ps | grep -q "$NGINX_PROXY_CONTAINER.*Up"; then
   echo -e "$INFO_NGINX_PROXY_STARTING"
-  docker compose up -d || exit_if_error 1 "$ERROR_NGINX_PROXY_START_FAILED"
+  docker compose -f "$NGINX_PROXY_DIR/docker-compose.yml" up -d || exit_if_error 1 "$ERROR_NGINX_PROXY_START_FAILED"
 fi
 
 echo -e "$INFO_NGINX_PROXY_WAIT"
 for i in {1..10}; do
-  status=$(docker inspect -f "{{.State.Status}}" nginx-proxy 2>/dev/null)
+  status=$(docker inspect -f "{{.State.Status}}" $NGINX_PROXY_CONTAINER 2>/dev/null)
   if [[ "$status" == "running" ]]; then
     echo -e "$SUCCESS_NGINX_PROXY_RUNNING"
     break
@@ -113,19 +82,19 @@ done
 
 if [[ "$status" != "running" ]]; then
   echo -e "$ERROR_NGINX_PROXY_NOT_RUNNING"
-  docker logs nginx-proxy 2>&1 | tail -n 30
+  docker logs $NGINX_PROXY_CONTAINER 2>&1 | tail -n 30
   echo -e "$ERROR_NGINX_PROXY_LOG_HINT"
   exit 1
 fi
 
-popd > /dev/null
-
+# Create docker network if not exists
 create_docker_network "$DOCKER_NETWORK"
+
+# Start all website
+# TODO: Sửa lại để kiểm tra 2 điều kiện: Thư mục & .config.json 
 website_check_and_up
 
+# Check if required commands are available
 check_required_commands
-
-echo -e "BASE_DIR: $BASE_DIR"
-echo -e "LOGS_DIR: $LOGS_DIR"
 
 echo -e "$SUCCESS_SYSTEM_READY"

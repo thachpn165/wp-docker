@@ -235,7 +235,7 @@ readonly STEP_WEBSITE_SETUP_WORDPRESS="Installing WordPress"
 readonly STEP_WEBSITE_SETUP_ESSENTIALS="Configuring basics (permalinks, security plugins,...)"
 readonly STEP_WEBSITE_RESTARTING="Restarting website"
 readonly STEP_WEBSITE_CHECK_DNS="Checking domain pointing"
-
+readonly SUCCESS_SSL_LETS_ENCRYPT_ISSUED="Let's Encrypt certificate issued successfully: "
 # =============================================
 # 📦 WORDPRESS
 # =============================================
@@ -518,7 +518,7 @@ readonly WARNING_CRON_PHP_VERSION_EXISTS="Cron job for php_get_version.sh alread
 
 readonly TIPS_PHP_RECOMMEND_VERSION="Recommended to use PHP 8.2 or higher!"
 
-readonly STEP_PHP_UPDATING_ENV="Updating PHP version in .env file..."
+readonly STEP_PHP_UPDATING_CONFIG="Updating PHP version in website config file"
 readonly STEP_PHP_UPDATING_DOCKER_COMPOSE="Updating PHP version in docker-compose.yml..."
 readonly STEP_PHP_RESTARTING="Restarting PHP container to apply changes..."
 readonly STEP_PHP_FETCHING_FROM_DOCKER="Downloading data from Docker Hub..."
@@ -798,3 +798,14 @@ readonly LABEL_LANG_TH="Thai"
 readonly LABEL_LANG_MY="Malaysian"
 readonly LABEL_LANG_TW="Taiwanese"
 readonly INFO_AVAILABLE_LANGS="List of available languages:"
+readonly ERROR_DOCKER_PHP_CONTAINER_NOT_FOUND="Docker PHP container not found. Please check your setup."
+
+readonly WARNING_VERSION_NOT_FOUND="Current version not found. Checking on Github to restore."
+readonly INFO_VERSION_FILE_RESTORED="Version information has been restored."
+readonly ERROR_FETCH_LATEST_VERSION_FAILED="An error occurred while checking version on Github."
+readonly INFO_UPDATE_PROMPT="Update to the latest WP Docker version"
+readonly PROMPT_UPDATE_CONFIRMATION="Do you want to update to the latest WP Docker version?"
+readonly ERROR_SYNC_FAILED="Synchronization failed."
+readonly SUCCESS_WP_DOCKER_ZIP_DOWNLOADED="WP Docker zip file has been downloaded successfully."
+readonly INFO_UNPACKING_ZIP="Unpacking zip file..."
+readonly LABEL_MENU_SYSTEM_CHANGE_CHANNEL="Change version channel"

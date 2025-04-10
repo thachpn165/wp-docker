@@ -60,14 +60,20 @@ EOF
 
 # Function to get PHP Container in .env
 php_get_container() {
-  local env_file="$1"
-  local container_name
+  local domain="$1"
 
-  if [[ -f "$env_file" ]]; then
-    container_name=$(env_get_value "$env_file" "CONTAINER_PHP")
+  if [[ -z "$domain" ]]; then
+    print_and_debug error "$ERROR_MISSING_PARAM :php_get_container(domain)"
+    return 1
+  fi
+
+  local container_name
+  container_name=$(json_get_site_value "$domain" "CONTAINER_PHP")
+
+  if [[ -n "$container_name" ]]; then
     echo "$container_name"
   else
-    print_and_debug error "$ERROR_BACKUP_ENV_FILE_NOT_FOUND : $env_file"
+    #print_and_debug error "$ERROR_DOCKER_PHP_CONTAINER_NOT_FOUND: $domain"
     return 1
   fi
 }

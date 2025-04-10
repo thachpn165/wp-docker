@@ -12,7 +12,8 @@ wordpress_migration_logic() {
   local site_dir="$SITES_DIR/$domain"
   local web_root="$site_dir/wordpress"
   local sql_file archive_file server_ip
-  local mariadb_container="$domain-mariadb"
+  local mariadb_container
+  mariadb_container=$(json_get_site_value "$domain" "CONTAINER_DB")
 
   server_ip=$(curl -s ifconfig.me)
 
@@ -55,6 +56,7 @@ wordpress_migration_logic() {
     }
 
     bash "$MENU_DIR/website/website_create_menu.sh"
+    mariadb_container=$(json_get_site_value "$domain" "CONTAINER_DB") # Fetch mariadb container name after created
   fi
 
   # Extract source
@@ -67,11 +69,14 @@ wordpress_migration_logic() {
 
   # Import SQL
   print_msg step "🧠 Đang import database..."
+  local db_name db_user db_pass
+  db_name=$(json_get_site_value "$domain" "MYSQL_DATABASE")
+  db_user=$(json_get_site_value "$domain" "MYSQL_USER")
+  db_pass=$(json_get_site_value "$domain" "MYSQL_PASSWORD")
   bash "$CLI_DIR/database_import.sh" --domain="$domain" --backup_file="$sql_file"
 
   # Check prefix in DB
   print_msg step "$STEP_WORDPRESS_CHECK_DB_PREFIX"
-  read db_name db_user db_pass < <(db_fetch_env "$domain") || return 1
   local prefix
   prefix=$(docker exec --env MYSQL_PWD="$db_pass" "$mariadb_container" \
     mysql -u "$db_user" "$db_name" -e "SHOW TABLES;" \
@@ -90,7 +95,9 @@ wordpress_migration_logic() {
     fi
 
     print_msg step "$STEP_WORDPRESS_UPDATE_CONFIG_DB"
-    read db_name db_user db_pass < <(db_fetch_env "$domain") || return 1
+    db_name=$(json_get_site_value "$domain" "MYSQL_DATABASE")
+    db_user=$(json_get_site_value "$domain" "MYSQL_USER")
+    db_pass=$(json_get_site_value "$domain" "MYSQL_PASSWORD")
 
     sedi "s/define( *'DB_NAME'.*/define('DB_NAME', '$db_name');/" "$config_file"
     sedi "s/define( *'DB_USER'.*/define('DB_USER', '$db_user');/" "$config_file"

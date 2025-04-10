@@ -21,7 +21,7 @@ system_nginx_rebuild_logic() {
   run_cmd "docker pull $IMAGE_NAME" || return 1
 
   # Recreate container
-  run_in_dir "$NGINX_PROXY_DIR" docker compose up -d nginx-proxy
+  run_in_dir "$NGINX_PROXY_DIR" docker compose up -d $NGINX_PROXY_CONTAINER
 
   # Wait for container up to 30 seconds
   for i in {1..30}; do

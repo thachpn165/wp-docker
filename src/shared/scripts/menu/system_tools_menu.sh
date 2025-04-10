@@ -16,7 +16,8 @@ system_tools_menu() {
         print_msg label "${GREEN}3)${NC} $LABEL_MENU_SYSTEM_CLEANUP_DOCKER"
         print_msg label "${GREEN}4)${NC} $LABEL_MENU_SYSTEM_REBUILD_NGINX"
         print_msg label "${GREEN}5)${NC} $LABEL_MENU_SYSTEM_CHANGE_LANG"
-        print_msg label "${GREEN}[6]${NC} ${STRONG}$MSG_EXIT${NC}"
+        print_msg label "${GREEN}6)${NC} $LABEL_MENU_SYSTEM_CHANGE_CHANNEL"
+        print_msg label "${GREEN}[7]${NC} ${STRONG}$MSG_EXIT${NC}"
         echo ""
         read -p "$MSG_SELECT_OPTION " choice
 
@@ -38,6 +39,9 @@ system_tools_menu() {
                     core_lang_change_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 6)
+                    core_channel_switch_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    ;;
+                7)
                     break
                     ;;
                 *)

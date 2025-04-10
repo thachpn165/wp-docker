@@ -35,15 +35,15 @@ if [[ -z "$domain" ]]; then
 fi
 
 echo -e "${YELLOW}🔧 Please provide the email address for Let's Encrypt registration:${NC}"
-read -p "Email: " EMAIL
+read -p "Email: " email
 
-if [[ -z "$EMAIL" ]]; then
+if [[ -z "$email" ]]; then
   echo -e "${RED}${CROSSMARK} Email is required for Let's Encrypt registration. Exiting.${NC}"
   exit 1
 fi
 
 # Staging is always set to false
-STAGING=false
+staging=false
 
 # === Call the logic to install Let's Encrypt SSL ===
-ssl_install_lets_encrypt_logic "$domain" "$EMAIL" "$STAGING"
+ssl_install_lets_encrypt_logic "$domain" "$email" "$staging"

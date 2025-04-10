@@ -44,6 +44,7 @@ is_directory_exist() {
 
   if [[ ! -d "$dir" ]]; then
     if [[ "$create_if_missing" != "false" ]]; then
+      debug_log "[is_directory_exist] Directory not exist, creating: $dir"
       print_msg debug "$(printf "$INFO_DIR_CREATING" "$dir")"
       mkdir -p "$dir"
     else
@@ -74,10 +75,12 @@ run_in_dir() {
     return 1
   fi
 
-  pushd "$target_dir" > /dev/null
-  debug_log "[run_in_dir] Executing command: $*"
-  "$@"
-  local status=$?
-  popd > /dev/null
-  return $status
+  debug_log "[run_in_dir] Executing in: $target_dir → $*"
+
+  (
+    cd "$target_dir" || exit 1
+    "$@"
+  )
+  ensure_safe_cwd
+  return $?
 }

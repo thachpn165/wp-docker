@@ -1,7 +1,7 @@
 services:
   php:
     image: bitnami/php-fpm:${PHP_VERSION}
-    container_name: ${domain}-php
+    container_name: $php_container
     volumes:
       - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
       - ./php/php-fpm.conf:/opt/bitnami/php/etc/php-fpm.conf:ro
@@ -21,7 +21,7 @@ services:
 
   mariadb:
     image: mariadb:10.11
-    container_name: ${domain}-mariadb
+    container_name: $db_container
     volumes:
       - ./mariadb/conf.d:/etc/mysql/conf.d:ro
       - mariadb_data:/var/lib/mysql

@@ -2,6 +2,10 @@
 # 📋 website_management_list – Display List of Existing Websites
 # =====================================
 
+# =====================================
+# 📋 website_management_list – Display List of Existing Websites
+# =====================================
+
 website_management_list_logic() {
   if [[ ! -d "$SITES_DIR" ]]; then
     print_and_debug error "$MSG_NOT_FOUND: $SITES_DIR"

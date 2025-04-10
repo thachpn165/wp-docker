@@ -69,3 +69,13 @@ jobs:
         run: |
           git tag -f latest
           git push origin -f latest
+
+      - name: 🚀 Create GitHub Release (latest tag)
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "latest"
+          tag_name: "latest"
+          files: dist/wp-docker.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

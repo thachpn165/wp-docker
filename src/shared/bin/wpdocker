@@ -124,7 +124,15 @@ handle_core() {
     # wpdocker core
     case "$1" in
         version) bash "$CLI_DIR/core_version_display.sh" "${@:2}" ;;
-        update) bash "$CLI_DIR/core_update.sh" "${@:2}" ;;
+        update) core_version_update_latest "${@:2}" ;;
+        channel) 
+            case "$2" in
+                change) core_channel_switch_prompt "${@:3}" ;;
+                check) core_channel_get ;;
+                #list) core_channel_list ;; #TODO: Sẽ bổ sung sau để liệt kê danh sách channel
+                *) echo "${CROSSMARK} Unknown subcommand for core channel: $2" ;;
+            esac
+            ;;
         lang) 
             case "$2" in
                 change) core_lang_cli_change "${@:3}" ;;
