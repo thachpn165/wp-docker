@@ -1,5 +1,5 @@
 #shellcheck disable=SC1091
-#source "$CLI_DIR/database_actions.sh"
+source "$CLI_DIR/database_actions.sh"
 
 database_prompt_export() {
     # Ensure SITE_DOMAIN is set by calling select_website
@@ -13,7 +13,7 @@ database_prompt_export() {
     fi
     echo "💾 Backup will be saved to: $save_location"
 
-    database_export_logic --domain="$domain" --save_location="$save_location"
+    database_cli_export --domain="$domain" --save_location="$save_location"
 }
 
 database_export_logic() {

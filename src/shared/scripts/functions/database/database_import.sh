@@ -1,3 +1,29 @@
+source "$CLI_DIR/database_actions.sh"
+database_prompt_import() {
+    echo "🔧 Choose the website for database import:"
+    select_website || exit 1
+
+    # Ensure SITE_DOMAIN is selected
+    if [[ -z "$domain" ]]; then
+        echo "${CROSSMARK} Site name is not set. Exiting..."
+        exit 1
+    fi
+
+    # Ask for the .sql file path
+    read -rp "Enter .sql file path: " backup_file
+
+    # Ensure the file path is provided
+    if [[ -z "$backup_file" ]]; then
+        echo "${CROSSMARK} No file path provided. Exiting..."
+        exit 1
+    fi
+
+    echo "💾 Importing database for site: $domain from backup file: $backup_file"
+
+    # Call cli/database_import.sh with the selected site_name, db_user, db_password, db_name, and backup_file
+    database_cli_import --domain="$domain" --backup_file="$backup_file"
+}
+
 database_import_logic() {
     local domain="$1"
     local backup_file="$2"
@@ -23,7 +49,6 @@ database_import_logic() {
     debug_log "[DB IMPORT] Domain: $domain"
     debug_log "[DB IMPORT] Backup file: $backup_file"
 
-
     local db_name db_user db_password
     db_name="$(json_get_site_value "$domain" "MYSQL_DATABASE")"
     db_user="$(json_get_site_value "$domain" "MYSQL_USER")"
@@ -46,7 +71,7 @@ database_import_logic() {
     docker exec --env MYSQL_PWD="$db_password" "$db_container" \
         mysql -u "$db_user" -e "$sql_cmd"
     debug_log "[DB IMPORT] SQL Command: $sql_cmd"
-    
+
     if ! docker exec --env MYSQL_PWD="$db_password" "$db_container" \
         sh -c "mysql -u $db_user $db_name < /tmp/restore.sql"; then
         print_msg error "$(printf "$ERROR_BACKUP_RESTORE_FAILED" "$db_name")"

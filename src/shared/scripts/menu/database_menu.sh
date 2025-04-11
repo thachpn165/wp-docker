@@ -16,11 +16,11 @@ database_menu() {
             read -p "$MSG_SELECT_OPTION " choice
             
                 case "$choice" in
-                    1) bash "$MENU_DIR/database/database_reset_menu.sh"; 
+                    1) database_prompt_reset; 
                         read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
                     2) database_prompt_export; 
                         read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-                    3) bash "$MENU_DIR/database/database_import_menu.sh"; 
+                    3) database_prompt_import; 
                         read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
                     6) 
                         break

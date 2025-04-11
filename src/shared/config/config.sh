@@ -18,7 +18,7 @@ else
 fi
 PROJECT_DIR=$BASE_DIR
 # ==== 2. Load .env file ====
-DEBUG_MODE="false"
+DEBUG_MODE="true"
 CORE_ENV="${CORE_ENV:-$BASE_DIR/.env}"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 

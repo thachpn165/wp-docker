@@ -61,7 +61,7 @@ handle_backup() {
     # wpdocker backup
     case "$1" in
         website) backup_cli_backup_web "${@:2}" ;;
-        database) bash "$FUNCTIONS_DIR/backup/backup_database.sh" "${@:2}" ;;
+        database) database_cli_export "${@:2}" ;;
         file) backup_cli_file "${@:2}" ;;
         *) echo "${CROSSMARK} Unknown subcommand for backup: $1" ;;
     esac
@@ -85,7 +85,7 @@ handle_php() {
 
 handle_database() {
     case "$1" in
-        reset) bash "$CLI_DIR/database_reset.sh" "${@:2}" ;;
+        reset) database_cli_reset "${@:2}" ;;
         import) database_cli_import "${@:2}" ;;
         export) database_cli_export "${@:2}" ;;
         *) echo "${CROSSMARK} Unknown subcommand for database: $1" ;;

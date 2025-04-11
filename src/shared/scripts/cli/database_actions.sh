@@ -10,7 +10,8 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
     fi
     SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-source "$FUNCTIONS_DIR/database_loader.sh"
+
+#source "$FUNCTIONS_DIR/database_loader.sh"
 
 database_cli_export() {
     timestamp=$(date +%s)
@@ -58,4 +59,21 @@ database_cli_import() {
 
     # Call the logic function to import the database
     database_import_logic "$domain" "$backup_file"
+}
+
+
+database_cli_reset() {
+    local domain
+
+    # Parse parameters
+    domain=$(_parse_params "--domain" "$@")
+
+    # Ensure domain is set
+    if [[ -z "$domain" ]]; then
+        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
+        exit 1
+    fi
+
+    # Call the logic function to reset the database
+    database_logic_reset "$domain"
 }
