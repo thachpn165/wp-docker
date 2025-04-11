@@ -34,8 +34,8 @@ ssl_check_certificate_status_logic() {
   start_date=$(openssl x509 -in "$cert_path" -noout -startdate | cut -d= -f2)
   end_date=$(openssl x509 -in "$cert_path" -noout -enddate | cut -d= -f2)
 
-  local start_ts end_ts now_ts
-  start_ts=$(date -d "$start_date" +%s 2>/dev/null || gdate -d "$start_date" +%s)
+  local  end_ts now_ts
+  # start_ts is not used, so it has been removed
   end_ts=$(date -d "$end_date" +%s 2>/dev/null || gdate -d "$end_date" +%s)
   now_ts=$(date +%s)
 
