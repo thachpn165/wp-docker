@@ -18,9 +18,9 @@ source "$FUNCTIONS_DIR/website_loader.sh"
 
 website_cli_create() {
   auto_generate=true # default: true
-  domain=$(website_domain_param "$@")
-  php_version=$(website_php_param "$@")
-  auto_generate=$(website_auto_generate_param "$@")
+  domain=$(_parse_params "--domain"  "$@")
+  php_version=$(_parse_params "--php" "$@")
+  auto_generate=$(_parse_params "--auto_generate" "$@")
 
   if [[ -z "$domain" || -z "$php_version" ]]; then
     #echo "${CROSSMARK} Missing parameters. Usage:"

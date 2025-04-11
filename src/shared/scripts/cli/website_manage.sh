@@ -14,10 +14,10 @@ done
 # Load functions for website management
 source "$FUNCTIONS_DIR/website_loader.sh"
 
-# Hàm restart website sử dụng domain từ website_domain_param
+# Hàm restart website sử dụng domain từ _parse_params "--domain" 
 function website_cli_restart() {
   local domain
-  domain=$(website_domain_param "$@")
+  domain=$(_parse_params "--domain"  "$@")
 
   if [[ $? -ne 0 ]]; then
     print_msg error "$ERROR_MISSING_PARAM: --domain"
@@ -28,10 +28,10 @@ function website_cli_restart() {
   fi
 }
 
-# Hàm hiển thị thông tin website sử dụng domain từ website_domain_param
+# Hàm hiển thị thông tin website sử dụng domain từ _parse_params "--domain" 
 function website_cli_info() {
   local domain
-  domain=$(website_domain_param "$@")
+  domain=$(_parse_params "--domain"  "$@")
   if [[ $? -ne 0 ]]; then
     print_msg error "$ERROR_MISSING_PARAM: --domain"
     return 1
@@ -52,8 +52,8 @@ function website_cli_logs() {
   local domain
   local log_type
 
-  log_type=$(website_log_type_param "$@")
-  domain=$(website_domain_param "$@")
+  log_type=$(_parse_params "--log_type" "$@")
+  domain=$(_parse_params "--domain"  "$@")
 
   if [[ $? -ne 0 ]]; then
     print_msg error "$ERROR_MISSING_PARAM: --domain, --log_type"
@@ -69,8 +69,8 @@ website_cli_delete() {
   local domain
   local backup_enabled
 
-  domain=$(website_domain_param "$@")
-  backup_enabled=$(website_backup_enabled_param "$@")
+  domain=$(_parse_params "--domain"  "$@")
+  backup_enabled=$(_parse_params "--backup_enabled" "$@")
   
   if [[ $? -ne 0 ]]; then
     print_msg error "$ERROR_MISSING_PARAM: --domain"
