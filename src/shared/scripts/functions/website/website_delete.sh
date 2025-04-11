@@ -1,6 +1,42 @@
 # =====================================
-# 🗑️ website_logic_delete – Delete a WordPress Website (Logic only)
+# 🗑️ website_prompt_delete
 # =====================================
+website_prompt_delete() {
+  source "$CLI_DIR/website_manage.sh"
+  # === UI ===
+  print_msg title "$TITLE_WEBSITE_DELETE"
+
+  # Select website
+  domain=""
+  select_website
+  if [[ -z "$domain" ]]; then
+    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
+    exit 1
+  fi
+
+  # Ask for backup before delete
+  backup_enabled=true # default
+  backup_confirm=$(get_input_or_test_value "$PROMPT_BACKUP_BEFORE_DELETE $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "yes")
+  [[ "$backup_confirm" != "yes" ]] && backup_enabled=false
+  debug_log "[DEBUG] Backup before delete: $backup_enabled"
+
+  # Ask for final delete confirmation
+  delete_confirm=$(get_input_or_test_value "$PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
+  if [[ "$delete_confirm" != "yes" ]]; then
+    print_msg warning "$WARNING_ACTION_CANCELLED"
+    exit 0
+  fi
+
+  # Run deletion logic
+  #cmd="bash \"$SCRIPTS_DIR/cli/website_delete.sh\" --domain=\"$domain\""
+  #[[ "$backup_enabled" == true ]] && cmd+=" --backup_enabled=true"
+  #debug_log "[DEBUG] Command sent to cli/website_delete.sh: $cmd"
+
+  #eval "$cmd"
+  website_cli_delete \
+    --domain="$domain" \
+    --backup_enabled="$backup_enabled" || return 1
+}
 
 # =====================================
 # 🗑️ website_logic_delete – Delete a WordPress Website (Logic only)
@@ -9,6 +45,10 @@
 website_logic_delete() {
   local domain="$1"
   local backup_enabled="$2"
+
+  if [[ -z "$domain" ]]; then
+    website_prompt_delete
+  fi
 
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_MISSING_PARAM: --domain"
@@ -80,7 +120,7 @@ website_logic_delete() {
 
   if crontab -l 2>/dev/null | grep -q "$domain"; then
     tmp_cron=$(mktemp)
-    crontab -l | grep -v "$domain" > "$tmp_cron"
+    crontab -l | grep -v "$domain" >"$tmp_cron"
     crontab "$tmp_cron"
     rm -f "$tmp_cron"
     print_msg success "$SUCCESS_CRON_REMOVED: $domain"

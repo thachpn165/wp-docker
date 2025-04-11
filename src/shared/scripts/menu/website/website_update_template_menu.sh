@@ -14,6 +14,7 @@ done
 source "$FUNCTIONS_DIR/website_loader.sh"
 
 # === Get the outdated sites list from the logic ===
+#shellcheck disable=SC2207
 outdated_sites=($(website_logic_update_template))
 
 # Check if there are any outdated sites

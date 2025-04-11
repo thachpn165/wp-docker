@@ -31,12 +31,12 @@ handle_website() {
     # wpdocker website
     case "$1" in
         create) bash "$CLI_DIR/website_create.sh" "${@:2}" ;;
-        delete) bash "$CLI_DIR/website_delete.sh" "${@:2}" ;;
+        delete) "website_cli_delete" "${@:2}" ;;
         list) website_cli_list "${@:2}" ;;
         restart) website_cli_restart "${@:2}" ;;
         logs) website_cli_logs "${@:2}" ;;
         info) website_cli_info "${@:2}" ;;
-        update_template) bash "$CLI_DIR/website_update_template.sh" "${@:2}" ;;
+        update_template) website_cli_update_template "${@:2}" ;;
         *) echo "${CROSSMARK} Unknown subcommand for website: $1" ;;
     esac
 }

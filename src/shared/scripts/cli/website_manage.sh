@@ -63,3 +63,20 @@ function website_cli_logs() {
     website_logic_logs "$domain" "$log_type"
   fi
 }
+
+# Website delete CLI
+website_cli_delete() {
+  local domain
+  local backup_enabled
+
+  domain=$(website_domain_param "$@")
+  backup_enabled=$(website_backup_enabled_param "$@")
+  
+  if [[ $? -ne 0 ]]; then
+    print_msg error "$ERROR_MISSING_PARAM: --domain"
+    return 1
+  fi
+  if [[ $? -eq 0 ]]; then
+    website_logic_delete "$domain" "$backup_enabled"
+  fi
+}
