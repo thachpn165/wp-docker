@@ -1,53 +1,4 @@
-# This script provides functions to select and upload backup files using rclone.
-#
-# Functions:
-#
-# 1. select_backup_files(backup_dir)
-#    - Prompts the user to select backup files from a specified directory using a dialog checklist.
-#    - Parameters:
-#        - backup_dir: The directory containing backup files.
-#    - Returns:
-#        - A list of selected files (echoed to stdout).
-#    - Behavior:
-#        - Checks if the directory exists.
-#        - Lists files in the directory and presents them in a dialog checklist.
-#        - If no files are selected, all files in the directory are returned.
-#
-# 2. upload_backup(storage, [file1, file2, ...])
-#    - Uploads selected backup files to a specified rclone storage.
-#    - Parameters:
-#        - storage: The rclone storage destination (required).
-#        - file1, file2, ...: Optional list of files to upload. If not provided, the user is prompted to select files.
-#    - Behavior:
-#        - If no files are passed, searches for a "backups" directory under $SITES_DIR and prompts the user to select files.
-#        - Detects the domain name from the file path for logging purposes.
-#        - Logs the upload process to a domain-specific log file.
-#        - Verifies the existence of the rclone configuration file.
-#        - Uploads each file to the specified rclone storage using the `rclone copy` command.
-#        - Logs success or failure for each file upload.
-#
-# Usage:
-# - Run the script directly to invoke the `upload_backup` function:
-#     ./upload_backup.sh <storage> [file1 file2 ...]
-# - Example:
-#     ./upload_backup.sh myRemoteStorage /path/to/backup1.tar.gz /path/to/backup2.tar.gz
-#
-# Dependencies:
-# - `dialog` for interactive file selection.
-# - `rclone` for file uploads.
-# - Custom utility functions:
-#     - is_directory_exist: Checks if a directory exists.
-#     - is_file_exist: Checks if a file exists.
-#     - print_msg: Prints messages with different log levels (info, error, success, etc.).
-#
-# Environment Variables:
-# - $SITES_DIR: Base directory containing site-specific data.
-# - $RCLONE_CONFIG_FILE: Path to the rclone configuration file.
-#
-# Exit Codes:
-# - 0: Success.
-# - 1: Failure due to errors such as missing arguments, missing directories, or upload failures.
-# ✅ Load configuration from any directory
+#shellcheck disable=SC1091
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
 while [[ "$SEARCH_PATH" != "/" ]]; do
@@ -134,7 +85,7 @@ upload_backup() {
       return 1
     fi
 
-    selected_files=($(select_backup_files "$found_dir"))
+    mapfile -t selected_files < <(select_backup_files "$found_dir")
     if [[ ${#selected_files[@]} -eq 0 ]]; then
       print_and_debug error "$ERROR_BACKUP_NO_FILE_SELECTED"
       return 1
