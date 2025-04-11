@@ -164,7 +164,7 @@ backup_logic_website() {
     local log_file
     log_file="$log_dir/wp-backup.log"
     source "$CLI_DIR/backup_website.sh"
-
+    source "$CLI_DIR/database_actions.sh"
     # Kiểm tra nếu domain hoặc storage không có giá trị, thoát hàm ngay lập tức
     if [[ -z "$domain" || -z "$storage" ]]; then
         print_and_debug error "$ERROR_MISSING_PARAM: --domain and --storage must be provided"
@@ -185,7 +185,7 @@ backup_logic_website() {
 
     # Backup database using the existing database_export_logic
     print_msg info "$MSG_WEBSITE_BACKING_UP_DB"
-    db_backup_file=$(bash "$CLI_DIR/database_export.sh" --domain="$domain" | tail -n 1)
+    db_backup_file=$(database_cli_export --domain="$domain" | tail -n 1)
     debug_log "[backup_logic_website] DB backup file: $db_backup_file"
 
     print_msg info "$MSG_WEBSITE_BACKING_UP_FILES"

@@ -176,21 +176,7 @@ stop_loading() {
 #   value=$(fetch_env_variable ".env" "DB_NAME")
 # Returns:
 #   - The value of the specified variable, or exits with error if file not found
-fetch_env_variable() {
-    local env_file="$1"
-    local var_name="$2"
 
-    if [ -f "$env_file" ]; then
-        grep -E "^${var_name}=" "$env_file" \
-          | cut -d'=' -f2- \
-          | tr -d '\r' \
-          | sed 's/^"\(.*\)"$/\1/'
-    else
-        echo -e "${RED}${CROSSMARK} Error: .env file does not exist: $env_file${NC}" >&2
-        debug_log "[fetch_env_variable] Error: .env file does not exist: $env_file"
-        return 1
-    fi
-}
 
 # ===========================================================
 # 🖨️ print_msg <type> <message>

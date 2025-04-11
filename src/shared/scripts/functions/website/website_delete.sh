@@ -3,6 +3,7 @@
 # =====================================
 website_prompt_delete() {
   source "$CLI_DIR/website_manage.sh"
+  source "$CLI_DIR/database_actions"
   # === UI ===
   print_msg title "$TITLE_WEBSITE_DELETE"
 
@@ -79,10 +80,10 @@ website_logic_delete() {
     mkdir -p "$ARCHIVE_DIR"
 
     print_msg step "$MSG_WEBSITE_BACKING_UP_DB: $domain"
-    run_cmd "bash $CLI_DIR/database_export.sh --domain=$domain --save_location=$ARCHIVE_DIR/${domain}_db.sql" true
+    database_cli_export "--domain=$domain --save_location=$ARCHIVE_DIR/${domain}_db.sql"
 
     print_msg step "$MSG_WEBSITE_BACKING_UP_FILES: $SITE_DIR/wordpress"
-    backup_cli_file --domain=$domain" true
+    backup_cli_file --domain="$domain" true
 
     print_msg success "$MSG_WEBSITE_BACKUP_FILE_CREATED: $ARCHIVE_DIR"
   fi

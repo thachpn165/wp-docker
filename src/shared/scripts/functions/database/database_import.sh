@@ -19,23 +19,15 @@ database_import_logic() {
 
     local db_container
     db_container=$(json_get_site_value "$domain" "CONTAINER_DB")
-    if [[ -z "$db_container" ]]; then
-        print_msg error "$(printf "$ERROR_ENV_NOT_FOUND" "$SITES_DIR/$domain/.env")"
-        return 1
-    fi
 
     debug_log "[DB IMPORT] Domain: $domain"
     debug_log "[DB IMPORT] Backup file: $backup_file"
 
-    local db_info
-    db_info=$(db_fetch_env "$domain")
-    if [[ $? -ne 0 ]]; then
-        print_msg error "$(printf "$ERROR_DB_FETCH_CREDENTIALS" "$domain")"
-        return 1
-    fi
 
     local db_name db_user db_password
-    IFS=' ' read -r db_name db_user db_password <<< "$db_info"
+    db_name="$(json_get_site_value "$domain" "MYSQL_DATABASE")"
+    db_user="$(json_get_site_value "$domain" "MYSQL_USER")"
+    db_password="$(json_get_site_value "$domain" "MYSQL_PASSWORD")"
     debug_log "[DB IMPORT] db_name=$db_name, db_user=$db_user"
 
     if ! is_mariadb_running "$domain"; then

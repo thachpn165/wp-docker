@@ -27,6 +27,8 @@ source  "$CLI_DIR/core_lang.sh"
 source  "$CLI_DIR/website_manage.sh"
 source "$CLI_DIR/backup_website.sh"
 source "$CLI_DIR/backup_restore.sh"
+source "$CLI_DIR/database_actions.sh"
+
 # Define subcommands handlers
 handle_website() {
     # wpdocker website
@@ -84,8 +86,8 @@ handle_php() {
 handle_database() {
     case "$1" in
         reset) bash "$CLI_DIR/database_reset.sh" "${@:2}" ;;
-        import) bash "$CLI_DIR/database_import.sh" "${@:2}" ;;
-        export) bash "$CLI_DIR/database_export.sh" "${@:2}" ;;
+        import) database_cli_import "${@:2}" ;;
+        export) database_cli_export "${@:2}" ;;
         *) echo "${CROSSMARK} Unknown subcommand for database: $1" ;;
     esac
 }

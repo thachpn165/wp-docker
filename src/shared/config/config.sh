@@ -18,19 +18,9 @@ else
 fi
 PROJECT_DIR=$BASE_DIR
 # ==== 2. Load .env file ====
+DEBUG_MODE="false"
 CORE_ENV="${CORE_ENV:-$BASE_DIR/.env}"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
-
-# Load env loader first
-source "$BASE_DIR/shared/scripts/functions/utils/env_utils.sh"
-
-# Load environment variables
-env_load "$CORE_ENV"
-
-# Fallback values
-LANG_CODE="${LANG_CODE:-vi}"
-DEBUG_MODE="${DEBUG_MODE:-false}"
-DEV_MODE="${DEV_MODE:-$DEV_MODE}"
 
 source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
 

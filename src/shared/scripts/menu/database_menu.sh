@@ -1,5 +1,7 @@
 #!/bin/bash
 # Function to display backup management menu
+source "$FUNCTIONS_DIR/database_loader.sh"
+
 database_menu() {
         while true; do
             echo -e "${CYAN}============================${NC}"
@@ -16,7 +18,7 @@ database_menu() {
                 case "$choice" in
                     1) bash "$MENU_DIR/database/database_reset_menu.sh"; 
                         read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-                    2) bash "$MENU_DIR/database/database_export_menu.sh"; 
+                    2) database_prompt_export; 
                         read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
                     3) bash "$MENU_DIR/database/database_import_menu.sh"; 
                         read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
