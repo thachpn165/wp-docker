@@ -26,8 +26,6 @@ The platform adopts a modular architecture supporting interchangeable web server
 
 Unlike conventional WordPress setups, WP Docker embraces infrastructure-as-code (IaC) principles to eliminate vendor lock-in. Its isolated containerized environment—combining Linux, PHP, and database services—ensures maximum portability, scalability, and operational consistency.
 
-By simplifying multi-stage environment replication (dev → staging → prod), WP Docker enhances security posture, accelerates deployment workflows, and ensures consistent performance across different infrastructures.
-
 
 Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
@@ -113,7 +111,6 @@ This command opens the interactive terminal menu for managing your WordPress sit
 ### WordPress Site Management
 - Create and manage multiple WordPress installations simultaneously
 - Configure independent PHP versions for individual sites
-- Implement multilingual and multisite configurations
 - Restore WordPress source code and database from backup interactively
 
 ### Security Features
