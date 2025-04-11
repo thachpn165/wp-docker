@@ -5,7 +5,7 @@ website_prompt_create() {
   # Lấy domain từ người dùng
   read -p "$PROMPT_ENTER_DOMAIN: " domain
 
-  php_choose_version || return 1
+  php_prompt_choose_version || return 1
   php_version="$REPLY"
 
   echo ""

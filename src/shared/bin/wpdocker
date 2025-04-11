@@ -28,6 +28,7 @@ source  "$CLI_DIR/website_manage.sh"
 source "$CLI_DIR/backup_website.sh"
 source "$CLI_DIR/backup_restore.sh"
 source "$CLI_DIR/database_actions.sh"
+source "$CLI_DIR/php_version.sh"
 
 # Define subcommands handlers
 handle_website() {
@@ -69,7 +70,7 @@ handle_backup() {
 
 handle_php() {
     case "$1" in
-        change) bash "$CLI_DIR/php_change_version.sh" "${@:2}" ;;
+        change) php_cli_change_version "${@:2}" ;;
         get) bash "$CLI_DIR/php_get_version.sh" "${@:2}" ;;
         rebuild) bash "$CLI_DIR/php_rebuild_container.sh" "${@:2}" ;;
         edit)

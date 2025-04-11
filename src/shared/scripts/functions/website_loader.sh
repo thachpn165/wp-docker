@@ -16,4 +16,4 @@ for f in "$FUNCTIONS_DIR/website/"*.sh; do
 done
 
 # Load PHP version chooser
-source "$FUNCTIONS_DIR/php/php_choose_version.sh"
+source "$FUNCTIONS_DIR/php/php_version.sh"
