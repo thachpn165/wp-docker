@@ -41,7 +41,6 @@ php_get_version() {
     done
 
     : > "$output_file"
-    used_prefixes=""
     while read -r tag; do
         prefix=$(echo "$tag" | cut -d. -f1,2)
         count=$(grep -c "^$prefix\." "$output_file" || true)
