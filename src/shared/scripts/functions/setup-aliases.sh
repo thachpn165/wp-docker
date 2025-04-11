@@ -3,7 +3,8 @@ check_and_add_alias() {
   local shell_config
   local alias_line
   # Get the absolute path of the bin directory
-  local cli_dir_abs=$(realpath "$PROJECT_DIR/shared/bin")
+  local cli_dir_abs
+  cli_dir_abs=$(realpath "$PROJECT_DIR/shared/bin")
   alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
 
   # Check if using Zsh or Bash

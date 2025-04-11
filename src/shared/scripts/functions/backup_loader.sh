@@ -12,5 +12,6 @@ fi
 
 # Load all .sh files in website/
 for f in "$FUNCTIONS_DIR/backup/"*.sh; do
+  # shellcheck source=/dev/null
   [[ -f "$f" ]] && source "$f"
 done
