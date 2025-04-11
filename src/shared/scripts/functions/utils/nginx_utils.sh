@@ -16,7 +16,7 @@ nginx_add_mount_docker() {
 
     if [ ! -f "$OVERRIDE_FILE" ]; then
         print_msg info "$INFO_DOCKER_NGINX_CREATING_DOCKER_COMPOSE_OVERRIDE"
-        cat > "$OVERRIDE_FILE" <<EOF
+        cat >"$OVERRIDE_FILE" <<EOF
 services:
   $NGINX_PROXY_CONTAINER:
     volumes:
@@ -29,7 +29,7 @@ EOF
 
     # Check and add MOUNT_ENTRY if needed
     if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
-        if ! echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" > /dev/null; then
+        if ! echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" >/dev/null; then
             print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
             nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
             return 1
@@ -41,7 +41,7 @@ EOF
 
     # Check and add MOUNT_LOGS if needed
     if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
-        if ! echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" > /dev/null; then
+        if ! echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" >/dev/null; then
             print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
             nginx_remove_mount_docker "$OVERRIDE_FILE" "$MOUNT_ENTRY" "$MOUNT_LOGS"
             return 1
@@ -64,9 +64,9 @@ nginx_remove_mount_docker() {
 
     if [ -f "$override_file" ]; then
         temp_file=$(mktemp)
-        grep -vF "$mount_entry" "$override_file" | grep -vF "$mount_logs" > "$temp_file"
+        grep -vF "$mount_entry" "$override_file" | grep -vF "$mount_logs" >"$temp_file"
 
-        if ! diff "$override_file" "$temp_file" > /dev/null; then
+        if ! diff "$override_file" "$temp_file" >/dev/null; then
             mv "$temp_file" "$override_file"
             print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_REMOVED"
             debug_log "Removed mount entries: $mount_entry and $mount_logs"
@@ -84,50 +84,48 @@ nginx_remove_mount_docker() {
 # Khởi động lại nginx-proxy bằng cách chạy docker compose trong thư mục NGINX_PROXY_DIR
 # =============================================
 nginx_restart() {
-# TODO: Đoạn này đang gặp lỗi file override không được reload
-# TODO: Chuyển qua phương án CD vào thư mục hoặc dùng run_in_dir
-  start_loading "$INFO_DOCKER_NGINX_STARTING"
-  
-  if [[ ! -d "$NGINX_PROXY_DIR" ]]; then
-    print_msg error "❌ NGINX_PROXY_DIR không tồn tại: $NGINX_PROXY_DIR"
-    return 1
-  fi
+    start_loading "$INFO_DOCKER_NGINX_STARTING"
 
-  cd "$NGINX_PROXY_DIR" || {
-    print_msg error "$MSG_NOT_FOUND: $NGINX_PROXY_DIR"
-    return 1
-  }
-  run_cmd "docker compose down"
-  if [[ $? -ne 0 ]]; then
-      print_msg error "$ERROR_DOCKER_NGINX_STOP $NGINX_PROXY_CONTAINER"
-      run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-      return 1
-  fi
+    if [[ ! -d "$NGINX_PROXY_DIR" ]]; then
+        print_msg error "❌ NGINX_PROXY_DIR không tồn tại: $NGINX_PROXY_DIR"
+        return 1
+    fi
 
-  run_cmd "docker compose up -d --force-recreate"
-  if [[ $? -ne 0 ]]; then
-      print_msg error "$ERROR_DOCKER_NGINX_START $NGINX_PROXY_CONTAINER"
-      run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-      return 1
-  fi
+    cd "$NGINX_PROXY_DIR" || {
+        print_msg error "$MSG_NOT_FOUND: $NGINX_PROXY_DIR"
+        return 1
+    }
+    run_cmd "docker compose down"
+    if [[ $? -ne 0 ]]; then
+        print_msg error "$ERROR_DOCKER_NGINX_STOP $NGINX_PROXY_CONTAINER"
+        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+        return 1
+    fi
 
-  stop_loading
-  cd "$BASE_DIR" || {
-    return 1
-    print_msg error "$MSG_NOT_FOUND: $BASE_DIR"
-  }
-  print_msg success "$SUCCESS_DOCKER_NGINX_RESTART"
+    run_cmd "docker compose up -d --force-recreate"
+    if [[ $? -ne 0 ]]; then
+        print_msg error "$ERROR_DOCKER_NGINX_START $NGINX_PROXY_CONTAINER"
+        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+        return 1
+    fi
+
+    stop_loading
+    cd "$BASE_DIR" || {
+        return 1
+        print_msg error "$MSG_NOT_FOUND: $BASE_DIR"
+    }
+    print_msg success "$SUCCESS_DOCKER_NGINX_RESTART"
 }
 
 nginx_reload() {
-  start_loading "$INFO_DOCKER_NGINX_RELOADING"
-  run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"
-  if [[ $? -ne 0 ]]; then
-      print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
-      run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-      stop_loading
-      return 1
-  fi
-  stop_loading
-  print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
+    start_loading "$INFO_DOCKER_NGINX_RELOADING"
+    run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"
+    if [[ $? -ne 0 ]]; then
+        print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
+        run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
+        stop_loading
+        return 1
+    fi
+    stop_loading
+    print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
 }
