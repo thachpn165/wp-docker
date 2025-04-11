@@ -18,7 +18,7 @@ database_import_logic() {
     fi
 
     local db_container
-    db_container=$(fetch_env_variable "$SITES_DIR/$domain/.env" "CONTAINER_DB")
+    db_container=$(json_get_site_value "$domain" "CONTAINER_DB")
     if [[ -z "$db_container" ]]; then
         print_msg error "$(printf "$ERROR_ENV_NOT_FOUND" "$SITES_DIR/$domain/.env")"
         return 1

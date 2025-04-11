@@ -25,7 +25,8 @@ source "$FUNCTIONS_DIR/core/core_version_management.sh"
 # Load CLI functions
 source  "$CLI_DIR/core_lang.sh"
 source  "$CLI_DIR/website_manage.sh"
-
+source "$CLI_DIR/backup_website.sh"
+source "$CLI_DIR/backup_restore.sh"
 # Define subcommands handlers
 handle_website() {
     # wpdocker website
@@ -36,6 +37,7 @@ handle_website() {
         restart) website_cli_restart "${@:2}" ;;
         logs) website_cli_logs "${@:2}" ;;
         info) website_cli_info "${@:2}" ;;
+        restore) backup_cli_restore_web "${@:2}" ;;
         update_template) website_cli_update_template "${@:2}" ;;
         *) echo "${CROSSMARK} Unknown subcommand for website: $1" ;;
     esac
@@ -51,12 +53,14 @@ handle_ssl() {
     esac
 }
 
+
+
 handle_backup() {
     # wpdocker backup
     case "$1" in
-        website) bash "$FUNCTIONS_DIR/backup/backup_website.sh" "${@:2}" ;;
+        website) backup_cli_backup_web "${@:2}" ;;
         database) bash "$FUNCTIONS_DIR/backup/backup_database.sh" "${@:2}" ;;
-        file) bash "$FUNCTIONS_DIR/backup/backup_file.sh" "${@:2}" ;;
+        file) backup_cli_file "${@:2}" ;;
         *) echo "${CROSSMARK} Unknown subcommand for backup: $1" ;;
     esac
 }
@@ -163,6 +167,7 @@ else
         system) handle_system "$2" "${@:3}" ;;
         wordpress) handle_wordpress "$2" "${@:3}" ;;
         core) handle_core "$2" "${@:3}" ;;
+        
         *)
             echo "${CROSSMARK} Unknown subcommand: $1"
             #bash "$INSTALL_DIR/main.sh"

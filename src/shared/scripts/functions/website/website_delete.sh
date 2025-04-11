@@ -43,6 +43,7 @@ website_prompt_delete() {
 # =====================================
 
 website_logic_delete() {
+  source "$CLI_DIR/backup_website.sh"
   local domain="$1"
   local backup_enabled="$2"
 
@@ -81,7 +82,7 @@ website_logic_delete() {
     run_cmd "bash $CLI_DIR/database_export.sh --domain=$domain --save_location=$ARCHIVE_DIR/${domain}_db.sql" true
 
     print_msg step "$MSG_WEBSITE_BACKING_UP_FILES: $SITE_DIR/wordpress"
-    run_cmd "bash $CLI_DIR/backup_file.sh --domain=$domain" true
+    backup_cli_file --domain=$domain" true
 
     print_msg success "$MSG_WEBSITE_BACKUP_FILE_CREATED: $ARCHIVE_DIR"
   fi

@@ -25,10 +25,18 @@
 #   backup_file_logic "example.com"
 backup_file_logic() {
     local domain="$1"
-    local web_root="$SITES_DIR/${domain}/wordpress"  # Automatically determine web root
-    local backup_dir="$SITES_DIR/${domain}/backups"
-    local backup_file="${backup_dir}/files-${domain}-$(date +%Y%m%d-%H%M%S).tar.gz"
+    local web_root
+    web_root="$SITES_DIR/${domain}/wordpress"  # Automatically determine web root
+    local backup_dir
+    backup_dir="$SITES_DIR/${domain}/backups"
+    local backup_file
+    backup_file="${backup_dir}/files-${domain}-$(date +%Y%m%d-%H%M%S).tar.gz"
 
+    # Check if param exists
+    if [[ -z "$domain" ]]; then
+        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
+        return 1
+    fi
     is_directory_exist "$backup_dir"
     is_directory_exist "$SITES_DIR/$domain/logs"
     is_directory_exist "$web_root"
