@@ -1,53 +1,11 @@
-# -----------------------------------------------------------------------------
-# Function: wordpress_cache_setup_logic
-# Purpose: Configures caching for a WordPress site, including plugin management,
-#          NGINX configuration, and cache type setup.
-#
-# Parameters:
-#   1. domain (string): The domain of the WordPress site.
-#   2. cache_type (string): The type of cache to configure. Supported values:
-#      - "no-cache": Disables caching and removes cache plugins.
-#      - "wp-super-cache": Configures WP Super Cache plugin.
-#      - "fastcgi-cache": Configures FastCGI caching with NGINX Helper plugin.
-#      - "w3-total-cache": Configures W3 Total Cache plugin.
-#      - "wp-fastest-cache": Configures WP Fastest Cache plugin.
-#
-# Description:
-#   - Ensures the site directory exists.
-#   - Deactivates any active cache plugins.
-#   - Handles "no-cache" option by removing cache plugins, disabling WP_CACHE,
-#     and updating NGINX configuration.
-#   - Updates NGINX configuration to include the appropriate cache settings.
-#   - Installs and activates the specified cache plugin.
-#   - Configures additional settings for FastCGI and Redis caching if applicable.
-#   - Reloads NGINX to apply changes.
-#   - Provides instructions for completing the setup of specific cache plugins.
-#
-# Dependencies:
-#   - Requires Docker and WordPress CLI (wp-cli) to be installed and accessible.
-#   - Assumes specific environment variables are set:
-#     - SITES_DIR: Base directory for WordPress sites.
-#     - NGINX_PROXY_DIR: Directory for NGINX proxy configurations.
-#     - PHP_CONTAINER: Name of the PHP container for the site.
-#     - PHP_CONTAINER_WP_PATH: Path to WordPress installation in the PHP container.
-#     - NGINX_MAIN_CONF: Path to the main NGINX configuration file.
-#     - PHP_USER: User owning the WordPress files in the PHP container.
-#
-# Returns:
-#   - 0 on success.
-#   - 1 on failure, with an appropriate error message.
-#
-# Example Usage:
-#   wordpress_cache_setup_logic "example.com" "wp-super-cache"
-# -----------------------------------------------------------------------------
 wordpress_cache_setup_logic() {
     local domain="$1"
     local cache_type="$2"
     local site_dir="$SITES_DIR/$domain"
     local wp_config_file="$site_dir/wordpress/wp-config.php"
     local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
-    local php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
-    local mariadb_container=$(json_get_site_value "$domain" "CONTAINER_DB")
+    local php_container
+    php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
     if [[ ! -d "$site_dir" ]]; then
         print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$site_dir")"
@@ -74,8 +32,8 @@ wordpress_cache_setup_logic() {
         for plugin in "${cache_plugins[@]}"; do
             if echo "$active_plugins" | grep -q "$plugin"; then
                 print_msg warning "$(printf "$WARNING_PLUGIN_ACTIVE_DELETING" "$plugin")"
-                if docker_exec_php "$domain" "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH" && \
-                   docker_exec_php "$domain" "wp plugin delete $plugin --path=$PHP_CONTAINER_WP_PATH"; then
+                if docker_exec_php "$domain" "wp plugin deactivate $plugin --path=$PHP_CONTAINER_WP_PATH" &&
+                    docker_exec_php "$domain" "wp plugin delete $plugin --path=$PHP_CONTAINER_WP_PATH"; then
                     print_msg success "$(printf "$SUCCESS_PLUGIN_DELETED" "$plugin")"
                 else
                     print_and_debug error "$(printf "$ERROR_PLUGIN_DELETION" "$plugin")"
@@ -116,10 +74,10 @@ wordpress_cache_setup_logic() {
 
     local plugin_slug
     case "$cache_type" in
-        "wp-super-cache") plugin_slug="wp-super-cache" ;;
-        "fastcgi-cache") plugin_slug="nginx-helper" ;;
-        "w3-total-cache") plugin_slug="w3-total-cache" ;;
-        "wp-fastest-cache") plugin_slug="wp-fastest-cache" ;;
+    "wp-super-cache") plugin_slug="wp-super-cache" ;;
+    "fastcgi-cache") plugin_slug="nginx-helper" ;;
+    "w3-total-cache") plugin_slug="w3-total-cache" ;;
+    "wp-fastest-cache") plugin_slug="wp-fastest-cache" ;;
     esac
 
     bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin install "$plugin_slug" --activate
@@ -166,8 +124,8 @@ define('WP_REDIS_DATABASE', 0);" "$wp_config_file"
     print_msg success "$SUCCESS_NGINX_RELOADED"
 
     case "$cache_type" in
-        "wp-super-cache") print_msg info "$TIP_WP_SUPER_CACHE" ;;
-        "w3-total-cache") print_msg info "$TIP_W3_TOTAL_CACHE" ;;
-        "wp-fastest-cache") print_msg info "$TIP_WP_FASTEST_CACHE" ;;
+    "wp-super-cache") print_msg info "$TIP_WP_SUPER_CACHE" ;;
+    "w3-total-cache") print_msg info "$TIP_W3_TOTAL_CACHE" ;;
+    "wp-fastest-cache") print_msg info "$TIP_WP_FASTEST_CACHE" ;;
     esac
 }

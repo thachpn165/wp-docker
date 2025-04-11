@@ -1,8 +1,6 @@
 #!/bin/bash
 wordpress_reset_wp_database_logic() {
     domain="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
-    SITE_DIR="$SITES_DIR/$domain"
-    ENV_FILE="$SITE_DIR/.env"
 
     # **Lấy thông tin database từ .env**
     if ! json_key_exists ".site[\"$domain\"]"; then

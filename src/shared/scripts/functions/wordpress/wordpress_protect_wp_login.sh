@@ -1,8 +1,6 @@
 wordpress_protect_wp_login_logic() {
     local domain="$1"
     local action="$2"
-
-    local SITE_DIR="$SITES_DIR/$domain"
     local NGINX_CONF_FILE="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
     local AUTH_FILE="$NGINX_PROXY_DIR/globals/.wp-login-auth-$domain"
     local INCLUDE_FILE="$NGINX_PROXY_DIR/globals/wp-login-$domain.conf"
@@ -37,7 +35,6 @@ wordpress_protect_wp_login_logic() {
 
         print_msg step "$STEP_WORDPRESS_PROTECT_WP_INCLUDE_NGINX"
         if ! grep -q "include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"; then
-            php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
             sedi "/include \/etc\/nginx\/globals\/cloudflare.conf;/a\\
             include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"
 
