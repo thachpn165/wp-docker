@@ -108,7 +108,7 @@ website_logic_create() {
 
     # Create self-signed SSL certificate
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_SSL: $domain"
-    ssl_generate_self_signed_logic "$domain"
+    ssl_logic_gen_self "$domain"
 
     #Copy docker-compose template and config 
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_DOCKER_COMPOSE: $domain"

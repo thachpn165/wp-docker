@@ -1,4 +1,4 @@
-ssl_edit_certificate_logic() {
+ssl_logic_edit_cert() {
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
     return 1

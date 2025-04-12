@@ -32,4 +32,4 @@ if [[ -z "$SSL_DIR" ]]; then
 fi
 
 # === Check SSL certificate status using the logic function ===
-ssl_check_certificate_status_logic "$domain" "$SSL_DIR"
+ssl_logic_check_cert "$domain" "$SSL_DIR"

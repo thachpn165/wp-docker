@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# Debug function to enable detailed tracing
+function debug_process() {
+    export PS4='\e[36m+(${BASH_SOURCE}:${LINENO}):\e[0m ${FUNCNAME[0]:+\e[35m${FUNCNAME[0]}():\e[0m }'
+    set -x
+}
+
 # === Helper: Load config.sh
 load_config_file() {
   if [[ -z "$PROJECT_DIR" ]]; then

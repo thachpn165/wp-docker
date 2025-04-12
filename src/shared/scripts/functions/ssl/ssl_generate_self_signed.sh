@@ -1,4 +1,4 @@
-ssl_generate_self_signed_logic() {
+ssl_logic_gen_self() {
   local domain="$1"
 
   if [[ -z "$domain" ]]; then

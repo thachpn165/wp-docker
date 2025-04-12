@@ -45,7 +45,7 @@ if [[ $? -eq 0 ]]; then
 
   # === Call the SSL edit logic directly, no need for CLI here ===
   echo -e "${GREEN}${CHECKMARK} Editing SSL certificate for website '$domain'...${NC}"
-  ssl_edit_certificate_logic "$domain" "$ssl_certificate" "$ssl_private_key"
+  ssl_logic_edit_cert "$domain" "$ssl_certificate" "$ssl_private_key"
 else
   echo -e "${YELLOW}${WARNING} SSL certificate update cancelled.${NC}"
 fi

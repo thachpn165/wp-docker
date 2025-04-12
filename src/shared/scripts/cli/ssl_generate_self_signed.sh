@@ -18,7 +18,7 @@
 # 2. Determines the PROJECT_DIR by searching upwards from the script's directory for the config.sh file.
 # 3. Loads the configuration file (config.sh) and the SSL loader script (ssl_loader.sh).
 # 4. Parses the --domain argument to retrieve the site name.
-# 5. Calls the `ssl_generate_self_signed_logic` function to generate the SSL certificate.
+# 5. Calls the `ssl_logic_gen_self` function to generate the SSL certificate.
 #
 # Error Handling:
 # - Exits with an error if not run in a Bash shell.
@@ -50,4 +50,4 @@ if [[ -z "$domain" ]]; then
 fi
 
 # === Generate self-signed SSL ===
-ssl_generate_self_signed_logic "$domain"
+ssl_logic_gen_self "$domain"

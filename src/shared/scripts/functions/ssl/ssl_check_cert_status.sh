@@ -1,4 +1,4 @@
-ssl_check_certificate_status_logic() {
+ssl_logic_check_cert() {
   local domain="$1"
   local SSL_DIR="$2"
 
