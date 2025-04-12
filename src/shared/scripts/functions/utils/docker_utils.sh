@@ -113,18 +113,47 @@ install_docker_compose() {
 # 🌀 Start Docker if not running
 # ===========================
 start_docker_if_needed() {
-  if ! docker stats --no-stream &> /dev/null; then
+  # Kiểm tra nhanh bằng docker info thay vì docker stats
+  if ! docker info &>/dev/null; then
     print_msg warning "$WARNING_DOCKER_NOT_RUNNING"
 
     if [[ "$OSTYPE" == "darwin"* ]]; then
+      # Khởi động Docker Desktop không chờ đợi
       open --background -a Docker
-      while ! docker system info &> /dev/null; do
+      
+      # Sử dụng timeout để tránh chờ quá lâu
+      local timeout=60
+      local start_time
+      start_time=$(date +%s)
+      local current_time
+      
+      echo -n "Waiting for Docker"
+      while ! docker info &>/dev/null; do
         echo -n "."
-        sleep 1
+        sleep 0.5  # Giảm thời gian sleep để kiểm tra thường xuyên hơn
+        
+        # Kiểm tra timeout
+        current_time=$(date +%s)
+        if (( current_time - start_time > timeout )); then
+          echo ""
+          print_msg warning "Docker khởi động quá lâu, tiếp tục thực thi..."
+          break
+        fi
       done
       echo ""
     else
-      systemctl start docker
+      # Khởi động song song trên Linux
+      systemctl start docker &
+      
+      # Chờ dịch vụ khởi động trong một khoảng thời gian ngắn
+      local counter=0
+      echo -n "Waiting for Docker"
+      while ! docker info &>/dev/null && [ $counter -lt 20 ]; do
+        echo -n "."
+        sleep 0.5
+        counter=$((counter + 1))
+      done
+      echo ""
     fi
   else
     print_msg success "$SUCCESS_DOCKER_RUNNING"

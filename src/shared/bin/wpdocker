@@ -163,7 +163,7 @@ handle_core() {
 if [[ -z "$1" ]]; then
     # If no subcommand is provided, call the main menu
     echo "💡 No subcommand provided. Running the main menu..."
-    bash "$INSTALL_DIR/main.sh"
+    source "$INSTALL_DIR/main.sh"
 else
     case "$1" in
         website) handle_website "$2" "${@:3}" ;;
