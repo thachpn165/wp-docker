@@ -18,8 +18,8 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   exit 1
 fi
 
-source "$CONFIG_FILE"
-source "$FUNCTIONS_DIR/wordpress_loader.sh"
+safe_source "$CONFIG_FILE"
+safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 # 📋 Chọn website
 select_website

@@ -5,8 +5,10 @@
 # ==============================
 
 calculate_mariadb_config() {
-  local total_ram=$(get_total_ram)
-  local total_cpu=$(get_total_cpu)
+  local total_ram
+  total_ram=$(get_total_ram)
+  local total_cpu
+  total_cpu=$(get_total_cpu)
   max_connections=$((total_ram / 4))
   query_cache_size=32
   innodb_buffer_pool_size=$((total_ram / 2))
@@ -54,7 +56,8 @@ EOF
 
 is_mariadb_running() {
   local domain="$1"
-  local container_name=$(json_get_site_value "$domain" "CONTAINER_DB")
+  local container_name
+  container_name=$(json_get_site_value "$domain" "CONTAINER_DB")
   debug_log "[MARIADB] Checking if container is running: $container_name"
   docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
 }
@@ -62,7 +65,8 @@ is_mariadb_running() {
 db_import_database() {
   local domain="$1" db_user="$2" db_password="$3" db_name="$4" backup_file="$5"
 
-  local container_name=$(json_get_site_value "$domain" "CONTAINER_DB")
+  local container_name
+  container_name=$(json_get_site_value "$domain" "CONTAINER_DB")
 
   if ! is_mariadb_running "$domain"; then
     print_and_debug error "$(printf "$ERROR_MARIADB_NOT_RUNNING" "$domain")"
@@ -123,7 +127,8 @@ db_get_user() {
 
 db_get_container() {
   local domain="$1"
-  local container_name=$(json_get_site_value "$domain" "CONTAINER_DB")
+  local container_name
+  container_name=$(json_get_site_value "$domain" "CONTAINER_DB")
 
   if [[ -z "$container_name" ]]; then
     print_and_debug error "$(printf "$ERROR_DB_CONTAINER_NOT_FOUND" "$domain")"

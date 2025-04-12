@@ -43,6 +43,7 @@
 ## [v1.1.6-beta] - 2025-04-05
 
 ### 🚀 Added
+
 - **WordPress Migration Tool**:
   - New feature to restore a full WordPress website (code & database) from `archives/$domain/`.
   - Automatically validates prefix, updates `wp-config.php`, checks DNS, and installs SSL.
@@ -67,6 +68,7 @@
     - `wpdocker system nginx rebuild/restart`: manage NGINX proxy.
 
 ### 🐞 Fixed
+
 - **404 error with WP Fastest Cache**:
   - Fixed by appending `try_files $uri $uri/ /index.php?$args;` into `@cachemiss`.
 
@@ -80,6 +82,7 @@
 - **Fix access denied error** when checking tables prefix due to missing `MYSQL_PWD`.
 
 ### ♻️ Changed
+
 - **Dev build workflow now uses `nightly` as tag** instead of `dev`.
 - **Improved GitHub Actions** for CI/CD:
   - `dev-build.yml` and `release.yml` now update `version.txt` and push to repo.
@@ -94,6 +97,7 @@
 ## [v1.1.5-beta] - 2025-04-04
 
 ### 🚀 Added
+
 - **Refactored all references from `$site_name` to `$domain`** across the entire project for better clarity and domain-based structure.
   - Unified naming convention for folders, containers, and volumes using `$domain`.
   - Introduced backward-compatible script at `upgrade/v1.1.5-beta.sh` to automatically rename old site folders based on `.env` domain.
@@ -113,12 +117,14 @@
   - Automatically downloads from `https://github.com/thachpn165/wp-docker/releases/download/dev/wp-docker-dev.zip`.
 
 ### 🐞 Fixed
+
 - **Fixed volume naming** for domains with `.` by auto-normalizing volume name format to match Docker's actual volume behavior.
 - **Fixed macOS compatibility** in `nginx_remove_mount_docker` by using a portable `grep -vF` logic instead of `sed`.
 - **Ensured `$domain` is passed correctly** from menu → CLI → logic layers.
 - **Fixed emoji display issues** when used in colored terminal output.
 
 ### ♻️ Changed
+
 - **Deprecated usage of `$site_name`** in favor of `$domain`.
   - All logic and variable references now operate on `$domain` only.
 - **Removed `DEV_MODE`** flag from `install.sh`.

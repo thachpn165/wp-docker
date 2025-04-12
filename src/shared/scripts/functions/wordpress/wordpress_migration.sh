@@ -90,6 +90,7 @@ wordpress_migration_logic() {
 
     if [[ "$prefix" != "$config_prefix" ]]; then
       print_msg warning "$(printf "$WARNING_TABLE_PREFIX_MISMATCH" "$prefix" "$config_prefix")"
+      local table_prefix="wp_"
       sedi "s/\\$table_prefix *= *'[^']*'/\\$table_prefix = '$prefix'/" "$config_file"
       print_msg success "$SUCCESS_WORDPRESS_UPDATE_PREFIX: $prefix"
     fi

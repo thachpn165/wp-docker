@@ -1,22 +1,4 @@
 # Define utility functions that don't belong to a specific category
-
-# =========================================
-# ✅ Check if required environment variables are defined
-# Usage:
-#   check_required_envs
-# Requires:
-#   - required_vars[]: An array of variable names to check
-# Behavior:
-#   - Exits with an error if any required variable is missing.
-check_required_envs() {
-  for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-      echo -e "${RED}${CROSSMARK} Error: Variable '$var' is not defined in config.sh${NC}"
-      exit 1
-    fi
-  done
-}
-
 ensure_safe_cwd() {
   if ! pwd &>/dev/null; then
     cd "$BASE_DIR" || cd /
@@ -194,23 +176,7 @@ stop_loading() {
 #   value=$(fetch_env_variable ".env" "DB_NAME")
 # Returns:
 #   - The value of the specified variable, or exits with error if file not found
-fetch_env_variable() {
-    local env_file="$1"
-    local var_name="$2"
 
-    if [ -f "$env_file" ]; then
-        grep -E "^${var_name}=" "$env_file" \
-          | cut -d'=' -f2- \
-          | tr -d '\r' \
-          | sed 's/^"\(.*\)"$/\1/'
-    else
-        echo -e "${RED}${CROSSMARK} Error: .env file does not exist: $env_file${NC}" >&2
-        debug_log "[fetch_env_variable] Error: .env file does not exist: $env_file"
-        return 1
-    fi
-}
-
-random_string=$(date +%s)
 
 # ===========================================================
 # 🖨️ print_msg <type> <message>

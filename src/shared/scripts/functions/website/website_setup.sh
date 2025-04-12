@@ -1,40 +1,3 @@
-# =====================================
-# 📝 website_create_env – Create .env file for website
-# =====================================
-
-website_create_env() {
-  local output_dir="$1"
-  local domain="$2"
-  local php_version="$3"
-
-  # Check input parameters
-  if [[ "$TEST_MODE" != true && $# -ne 3 ]]; then
-    echo -e "${RED}${CROSSMARK} Missing parameters when calling website_create_env().${NC}"
-    echo -e "${YELLOW}Usage: website_create_env <output_dir> <domain> <php_version>${NC}"
-    return 1
-  fi
-
-  local env_file="$output_dir/.env"
-
-  MYSQL_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
-  MYSQL_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)
-
-  mkdir -p "$output_dir"
-
-  cat > "$env_file" <<EOF
-DOMAIN=$domain
-PHP_VERSION=$php_version
-MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
-MYSQL_DATABASE=wordpress
-MYSQL_USER=wpuser
-MYSQL_PASSWORD=$MYSQL_PASSWORD
-CONTAINER_PHP=${domain}${PHP_CONTAINER_SUFFIX}
-CONTAINER_DB=${domain}${DB_CONTAINER_SUFFIX}
-EOF
-
-  echo -e "${GREEN}${CHECKMARK} Created .env file at $env_file${NC}"
-}
-
 # =============================================
 # 🧩 website_set_config
 # Usage: website_set_config <output_dir> <domain> <php_version>
@@ -76,4 +39,42 @@ website_set_config() {
   debug_log "[website_set_config] CONTAINER_DB=${domain}${DB_CONTAINER_SUFFIX}"
 
   print_msg success "✅ Website config saved to .config.json under site[\"$domain\"]"
+}
+
+website_setup_nginx() {
+  # === Define paths ===
+  NGINX_CONF_DIR="$NGINX_PROXY_DIR/conf.d"
+  NGINX_TEMPLATE="$TEMPLATES_DIR/nginx-proxy.conf.template"
+
+  # Assign a value to the domain variable
+  domain=${1:-default_domain}
+
+  NGINX_CONF="$NGINX_CONF_DIR/$domain.conf"
+
+  # === Check if target directory exists ===
+  is_directory_exist "$NGINX_CONF_DIR"
+
+  # === Remove existing config file if exists ===
+  if is_file_exist "$NGINX_CONF"; then
+    print_and_debug warning "$WARNING_REMOVE_OLD_NGINX_CONF: $NGINX_CONF"
+    rm -f "$NGINX_CONF"
+  fi
+
+  # === Check and copy template ===
+  if is_file_exist "$NGINX_TEMPLATE"; then
+    if [[ ! -d "$(dirname "$NGINX_TEMPLATE")" ]]; then
+      print_and_debug error "$ERROR_NGINX_TEMPLATE_DIR_MISSING: $(dirname "$NGINX_TEMPLATE")"
+      exit 1
+    fi
+
+    cp "$NGINX_TEMPLATE" "$NGINX_CONF"
+    sedi "s|\\\${DOMAIN}|$domain|g" "$NGINX_CONF"
+    php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
+    sedi "s|\\\${PHP_CONTAINER}|$php_container|g" "$NGINX_CONF"
+
+    print_and_debug success "$SUCCESS_NGINX_CONF_CREATED: $NGINX_CONF"
+  else
+    print_and_debug error "$ERROR_NGINX_TEMPLATE_NOT_FOUND: $NGINX_TEMPLATE"
+    exit 1
+  fi
 }

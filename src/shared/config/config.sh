@@ -1,6 +1,24 @@
 #!/usr/bin/env bash
+#shellcheck disable=SC2034
+# Hàm kiểm tra và đánh dấu script đã được load
+wpdk_script_loaded() {
+  local var_name="$1"
+  
+  # Sử dụng eval để kiểm tra biến động
+  if [[ "$(eval echo \${$var_name:-false})" == "true" ]]; then
+    return 0  # Đã load rồi, thoát ngay
+  fi
+  
+  # Đánh dấu là đã load
+  eval "$var_name=true"
+  return 1  # Chưa load trước đó
+}
 
-# =============================================
+if wpdk_script_loaded "WPDK_LOAD_CONFIG_LOADED"; then
+  return 0  # Nếu đã load rồi thì thoát ngay
+fi
+
+#=============================================
 # ⚙️ WP Docker - GLOBAL CONFIGURATION (config.sh)
 # =============================================
 
@@ -13,34 +31,21 @@ if [[ "$CONFIG_DIR" == */src/shared/config ]]; then
   DEV_MODE=true
 else
   BASE_DIR="$(cd "$CONFIG_DIR/../.." && pwd)"
-  
+
   DEV_MODE=false
 fi
 PROJECT_DIR=$BASE_DIR
 # ==== 2. Load .env file ====
-CORE_ENV="${CORE_ENV:-$BASE_DIR/.env}"
+DEBUG_MODE="false"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
-# Load env loader first
-source "$BASE_DIR/shared/scripts/functions/utils/env_utils.sh"
-
-# Load environment variables
-env_load "$CORE_ENV"
-
-# Fallback values
-LANG_CODE="${LANG_CODE:-vi}"
-DEBUG_MODE="${DEBUG_MODE:-false}"
-DEV_MODE="${DEV_MODE:-$DEV_MODE}"
-
-source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
+safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
 
 # ==== 4. Load log/debug helpers ====
-source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
+safe_source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
 
 # ==== 3. Load i18n language file ====
-source "$BASE_DIR/shared/lang/lang_loader.sh"
-
-
+safe_source "$BASE_DIR/shared/lang/lang_loader.sh"
 
 # ==== 5. Define core system variables ====
 LANG_LIST=("vi" "en")
@@ -115,15 +120,19 @@ TEST_MODE="${TEST_MODE:-false}"
 TEST_ALWAYS_READY="${TEST_ALWAYS_READY:-false}"
 
 # ==== 14. Load utility functions ====
-source "$FUNCTIONS_DIR/utils/system_utils.sh"
-source "$FUNCTIONS_DIR/utils/docker_utils.sh"
-source "$FUNCTIONS_DIR/utils/file_utils.sh"
-source "$FUNCTIONS_DIR/utils/network_utils.sh"
-source "$FUNCTIONS_DIR/utils/ssl_utils.sh"
-source "$FUNCTIONS_DIR/utils/wp_utils.sh"
-source "$FUNCTIONS_DIR/utils/php_utils.sh"
-source "$FUNCTIONS_DIR/utils/db_utils.sh"
-source "$FUNCTIONS_DIR/utils/website_utils.sh"
-source "$FUNCTIONS_DIR/utils/misc_utils.sh"
-source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/system_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/docker_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/file_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/network_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/php_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/db_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/website_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/misc_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/cli_params.sh"
+
+WPDK_LOAD_CONFIG_LOADED=true
+
+#Debug
 

@@ -13,7 +13,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 
 # Load functions for website management
-source "$FUNCTIONS_DIR/backup_loader.sh"
+safe_source "$FUNCTIONS_DIR/backup_loader.sh"
 # Function to display backup management menu
 backup_menu() {
     while true; do
@@ -32,11 +32,11 @@ backup_menu() {
 
     
         case "$choice" in
-            1) bash "$MENU_DIR/backup/backup_website_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-            2) bash "$MENU_DIR/backup/backup_manage_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-            3) bash "$MENU_DIR/backup/backup_scheduler_create_menu.sh" ;;
+            1) backup_prompt_backup_web; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+            2) backup_prompt_backup_manage; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+            3) backup_prompt_create_schedule ;;
             4) manage_cron_menu; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-            5) bash "$MENU_DIR/backup/backup_restore_web_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+            5) backup_prompt_restore_web; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
             6) 
                 break
                 ;;

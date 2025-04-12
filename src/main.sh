@@ -23,18 +23,18 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
 done
 
 # 📦 Import all menu modules
-source "$MENU_DIR/menu_utils.sh"
-source "$MENU_DIR/website_management_menu.sh"
-source "$MENU_DIR/wordpress_tools_menu.sh"
-source "$MENU_DIR/system_tools_menu.sh"
-source "$MENU_DIR/backup_menu.sh"
-source "$MENU_DIR/rclone_menu.sh"
-source "$MENU_DIR/ssl_menu.sh"
-source "$MENU_DIR/php_menu.sh"
-source "$MENU_DIR/database_menu.sh"
-source "$FUNCTIONS_DIR/core_loader.sh"
+safe_source "$MENU_DIR/menu_utils.sh"
+safe_source "$MENU_DIR/website_management_menu.sh"
+safe_source "$MENU_DIR/wordpress_tools_menu.sh"
+safe_source "$MENU_DIR/system_tools_menu.sh"
+safe_source "$MENU_DIR/backup_menu.sh"
+safe_source "$MENU_DIR/rclone_menu.sh"
+safe_source "$MENU_DIR/ssl_menu.sh"
+safe_source "$MENU_DIR/php_menu.sh"
+safe_source "$MENU_DIR/database_menu.sh"
+safe_source "$FUNCTIONS_DIR/core_loader.sh"
 # ⚙️ Run initial system setup (timezone, permissions, etc.)
-source "$SCRIPTS_DIR/setup-system.sh"
+safe_source "$SCRIPTS_DIR/setup-system.sh"
 
 # 🏆 Display system information and version header
 print_header() {

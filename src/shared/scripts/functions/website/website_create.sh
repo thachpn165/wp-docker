@@ -1,17 +1,45 @@
-website_management_create_logic() {
+#shellcheck disable=SC2154
+website_prompt_create() {
+  #echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
+  print_msg title "$TITLE_CREATE_NEW_WORDPRESS_WEBSITE"
+  # Lấy domain từ người dùng
+  read -p "$PROMPT_ENTER_DOMAIN: " domain
+
+  php_prompt_choose_version || return 1
+  php_version="$SELECTED_PHP"
+
+  echo ""
+  choice=$(get_input_or_test_value "$PROMPT_WEBSITE_CREATE_RANDOM_ADMIN" "${TEST_WEBSITE_CREATE_RANDOM_ADMIN:-y}")
+  echo "🔍 Prompt text: $PROMPT_WEBSITE_CREATE_RANDOM_ADMIN"
+  choice="$(echo "$choice" | tr '[:upper:]' '[:lower:]')"
+
+  auto_generate=true
+  [[ "$choice" == "n" ]] && auto_generate=false
+
+  print_and_debug "🐝 PHP version: $php_version"
+  print_and_debug "🐝 Domain: $domain"
+
+  website_cli_create \
+    --domain="$domain" \
+    --php="$php_version" \
+    --auto_generate="$auto_generate" || return 1
+}
+
+website_logic_create() {
     local domain="$1"
     local php_version="$2"
     export domain php_version
 
-
+    #shellcheck disable=SC2153
+    # SITES_DIR is set in config.sh ($SITES_DIR=$BASE_DIR/sites)
     SITE_DIR="$SITES_DIR/$domain"
     website_set_config "$domain" "$php_version"
     CONTAINER_PHP=$(json_get_site_value "$domain" "CONTAINER_PHP")
     CONTAINER_DB=$(json_get_site_value "$domain" "CONTAINER_DB")
     MARIADB_VOLUME="${domain//./}${DB_VOLUME_SUFFIX}"
-    LOG_FILE="$LOGS_DIR/${domain}-setup.log"
 
     # cleanup if error
+    #shellcheck disable=SC2317
     cleanup() {
         print_msg cancel "$MSG_CLEANING_UP"
         if [[ -d "$SITE_DIR" ]]; then
@@ -35,12 +63,7 @@ website_management_create_logic() {
             print_and_debug success "$SUCCESS_DIRECTORY_REMOVE: $SSL_DIR"
         fi
     }
-    #trap '
-    #err_func="${FUNCNAME[1]:-MAIN}"
-    #err_line="${BASH_LINENO[0]}"
-    #print_and_debug error "$ERROR_TRAP_LOG: $err_func (line $err_line)"
-    #cleanup
-    #' ERR SIGINT
+
 
     # Create website folder
     if is_directory_exist "$SITE_DIR" false; then
@@ -69,7 +92,7 @@ website_management_create_logic() {
     # Setup NGINX
     print_msg step "$STEP_WEBSITE_SETUP_NGINX: $domain"
     nginx_add_mount_docker "$domain"
-    website_setup_nginx
+    website_setup_nginx "$domain"
 
     # Copy templates
     print_msg step "$STEP_WEBSITE_SETUP_COPY_CONFIG: $domain"
@@ -82,11 +105,10 @@ website_management_create_logic() {
 
     # Store environment variables in .config.json file
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_ENV: $domain"
-    #website_create_env "$SITE_DIR" "$domain" "$php_version"
 
     # Create self-signed SSL certificate
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_SSL: $domain"
-    generate_ssl_cert "$domain" "$SSL_DIR"
+    ssl_logic_install_selfsigned "$domain"
 
     #Copy docker-compose template and config 
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_DOCKER_COMPOSE: $domain"
@@ -115,12 +137,12 @@ website_management_create_logic() {
     # Restart NGINX to apply new configuration
     print_msg step "$MSG_DOCKER_NGINX_RESTART"
     
-    nginx_restart
+    nginx_reload
 
     # Set perrmissions for website folder in PHP container
     print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
     run_cmd "docker exec -u root '$CONTAINER_PHP' chown -R nobody:nogroup /var/www/"
-    debug_log "✅ website_management_create_logic completed"
+    debug_log "✅ website_logic_create completed"
 
     # Start WordPress installation in next stage
 }

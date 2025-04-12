@@ -58,7 +58,7 @@ install_docker() {
     apt-get update
     apt-get install -y ca-certificates curl gnupg lsb-release
     mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    curl -fsSL "https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") $(lsb_release -cs) stable" \
       > /etc/apt/sources.list.d/docker.list
     apt-get update
@@ -84,8 +84,10 @@ install_docker_compose() {
   local DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
   mkdir -p "$DOCKER_CONFIG/cli-plugins"
 
-  local OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-  local ARCH=$(uname -m)
+  local OS
+  OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  local ARCH
+  ARCH=$(uname -m)
 
   case "$ARCH" in
     x86_64) ARCH="x86_64" ;;

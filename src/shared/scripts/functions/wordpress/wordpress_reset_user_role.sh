@@ -3,9 +3,6 @@ reset_user_role_logic() {
     # Lấy tên website từ tham số site_name
     domain="$1"  # site_name sẽ được truyền từ file menu hoặc CLI
 
-    SITE_DIR="$SITES_DIR/$domain"
-    PHP_CONTAINER=$(json_get_site_value "$domain" "CONTAINER_PHP")
-
     # **Chạy lệnh WP CLI để reset lại quyền**
     print_msg step "$STEP_WORDPRESS_RESET_ROLE"
     wordpress_wp_cli_logic "$domain" "role reset --all"

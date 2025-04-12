@@ -28,7 +28,7 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 fi
 
 # Source the config file
-source "$CONFIG_FILE"
+safe_source "$CONFIG_FILE"
 
 # Ensure SITES_DIR is set
 if [[ -z "$SITES_DIR" ]]; then

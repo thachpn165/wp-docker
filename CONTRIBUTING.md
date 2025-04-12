@@ -19,12 +19,14 @@ Thanks for your interest in contributing to **WP Docker**! We welcome all kinds 
 ## 🧱 Development Setup
 
 - Clone the repo:
+
   ```bash
   git clone https://github.com/thachpn165/wp-docker.git
   cd wp-docker
   ```
 
 - Run the project using symlink for development:
+
   ```bash
   cd wp-docker
   bash src/install.sh
@@ -35,6 +37,10 @@ Thanks for your interest in contributing to **WP Docker**! We welcome all kinds 
 
 - Test `.bats` files can be placed under `tests/`
 
+### DEBUG_MODE
+
+To enable detailed logging, edit the `src/shared/config/config.sh` file and set the `DEBUG_MODE` variable to `true`.
+
 ---
 
 ## 🔄 Workflow
@@ -42,9 +48,11 @@ Thanks for your interest in contributing to **WP Docker**! We welcome all kinds 
 We follow a **Pull Request (PR)** based development process.
 
 - Create a feature/fix branch:
+
   ```bash
   git checkout -b feature/my-feature
   ```
+
 - Commit your changes with clear messages.
 - Open a PR to the `main` branch.
 - Ensure CI passes before merging.
@@ -76,23 +84,30 @@ We follow a **Pull Request (PR)** based development process.
 ## 🔧 Template Changes & Versioning
 
 If you modify any template file under:
-```
+
+```bash
 src/shared/templates/
 ```
+
 You **must bump the template version**.
 
 ### ${CHECKMARK} Manual Bump (Recommended):
+
 ```bash
 bash src/shared/scripts/tools/template_bump_version.sh
 ```
+
 This will:
+
 - Ask for new version (e.g. 1.0.7)
 - Prompt for changelog message
 - Update `.template_version`
 - Append to `TEMPLATE_CHANGELOG.md`
 
 ### 🤖 Automatic Bump via CI
+
 If you forget, GitHub Actions will auto-bump it for you:
+
 - Watches changes under `src/shared/templates/**`
 - Runs the same bump script in `--auto` mode
 - Commits version + changelog back into your branch
@@ -118,4 +133,3 @@ If you forget, GitHub Actions will auto-bump it for you:
 ---
 
 Thank you for making WP Docker better! 🙏
-

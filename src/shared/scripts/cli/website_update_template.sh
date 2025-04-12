@@ -20,7 +20,7 @@
 # 3. Loads the configuration file located at "$PROJECT_DIR/shared/config/config.sh".
 # 4. Sources additional functions from "$FUNCTIONS_DIR/website_loader.sh".
 # 5. Parses the --domain argument to identify the target site.
-# 6. Invokes the `website_management_update_site_template_logic` function with the specified site name.
+# 6. Invokes the `website_logic_update_template` function with the specified site name.
 #
 # Error Handling:
 # - Exits with an error message if:
@@ -42,7 +42,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 
 # Load functions for website management
-source "$FUNCTIONS_DIR/website_loader.sh"
+safe_source "$FUNCTIONS_DIR/website_loader.sh"
 
 # Parse arguments
 for arg in "$@"; do
@@ -57,4 +57,4 @@ if [[ -z "$domain" ]]; then
 fi
 
 # Call the logic to update sites
-website_management_update_site_template_logic "$domain"
+website_logic_update_template "$domain"

@@ -17,8 +17,8 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "❌ Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
-source "$CONFIG_FILE"
-source "$FUNCTIONS_DIR/wordpress_loader.sh"
+safe_source "$CONFIG_FILE"
+safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 # 📋 Select website
 select_website

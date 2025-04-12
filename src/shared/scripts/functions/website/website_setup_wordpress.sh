@@ -7,7 +7,7 @@ website_wordpress_print() {
   local admin_user="$2"
   local admin_password="$3"
   local admin_email="$4"
-
+  local site_dir="$SITES_DIR/$domain"
   local site_url="https://$domain"
 
   print_msg info "$INFO_SITE_URL: ${GREEN}$site_url${NC}"
@@ -28,13 +28,12 @@ website_setup_wordpress_logic() {
     print_and_debug error "$ERROR_MISSING_PARAM: --domain"
     return 1
   fi
-  local db_name db_user db_pass php_version php_container db_container
+  local db_name db_user db_pass php_container db_container
 
   # 🌍 Load variables from .config.json
   db_name=$(json_get_site_value "$domain" "MYSQL_DATABASE")
   db_user=$(json_get_site_value "$domain" "MYSQL_USER")
   db_pass=$(json_get_site_value "$domain" "MYSQL_PASSWORD")
-  php_version=$(json_get_site_value "$domain" "PHP_VERSION")
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
   db_container=$(json_get_site_value "$domain" "CONTAINER_DB")
 
@@ -51,7 +50,7 @@ website_setup_wordpress_logic() {
   if [[ "$auto_generate" == true ]]; then
       admin_user="admin-$(openssl rand -base64 6 | tr -dc 'a-zA-Z0-9' | head -c 8)"
       admin_password="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
-      admin_email="admin@$domain.local"
+      admin_email="admin@$domain"
   else
       # Lấy username người dùng nhập vào, nếu trống sẽ dùng giá trị mặc định
       admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
@@ -131,4 +130,5 @@ website_setup_wordpress_logic() {
   wp_set_permalinks "$domain"
   website_wordpress_print "$domain" "$admin_user" "$admin_password" "$admin_email"
   print_msg completed "$SUCCESS_WP_INSTALL_DONE"
+  nginx_restart
 }

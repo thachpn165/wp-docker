@@ -48,7 +48,7 @@ _check_and_start_container() {
     docker start "$container_name" >/dev/null
     started_any=true
 
-    for i in {1..30}; do
+    for _ in {1..30}; do
         sleep 1
         is_running=$(docker ps --format '{{.Names}}' | grep -c "^${container_name}$")
         if [[ "$is_running" -eq 1 ]]; then

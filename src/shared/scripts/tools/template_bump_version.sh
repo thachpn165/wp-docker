@@ -21,7 +21,7 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   exit 1
 fi
 
-source "$CONFIG_FILE"
+safe_source "$CONFIG_FILE"
 
 # ${CHECKMARK} Đảm bảo file tồn tại
 mkdir -p "$(dirname "$TEMPLATE_CHANGELOG_FILE")"

@@ -18,7 +18,7 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
-source "$CONFIG_FILE"
+safe_source "$CONFIG_FILE"
 
 # === ${CHECKMARK} Load update_core.sh to use update functions ===
 UPDATE_CORE_FILE="$PROJECT_DIR/shared/scripts/functions/core/update_core.sh"
@@ -26,7 +26,7 @@ if [[ ! -f "$UPDATE_CORE_FILE" ]]; then
   echo "${CROSSMARK} Update core file not found at: $UPDATE_CORE_FILE" >&2
   exit 1
 fi
-source "$UPDATE_CORE_FILE"
+safe_source "$UPDATE_CORE_FILE"
 
 # === 🔄 Run complete update process ===
 core_update_system  # Call update function from update_core.sh

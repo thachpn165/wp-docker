@@ -16,6 +16,6 @@ setup() {
   debug_log() { echo "[DEBUG] $*"; }
 
   # Load hàm cần test
-  source "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/utils/json_utils.sh"
-  source "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/core/core_lang.sh"
+  safe_source "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/utils/json_utils.sh"
+  safe_source "$BATS_TEST_DIRNAME/../../src/shared/scripts/functions/core/core_lang.sh"
 }

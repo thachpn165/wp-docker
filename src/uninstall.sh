@@ -16,10 +16,9 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
   SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
 
-source "$FUNCTIONS_DIR/website_loader.sh"
+safe_source "$FUNCTIONS_DIR/website_loader.sh"
 
 readonly BACKUP_DIR="$BASE_DIR/archives/backups_before_remove"
-readonly TMP_BACKUP_DIR="$BASE_DIR/tmp"
 
 # 🟡 Prompt confirmation
 confirm_action() {

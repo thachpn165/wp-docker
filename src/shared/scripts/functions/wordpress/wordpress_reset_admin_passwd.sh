@@ -9,9 +9,6 @@ reset_admin_password_logic() {
         exit 1
     fi
 
-    SITE_DIR="$SITES_DIR/$domain"
-    PHP_CONTAINER=$(json_get_site_value "$domain" "CONTAINER_PHP")
-
     # 🔐 Tạo mật khẩu ngẫu nhiên 18 ký tự không có ký tự đặc biệt
     new_password=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 18)
 

@@ -1,3 +1,21 @@
+#shellcheck disable=SC1091
+safe_source "$CLI_DIR/database_actions.sh"
+
+database_prompt_export() {
+    # Ensure SITE_DOMAIN is set by calling select_website
+    echo "🔧 Choose the website for backup:"
+    select_website || exit 1
+
+    # Check if SITE_DOMAIN is still empty
+    if [[ -z "$domain" ]]; then
+        echo "${CROSSMARK} Site name is not set. Exiting..."
+        exit 1
+    fi
+    echo "💾 Backup will be saved to: $save_location"
+
+    database_cli_export --domain="$domain" --save_location="$save_location"
+}
+
 database_export_logic() {
     local domain="$1"
     local save_location="$2"
@@ -22,16 +40,11 @@ database_export_logic() {
         }
     fi
 
-    # Fetch DB credentials
-    local db_info
-    db_info=$(db_fetch_env "$domain")
-    if [[ $? -ne 0 ]]; then
-        print_msg error "$(printf "$ERROR_DB_FETCH_CREDENTIALS" "$domain")"
-        return 1
-    fi
-
     local db_name db_user db_password
-    read -r db_name db_user db_password <<< "$db_info"
+    db_name="$(json_get_site_value "$domain" "MYSQL_DATABASE")"
+    db_user="$(json_get_site_value "$domain" "MYSQL_USER")"
+    db_password="$(json_get_site_value "$domain" "MYSQL_PASSWORD")"
+    debug_log "[DB IMPORT] db_name=$db_name, db_user=$db_user"
 
     if ! is_mariadb_running "$domain"; then
         print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
@@ -49,7 +62,7 @@ database_export_logic() {
     fi
 
     if ! docker exec --env MYSQL_PWD="$db_password" "$db_container" \
-        mysqldump -u"$db_user" "$db_name" > "$save_location"; then
+        mysqldump -u"$db_user" "$db_name" >"$save_location"; then
         print_msg error "$(printf "$ERROR_BACKUP_DB_DUMP_FAILED" "$db_name")"
         return 1
     fi
