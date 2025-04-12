@@ -36,7 +36,7 @@ else
 fi
 PROJECT_DIR=$BASE_DIR
 # ==== 2. Load .env file ====
-DEBUG_MODE="true"
+DEBUG_MODE="false"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"

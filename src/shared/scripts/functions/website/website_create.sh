@@ -6,7 +6,7 @@ website_prompt_create() {
   read -p "$PROMPT_ENTER_DOMAIN: " domain
 
   php_prompt_choose_version || return 1
-  php_version="$REPLY"
+  php_version="$SELECTED_PHP"
 
   echo ""
   choice=$(get_input_or_test_value "$PROMPT_WEBSITE_CREATE_RANDOM_ADMIN" "${TEST_WEBSITE_CREATE_RANDOM_ADMIN:-y}")

@@ -71,10 +71,7 @@ php_prompt_change_version() {
     echo -e "${GREEN}${CHECKMARK} PHP version for $domain has been updated to $php_version.${NC}"
 
     # === Send command to CLI ===
-    bash "$CLI_DIR/php_change_version.sh" --domain="$domain" --php_version="$php_version"
-  else
-    echo -e "${RED}${CROSSMARK} Failed to select PHP version for $domain.${NC}"
-    exit 1
+    php_cli_change_version --domain="$domain" --php_version="$php_version"
   fi
 
   # send command to CLI
