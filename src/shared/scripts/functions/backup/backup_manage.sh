@@ -4,37 +4,31 @@ backup_prompt_backup_manage() {
     safe_source "$CLI_DIR/backup_manage.sh"
     select_website
     if [[ -z "$domain" ]]; then
-        echo "${CROSSMARK} No website selected. Exiting."
+        print_and_debug "$ERROR_MISSING_PARAM: --domain must be provided"
         exit 1
     fi
 
-    echo "Selected site: $domain"
+    print_msg info "$MSG_WEBSITE_SELECTED: $domain"
 
     # === Choose action: list or clean ===
-    echo -e "${YELLOW}📂 Choose action:${NC}"
+    print_msg label "$PROMPT_ENTER_ACTION_NUMBER"
     select action_choice in "list" "clean"; do
         case $action_choice in
         list)
-            echo "You selected to list backups."
+            echo ""
             action="list"
             break
             ;;
         clean)
-            echo "You selected to clean old backups."
+            echo ""
             action="clean"
             break
             ;;
         *)
-            echo "${CROSSMARK} Invalid option. Please select either 'list' or 'clean'."
+            print_and_debug error "$ERROR_INVALID_CHOICE: $action_choice"
             ;;
         esac
     done
-
-    # === If cleaning, ask for max age days ===
-    #if [[ "$action" == "clean" ]]; then
-    #    max_age_days="$(get_input_or_test_value "Enter the number of days to keep backups: " "${TEST_MAX_AGE_DAYS:-7}")"
-    #    echo "You selected to keep backups for $max_age_days days."
-    #fi
 
     backup_cli_manage --domain="$domain" --action="$action"
 }
@@ -47,12 +41,11 @@ backup_logic_manage() {
     local formatted_msg_cleaning_old_backups
 
     # Check if the backup directory exists
-    if [[ ! -d "$backup_dir" ]]; then
-        print_and_debug error "$MSG_NOT_FOUND $backup_dir"
+    if $(is_directory_exist "$backup_dir"); then
+        print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$backup_dir")"
         mkdir -p "$backup_dir"
-        debug_log "Backup directory $backup_dir created because it did not exist."
+        return 1
     fi
-
     case "$action" in
     "list")
         print_msg step "$MSG_BACKUP_LISTING: $domain"
@@ -74,8 +67,9 @@ backup_logic_manage() {
         ;;
     "clean")
 
-        max_age_days="$(get_input_or_test_value "Enter the number of days to keep backups: " "${TEST_MAX_AGE_DAYS:-7}")"
-        echo "You selected to keep backups for $max_age_days days."
+        max_age_days="$(get_input_or_test_value "$PROMPT_BACKUP_MAX_AGE " "${TEST_MAX_AGE_DAYS:-7}")"
+        formatted_msg_set_max_age_days=$(printf "$STEP_SET_MAX_AGE_DAYS" "$max_age_days")
+        print_msg success "$formatted_msg_set_max_age_days"
         formatted_msg_cleaning_old_backups=$(printf "$STEP_CLEANING_OLD_BACKUPS" "$max_age_days" "$backup_dir")
         print_msg step "$formatted_msg_cleaning_old_backups"
         if [[ "$DEBUG_MODE" == true ]]; then
