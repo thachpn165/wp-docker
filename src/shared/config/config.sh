@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #shellcheck disable=SC2034
- =============================================
+#=============================================
 # ⚙️ WP Docker - GLOBAL CONFIGURATION (config.sh)
 # =============================================
 
@@ -13,7 +13,7 @@ if [[ "$CONFIG_DIR" == */src/shared/config ]]; then
   DEV_MODE=true
 else
   BASE_DIR="$(cd "$CONFIG_DIR/../.." && pwd)"
-  
+
   DEV_MODE=false
 fi
 PROJECT_DIR=$BASE_DIR
@@ -29,8 +29,6 @@ source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
 
 # ==== 3. Load i18n language file ====
 source "$BASE_DIR/shared/lang/lang_loader.sh"
-
-
 
 # ==== 5. Define core system variables ====
 LANG_LIST=("vi" "en")
