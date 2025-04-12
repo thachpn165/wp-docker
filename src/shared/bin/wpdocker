@@ -30,6 +30,8 @@ safe_source "$CLI_DIR/backup_restore.sh"
 safe_source "$CLI_DIR/database_actions.sh"
 safe_source "$CLI_DIR/php_version.sh"
 safe_source "$CLI_DIR/php_rebuild_container.sh"
+safe_source "$CLI_DIR/ssl_install.sh"
+safe_source "$CLI_DIR/ssl_check_status.sh"
 # Define subcommands handlers
 handle_website() {
     # wpdocker website
@@ -49,9 +51,9 @@ handle_website() {
 handle_ssl() {
     
     case "$1" in
-        selfsigned) bash "$CLI_DIR/ssl_create.sh" "${@:2}" ;;
-        letsencrypt) bash "$CLI_DIR/ssl_create.sh" "${@:2}" ;;
-        check) bash "$CLI_DIR/ssl_check_status.sh" "${@:2}" ;;
+        selfsigned) ssl_cli_install_selfsigned "${@:2}" ;;
+        letsencrypt) ssl_cli_install_letsencrypt "${@:2}" ;;
+        check) ssl_cli_check_status "${@:2}" ;;
         *) echo "${CROSSMARK} Unknown subcommand for ssl: $1" ;;
     esac
 }

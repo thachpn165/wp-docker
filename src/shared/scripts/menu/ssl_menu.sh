@@ -13,8 +13,8 @@ ssl_menu() {
         print_ssl_menu_header
         print_msg label "${GREEN}1)${NC} $LABEL_MENU_SSL_SELFSIGNED"
         print_msg label "${GREEN}2)${NC} $LABEL_MENU_SSL_MANUAL"
-        print_msg label "${GREEN}3)${NC} $LABEL_MENU_SSL_EDIT"
-        print_msg label "${GREEN}4)${NC} $LABEL_MENU_SSL_LETSENCRYPT"
+        print_msg label "${GREEN}3)${NC} $LABEL_MENU_SSL_LETSENCRYPT"
+        print_msg label "${GREEN}4)${NC} $LABEL_MENU_SSL_EDIT"
         print_msg label "${GREEN}5)${NC} $LABEL_MENU_SSL_CHECK"
         print_msg label "${GREEN}6)${NC} $MSG_BACK"
         echo ""
@@ -22,24 +22,25 @@ ssl_menu() {
         read -p "$MSG_SELECT_OPTION " choice
         case "$choice" in
             1)
-                bash "$MENU_DIR/ssl/ssl_generate_self_signed_menu.sh"
+                ssl_prompt_general "ssl_logic_install_selfsigned"
                 [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             2)
-                bash "$MENU_DIR/ssl/ssl_manual_install_menu.sh"
+                ssl_prompt_general "ssl_logic_install_manual"
                 [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             3)
-                bash "$MENU_DIR/ssl/ssl_edit_cert_menu.sh"
+                ssl_prompt_general "ssl_logic_install_letsencrypt"
                 [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             4)
-                bash "$MENU_DIR/ssl/ssl_install_letsencrypt_menu.sh"
+                ssl_prompt_general "ssl_logic_edit_cert"
                 [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             5)
-                bash "$MENU_DIR/ssl/ssl_check_status_menu.sh"
+                ssl_prompt_general "ssl_logic_check_cert"
                 [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
+
                 ;;
             6)
                 break

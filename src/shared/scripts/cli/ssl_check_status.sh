@@ -9,27 +9,16 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
 safe_source "$FUNCTIONS_DIR/ssl_loader.sh"
+ssl_cli_check_status() {
+  local domain
 
-# === Parse arguments ===
-for arg in "$@"; do
-  case $arg in
-    --domain=*) domain="${arg#*=}" ;;
-    --ssl_dir=*) SSL_DIR="${arg#*=}" ;;
-  esac
-done
+  domain=$(_parse_params "--domain" "$@")
+  
+  if [[ -z "$domain" ]]; then
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
+    print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld"
+    exit 1
+  fi
 
-# === Check if site_name is provided ===
-if [[ -z "$domain" ]]; then
-  #echo "${CROSSMARK} Missing required --domain parameter"
-  print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-  exit 1
-fi
-
-# === Set default SSL_DIR if not provided ===
-if [[ -z "$SSL_DIR" ]]; then
-  SSL_DIR="$PROJECT_DIR/shared/ssl"
-  debug_log "SSL_DIR not provided, using default: $SSL_DIR"
-fi
-
-# === Check SSL certificate status using the logic function ===
-ssl_logic_check_cert "$domain" "$SSL_DIR"
+  ssl_logic_check_cert "$domain"
+}

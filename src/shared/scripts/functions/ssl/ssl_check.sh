@@ -1,31 +1,22 @@
 ssl_logic_check_cert() {
   local domain="$1"
-  local SSL_DIR="$2"
-
+  local ssl_dir
+  ssl_dir=$SSL_DIR
+  local cert_path="$ssl_dir/$domain.crt"
+  
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
     return 1
   fi
 
-  if ! json_key_exists ".site[\"$domain\"]"; then
-      print_msg error "$ERROR_WEBSITE_NOT_EXIST: $domain"
-      return 1
-  fi
 
-  local DOMAIN
-  DOMAIN=$(json_get_site_value "$domain" "DOMAIN")
-  if [[ -z "$DOMAIN" ]]; then
-    print_msg error "$ERROR_ENV_DOMAIN_NOT_FOUND"
-    return 1
-  fi
 
-  local cert_path="$SSL_DIR/$DOMAIN.crt"
   if [[ ! -f "$cert_path" ]]; then
     print_msg error "$ERROR_SSL_CERT_NOT_FOUND: $cert_path"
     return 1
   fi
 
-  print_msg check "$(printf "$INFO_SSL_CHECKING_FOR_DOMAIN" "$DOMAIN")"
+  print_msg check "$(printf "$INFO_SSL_CHECKING_FOR_DOMAIN" "$domain")"
   echo ""
 
   local subject issuer start_date end_date
