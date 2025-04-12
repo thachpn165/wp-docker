@@ -32,8 +32,10 @@ safe_source "$CLI_DIR/php_version.sh"
 safe_source "$CLI_DIR/php_rebuild_container.sh"
 safe_source "$CLI_DIR/ssl_install.sh"
 safe_source "$CLI_DIR/ssl_check_status.sh"
+safe_source "$CLI_DIR/system_tools.sh"
 # Define subcommands handlers
 handle_website() {
+
     # wpdocker website
     case "$1" in
         create) bash "$CLI_DIR/website_create.sh" "${@:2}" ;;
@@ -98,13 +100,13 @@ handle_database() {
 handle_system() {
     # wpdocker system
     case "$1" in
-        check) bash "$CLI_DIR/system_check_resources.sh" "${@:2}" ;;
-        manage) bash "$CLI_DIR/system_manage_docker.sh" "${@:2}" ;;
-        cleanup) bash "$CLI_DIR/system_cleanup_docker.sh" "${@:2}" ;;
+        check) system_cli_check_resources "${@:2}" ;;
+        manage) system_cli_manage_docker "${@:2}" ;;
+        cleanup) system_cli_cleanup_docker "${@:2}" ;;
         nginx) 
             case "$2" in
-                rebuild) bash "$CLI_DIR/system_nginx_rebuild.sh" "${@:3}" ;;
-                restart) bash "$CLI_DIR/system_nginx_restart.sh" "${@:3}" ;;
+                rebuild) system_cli_nginx_rebuild "${@:3}" ;;
+                restart) nginx_restart "${@:3}" ;;
                 reload) nginx_reload ;;
                 *) echo "${CROSSMARK} Unknown subcommand for nginx: $2" ;;
             esac

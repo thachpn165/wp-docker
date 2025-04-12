@@ -24,13 +24,13 @@ system_tools_menu() {
         
             case $choice in
                 1)
-                    bash "$MENU_DIR/system-tools/system_check_resources_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    system_cli_check_resources; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 2)
-                    bash "$MENU_DIR/system-tools/system_manage_docker_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    system_prompt_manage_docker; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 3)
-                    bash "$CLI_DIR/system_cleanup_docker.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    system_cli_cleanup_docker; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 4)
                     bash "$CLI_DIR/system_nginx_rebuild.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"

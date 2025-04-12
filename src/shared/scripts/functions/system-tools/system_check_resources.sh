@@ -1,4 +1,4 @@
-system_check_resources_logic() {
+system_logic_check_resources() {
   local cpu_memory_usage memory_usage disk_usage uptime_info os_type
 
   # 🐳 Get Docker container resource usage

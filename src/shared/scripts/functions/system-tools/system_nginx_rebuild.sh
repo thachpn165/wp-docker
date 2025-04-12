@@ -1,4 +1,4 @@
-system_nginx_rebuild_logic() {
+system_logic_nginx_rebuild() {
   print_msg step "$STEP_NGINX_REBUILD_START"
 
   # Stop & remove container
