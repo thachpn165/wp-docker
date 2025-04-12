@@ -49,4 +49,4 @@ if [[ "$confirm_rebuild" != "y" ]]; then
 fi
 
 # === Call the CLI to rebuild PHP container ===
-bash "$CLI_DIR/php_rebuild_container.sh" --domain="$domain"
+php_cli_rebuild_container "$domain"

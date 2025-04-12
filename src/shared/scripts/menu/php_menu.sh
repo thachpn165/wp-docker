@@ -3,7 +3,7 @@
 source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
 source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
 source "$CLI_DIR/php_version.sh"
-
+source "$FUNCTIONS_DIR/php/php_rebuild_container.sh"
 
 # 📋 Main PHP Management Menu
 php_menu() {
@@ -20,7 +20,7 @@ php_menu() {
     
       case $choice in
         1) php_prompt_change_version; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
-        2) bash "$MENU_DIR/php/php_rebuild_container_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+        2) php_prompt_rebuild_container; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         3) edit_php_fpm_conf; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         4) edit_php_ini; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         5) break ;;

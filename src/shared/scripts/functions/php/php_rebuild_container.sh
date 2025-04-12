@@ -1,3 +1,24 @@
+source "$CLI_DIR/php_rebuild_container.sh"
+
+php_prompt_rebuild_container() {
+  
+  select_website || exit 1 # Use the existing select_website function to allow user to select a site
+
+  # === Confirm Rebuild PHP Container ===
+  echo -e "${YELLOW}🔁 Rebuild the PHP container for site: $domain${NC}"
+  read -p "Are you sure you want to rebuild the PHP container for this site? (y/n): " confirm_rebuild
+  confirm_rebuild=$(echo "$confirm_rebuild" | tr '[:upper:]' '[:lower:]')
+
+  if [[ "$confirm_rebuild" != "y" ]]; then
+    echo -e "${RED}${CROSSMARK} Operation canceled. No changes made.${NC}"
+    exit 1
+  fi
+
+  # === Call the CLI to rebuild PHP container ===
+  debug_log "[php_prompt_rebuild_container] Rebuilding PHP container for domain: $domain"
+  php_cli_rebuild_container --domain="$domain"
+}
+
 php_rebuild_container_logic() {
   local domain="$1"
 

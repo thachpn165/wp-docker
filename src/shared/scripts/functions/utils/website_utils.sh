@@ -45,7 +45,8 @@ select_website() {
 
     # Corrected assignment: no spaces around "=" in bash
     domain="$SITE_DOMAIN"
-
+    #debug
+    debug_log "[select_website] domain=$domain"
     print_and_debug info "$MSG_WEBSITE_SELECTED: $domain"
 }
 

@@ -1,37 +1,4 @@
 #!/usr/bin/env bash
-# -----------------------------------------------------------------------------
-# Script Name: ssl_check_status.sh
-# Description: This script checks the SSL certificate status for a given site.
-#              It ensures the script is run in a Bash shell, determines the
-#              project directory, loads necessary configurations, and validates
-#              SSL certificates using a logic function.
-#
-# Usage:
-#   ./ssl_check_status.sh --domain=example.tld [--ssl_dir=<ssl_directory>]
-#
-# Arguments:
-#   --domain   (Required) The name of the site for which to check the SSL status.
-#   --ssl_dir     (Optional) The directory containing SSL certificates. Defaults
-#                 to "$PROJECT_DIR/shared/ssl" if not provided.
-#
-# Requirements:
-#   - The script must be executed in a Bash shell.
-#   - The environment variable PROJECT_DIR must be set, or the script must be
-#     located within a directory structure containing 'shared/config/config.sh'.
-#   - The configuration file 'config.sh' must exist in the expected location.
-#   - The 'ssl_loader.sh' script must be available in the FUNCTIONS_DIR.
-#
-# Exit Codes:
-#   1 - If the script is not run in a Bash shell.
-#   1 - If PROJECT_DIR cannot be determined.
-#   1 - If the configuration file is not found.
-#   1 - If the required --domain parameter is missing.
-#
-# Example:
-#   ./ssl_check_status.sh --domain=mywebsite --ssl_dir=/path/to/ssl
-#
-# -----------------------------------------------------------------------------
-
 # 🔧 Auto-detect BASE_DIR and load global configuration
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 while [[ "$SCRIPT_PATH" != "/" ]]; do
