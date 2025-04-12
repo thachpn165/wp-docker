@@ -8,6 +8,6 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   fi
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-source "$FUNCTIONS_DIR/php_loader.sh"
+safe_source "$FUNCTIONS_DIR/php_loader.sh"
 
 php_get_version

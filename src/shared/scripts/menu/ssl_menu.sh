@@ -1,5 +1,5 @@
 #!/bin/bash
-source "$FUNCTIONS_DIR/ssl_loader.sh"
+safe_source "$FUNCTIONS_DIR/ssl_loader.sh"
 # Header menu
 print_ssl_menu_header() {
     echo -e "\n${MAGENTA}===========================================${NC}"

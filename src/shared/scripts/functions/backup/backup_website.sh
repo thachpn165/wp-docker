@@ -163,8 +163,8 @@ backup_logic_website() {
     local log_dir
     local log_file
     log_file="$log_dir/wp-backup.log"
-    source "$CLI_DIR/backup_website.sh"
-    source "$CLI_DIR/database_actions.sh"
+    safe_source "$CLI_DIR/backup_website.sh"
+    safe_source "$CLI_DIR/database_actions.sh"
     # Kiểm tra nếu domain hoặc storage không có giá trị, thoát hàm ngay lập tức
     if [[ -z "$domain" || -z "$storage" ]]; then
         print_and_debug error "$ERROR_MISSING_PARAM: --domain and --storage must be provided"

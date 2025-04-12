@@ -39,13 +39,13 @@ PROJECT_DIR=$BASE_DIR
 DEBUG_MODE="true"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
-source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
+safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
 
 # ==== 4. Load log/debug helpers ====
-source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
+safe_source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
 
 # ==== 3. Load i18n language file ====
-source "$BASE_DIR/shared/lang/lang_loader.sh"
+safe_source "$BASE_DIR/shared/lang/lang_loader.sh"
 
 # ==== 5. Define core system variables ====
 LANG_LIST=("vi" "en")
@@ -120,17 +120,17 @@ TEST_MODE="${TEST_MODE:-false}"
 TEST_ALWAYS_READY="${TEST_ALWAYS_READY:-false}"
 
 # ==== 14. Load utility functions ====
-source "$FUNCTIONS_DIR/utils/system_utils.sh"
-source "$FUNCTIONS_DIR/utils/docker_utils.sh"
-source "$FUNCTIONS_DIR/utils/file_utils.sh"
-source "$FUNCTIONS_DIR/utils/network_utils.sh"
-source "$FUNCTIONS_DIR/utils/wp_utils.sh"
-source "$FUNCTIONS_DIR/utils/php_utils.sh"
-source "$FUNCTIONS_DIR/utils/db_utils.sh"
-source "$FUNCTIONS_DIR/utils/website_utils.sh"
-source "$FUNCTIONS_DIR/utils/misc_utils.sh"
-source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
-source "$FUNCTIONS_DIR/utils/cli_params.sh"
+safe_source "$FUNCTIONS_DIR/utils/system_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/docker_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/file_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/network_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/php_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/db_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/website_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/misc_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
+safe_source "$FUNCTIONS_DIR/utils/cli_params.sh"
 
 WPDK_LOAD_CONFIG_LOADED=true
 

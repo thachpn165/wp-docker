@@ -39,7 +39,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   fi
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-source "$FUNCTIONS_DIR/system_loader.sh"
+safe_source "$FUNCTIONS_DIR/system_loader.sh"
 
 # === Parse command line flags ===
 while [[ "$#" -gt 0 ]]; do

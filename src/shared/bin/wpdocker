@@ -14,22 +14,22 @@ done
 
 
 # Load necessary functions
-source "$FUNCTIONS_DIR/rclone/setup_rclone.sh"
-source "$FUNCTIONS_DIR/rclone/upload_backup.sh"
-source "$FUNCTIONS_DIR/rclone/manage_rclone.sh"
-source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
-source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
-source "$FUNCTIONS_DIR/core/core_version_management.sh"
+safe_source "$FUNCTIONS_DIR/rclone/setup_rclone.sh"
+safe_source "$FUNCTIONS_DIR/rclone/upload_backup.sh"
+safe_source "$FUNCTIONS_DIR/rclone/manage_rclone.sh"
+safe_source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
+safe_source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
+safe_source "$FUNCTIONS_DIR/core/core_version_management.sh"
 
 
 # Load CLI functions
 source  "$CLI_DIR/core_lang.sh"
 source  "$CLI_DIR/website_manage.sh"
-source "$CLI_DIR/backup_website.sh"
-source "$CLI_DIR/backup_restore.sh"
-source "$CLI_DIR/database_actions.sh"
-source "$CLI_DIR/php_version.sh"
-source "$CLI_DIR/php_rebuild_container.sh"
+safe_source "$CLI_DIR/backup_website.sh"
+safe_source "$CLI_DIR/backup_restore.sh"
+safe_source "$CLI_DIR/database_actions.sh"
+safe_source "$CLI_DIR/php_version.sh"
+safe_source "$CLI_DIR/php_rebuild_container.sh"
 # Define subcommands handlers
 handle_website() {
     # wpdocker website

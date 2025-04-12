@@ -1,8 +1,8 @@
 #!/bin/bash
 # Import Rclone functions
-source "$SCRIPTS_FUNCTIONS_DIR/rclone/setup_rclone.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh"
-source "$SCRIPTS_FUNCTIONS_DIR/rclone/manage_rclone.sh"
+safe_source "$SCRIPTS_FUNCTIONS_DIR/rclone/setup_rclone.sh"
+safe_source "$SCRIPTS_FUNCTIONS_DIR/rclone/upload_backup.sh"
+safe_source "$SCRIPTS_FUNCTIONS_DIR/rclone/manage_rclone.sh"
 
 # Function to display Rclone management menu
 rclone_menu() {

@@ -1,9 +1,9 @@
 #!/bin/bash
 #shellcheck disable=SC1091
-source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
-source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
-source "$CLI_DIR/php_version.sh"
-source "$FUNCTIONS_DIR/php/php_rebuild_container.sh"
+safe_source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
+safe_source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
+safe_source "$CLI_DIR/php_version.sh"
+safe_source "$FUNCTIONS_DIR/php/php_rebuild_container.sh"
 
 # 📋 Main PHP Management Menu
 php_menu() {

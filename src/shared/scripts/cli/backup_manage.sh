@@ -10,7 +10,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   fi
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-source "$FUNCTIONS_DIR/backup_loader.sh"
+safe_source "$FUNCTIONS_DIR/backup_loader.sh"
 
 backup_cli_manage() {
   local domain

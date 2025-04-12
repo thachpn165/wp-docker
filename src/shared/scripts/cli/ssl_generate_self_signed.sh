@@ -34,7 +34,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   fi
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-source "$FUNCTIONS_DIR/ssl_loader.sh"
+safe_source "$FUNCTIONS_DIR/ssl_loader.sh"
 
 # === Parse argument ===
 for arg in "$@"; do

@@ -13,7 +13,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 
 # Load functions for website management
-source "$FUNCTIONS_DIR/backup_loader.sh"
+safe_source "$FUNCTIONS_DIR/backup_loader.sh"
 # Function to display backup management menu
 backup_menu() {
     while true; do

@@ -14,7 +14,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 
 # Load functions for website management
-source "$FUNCTIONS_DIR/website_loader.sh"
+safe_source "$FUNCTIONS_DIR/website_loader.sh"
 
 website_cli_create() {
   auto_generate=true # default: true

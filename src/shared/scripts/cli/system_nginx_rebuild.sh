@@ -38,7 +38,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   fi
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-source "$FUNCTIONS_DIR/system_loader.sh"
+safe_source "$FUNCTIONS_DIR/system_loader.sh"
 
 # === Call the logic function to rebuild NGINX ===
 system_nginx_rebuild_logic

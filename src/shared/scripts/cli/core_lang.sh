@@ -8,7 +8,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   fi
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-source "$FUNCTIONS_DIR/core_loader.sh"
+safe_source "$FUNCTIONS_DIR/core_loader.sh"
 
 
 # === Change Language ===

@@ -28,7 +28,7 @@ load_config_file() {
   fi
 
   # Source the config file
-  source "$CONFIG_FILE"
+  safe_source "$CONFIG_FILE"
 }
 
 # Hàm safe_source thay thế source thông thường
@@ -50,7 +50,7 @@ safe_source() {
   if [[ "$(eval echo \${$var_name:-false})" == "true" ]]; then
     # File đã được source, hiển thị thông báo (nếu debug mode bật)
     if [[ "${DEBUG_MODE:-false}" == "true" ]]; then
-      debug_log "${green}[SAFE_SOURCE]${reset} File ${yellow}${target_file}${reset} đã được source trước đó, bỏ qua."
+      echo -e "${green}[SAFE_SOURCE]${reset} File ${yellow}${target_file}${reset} đã được source trước đó, bỏ qua."
     fi
     return 0
   fi
@@ -58,32 +58,32 @@ safe_source() {
   # Đánh dấu file đã được source
   eval "$var_name=true"
   
-  # Hiển thị thông tin debug
-  debug_log "${green}[SOURCE]${reset} Từ file ${yellow}${caller_file:-unknown}${reset} đang source file ${yellow}${target_file}${reset}"
+  # Hiển thị thông tin debug nếu DEBUG_MODE=true
+  if [[ "${DEBUG_MODE:-false}" == "true" ]]; then
+    echo -e "${green}[SOURCE]${reset} Từ file ${yellow}${caller_file:-unknown}${reset} đang source file ${yellow}${target_file}${reset}"
+  fi
   
   # Kiểm tra file tồn tại
   if [[ ! -f "$target_file" ]]; then
-    debug_log "${red}[SOURCE ERROR]${reset} File ${yellow}${target_file}${reset} không tồn tại!"
+    echo -e "${red}[SOURCE ERROR]${reset} File ${yellow}${target_file}${reset} không tồn tại!"
     return 1
   fi
   
   # Source file
   builtin source "$target_file"
   
-  # Hiển thị trạng thái kết quả
+  # Hiển thị trạng thái kết quả nếu DEBUG_MODE=true
   local status=$?
-  if [[ $status -eq 0 ]]; then
-    debug_log "${green}[SOURCE]${reset} Sourced ${yellow}${target_file}${reset} thành công!"
-    echo ""
-  else
-    debug_log "${red}[SOURCE ERROR]${reset} Sourced ${yellow}${target_file}${reset} thất bại với mã lỗi $status!"
+  if [[ "${DEBUG_MODE:-false}" == "true" ]]; then
+    if [[ $status -eq 0 ]]; then
+      echo -e "${green}[SOURCE]${reset} Sourced ${yellow}${target_file}${reset} thành công!"
+    else
+      echo -e "${red}[SOURCE ERROR]${reset} Sourced ${yellow}${target_file}${reset} thất bại với mã lỗi $status!"
+    fi
   fi
   
   return $status
 }
-
-# Cách sử dụng trong các script:
-# safe_source "/path/to/config.sh"
 
 # === Auto-load config.sh
 load_config_file

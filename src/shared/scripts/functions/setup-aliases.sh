@@ -26,11 +26,11 @@ check_and_add_alias() {
   if [[ "$SHELL" == *"zsh"* ]]; then
       # If the current shell is zsh, source .zshrc
       echo "${CHECKMARK} Sourcing .zshrc to reload Zsh configuration..."
-      source "$HOME/.zshrc"
+      safe_source "$HOME/.zshrc"
   elif [[ "$SHELL" == *"bash"* ]]; then
       # If the current shell is bash, source .bashrc
       echo "${CHECKMARK} Sourcing .bashrc to reload Bash configuration..."
-      source "$HOME/.bashrc"
+      safe_source "$HOME/.bashrc"
   else
       echo "${CROSSMARK} Unsupported shell: $SHELL. Please reload your shell configuration manually."
   fi

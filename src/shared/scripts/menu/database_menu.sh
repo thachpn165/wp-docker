@@ -1,6 +1,6 @@
 #!/bin/bash
 # Function to display backup management menu
-source "$FUNCTIONS_DIR/database_loader.sh"
+safe_source "$FUNCTIONS_DIR/database_loader.sh"
 
 database_menu() {
         while true; do

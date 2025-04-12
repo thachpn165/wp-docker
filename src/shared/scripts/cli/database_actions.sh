@@ -11,7 +11,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
     SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
 
-#source "$FUNCTIONS_DIR/database_loader.sh"
+#safe_source "$FUNCTIONS_DIR/database_loader.sh"
 
 database_cli_export() {
     timestamp=$(date +%s)

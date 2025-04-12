@@ -1,7 +1,7 @@
 #shellcheck disable=SC1091
 #shellcheck disable=SC2162
 backup_prompt_backup_manage() {
-    source "$CLI_DIR/backup_manage.sh"
+    safe_source "$CLI_DIR/backup_manage.sh"
     select_website
     if [[ -z "$domain" ]]; then
         echo "${CROSSMARK} No website selected. Exiting."

@@ -42,7 +42,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 
 # Load functions for website management
-source "$FUNCTIONS_DIR/website_loader.sh"
+safe_source "$FUNCTIONS_DIR/website_loader.sh"
 
 # Parse arguments
 for arg in "$@"; do

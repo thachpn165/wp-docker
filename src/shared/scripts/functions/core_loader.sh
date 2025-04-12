@@ -13,5 +13,5 @@ fi
 # Load all .sh files in website/
 for f in "$FUNCTIONS_DIR/core/"*.sh; do
 # shellcheck source=/dev/null
-  [[ -f "$f" ]] && source "$f"
+  [[ -f "$f" ]] && safe_source "$f"
 done

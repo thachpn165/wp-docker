@@ -21,8 +21,8 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   echo "${CROSSMARK} Config file not found at: $CONFIG_FILE" >&2
   exit 1
 fi
-source "$CONFIG_FILE"
-source "$FUNCTIONS_DIR/ssl_loader.sh"
+safe_source "$CONFIG_FILE"
+safe_source "$FUNCTIONS_DIR/ssl_loader.sh"
 
 # === Display website selection menu ===
 select_website

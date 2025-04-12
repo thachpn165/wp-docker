@@ -12,7 +12,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 
 # Load functions for website management
-source "$FUNCTIONS_DIR/website_loader.sh"
+safe_source "$FUNCTIONS_DIR/website_loader.sh"
 
 # Hàm restart website sử dụng domain từ _parse_params "--domain" 
 function website_cli_restart() {

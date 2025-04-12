@@ -14,7 +14,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 
 # Load functions for website management
-source "$FUNCTIONS_DIR/wordpress_loader.sh"
+safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 website_cli_update_template() {
   # === Parse command line flags ===

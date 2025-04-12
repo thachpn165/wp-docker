@@ -4,8 +4,8 @@
 #shellcheck disable=SC1091
 
 # Load website management functions
-source "$FUNCTIONS_DIR/website_loader.sh"
-source "$CLI_DIR/website_create.sh"
+safe_source "$FUNCTIONS_DIR/website_loader.sh"
+safe_source "$CLI_DIR/website_create.sh"
 
 # Display website management menu
 website_management_menu() {

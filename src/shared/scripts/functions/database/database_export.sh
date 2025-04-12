@@ -1,5 +1,5 @@
 #shellcheck disable=SC1091
-source "$CLI_DIR/database_actions.sh"
+safe_source "$CLI_DIR/database_actions.sh"
 
 database_prompt_export() {
     # Ensure SITE_DOMAIN is set by calling select_website

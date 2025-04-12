@@ -1,5 +1,5 @@
 php_prompt_rebuild_container() {
-  source "$CLI_DIR/php_rebuild_container.sh"
+  safe_source "$CLI_DIR/php_rebuild_container.sh"
 
   select_website || exit 1 # Use the existing select_website function to allow user to select a site
 

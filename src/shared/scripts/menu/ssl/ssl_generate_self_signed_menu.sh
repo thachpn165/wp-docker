@@ -15,7 +15,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
   SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
 
-source "$FUNCTIONS_DIR/ssl_loader.sh"
+safe_source "$FUNCTIONS_DIR/ssl_loader.sh"
 
 # === Select website to generate SSL ===
 select_website

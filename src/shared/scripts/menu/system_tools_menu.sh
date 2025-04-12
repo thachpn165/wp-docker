@@ -1,5 +1,5 @@
 #!/bin/bash
-source "$FUNCTIONS_DIR/system_loader.sh"
+safe_source "$FUNCTIONS_DIR/system_loader.sh"
 
 
 print_system_tools_menu_header() {

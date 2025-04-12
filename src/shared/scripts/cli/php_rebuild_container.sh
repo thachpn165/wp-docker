@@ -1,5 +1,5 @@
 #!/bin/bash
-#source "$FUNCTIONS_DIR/php_loader.sh"
+#safe_source "$FUNCTIONS_DIR/php_loader.sh"
 
 php_cli_rebuild_container() {
   local domain

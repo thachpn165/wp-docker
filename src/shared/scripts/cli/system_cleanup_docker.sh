@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script performs a Docker system cleanup by invoking a predefined logic function.
 # It ensures the script is executed in a Bash shell and verifies the required environment
 # variables and configuration files are properly set up before proceeding.
@@ -25,7 +26,6 @@
 # Usage:
 # Run this script directly in a Bash shell. Ensure the required directory structure
 # and configuration files are in place before execution.
-#!/bin/bash
 
 # 🔧 Auto-detect BASE_DIR and load global configuration
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -36,7 +36,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   fi
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-source "$FUNCTIONS_DIR/system_loader.sh"
+safe_source "$FUNCTIONS_DIR/system_loader.sh"
 
 # === Call the logic function to clean up Docker system ===
 system_cleanup_docker_logic

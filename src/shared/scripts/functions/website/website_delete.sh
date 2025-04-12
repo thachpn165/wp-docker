@@ -2,8 +2,8 @@
 # 🗑️ website_prompt_delete
 # =====================================
 website_prompt_delete() {
-  source "$CLI_DIR/website_manage.sh"
-  source "$CLI_DIR/database_actions"
+  safe_source "$CLI_DIR/website_manage.sh"
+  safe_source "$CLI_DIR/database_actions"
   # === UI ===
   print_msg title "$TITLE_WEBSITE_DELETE"
 
@@ -44,7 +44,7 @@ website_prompt_delete() {
 # =====================================
 
 website_logic_delete() {
-  source "$CLI_DIR/backup_website.sh"
+  safe_source "$CLI_DIR/backup_website.sh"
   local domain="$1"
   local backup_enabled="$2"
 

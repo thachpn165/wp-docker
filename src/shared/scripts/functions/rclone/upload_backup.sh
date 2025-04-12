@@ -11,7 +11,7 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
 done
 
 # Load functions for website management
-source "$FUNCTIONS_DIR/backup_loader.sh"
+safe_source "$FUNCTIONS_DIR/backup_loader.sh"
 
 select_backup_files() {
   local backup_dir="$1"

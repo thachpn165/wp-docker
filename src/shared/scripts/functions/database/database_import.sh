@@ -1,4 +1,4 @@
-source "$CLI_DIR/database_actions.sh"
+safe_source "$CLI_DIR/database_actions.sh"
 database_prompt_import() {
     echo "🔧 Choose the website for database import:"
     select_website || exit 1

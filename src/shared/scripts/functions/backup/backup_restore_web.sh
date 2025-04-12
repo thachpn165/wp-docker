@@ -1,5 +1,5 @@
 backup_prompt_restore_web() {
-    source "$CLI_DIR/backup_restore.sh"
+    safe_source "$CLI_DIR/backup_restore.sh"
 
     # === Select website ===
     select_website

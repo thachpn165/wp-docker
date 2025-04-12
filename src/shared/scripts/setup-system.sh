@@ -14,10 +14,10 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
 
-source "$FUNCTIONS_DIR/utils/wp_utils.sh"
-source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
-source "$FUNCTIONS_DIR/setup-aliases.sh"
-source "$FUNCTIONS_DIR/utils/env_utils.sh" #! Bỏ trong tương lai, đang dùng tạm để lưu trữ DEBUG_MODE
+safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
+safe_source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
+safe_source "$FUNCTIONS_DIR/setup-aliases.sh"
+safe_source "$FUNCTIONS_DIR/utils/env_utils.sh" #! Bỏ trong tương lai, đang dùng tạm để lưu trữ DEBUG_MODE
 
 # =============================================
 # 🔧 Khởi tạo file cấu hình .config.json
