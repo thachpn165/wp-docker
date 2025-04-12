@@ -45,7 +45,8 @@ safe_source() {
   local caller_file="${BASH_SOURCE[1]}"
   
   # Tạo tên biến dựa trên đường dẫn file (chuẩn hóa)
-  local var_name="WPDK_LOADED_$(realpath "$target_file" 2>/dev/null | tr './-' '_')"
+  local var_name
+  var_name="WPDK_LOADED_$(realpath "$target_file" 2>/dev/null | tr './-' '_')"
   
   # Màu sắc
   local green='\033[0;32m'
