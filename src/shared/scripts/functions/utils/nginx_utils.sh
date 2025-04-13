@@ -1,7 +1,11 @@
 # =====================================
-# 🌐 nginx_utils.sh – NGINX Proxy utility functions
+# nginx_add_mount_docker: Add volume mount to docker-compose.override.yml for a domain
+# Parameters:
+#   $1 - domain name
+# Behavior:
+#   - Creates override file if not exists
+#   - Appends mount paths for WordPress source and logs
 # =====================================
-
 nginx_add_mount_docker() {
     local domain="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
@@ -52,6 +56,15 @@ EOF
     fi
 }
 
+# =====================================
+# nginx_remove_mount_docker: Remove volume mounts from override file
+# Parameters:
+#   $1 - override_file path
+#   $2 - mount entry path
+#   $3 - mount logs path
+# Behavior:
+#   - Deletes mount entries from file if present
+# =====================================
 nginx_remove_mount_docker() {
     local override_file="$1"
     local mount_entry="$2"
@@ -79,15 +92,17 @@ nginx_remove_mount_docker() {
     fi
 }
 
-# =============================================
-# 🔁 nginx_restart
-# Khởi động lại nginx-proxy bằng cách chạy docker compose trong thư mục NGINX_PROXY_DIR
-# =============================================
+# =====================================
+# nginx_restart: Restart the NGINX proxy container using Docker Compose
+# Behavior:
+#   - Runs 'docker compose down' and 'up --force-recreate'
+#   - Displays loading and status messages
+# =====================================
 nginx_restart() {
     start_loading "$INFO_DOCKER_NGINX_STARTING"
 
     if [[ ! -d "$NGINX_PROXY_DIR" ]]; then
-        print_msg error "❌ NGINX_PROXY_DIR không tồn tại: $NGINX_PROXY_DIR"
+        print_msg error "❌ NGINX_PROXY_DIR does not exist: $NGINX_PROXY_DIR"
         return 1
     fi
 
@@ -117,6 +132,12 @@ nginx_restart() {
     print_msg success "$SUCCESS_DOCKER_NGINX_RESTART"
 }
 
+# =====================================
+# nginx_reload: Reload NGINX configuration inside the proxy container
+# Behavior:
+#   - Uses 'nginx -s reload' via docker exec
+#   - Shows success or error message
+# =====================================
 nginx_reload() {
     start_loading "$INFO_DOCKER_NGINX_RELOADING"
     run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"

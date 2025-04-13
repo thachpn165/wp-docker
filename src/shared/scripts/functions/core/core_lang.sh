@@ -58,6 +58,7 @@ core_lang_change_logic() {
 
 # =============================================
 # 🌐 core_lang_change_prompt
+# Danh sách ngôn ngữ khả dụng thiết lập tại LANG_LIST trong config.sh
 # Hiển thị danh sách ngôn ngữ để người dùng chọn
 # =============================================
 core_lang_change_prompt() {

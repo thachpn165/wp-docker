@@ -49,7 +49,10 @@ remove_volume() {
 }
 
 # ===========================
-# ⚙️ Install Docker
+# ⚙️ Install Docker based on OS
+# Supports:
+#   - Debian/Ubuntu via apt
+#   - CentOS/RedHat via yum
 # ===========================
 install_docker() {
   print_msg step "$STEP_DOCKER_INSTALL"
@@ -76,7 +79,8 @@ install_docker() {
 }
 
 # ===========================
-# 🧩 Install Docker Compose plugin
+# 🧩 Install Docker Compose plugin (v2)
+# Auto-detect OS and architecture
 # ===========================
 install_docker_compose() {
   print_msg step "$STEP_DOCKER_COMPOSE_INSTALL"
@@ -111,41 +115,38 @@ install_docker_compose() {
 
 # ===========================
 # 🌀 Start Docker if not running
+# macOS: use `open -a Docker`
+# Linux: use `systemctl start docker`
 # ===========================
 start_docker_if_needed() {
-  # Kiểm tra nhanh bằng docker info thay vì docker stats
   if ! docker info &>/dev/null; then
     print_msg warning "$WARNING_DOCKER_NOT_RUNNING"
 
     if [[ "$OSTYPE" == "darwin"* ]]; then
-      # Khởi động Docker Desktop không chờ đợi
+      # macOS: Start Docker Desktop in background
       open --background -a Docker
-      
-      # Sử dụng timeout để tránh chờ quá lâu
+
       local timeout=60
       local start_time
       start_time=$(date +%s)
       local current_time
-      
+
       echo -n "Waiting for Docker"
       while ! docker info &>/dev/null; do
         echo -n "."
-        sleep 0.5  # Giảm thời gian sleep để kiểm tra thường xuyên hơn
-        
-        # Kiểm tra timeout
+        sleep 0.5
         current_time=$(date +%s)
         if (( current_time - start_time > timeout )); then
           echo ""
-          print_msg warning "Docker khởi động quá lâu, tiếp tục thực thi..."
+          print_msg warning "Docker took too long to start, continuing anyway..."
           break
         fi
       done
       echo ""
     else
-      # Khởi động song song trên Linux
+      # Linux: Start Docker service in background
       systemctl start docker &
-      
-      # Chờ dịch vụ khởi động trong một khoảng thời gian ngắn
+
       local counter=0
       echo -n "Waiting for Docker"
       while ! docker info &>/dev/null && [ $counter -lt 20 ]; do
@@ -161,7 +162,8 @@ start_docker_if_needed() {
 }
 
 # ===========================
-# 👥 Check docker group
+# 👥 Ensure user is in Docker group (Linux only)
+# macOS: No need to add group
 # ===========================
 check_docker_group() {
   if [[ "$(uname)" == "Darwin" ]]; then
@@ -176,12 +178,16 @@ check_docker_group() {
 }
 
 # ===========================
-# 🔁 Quick docker exec wrapper
+# 🔁 Execute a command inside the PHP container of a site
+# Creates wp-cli cache directory for better compatibility
+# Parameters:
+#   $1 - domain
+#   $2 - cmd
 # ===========================
 docker_exec_php() {
   local domain="$1"
   local cmd="$2"
-  
+
   if [[ -z "$domain" || -z "$cmd" ]]; then
     print_and_debug error "❌ Missing parameters in docker_exec_php(domain, cmd)"
     return 1
@@ -200,7 +206,7 @@ docker_exec_php() {
 }
 
 # ===========================
-# 🧹 Remove core containers
+# 🧹 Remove core containers (NGINX, Redis)
 # ===========================
 remove_core_containers() {
   print_msg warning "$WARNING_REMOVE_CORE_CONTAINERS"
@@ -208,7 +214,8 @@ remove_core_containers() {
 }
 
 # ===========================
-# 🧹 Remove site containers + volumes
+# 🧹 Remove containers and volumes for all websites
+# Uses get_site_list to iterate
 # ===========================
 remove_site_containers() {
   for site in $(get_site_list); do

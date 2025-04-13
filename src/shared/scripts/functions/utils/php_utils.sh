@@ -1,9 +1,16 @@
 #!/bin/bash
 
-# 📌 Tính toán giá trị tối ưu dựa trên RAM & CPU
+# =====================================
+# calculate_php_fpm_values: Calculate optimal PHP-FPM process values based on system resources
+# Parameters:
+#   $1 - total RAM in MB
+#   $2 - total CPU cores
+# Returns:
+#   max_children start_servers min_spare_servers max_spare_servers
+# =====================================
 calculate_php_fpm_values() {
   local total_ram=$1     # MB
-  local total_cpu=$2     # Số core
+  local total_cpu=$2     # Number of cores
 
   local ram_based_max=$((total_ram / 30))
   local cpu_based_max=$((total_cpu * 4))
@@ -22,7 +29,14 @@ calculate_php_fpm_values() {
   echo "$max_children $start_servers $min_spare_servers $max_spare_servers"
 }
 
-# 📂 Tạo cấu hình PHP-FPM tối ưu
+# =====================================
+# create_optimized_php_fpm_config: Generate PHP-FPM config file with optimized values
+# Parameters:
+#   $1 - php_fpm_conf_path: path to output config file
+# Behavior:
+#   - Removes directory if exists
+#   - Creates file and writes optimized config based on system RAM/CPU
+# =====================================
 create_optimized_php_fpm_config() {
   local php_fpm_conf_path="$1"
 
@@ -58,7 +72,13 @@ EOF
   print_msg success "$(printf "$SUCCESS_PHP_FPM_CONFIG_CREATED" "$php_fpm_conf_path")"
 }
 
-# Function to get PHP Container in .env
+# =====================================
+# php_get_container: Get the PHP container name for a domain from JSON config
+# Parameters:
+#   $1 - domain
+# Returns:
+#   container name if found, 1 if not found or error
+# =====================================
 php_get_container() {
   local domain="$1"
 

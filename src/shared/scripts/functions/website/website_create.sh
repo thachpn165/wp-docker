@@ -1,8 +1,16 @@
 #shellcheck disable=SC2154
+# =====================================
+# website_prompt_create: Prompt user for domain and PHP version, then call website_cli_create
+# Behavior:
+#   - Asks for domain name
+#   - Prompts for PHP version
+#   - Allows auto-generate admin info or manual
+#   - Calls CLI wrapper with parameters
+# =====================================
 website_prompt_create() {
   #echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
   print_msg title "$TITLE_CREATE_NEW_WORDPRESS_WEBSITE"
-  # Lấy domain từ người dùng
+  # Get domain from user
   read -p "$PROMPT_ENTER_DOMAIN: " domain
 
   php_prompt_choose_version || return 1
@@ -25,6 +33,17 @@ website_prompt_create() {
     --auto_generate="$auto_generate" || return 1
 }
 
+# =====================================
+# website_logic_create: Main logic to create and configure a new WordPress website
+# Parameters:
+#   $1 - domain
+#   $2 - php_version
+# Behavior:
+#   - Create site directory and structure
+#   - Setup nginx, config files, SSL, docker-compose
+#   - Start containers and verify
+#   - Apply folder permissions and reload nginx
+# =====================================
 website_logic_create() {
     local domain="$1"
     local php_version="$2"
@@ -63,7 +82,6 @@ website_logic_create() {
             print_and_debug success "$SUCCESS_DIRECTORY_REMOVE: $SSL_DIR"
         fi
     }
-
 
     # Create website folder
     if is_directory_exist "$SITE_DIR" false; then
@@ -139,7 +157,7 @@ website_logic_create() {
     
     nginx_reload
 
-    # Set perrmissions for website folder in PHP container
+    # Set permissions for website folder in PHP container
     print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
     run_cmd "docker exec -u root '$CONTAINER_PHP' chown -R nobody:nogroup /var/www/"
     debug_log "✅ website_logic_create completed"

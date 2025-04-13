@@ -3,17 +3,22 @@
 # =====================================
 # 🔄 Website restart functions
 # =====================================
-
+# website_logic_restart: Restart a website's Docker containers
+# Parameters: $1 - domain (optional)
+# Behavior:
+#   - If no domain passed, prompt user to select one
+#   - Stops and restarts containers using docker-compose
+# =====================================
 website_logic_restart() {
   local domain="$1"
   local SITES_DIR="$SITES_DIR/$domain"
-  # Nếu domain trống, gọi select_website để chọn domain
+  # If domain is empty, call select_website to choose domain
   if [[ -z "$domain" ]]; then
     select_website
     local SITES_DIR="$SITES_DIR/$domain"
   fi
 
-  # Kiểm tra nếu domain vẫn trống sau khi chọn
+  # Check if domain is still empty after selection
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
     return 1
@@ -32,6 +37,11 @@ website_logic_restart() {
 
 # =====================================
 # Website info function
+# =====================================
+# website_logic_info: Display information for a selected website
+# Parameters: $1 - domain (optional)
+# Behavior:
+#   - Fetches DB credentials and paths from .config.json
 # =====================================
 website_logic_info() {
   local domain="$1"
@@ -65,6 +75,10 @@ website_logic_info() {
 # =====================================
 # Website listing function
 # =====================================
+# website_logic_list: List all websites in the $SITES_DIR directory
+# Returns:
+#   - Formatted site list or error if directory not found
+# =====================================
 website_logic_list() {
   if [[ ! -d "$SITES_DIR" ]]; then
     print_and_debug error "$MSG_NOT_FOUND: $SITES_DIR"
@@ -88,6 +102,14 @@ website_logic_list() {
 
 # =====================================
 # Website logs function
+# =====================================
+# website_logic_logs: Show access or error logs for a given site
+# Parameters:
+#   $1 - domain (optional)
+#   $2 - log_type (access | error)
+# Behavior:
+#   - Prompts for domain or log type if missing
+#   - Streams selected log file
 # =====================================
 website_logic_logs() {
   local domain="$1"

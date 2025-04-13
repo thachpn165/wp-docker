@@ -1,4 +1,11 @@
-# Display list of websites for selection
+# =====================================
+# select_website: Display list of websites and allow user to select one
+# Behavior:
+#   - In TEST_MODE, auto-selects first site
+#   - In interactive mode, prompts user to select
+# Sets:
+#   - global variables: SITE_DOMAIN, domain
+# =====================================
 select_website() {
     if [[ -z "$SITES_DIR" ]]; then
         echo -e "${RED}${CROSSMARK} SITES_DIR is not defined.${NC}"
@@ -50,10 +57,14 @@ select_website() {
     print_and_debug info "$MSG_WEBSITE_SELECTED: $domain"
 }
 
-# =============================================
-# 🐳 website_generate_docker_compose
-# Tạo file docker-compose.yml từ template và dữ liệu trong .config.json
-# =============================================
+# =====================================
+# website_generate_docker_compose: Generate docker-compose.yml for a website
+# Parameters:
+#   $1 - domain
+# Behavior:
+#   - Read site data from .config.json
+#   - Use envsubst to populate a template into the site’s docker-compose.yml
+# =====================================
 website_generate_docker_compose() {
     local domain="$1"
 
@@ -71,7 +82,7 @@ website_generate_docker_compose() {
         return 1
     fi
 
-    # Lấy dữ liệu từ .config.json
+    # Get data from .config.json
     local php_version
     local mysql_root_password
     local mysql_database
@@ -92,7 +103,7 @@ website_generate_docker_compose() {
     debug_log "[website_generate_docker_compose] php_container=$php_container"
     debug_log "[website_generate_docker_compose] db_container=$db_container"
 
-    # Xuất biến tạm thời cho envsubst
+    # Export temporary variables for envsubst
     DOMAIN="$domain" \
         PHP_VERSION="$php_version" \
         MYSQL_ROOT_PASSWORD="$mysql_root_password" \

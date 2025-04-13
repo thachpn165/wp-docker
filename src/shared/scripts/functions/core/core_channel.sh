@@ -52,7 +52,7 @@ core_channel_switch_prompt() {
   local channels=("official" "nightly" "dev")
 
   # Prompt user to select a channel
-  echo -e "\n📡 Available Channels:"
+  print_msg info "$MSG_CORE_CHANNEL_AVAILABLE: "
   for i in "${!channels[@]}"; do
     echo "  $((i+1)). ${channels[$i]}"
   done

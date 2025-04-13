@@ -4,18 +4,29 @@
 # 🌐 Network & Internet Utilities (Refactored for v1.1.7-beta)
 # ==========================================================
 
-# ✅ Kiểm tra port đang được sử dụng hay không
+# =====================================
+# is_port_in_use: Check if a given port is currently in use
+# Parameters: $1 - port number
+# Returns: 0 if in use, 1 otherwise
+# =====================================
 is_port_in_use() {
   local port="$1"
   netstat -tuln | grep -q ":$port "
 }
 
-# ✅ Kiểm tra kết nối Internet
+# =====================================
+# is_internet_connected: Check if the machine has internet connectivity
+# Returns: 0 if connected, 1 otherwise
+# =====================================
 is_internet_connected() {
   ping -c 1 8.8.8.8 &> /dev/null
 }
 
-# ✅ Kiểm tra domain có phân giải được không
+# =====================================
+# is_domain_resolvable: Check if a domain can be resolved via DNS
+# Parameters: $1 - domain name
+# Returns: 0 if resolvable, 1 otherwise
+# =====================================
 is_domain_resolvable() {
   local domain="$1"
   if command -v timeout &>/dev/null; then
@@ -25,7 +36,11 @@ is_domain_resolvable() {
   fi
 }
 
-# ✅ Kiểm tra Docker network tồn tại không
+# =====================================
+# is_network_exists: Check if a Docker network exists
+# Parameters: $1 - network name
+# Returns: 0 if exists, 1 otherwise
+# =====================================
 is_network_exists() {
   local network_name="$1"
   if docker network ls --format '{{.Name}}' | grep -q "^${network_name}$"; then
@@ -37,7 +52,11 @@ is_network_exists() {
   fi
 }
 
-# ✅ Tạo Docker network nếu chưa có
+# =====================================
+# create_docker_network: Create a Docker network if it does not already exist
+# Parameters: $1 - network name
+# Behavior: Prints success or info messages accordingly
+# =====================================
 create_docker_network() {
   local network_name="$1"
   if ! is_network_exists "$network_name"; then

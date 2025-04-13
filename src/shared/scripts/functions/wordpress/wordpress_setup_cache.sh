@@ -1,3 +1,14 @@
+# =====================================
+# wordpress_cache_setup_logic: Setup or remove caching configuration for a WordPress site
+# Parameters:
+#   $1 - domain
+#   $2 - cache_type (e.g. wp-super-cache, fastcgi-cache, w3-total-cache, no-cache)
+# Behavior:
+#   - Deactivates existing cache plugins
+#   - Removes WP_CACHE define and plugins if no-cache
+#   - Updates nginx config to use selected cache strategy
+#   - Installs required plugin and helper options if needed
+# =====================================
 wordpress_cache_setup_logic() {
     local domain="$1"
     local cache_type="$2"
@@ -80,7 +91,7 @@ wordpress_cache_setup_logic() {
     "wp-fastest-cache") plugin_slug="wp-fastest-cache" ;;
     esac
 
-    bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin install "$plugin_slug" --activate
+    bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install "$plugin_slug" --activate
     exit_if_error $? "$(printf "$ERROR_PLUGIN_INSTALL" "$plugin_slug")"
 
     docker exec -u root -i "$php_container" chown -R "$PHP_USER" /var/www/html/wp-content
@@ -94,7 +105,7 @@ fastcgi_cache_path /var/cache/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS
             print_msg success "$SUCCESS_FASTCGI_PATH_ADDED"
         fi
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json
         exit_if_error $? "$ERROR_UPDATE_NGINX_HELPER"
     fi
 
@@ -106,16 +117,16 @@ define('WP_REDIS_PORT', 6379);\\
 define('WP_REDIS_DATABASE', 0);" "$wp_config_file"
         fi
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin install redis-cache --activate
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install redis-cache --activate
         exit_if_error $? "$ERROR_REDIS_PLUGIN_INSTALL"
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- redis update-dropin
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- redis update-dropin
         exit_if_error $? "$ERROR_REDIS_UPDATE_DROPIN"
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- option update redis-cache
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update redis-cache
         exit_if_error $? "$ERROR_REDIS_UPDATE_OPTIONS"
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- redis enable
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- redis enable
         exit_if_error $? "$ERROR_REDIS_ENABLE"
     fi
 

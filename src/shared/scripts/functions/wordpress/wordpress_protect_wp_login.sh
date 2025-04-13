@@ -1,3 +1,13 @@
+# =====================================
+# wordpress_protect_wp_login_logic: Enable or disable basic auth protection for wp-login.php
+# Parameters:
+#   $1 - domain
+#   $2 - action ("enable" or "disable")
+# Behavior:
+#   - Generates .htpasswd and include config file if enabled
+#   - Removes config and auth file if disabled
+#   - Modifies NGINX config and reloads nginx
+# =====================================
 wordpress_protect_wp_login_logic() {
     local domain="$1"
     local action="$2"
@@ -27,7 +37,7 @@ wordpress_protect_wp_login_logic() {
 
         if [[ -f "$TEMPLATE_FILE" ]]; then
             sed "s|\$domain|$domain|g" "$TEMPLATE_FILE" > "$INCLUDE_FILE"
-            print_msg success "Đã tạo file cấu hình: $INCLUDE_FILE"
+            print_msg success "Successfully created config file: $INCLUDE_FILE"
         else
             print_and_debug error "$(printf "$ERROR_FILE_NOT_FOUND" "$TEMPLATE_FILE")"
             exit 1
@@ -64,5 +74,6 @@ wordpress_protect_wp_login_logic() {
     fi
 
     # 🔄 Reload NGINX
+    print_msg step "Reloading NGINX"
     nginx_reload
 }

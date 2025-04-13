@@ -4,10 +4,16 @@
 # JSON Utility Functions - Used across project
 # =============================================
 
-# File cấu hình mặc định
+# =====================================
+# JSON_CONFIG_FILE: Default JSON config file path
+# =====================================
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
-# Ensure config file exists
+# =====================================
+# json_create_if_not_exists: Create empty JSON file if it doesn't exist
+# Parameters:
+#   $1 - file (optional, defaults to $JSON_CONFIG_FILE)
+# =====================================
 json_create_if_not_exists() {
   local file="${1:-$JSON_CONFIG_FILE}"
   if [[ ! -f "$file" ]]; then
@@ -16,8 +22,16 @@ json_create_if_not_exists() {
   fi
 }
 
-# Get a value from a JSON file by key path
-# Usage: json_get_value ".site[\"example.com\"].MYSQL_USER"
+# =====================================
+# json_get_value: Get a value from JSON file by jq path
+# Usage:
+#   json_get_value ".site[\"example.com\"].MYSQL_USER"
+# Parameters:
+#   $1 - jq key path
+#   $2 - file (optional)
+# Output:
+#   Echoes the value or empty if not found
+# =====================================
 json_get_value() {
   local key="$1"
   local file="${2:-$JSON_CONFIG_FILE}"
@@ -28,15 +42,24 @@ json_get_value() {
   echo "$value"
 }
 
-# Set a value in a JSON file by key path
-# Usage: json_set_value ".site[\"example.com\"].MYSQL_USER" "wpuser"
+# =====================================
+# json_set_value: Set a value in JSON file by jq path
+# Usage:
+#   json_set_value ".site[\"example.com\"].MYSQL_USER" "wpuser"
+# Parameters:
+#   $1 - jq path
+#   $2 - value to set
+#   $3 - file (optional)
+# =====================================
 json_set_value() {
   local key="$1"
   local value="$2"
   local file="${3:-$JSON_CONFIG_FILE}"
   json_create_if_not_exists "$file"
+
   local tmp_file
   tmp_file=$(mktemp)
+
   if jq "$key = \"$value\"" "$file" > "$tmp_file"; then
     mv "$tmp_file" "$file"
     debug_log "json_set_value: file=$file key=$key value=$value"
@@ -46,8 +69,12 @@ json_set_value() {
   fi
 }
 
-# Delete a key from the JSON file
-# Usage: json_delete_key ".site[\"example.com\"]"
+# =====================================
+# json_delete_key: Delete a key from JSON file
+# Usage:
+#   json_delete_key ".site[\"example.com\"]"
+# Automatically removes empty domain objects
+# =====================================
 json_delete_key() {
   local key="$1"
   local domain
@@ -57,25 +84,30 @@ json_delete_key() {
   tmp_file=$(mktemp)
   jq "del($key)" "$JSON_CONFIG_FILE" > "$tmp_file" && mv "$tmp_file" "$JSON_CONFIG_FILE"
 
-  # Nếu key .site["domain"] còn tồn tại nhưng là {}, thì xoá luôn key đó
+  # If .site["domain"] is now an empty object {}, remove it
   if jq -e ".site[\"$domain\"] | type == \"object\" and (keys | length == 0)" "$JSON_CONFIG_FILE" > /dev/null; then
     jq "del(.site[\"$domain\"])" "$JSON_CONFIG_FILE" > "$tmp_file" && mv "$tmp_file" "$JSON_CONFIG_FILE"
     debug_log "[json_delete_key] Removed empty domain entry: $domain"
   fi
 }
 
-# Check if a key exists in the JSON file
-# Usage: json_key_exists ".site[\"example.com\"].MYSQL_USER"
+# =====================================
+# json_key_exists: Check if a key exists in JSON file
+# Usage:
+#   json_key_exists ".site[\"example.com\"].MYSQL_USER"
+# Parameters:
+#   $1 - jq path
+#   $2 - file (optional)
+# Returns:
+#   0 if key exists, 1 otherwise
+# =====================================
 json_key_exists() {
   local key="$1"
   local file="${2:-$JSON_CONFIG_FILE}"
 
   json_create_if_not_exists "$file"
-
-  # Debug log the key and file for checking
   debug_log "[json_key_exists] Checking key: $key in file: $file"
 
-  # Check if the key exists in JSON
   if jq -e "$key != null" "$file" >/dev/null 2>&1; then
     debug_log "[json_key_exists] Key exists: $key"
     return 0
@@ -89,7 +121,15 @@ json_key_exists() {
 # JSON Site Utilities – Manage .site["$domain"]
 # =============================================
 
-# 📄 Get a value inside .site["$domain"]
+# =====================================
+# json_get_site_value: Get a value from .site["domain"]
+# Parameters:
+#   $1 - domain
+#   $2 - key
+#   $3 - file (optional)
+# Output:
+#   Value or empty string
+# =====================================
 json_get_site_value() {
   local domain="$1"
   local key="$2"
@@ -104,8 +144,14 @@ json_get_site_value() {
   json_get_value "$path" "$file"
 }
 
-  
-# 📝 Set a value inside .site["$domain"]
+# =====================================
+# json_set_site_value: Set a value inside .site["domain"]
+# Parameters:
+#   $1 - domain
+#   $2 - key
+#   $3 - value
+#   $4 - file (optional)
+# =====================================
 json_set_site_value() {
   local domain="$1"
   local key="$2"
@@ -121,7 +167,13 @@ json_set_site_value() {
   json_set_value "$path" "$value" "$file"
 }
 
-# ❌ Delete a specific field from .site["$domain"]
+# =====================================
+# json_delete_site_field: Delete a specific key in .site["domain"]
+# Parameters:
+#   $1 - domain
+#   $2 - key
+#   $3 - file (optional)
+# =====================================
 json_delete_site_field() {
   local domain="$1"
   local key="$2"
@@ -136,7 +188,12 @@ json_delete_site_field() {
   json_delete_key "$path"
 }
 
-# 🧹 Delete entire .site["$domain"]
+# =====================================
+# json_delete_site_key: Delete entire .site["domain"]
+# Parameters:
+#   $1 - domain
+#   $2 - file (optional)
+# =====================================
 json_delete_site_key() {
   local domain="$1"
   local file="${2:-$JSON_CONFIG_FILE}"

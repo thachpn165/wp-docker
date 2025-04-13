@@ -1,5 +1,9 @@
 # =====================================
-# 🗑️ website_prompt_delete
+# website_prompt_delete: Prompt user to delete a WordPress site with optional backup
+# Behavior:
+#   - Ask for domain and confirmation
+#   - Offer backup option
+#   - Call CLI wrapper to execute logic
 # =====================================
 website_prompt_delete() {
   safe_source "$CLI_DIR/website_manage.sh"
@@ -29,20 +33,21 @@ website_prompt_delete() {
   fi
 
   # Run deletion logic
-  #cmd="bash \"$SCRIPTS_DIR/cli/website_delete.sh\" --domain=\"$domain\""
-  #[[ "$backup_enabled" == true ]] && cmd+=" --backup_enabled=true"
-  #debug_log "[DEBUG] Command sent to cli/website_delete.sh: $cmd"
-
-  #eval "$cmd"
   website_cli_delete \
     --domain="$domain" \
     --backup_enabled="$backup_enabled" || return 1
 }
 
 # =====================================
-# 🗑️ website_logic_delete – Delete a WordPress Website (Logic only)
+# website_logic_delete: Logic to delete a WordPress website
+# Parameters:
+#   $1 - domain
+#   $2 - backup_enabled (true/false)
+# Behavior:
+#   - Stop containers, backup site if enabled
+#   - Remove Docker volume, NGINX mount, config, SSL, crontab, .config.json entry
+#   - Reload NGINX
 # =====================================
-
 website_logic_delete() {
   safe_source "$CLI_DIR/backup_website.sh"
   local domain="$1"

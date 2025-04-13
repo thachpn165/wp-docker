@@ -1,5 +1,12 @@
 #!/bin/bash
-# ✅ Load configuration from any directory
+
+# =====================================
+# 🚚 wordpress_migration_cli.sh – CLI wrapper to migrate a WordPress website
+# Parameters:
+#   --domain=<domain>
+# =====================================
+
+# === Auto-detect BASE_DIR & load configuration ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
 while [[ "$SEARCH_PATH" != "/" ]]; do
@@ -11,24 +18,24 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
   SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
 
-# Load functions for website management
+# === Load WordPress logic functions ===
 safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# === Parse arguments ===
+# === Parse parameters ===
 domain=""
+
 for arg in "$@"; do
-  case $arg in
+  case "$arg" in
     --domain=*) domain="${arg#*=}" ;;
-    #*) echo "❌ Unknown argument: $arg" && exit 1 ;;
-    *) 
+    *)
       print_and_debug error "$ERROR_UNKNOW_PARAM: $arg"
       exit 1
       ;;
   esac
 done
 
+# === Validate required parameters ===
 if [[ -z "$domain" ]]; then
- #echo "❌ Missing required parameter: --domain"
   print_and_debug error "$ERROR_MISSING_PARAM: --domain"
   exit 1
 fi

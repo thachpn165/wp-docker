@@ -1,81 +1,83 @@
+# =============================================
+# 🧭 backup_prompt_restore_web – Interactive backup restore prompt
+# ---------------------------------------------
+# This function:
+#   - Allows the user to select a website
+#   - Prompts to restore source code (tar.gz) and/or database (sql)
+#   - Lists available backup files for selection
+#   - Passes the selected backup files to the CLI restore function
+#
+# i18n Variables:
+#   PROMPT_CONFIRM_RESTORE_SOURCE, PROMPT_CONFIRM_RESTORE_DB, PROMPT_ENTER_BACKUP_FILE
+#   ERROR_SITE_NOT_SELECTED, ERROR_BACKUP_FILE_NOT_FOUND
+#   SUCCESS_BACKUP_FILE_FOUND, INFO_SKIP_SOURCE_RESTORE, INFO_SKIP_DB_RESTORE
+#   INFO_LIST_BACKUP_SOURCE_FILES, INFO_LIST_BACKUP_DB_FILES, MSG_WEBSITE_SELECTED
+# =============================================
+
 backup_prompt_restore_web() {
     safe_source "$CLI_DIR/backup_restore.sh"
 
-    # === Select website ===
     select_website
+    [[ -z "$domain" ]] && print_msg error "$ERROR_SITE_NOT_SELECTED" && exit 1
+    print_msg info "$MSG_WEBSITE_SELECTED: $domain"
 
-    # Ensure site is selected
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_SITE_NOT_SELECTED"
-        exit 1
-    fi
-
-    # === Ask for restoring source code ===
-    confirm_code=$(get_input_or_test_value "$PROMPT_CONFIRM_RESTORE_SOURCE" "${TEST_CONFIRM_RESTORE_SOURCE:-y}")
-    confirm_code=$(echo "$confirm_code" | tr '[:upper:]' '[:lower:]')
-
+    # === Prompt: Restore source code ===
+    confirm_code=$(get_input_or_test_value "$PROMPT_CONFIRM_RESTORE_SOURCE" "${TEST_CONFIRM_RESTORE_SOURCE:-y}" | tr '[:upper:]' '[:lower:]')
     if [[ "$confirm_code" == "y" ]]; then
         print_msg info "$INFO_LIST_BACKUP_SOURCE_FILES"
-        find "$SITES_DIR/$domain/backups" -type f -name "*.tar.gz" | while read -r file; do
+        find "$SITES_DIR/$domain/backups" -name "*.tar.gz" | while read -r file; do
             file_time=$(stat -f "%Sm" -t "%d-%m-%Y %H:%M:%S" "$file")
-            file_name=$(basename "$file")
-            echo -e "$file_name\t$file_time"
+            echo -e "$(basename "$file")\t$file_time"
         done | nl -s ". "
 
         code_backup_file=$(get_input_or_test_value "$PROMPT_ENTER_BACKUP_FILE" "${TEST_CODE_BACKUP_FILE:-backup.tar.gz}")
-        if [[ ! "$code_backup_file" =~ ^/ ]]; then
-            code_backup_file="$SITES_DIR/$domain/backups/$code_backup_file"
-        fi
+        [[ "$code_backup_file" != /* ]] && code_backup_file="$SITES_DIR/$domain/backups/$code_backup_file"
 
-        if [[ ! -f "$code_backup_file" ]]; then
-            print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND: $code_backup_file"
-            exit 1
-        else
-            print_msg success "$SUCCESS_BACKUP_FILE_FOUND: $code_backup_file"
-        fi
+        [[ ! -f "$code_backup_file" ]] && print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND: $code_backup_file" && exit 1
+        print_msg success "$SUCCESS_BACKUP_FILE_FOUND: $code_backup_file"
     else
-        code_backup_file=""
         print_msg info "$INFO_SKIP_SOURCE_RESTORE"
+        code_backup_file=""
     fi
 
-    # === Ask for restoring database ===
-    confirm_db=$(get_input_or_test_value "$PROMPT_CONFIRM_RESTORE_DB" "${TEST_CONFIRM_RESTORE_DB:-y}")
-    confirm_db=$(echo "$confirm_db" | tr '[:upper:]' '[:lower:]')
-
+    # === Prompt: Restore database ===
+    confirm_db=$(get_input_or_test_value "$PROMPT_CONFIRM_RESTORE_DB" "${TEST_CONFIRM_RESTORE_DB:-y}" | tr '[:upper:]' '[:lower:]')
     if [[ "$confirm_db" == "y" ]]; then
         print_msg info "$INFO_LIST_BACKUP_DB_FILES"
-        find "$SITES_DIR/$domain/backups" -type f -name "*.sql" | while read -r file; do
+        find "$SITES_DIR/$domain/backups" -name "*.sql" | while read -r file; do
             file_time=$(stat -f "%Sm" -t "%d-%m-%Y %H:%M:%S" "$file")
-            file_name=$(basename "$file")
-            echo -e "$file_name\t$file_time"
+            echo -e "$(basename "$file")\t$file_time"
         done | nl -s ". "
 
         db_backup_file=$(get_input_or_test_value "$PROMPT_ENTER_BACKUP_FILE" "${TEST_DB_BACKUP_FILE:-backup.sql}")
-        if [[ ! "$db_backup_file" =~ ^/ ]]; then
-            db_backup_file="$SITES_DIR/$domain/backups/$db_backup_file"
-        fi
+        [[ "$db_backup_file" != /* ]] && db_backup_file="$SITES_DIR/$domain/backups/$db_backup_file"
 
-        if [[ ! -f "$db_backup_file" ]]; then
-            print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND: $db_backup_file"
-            exit 1
-        else
-            print_msg success "$SUCCESS_BACKUP_FILE_FOUND: $db_backup_file"
-        fi
-
-        #mysql_root_password=$(fetch_env_variable "$SITES_DIR/$domain/.env" "MYSQL_ROOT_PASSWORD")
-        #if [[ -z "$mysql_root_password" ]]; then
-        #    print_msg error "$ERROR_ENV_NOT_FOUND: MYSQL_ROOT_PASSWORD"
-        #    exit 1
-        #fi
+        [[ ! -f "$db_backup_file" ]] && print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND: $db_backup_file" && exit 1
+        print_msg success "$SUCCESS_BACKUP_FILE_FOUND: $db_backup_file"
     else
-        db_backup_file=""
         print_msg info "$INFO_SKIP_DB_RESTORE"
+        db_backup_file=""
     fi
 
-    # === Call the restore logic via CLI ===
+    # === Call restore CLI ===
     backup_cli_restore_web --domain="$domain" --code_backup_file="$code_backup_file" --db_backup_file="$db_backup_file"
-
 }
+# =============================================
+# ♻️ backup_logic_restore_web – Restore WordPress website from backup files
+# ---------------------------------------------
+# This function:
+#   - Validates the site directory
+#   - Restores source code from .tar.gz if provided
+#   - Restores database from .sql if provided
+#
+# Parameters:
+#   $1 - domain
+#   $2 - code_backup_file (optional)
+#   $3 - db_backup_file (optional)
+#
+# i18n Variables:
+#   MSG_NOT_FOUND, SUCCESS_BACKUP_RESTORED_DB
+# =============================================
 
 backup_logic_restore_web() {
     local domain="$1"
@@ -83,35 +85,22 @@ backup_logic_restore_web() {
     local db_backup_file="$3"
     local site_dir="$SITES_DIR/$domain"
 
-    # Ensure website directory exists
     if ! is_directory_exist "$site_dir"; then
         print_and_debug error "$MSG_NOT_FOUND: $site_dir"
         return 1
     fi
 
-    # === Restore Source Code ===
+    # === Restore source code ===
     if [[ -n "$code_backup_file" ]]; then
-        # Check if filename has relative path, convert to absolute path
-        if [[ ! "$code_backup_file" =~ ^/ ]]; then
-            code_backup_file="$site_dir/backups/$code_backup_file"
-        fi
-
-        # Call the restore files function
+        [[ "$code_backup_file" != /* ]] && code_backup_file="$site_dir/backups/$code_backup_file"
         backup_restore_files "$code_backup_file" "$site_dir"
     fi
 
-    # === Restore Database ===
+    # === Restore database ===
     if [[ -n "$db_backup_file" ]]; then
-
-        # Check if filename has relative path, convert to absolute path
-        if [[ ! "$db_backup_file" =~ ^/ ]]; then
-            db_backup_file="$site_dir/backups/$db_backup_file"
-        fi
-
-        # Call the restore database function
+        [[ "$db_backup_file" != /* ]] && db_backup_file="$site_dir/backups/$db_backup_file"
         backup_restore_database "$db_backup_file" "$domain"
     fi
 
-    #echo -e "${GREEN}${CHECKMARK} Website '$domain' restore completed.${NC}"
     print_and_debug success "$SUCCESS_BACKUP_RESTORED_DB: $domain"
 }
