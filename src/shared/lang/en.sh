@@ -872,3 +872,19 @@ readonly SUCCESS_WORDPRESS_PROTECT_WP_LOGIN_DISABLED="wp-login.php protection di
 readonly WARNING_ACTION_CANCELLED="Action cancelled."
 readonly WARNING_BACKUP_DIALOG_CANCELED="Dialog cancelled."
 readonly WARNING_INVALID_YN="Invalid choice. Please enter 'y' or 'n'."
+
+
+## Un sorted
+readonly PROMPT_BACKUP_MAX_AGE="Enter the maximum number of days to keep backups: "
+readonly MSG_BACKUP_MAX_AGE_SET="Maximum number of days to keep backups set to: %s days."
+readonly INFO_BACKUP_SCHEDULE_WEBSITE_LIST="List of websites scheduled for backup:"
+readonly ERROR_BACKUP_NO_WEBSITE_SCHENDULED="No websites are scheduled for backup."
+readonly PROMPT_BACKUP_CHOOSE_STORAGE="Choose backup storage location (1 = Local, 2 = Cloud): "
+readonly PROMPT_BACKUP_SELECT_WEB_VIEW_SCHEDULE="Select website to view backup schedule: "
+readonly INFO_BACKUP_VIEW_SCHEDULED_WEBSITE="Viewing backup schedule for website"
+readonly ERROR_BACKUP_NOT_SCHEDULED_FOR_WEBSITE="No backup schedule exists for this website."
+readonly INFO_BACKUP_SCHEDULE_LIST_FOR_WEBSITE="Backup schedule list for website"
+readonly SUCCESS_BACKUP_SCHEDULE_REMOVED="Backup schedule removed for website"
+readonly LABEL_MENU_BACKUP_SCHEDULE_VIEW="View backup schedule"
+readonly LABEL_MENU_BACKUP_SCHEDULE_REMOVE="Remove backup schedule"
+readonly TITLE_MENU_BACKUP_SCHEDULE_MANAGEMENT="📅 Backup Schedule Management"
