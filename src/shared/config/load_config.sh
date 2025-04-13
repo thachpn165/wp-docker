@@ -19,7 +19,8 @@ debug_process() {
 safe_source() {
   local target_file="$1"
   local caller_file="${BASH_SOURCE[1]}"
-  local var_name="WPDK_LOADED_$(realpath "$target_file" 2>/dev/null | tr './-' '_')"
+  local var_name
+  var_name="WPDK_LOADED_$(realpath "$target_file" 2>/dev/null | tr './-' '_')"
 
   local green='\033[0;32m'
   local yellow='\033[0;33m'

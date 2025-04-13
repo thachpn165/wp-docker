@@ -29,7 +29,8 @@ backup_file_logic() {
     local web_root="$SITES_DIR/${domain}/wordpress"
     local backup_dir="$SITES_DIR/${domain}/backups"
     local log_dir="$SITES_DIR/${domain}/logs"
-    local backup_file="${backup_dir}/files-${domain}-$(date +%Y%m%d-%H%M%S).tar.gz"
+    local backup_file
+    backup_file="${backup_dir}/files-${domain}-$(date +%Y%m%d-%H%M%S).tar.gz"
 
     # === Ensure necessary directories exist ===
     is_directory_exist "$web_root"
