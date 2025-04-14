@@ -1,4 +1,49 @@
 # 📦 CHANGELOG – WP Docker
+## [v1.1.8-beta] - 2025-04-14
+
+### 🚀 Added
+
+- **Improved performance on startup and CLI commands**
+  - `wpdocker` now uses `source main.sh` instead of `bash main.sh` to avoid spawning sub-shells.
+  - `start_docker_if_needed` uses `docker info` instead of `docker stats` for better compatibility and speed.
+
+- **Configuration enhancements**
+  - Automatically enforces `DEBUG_MODE="false"` in `config.sh` during GitHub workflows (`dev-build.yml`, `release.yml`).
+
+- **New i18n variables added**
+  - Introduced many new `readonly` variables to support multilingual CLI prompts and logs.
+  - Full list of added i18n variables included in checklist.
+
+- **Backup & restore improvements**
+  - Prompt-based logic for restoring source code and database independently.
+  - Shows backup file list with timestamps before prompting for selection.
+  - Validates file paths and handles relative/absolute path automatically.
+
+- **Code architecture improvements**
+  - Replaced all old `menu` files under `$FUNCTIONS_DIR/<feature>` with `prompt` functions following naming convention: `<feature>_prompt_<action>`.
+  - All CLI files now interact with prompt functions inside logic files for better structure and testability.
+
+- **Safe `load_config_file` loading**
+  - Added `if declare -F load_config_file` check to prevent duplicate loading during nested sourcing.
+
+
+### 🐞 Fixed
+
+- Fixed `start_docker_if_needed` delay and fallback on macOS when Docker Desktop is slow to boot.
+- Fixed potential issues when selecting storage for cloud backup (ensures correct format, skips invalid index).
+- Fixed backup auto-delete not skipping `.git` or special folders.
+Improved detection of domain directory and backups for edge cases.
+
+### ♻️ Changed
+
+- Simplified and optimized CLI wrappers across all features (backup, database, PHP, SSL, system, website).
+- All CLI scripts use unified `SCRIPT_PATH` + `safe_source` pattern and validate required params.
+Updated backup logic to:
+  - Automatically delete backup files after successful cloud upload.
+  - Fallback to local backup if cloud storage is invalid or not selected.
+Refactored entire prompt system to move user-interactive logic into `prompt_*` functions instead of `menu.sh`.
+
+---
 
 ## [v1.1.7-beta] - 2025-04-07
 
