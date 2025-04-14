@@ -4,7 +4,7 @@ upload_max_filesize = 128M
 max_execution_time = 300
 max_input_time = 300
 date.timezone = "Asia/Ho_Chi_Minh"
-
+error_reporting = E_ALL & ~E_DEPRECATED
 ; OPcache settings
 opcache.enable=1
 opcache.enable_cli=1

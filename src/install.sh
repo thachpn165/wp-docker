@@ -116,6 +116,8 @@ check_and_add_alias
 # ========================
 # 💾 Save install channel to .config.json
 # ========================
+safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
+
 if [[ -n "$INSTALL_CHANNEL" ]]; then
   core_set_channel "$INSTALL_CHANNEL"
   print_msg success "$(printf "$SUCCESS_CORE_CHANNEL_SET" "$INSTALL_CHANNEL" "$JSON_CONFIG_FILE")"

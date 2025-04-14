@@ -23,7 +23,6 @@ log_with_time() {
 
   # Output to terminal as STDERR to avoid interfering with stdout
   echo -e "$formatted_time" >&2
-
   # Write to log file if set
   if [[ -n "$DEBUG_LOG" ]]; then
     echo -e "$formatted_time" >> "$DEBUG_LOG"
