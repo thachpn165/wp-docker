@@ -1,23 +1,13 @@
 #!/usr/bin/env bash
 #shellcheck disable=SC2034
-# Hàm kiểm tra và đánh dấu script đã được load
-wpdk_script_loaded() {
-  local var_name="$1"
-  
-  # Sử dụng eval để kiểm tra biến động
-  if [[ "$(eval echo \${$var_name:-false})" == "true" ]]; then
-    return 0  # Đã load rồi, thoát ngay
-  fi
-  
-  # Đánh dấu là đã load
-  eval "$var_name=true"
-  return 1  # Chưa load trước đó
-}
-
-if wpdk_script_loaded "WPDK_LOAD_CONFIG_LOADED"; then
-  return 0  # Nếu đã load rồi thì thoát ngay
+# Kiểm tra nếu đã được load
+if [[ "${LOADED_CONFIG_FILE:-}" == "true" ]]; then
+  # Đã load rồi, thoát ngay
+  return 0
 fi
 
+# Đánh dấu là đã load
+LOADED_CONFIG_FILE=true
 #=============================================
 # ⚙️ WP Docker - GLOBAL CONFIGURATION (config.sh)
 # =============================================
@@ -35,8 +25,7 @@ else
   DEV_MODE=false
 fi
 PROJECT_DIR=$BASE_DIR
-# ==== 2. Load .env file ====
-DEBUG_MODE="false"
+DEBUG_MODE="true"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"

@@ -4,14 +4,13 @@
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
 while [[ "$SEARCH_PATH" != "/" ]]; do
-  if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
-    source "$SEARCH_PATH/shared/config/load_config.sh"
-    load_config_file
-    break
-  fi
-  SEARCH_PATH="$(dirname "$SEARCH_PATH")"
+    if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
+        source "$SEARCH_PATH/shared/config/load_config.sh"
+        load_config_file
+        break
+    fi
+    SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
-
 
 # Load necessary functions
 safe_source "$FUNCTIONS_DIR/rclone/setup_rclone.sh"
@@ -21,163 +20,177 @@ safe_source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
 safe_source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
 safe_source "$FUNCTIONS_DIR/core/core_version_management.sh"
 
-
 # Load CLI functions
-source  "$CLI_DIR/core_lang.sh"
-source  "$CLI_DIR/website_manage.sh"
+source "$CLI_DIR/core_lang.sh"
+source "$CLI_DIR/website_manage.sh"
 safe_source "$CLI_DIR/backup_website.sh"
 safe_source "$CLI_DIR/backup_restore.sh"
 safe_source "$CLI_DIR/database_actions.sh"
 safe_source "$CLI_DIR/php_version.sh"
-safe_source "$CLI_DIR/php_rebuild_container.sh"
+safe_source "$CLI_DIR/wordpress_reset_user_roler.sh"
 safe_source "$CLI_DIR/ssl_install.sh"
 safe_source "$CLI_DIR/ssl_check_status.sh"
 safe_source "$CLI_DIR/system_tools.sh"
+safe_source "$CLI_DIR/wordpress_auto_update_plugin.sh"
+safe_source "$CLI_DIR/wordpress_protect_wp_login.sh"
+safe_source "$CLI_DIR/wordpress_migration.sh"
+safe_source "$CLI_DIR/wordpress_reset_user_role.sh"
+safe_source "$CLI_DIR/wordpress_reset_admin_passwd.sh"
 # Define subcommands handlers
 handle_website() {
 
     # wpdocker website
     case "$1" in
-        create) bash "$CLI_DIR/website_create.sh" "${@:2}" ;;
-        delete) "website_cli_delete" "${@:2}" ;;
-        list) website_cli_list "${@:2}" ;;
-        restart) website_cli_restart "${@:2}" ;;
-        logs) website_cli_logs "${@:2}" ;;
-        info) website_cli_info "${@:2}" ;;
-        restore) backup_cli_restore_web "${@:2}" ;;
-        update_template) website_cli_update_template "${@:2}" ;;
-        *) echo "${CROSSMARK} Unknown subcommand for website: $1" ;;
+    create) bash "$CLI_DIR/website_create.sh" "${@:2}" ;;
+    delete) "website_cli_delete" "${@:2}" ;;
+    list) website_cli_list "${@:2}" ;;
+    restart) website_cli_restart "${@:2}" ;;
+    logs) website_cli_logs "${@:2}" ;;
+    info) website_cli_info "${@:2}" ;;
+    restore) backup_cli_restore_web "${@:2}" ;;
+    update_template) website_cli_update_template "${@:2}" ;;
+    *) echo "${CROSSMARK} Unknown subcommand for website: $1" ;;
     esac
 }
 
 handle_ssl() {
-    
+
     case "$1" in
-        selfsigned) ssl_cli_install_selfsigned "${@:2}" ;;
-        letsencrypt) ssl_cli_install_letsencrypt "${@:2}" ;;
-        check) ssl_cli_check_status "${@:2}" ;;
-        *) echo "${CROSSMARK} Unknown subcommand for ssl: $1" ;;
+    selfsigned) ssl_cli_install_selfsigned "${@:2}" ;;
+    letsencrypt) ssl_cli_install_letsencrypt "${@:2}" ;;
+    check) ssl_cli_check_status "${@:2}" ;;
+    *) echo "${CROSSMARK} Unknown subcommand for ssl: $1" ;;
     esac
 }
-
-
 
 handle_backup() {
     # wpdocker backup
     case "$1" in
-        website) backup_cli_backup_web "${@:2}" ;;
-        database) database_cli_export "${@:2}" ;;
-        file) backup_cli_file "${@:2}" ;;
-        *) echo "${CROSSMARK} Unknown subcommand for backup: $1" ;;
+    website) backup_cli_backup_web "${@:2}" ;;
+    database) database_cli_export "${@:2}" ;;
+    file) backup_cli_file "${@:2}" ;;
+    *) echo "${CROSSMARK} Unknown subcommand for backup: $1" ;;
     esac
 }
 
 handle_php() {
     case "$1" in
-        change) php_cli_change_version "${@:2}" ;;
-        get) bash "$CLI_DIR/php_get_version.sh" "${@:2}" ;;
-        rebuild) php_cli_rebuild_container "${@:2}" ;;
-        edit)
-            case "$2" in
-                conf) edit_php_fpm_conf "${@:3}" ;;
-                ini) edit_php_ini "${@:3}" ;;
-                *) echo "${CROSSMARK} Unknown subcommand for php edit: $2" ;;
-            esac
-            ;;
-        *) echo "${CROSSMARK} Unknown subcommand for php: $1" ;;
+    change) php_cli_change_version "${@:2}" ;;
+    get) bash "$CLI_DIR/php_get_version.sh" "${@:2}" ;;
+    rebuild) php_cli_rebuild_container "${@:2}" ;;
+    edit)
+        case "$2" in
+        conf) edit_php_fpm_conf "${@:3}" ;;
+        ini) edit_php_ini "${@:3}" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for php edit: $2" ;;
+        esac
+        ;;
+    *) echo "${CROSSMARK} Unknown subcommand for php: $1" ;;
     esac
 }
 
 handle_database() {
     case "$1" in
-        reset) database_cli_reset "${@:2}" ;;
-        import) database_cli_import "${@:2}" ;;
-        export) database_cli_export "${@:2}" ;;
-        *) echo "${CROSSMARK} Unknown subcommand for database: $1" ;;
+    reset) database_cli_reset "${@:2}" ;;
+    import) database_cli_import "${@:2}" ;;
+    export) database_cli_export "${@:2}" ;;
+    *) echo "${CROSSMARK} Unknown subcommand for database: $1" ;;
     esac
 }
 
 handle_system() {
     # wpdocker system
     case "$1" in
-        check) system_cli_check_resources "${@:2}" ;;
-        manage) system_cli_manage_docker "${@:2}" ;;
-        cleanup) system_cli_cleanup_docker "${@:2}" ;;
-        nginx) 
-            case "$2" in
-                rebuild) system_cli_nginx_rebuild "${@:3}" ;;
-                restart) nginx_restart "${@:3}" ;;
-                reload) nginx_reload ;;
-                *) echo "${CROSSMARK} Unknown subcommand for nginx: $2" ;;
-            esac
-            ;;
-        *) echo "${CROSSMARK} Unknown subcommand for system: $1" ;;
+    check) system_cli_check_resources "${@:2}" ;;
+    manage) system_cli_manage_docker "${@:2}" ;;
+    cleanup) system_cli_cleanup_docker "${@:2}" ;;
+    nginx)
+        case "$2" in
+        rebuild) system_cli_nginx_rebuild "${@:3}" ;;
+        restart) nginx_restart "${@:3}" ;;
+        reload) nginx_reload ;;
+        *) echo "${CROSSMARK} Unknown subcommand for nginx: $2" ;;
+        esac
+        ;;
+    *) echo "${CROSSMARK} Unknown subcommand for system: $1" ;;
     esac
 }
 
 handle_wordpress() {
     # wpdocker wordpress
     case "$1" in
-        cli) bash "$CLI_DIR/wordpress_wp_cli.sh" "${@:2}" ;;
-        migrate) bash "$CLI_DIR/wordpress_migration.sh" "${@:2}" ;;
-        reset) 
-            case "$2" in
-                password) bash "$CLI_DIR/wordpress_reset_admin_password.sh" "${@:3}" ;;
-                role) bash "$CLI_DIR/wordpress_reset_user_role.sh" "${@:3}" ;;
-                *) echo "${CROSSMARK} Unknown subcommand for wordpress reset: $2" ;;
-            esac
-            ;;
-        cache)
-            bash "$CLI_DIR/wordpress_cache_setup.sh" "${@:2}" ;;
-        *) echo "${CROSSMARK} Unknown subcommand for wordpress: $1" ;;
+    cli) bash "$CLI_DIR/wordpress_wp_cli.sh" "${@:2}" ;;
+    migrate) wordpress_cli_migration "${@:2}" ;;
+    reset)
+        case "$2" in
+        password) wordpress_cli_reset_admin_passwd "${@:3}" ;;
+        role) wordpress_cli_reset_roles "${@:3}" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for wordpress reset: $2" ;;
+        esac
+        ;;
+    cache)
+        wordpress_cli_cache_setup "${@:2}"
+        ;;
+    security)
+        case "$2" in
+        wplogin) wordpress_cli_protect_wplogin "${@:3}" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for wordpress security: $2" ;;
+        esac
+        ;;
+    plugin)
+        case "$2" in
+        auto-update) wordpress_cli_auto_update_plugin "${@:3}" ;;
+        *) echo "${CROSSMARK} Unknown subcommand for wordpress plugin: $2" ;;
+        esac
+        ;;
+    *) echo "${CROSSMARK} Unknown subcommand for wordpress: $1" ;;
     esac
 }
 
 handle_core() {
     # wpdocker core
     case "$1" in
-        version) bash "$CLI_DIR/core_version_display.sh" "${@:2}" ;;
-        update) core_version_update_latest "${@:2}" ;;
-        channel) 
-            case "$2" in
-                change) core_channel_switch_prompt "${@:3}" ;;
-                check) core_channel_get ;;
-                #list) core_channel_list ;; #TODO: Sẽ bổ sung sau để liệt kê danh sách channel
-                *) echo "${CROSSMARK} Unknown subcommand for core channel: $2" ;;
-            esac
-            ;;
-        lang) 
-            case "$2" in
-                change) core_lang_cli_change "${@:3}" ;;
-                check) core_lang_cli_get ;;
-                list) core_lang_cli_list ;;
-                *) echo "${CROSSMARK} Unknown subcommand for core lang: $2" ;;
-            esac
-            ;;
-        *) echo "${CROSSMARK} Unknown subcommand for core: $1" ;;
+    version) bash "$CLI_DIR/core_version_display.sh" "${@:2}" ;;
+    update) core_version_update_latest "${@:2}" ;;
+    channel)
+        case "$2" in
+        change) core_channel_switch_prompt "${@:3}" ;;
+        check) core_channel_get ;;
+        #list) core_channel_list ;; #TODO: Sẽ bổ sung sau để liệt kê danh sách channel
+        *) echo "${CROSSMARK} Unknown subcommand for core channel: $2" ;;
+        esac
+        ;;
+    lang)
+        case "$2" in
+        change) core_lang_cli_change "${@:3}" ;;
+        check) core_lang_cli_get ;;
+        list) core_lang_cli_list ;;
+        *) echo "${CROSSMARK} Unknown subcommand for core lang: $2" ;;
+        esac
+        ;;
+    *) echo "${CROSSMARK} Unknown subcommand for core: $1" ;;
     esac
 }
-
 
 # Main subcommands handler
 if [[ -z "$1" ]]; then
     # If no subcommand is provided, call the main menu
     echo "💡 No subcommand provided. Running the main menu..."
-    bash "$INSTALL_DIR/main.sh"
+    source "$INSTALL_DIR/main.sh"
 else
     case "$1" in
-        website) handle_website "$2" "${@:3}" ;;
-        ssl) handle_ssl "$2" "${@:3}" ;;
-        backup) handle_backup "$2" "${@:3}" ;;
-        php) handle_php "$2" "${@:3}" ;;
-        database) handle_database "$2" "${@:3}" ;;
-        system) handle_system "$2" "${@:3}" ;;
-        wordpress) handle_wordpress "$2" "${@:3}" ;;
-        core) handle_core "$2" "${@:3}" ;;
-        
-        *)
-            echo "${CROSSMARK} Unknown subcommand: $1"
-            #bash "$INSTALL_DIR/main.sh"
-            ;;
+    website) handle_website "$2" "${@:3}" ;;
+    ssl) handle_ssl "$2" "${@:3}" ;;
+    backup) handle_backup "$2" "${@:3}" ;;
+    php) handle_php "$2" "${@:3}" ;;
+    database) handle_database "$2" "${@:3}" ;;
+    system) handle_system "$2" "${@:3}" ;;
+    wordpress) handle_wordpress "$2" "${@:3}" ;;
+    core) handle_core "$2" "${@:3}" ;;
+
+    *)
+        echo "${CROSSMARK} Unknown subcommand: $1"
+        #bash "$INSTALL_DIR/main.sh"
+        ;;
     esac
 fi

@@ -2,24 +2,29 @@
 # PROMPTS FOR SSL INSTALLATION
 # ===========================================
 
-# Hàm prompt chung cho các loại cài đặt SSL
+# =====================================
+# ssl_prompt_general: Wrapper function to select website and call SSL setup logic
+# Parameters:
+#   $1 - callback_function: Name of the logic function to call
+# =====================================
 ssl_prompt_general() {
-    local callback_function="$1" # Tên của hàm sẽ được gọi
+    local callback_function="$1"
     local domain
 
-    # Chọn website
+    # Select website
     select_website || {
         print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
         return 1
     }
     domain="$SELECTED_WEBSITE"
 
-    # Kiểm tra callback function có tồn tại không
+    # Validate callback function existence
     if [[ "$(type -t "$callback_function")" != "function" ]]; then
-        print_and_debug error "Lỗi: Hàm $callback_function không tồn tại"
+        print_and_debug error "Error: Function $callback_function does not exist"
         return 1
     fi
-    # Gọi hàm callback với domain đã chọn
+
+    # Call the logic function with selected domain
     "$callback_function" "$domain"
     return $?
 }
@@ -28,7 +33,11 @@ ssl_prompt_general() {
 # SSL INSTALLATION LOGIC
 # ===========================================
 
-# Install self-signed SSL
+# =====================================
+# ssl_logic_install_selfsigned: Generate a self-signed SSL certificate for a domain
+# Parameters:
+#   $1 - domain: Target domain
+# =====================================
 ssl_logic_install_selfsigned() {
     local domain="$1"
 
@@ -37,7 +46,6 @@ ssl_logic_install_selfsigned() {
         return 1
     fi
 
-    # === Determine SSL directory ===
     local ssl_dir
     ssl_dir="${TEST_MODE:+/tmp/test_ssl_directory}"
     [[ "$TEST_MODE" != true ]] && ssl_dir="$NGINX_PROXY_DIR/ssl"
@@ -48,7 +56,7 @@ ssl_logic_install_selfsigned() {
     debug_log "[SSL] Certificate path: $cert_path"
     debug_log "[SSL] Key path: $key_path"
 
-    # === Verify site exists if not in test mode ===
+    # Ensure site exists (if not in test mode)
     if [[ "$TEST_MODE" != true ]]; then
         if [[ ! -d "$PROJECT_DIR/sites/$domain" ]]; then
             print_and_debug error "$(printf "$ERROR_SITE_NOT_EXIST" "$domain")"
@@ -56,6 +64,7 @@ ssl_logic_install_selfsigned() {
         fi
     fi
 
+    # Ensure SSL directory exists
     is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
@@ -84,10 +93,17 @@ ssl_logic_install_selfsigned() {
     fi
 }
 
+# =====================================
+# ssl_logic_install_letsencrypt: Issue SSL cert using Let's Encrypt (certbot)
+# Parameters:
+#   $1 - domain
+#   $2 - email for registration
+#   $3 - staging mode (true/false)
+# =====================================
 ssl_logic_install_letsencrypt() {
-    local domain="$1"  # Lấy domain từ tham số truyền vào
-    local email="$2"   # Lấy email từ tham số truyền vào
-    local staging="$3" # Lấy staging từ tham số truyền vào
+    local domain="$1"
+    local email="$2"
+    local staging="$3"
 
     if [[ -z "$domain" ]]; then
         print_and_debug error "$ERROR_MISSING_PARAM: --domain"
@@ -95,8 +111,10 @@ ssl_logic_install_letsencrypt() {
     fi
 
     print_msg info "$(printf "$INFO_DOMAIN_SELECTED" "$domain")"
+
     local ssl_dir=${SSL_DIR:-"$NGINX_PROXY_DIR/ssl"}
     local webroot="$SITES_DIR/$domain/wordpress"
+
     if [[ ! -d "$webroot" ]]; then
         print_and_debug error "$ERROR_DIRECTORY_NOT_FOUND: $webroot"
         return 1
@@ -109,7 +127,7 @@ ssl_logic_install_letsencrypt() {
         return 1
     }
 
-    # Kiểm tra nếu certbot chưa được cài đặt
+    # Install certbot if missing
     if ! command -v certbot &>/dev/null; then
         print_msg warning "$WARNING_CERTBOT_NOT_INSTALLED"
         if [[ "$(uname -s)" == "Linux" ]]; then
@@ -132,16 +150,11 @@ ssl_logic_install_letsencrypt() {
     print_msg step "$STEP_REQUEST_CERT_WEBROOT"
     debug_log "[SSL] Running certbot for domain: $domain with webroot: $webroot"
 
-    # Kiểm tra nếu tham số $staging có giá trị true thì thêm --staging vào lệnh certbot
     local certbot_cmd="certbot certonly --webroot -w $webroot -d $domain --non-interactive --agree-tos -m $email"
-    if [[ "$staging" == "true" ]]; then
-        certbot_cmd="$certbot_cmd --staging"
-    fi
+    [[ "$staging" == "true" ]] && certbot_cmd="$certbot_cmd --staging"
 
-    # Thực thi lệnh certbot
     eval "$certbot_cmd"
 
-    # Đường dẫn đến chứng chỉ và khóa
     local CERT_PATH="/etc/letsencrypt/live/$domain/fullchain.pem"
     local KEY_PATH="/etc/letsencrypt/live/$domain/privkey.pem"
 
@@ -151,31 +164,32 @@ ssl_logic_install_letsencrypt() {
     fi
 
     print_msg success "$SUCCESS_SSL_LETS_ENCRYPT_ISSUED: $domain"
-
-    # Debug log thư mục đích nơi chứng chỉ sẽ được sao chép
     debug_log "[SSL] Copying certificate to directory: $ssl_dir"
 
-    # Kiểm tra thư mục và copy chứng chỉ vào thư mục SSL
     is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
         debug_log "[SSL] Not found and created: $ssl_dir"
         return 1
     }
+
     run_cmd "sudo chown -R $USER:$USER $ssl_dir"
     copy_file "$CERT_PATH" "$ssl_dir/$domain.crt"
     copy_file "$KEY_PATH" "$ssl_dir/$domain.key"
 
-    # Debug log để xác nhận việc sao chép thành công
     debug_log "[SSL] Certificate copied successfully: $ssl_dir/$domain.crt and $ssl_dir/$domain.key"
 
     print_msg step "$STEP_NGINX_RELOADING"
     nginx_reload
-
     print_msg success "$(printf "$SUCCESS_SSL_INSTALLED" "$domain")"
 }
 
-# Install manual SSL
+# =====================================
+# ssl_logic_install_manual: Use manually provided SSL certificate and key
+# Parameters:
+#   $1 - domain
+#   $2 - SSL_DIR (destination)
+# =====================================
 ssl_logic_install_manual() {
     local domain="$1"
     local SSL_DIR="$2"
@@ -184,6 +198,7 @@ ssl_logic_install_manual() {
         print_and_debug error "$ERROR_SITE_NOT_SELECTED"
         return 1
     fi
+
     is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
@@ -210,6 +225,11 @@ ssl_logic_install_manual() {
     print_msg success "$SUCCESS_NGINX_RELOADED"
 }
 
+# =====================================
+# ssl_logic_edit_cert: Replace current SSL certificate with new pasted content
+# Parameters:
+#   $1 - domain
+# =====================================
 ssl_logic_edit_cert() {
     local domain="$1"
 
@@ -231,9 +251,9 @@ ssl_logic_edit_cert() {
     print_msg question "$(printf "$PROMPT_SSL_ENTER_NEW_CRT" "$domain")"
     read -r new_cert
     new_cert=$(get_input_or_test_value "$new_cert" "$PROMPT_SSL_ENTER_NEW_CRT" "$domain")
+
     print_msg question "$(printf "$PROMPT_SSL_ENTER_NEW_KEY" "$domain")"
     new_key=$(get_input_or_test_value "$new_key" "$PROMPT_SSL_ENTER_NEW_KEY" "$domain")
-    
 
     echo "$new_cert" >"$target_crt"
     echo "$new_key" >"$target_key"
@@ -242,6 +262,5 @@ ssl_logic_edit_cert() {
 
     print_msg step "$STEP_NGINX_RELOADING"
     nginx_reload
-
     print_msg success "$SUCCESS_NGINX_RELOADED"
 }

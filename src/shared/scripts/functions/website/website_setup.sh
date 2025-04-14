@@ -1,9 +1,12 @@
-# =============================================
-# 🧩 website_set_config
-# Usage: website_set_config <output_dir> <domain> <php_version>
-# Ghi thông tin website vào file .config.json theo site.<domain>
-# =============================================
-
+# =====================================
+# website_set_config: Save initial website configuration to .config.json
+# Parameters:
+#   $1 - domain
+#   $2 - php_version
+# Behavior:
+#   - Generate secure MySQL passwords
+#   - Save PHP, DB and container info to .config.json
+# =====================================
 website_set_config() {
   local domain="$1"
   local php_version="$2"
@@ -41,6 +44,15 @@ website_set_config() {
   print_msg success "✅ Website config saved to .config.json under site[\"$domain\"]"
 }
 
+# =====================================
+# website_setup_nginx: Create NGINX configuration file for selected domain
+# Parameters:
+#   $1 - domain
+# Behavior:
+#   - Copy from nginx-proxy.conf.template
+#   - Replace DOMAIN and PHP_CONTAINER placeholders
+#   - Save result to conf.d/<domain>.conf
+# =====================================
 website_setup_nginx() {
   # === Define paths ===
   NGINX_CONF_DIR="$NGINX_PROXY_DIR/conf.d"

@@ -3,46 +3,62 @@
 # Used to parse command line arguments and options
 # ========================================================================
 
-# Parse required params
+# =====================================
+# _parse_params: Parse required CLI parameter in the form param=value
+# Parameters:
+#   $1 - param_name: Name of the required parameter to look for
+# Usage:
+#   _parse_params "--domain" "$@"
+# Output:
+#   Echoes value if found, errors if not found
+# =====================================
 _parse_params() {
   local param_name="$1"
   local param_value=""
-  
-  # Kiểm tra nếu tham số không được truyền vào
+
+  # Check if param name is missing
   if [[ -z "$param_name" ]]; then
     print_msg error "$ERROR_MISSING_PARAM: $param_name"
     return 1
   fi
 
-  # Parse tham số (kiểm tra theo tham số)
+  # Loop through arguments and extract matching param
   for arg in "$@"; do
     case $arg in
-    "${param_name}"=*) param_value="${arg#*=}" ;;
+      "${param_name}"=*) param_value="${arg#*=}" ;;
     esac
   done
 
-  # Trả về giá trị của tham số nếu hợp lệ
+  # Return the value if valid
   echo "$param_value"
 }
 
-# Parse optinal params
+# =====================================
+# _parse_optional_params: Parse optional CLI parameter in the form param=value
+# Parameters:
+#   $1 - param_name: Name of the optional parameter to look for
+# Usage:
+#   _parse_optional_params "--env" "$@"
+# Output:
+#   Echoes value if found, empty string otherwise
+# =====================================
 _parse_optional_params() {
   local param_name="$1"
   local param_value=""
 
-  # Kiểm tra nếu tham số không được truyền vào
+  # Check if param name is missing
   if [[ -z "$param_name" ]]; then
     print_msg error "$ERROR_MISSING_PARAM: $param_name"
     exit 1
   fi
 
-  # Parse tham số (kiểm tra theo tham số)
+  # Loop through arguments and extract matching param
   for arg in "$@"; do
     case $arg in
-    "${param_name}"=*) param_value="${arg#*=}" ;;
+      "${param_name}"=*) param_value="${arg#*=}" ;;
     esac
   done
 
-  # Trả về giá trị của tham số
+  # Return the value (can be empty)
   echo "$param_value"
 }

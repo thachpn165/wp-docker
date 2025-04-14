@@ -4,6 +4,15 @@
 # WordPress Setup & Utilities
 # ==============================
 
+# =====================================
+# wp_set_wpconfig: Generate wp-config.php with DB credentials and HTTPS fix
+# Parameters:
+#   $1 - PHP container name
+#   $2 - DB name
+#   $3 - DB user
+#   $4 - DB password
+#   $5 - DB container host
+# =====================================
 wp_set_wpconfig() {
   local container_php="$1"
   local db_name="$2"
@@ -35,6 +44,16 @@ EOF
   fi
 }
 
+# =====================================
+# wp_install: Install WordPress core using WP-CLI
+# Parameters:
+#   $1 - domain
+#   $2 - site URL
+#   $3 - site title
+#   $4 - admin username
+#   $5 - admin password
+#   $6 - admin email
+# =====================================
 wp_install() {
   local domain="$1"
   local site_url="$2"
@@ -51,6 +70,11 @@ wp_install() {
   print_msg success "$SUCCESS_WP_INSTALLED"
 }
 
+# =====================================
+# wp_set_permalinks: Update WordPress permalink structure
+# Parameters:
+#   $1 - domain
+# =====================================
 wp_set_permalinks() {
   local domain="$1"
   if [[ -z "$domain" ]]; then
@@ -62,6 +86,11 @@ wp_set_permalinks() {
   exit_if_error "$?" "$ERROR_WP_PERMALINK_FAILED"
 }
 
+# =====================================
+# wp_plugin_install_security_plugin: Install and activate security plugin
+# Parameters:
+#   $1 - domain
+# =====================================
 wp_plugin_install_security_plugin() {
   local domain="$1"
 
@@ -75,6 +104,11 @@ wp_plugin_install_security_plugin() {
   print_msg success "$SUCCESS_WP_SECURITY_PLUGIN"
 }
 
+# =====================================
+# wp_plugin_install_performance_lab: Install and activate performance plugin
+# Parameters:
+#   $1 - domain
+# =====================================
 wp_plugin_install_performance_lab() {
   local domain="$1"
 
@@ -88,6 +122,10 @@ wp_plugin_install_performance_lab() {
   print_msg success "$SUCCESS_WP_PERFORMANCE_PLUGIN"
 }
 
+# =====================================
+# check_and_update_wp_cli: Check current WP-CLI version and update if needed
+# Downloads latest version to shared/bin/wp
+# =====================================
 check_and_update_wp_cli() {
   local wp_cli_path="shared/bin/wp"
   local current_version

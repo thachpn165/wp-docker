@@ -13,9 +13,10 @@ core_channel_get() {
 
 core_set_channel() {
   local channel="$1"
-  if [[ "$channel" != "official" && "$channel" != "nightly" && "$channel" != "dev"  ]]; then
+  if [[ "$channel" != "official" && "$channel" != "nightly" && "$channel" != "dev" ]]; then
     print_msg error "Invalid channel: $channel"
-  return 1
+    print_msg error "$ERROR_CORE_CHANNEL_INVALID"
+    return 1
   fi
   json_set_value '.core.channel' "$channel"
 }

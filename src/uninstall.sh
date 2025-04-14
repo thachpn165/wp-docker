@@ -4,7 +4,7 @@
 # 🗑️ uninstall.sh – Completely remove WP Docker from the system
 # =====================================
 
-# ✅ Load configuration from any directory
+# === Load configuration from any directory ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
 while [[ "$SEARCH_PATH" != "/" ]]; do
@@ -20,25 +20,30 @@ safe_source "$FUNCTIONS_DIR/website_loader.sh"
 
 readonly BACKUP_DIR="$BASE_DIR/archives/backups_before_remove"
 
-# 🟡 Prompt confirmation
+# =====================================
+# 🔐 Confirm uninstall prompt
+# =====================================
 confirm_action() {
   confirm_text=$(get_input_or_test_value "$PROMPT_CONFIRM_UNINSTALL_BACKUP" "${TEST_CONFIRM_UNINSTALL_BACKUP:-n}")
   [[ "$confirm_text" =~ ^[Yy]$ ]]
 }
 
-# 🔍 Lấy danh sách site
+# =====================================
+# 📦 Get list of all sites
+# =====================================
 get_site_list() {
   find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
 }
 
-# 💾 Backup toàn bộ site nếu cần
+# =====================================
+# 💾 Backup all sites before deletion
+# =====================================
 backup_all_sites() {
   print_msg info "$(printf "$INFO_BACKUP_BEFORE_REMOVE" "$BACKUP_DIR")"
   mkdir -p "$BACKUP_DIR"
 
   for site in $(get_site_list); do
     print_msg info "$(printf "$INFO_SITE_BACKUP" "$site")"
-
     local site_path="$SITES_DIR/$site"
     local env_file="$site_path/.env"
     local wordpress_dir="$site_path/wordpress"
@@ -59,7 +64,8 @@ backup_all_sites() {
     IFS=' ' read -r DB_NAME DB_USER DB_PASS <<< "$db_info"
 
     local db_backup_file="$backup_target_dir/${site}_db.sql"
-    run_cmd docker exec "${site}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" true > "$db_backup_file" || {      print_msg warning "$(printf "$ERROR_DB_BACKUP_FAILED" "$site")"
+    run_cmd docker exec "${site}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" true > "$db_backup_file" || {
+      print_msg warning "$(printf "$ERROR_DB_BACKUP_FAILED" "$site")"
       continue
     }
 
@@ -72,13 +78,17 @@ backup_all_sites() {
   done
 }
 
-# 🧹 Xoá core container
+# =====================================
+# 🧹 Remove core containers (NGINX, Redis)
+# =====================================
 remove_core_containers() {
   print_msg info "$INFO_REMOVING_CORE_CONTAINERS"
   docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
 }
 
-# 🧨 Xoá container, volume của từng site
+# =====================================
+# 🧨 Remove each site's containers and volumes
+# =====================================
 remove_site_containers() {
   for site in $(get_site_list); do
     print_msg info "$(printf "$INFO_REMOVING_SITE_CONTAINERS" "$site")"
@@ -87,7 +97,9 @@ remove_site_containers() {
   done
 }
 
-# 🗑️ Xoá tất cả trừ thư mục backup
+# =====================================
+# 🗑️ Remove all except backup folder
+# =====================================
 remove_all_except_backup() {
   print_msg info "$INFO_REMOVING_ALL_EXCEPT_BACKUP"
   for item in "$BASE_DIR"/*; do
@@ -104,7 +116,9 @@ remove_all_except_backup() {
   done
 }
 
-# 🔗 Xoá symlink wpdocker nếu tồn tại
+# =====================================
+# 🔗 Remove symlink wpdocker if exists
+# =====================================
 remove_symlink() {
   if [[ -L "/usr/local/bin/wpdocker" ]]; then
     print_msg info "$INFO_REMOVING_SYMLINK"
@@ -112,13 +126,17 @@ remove_symlink() {
   fi
 }
 
-# 🧽 Xoá cronjob liên quan đến backup
+# =====================================
+# ⏰ Remove backup-related cronjobs
+# =====================================
 remove_cronjobs() {
   print_msg info "$INFO_REMOVING_CRONJOBS"
   crontab -l 2>/dev/null | grep -v "backup_runner.sh" | crontab - || true
 }
 
-# 🧾 Hiển thị container còn lại
+# =====================================
+# 📋 Show remaining Docker containers
+# =====================================
 show_remaining_containers() {
   print_msg info "$INFO_LIST_REMAINING_CONTAINERS"
   local remaining
@@ -134,7 +152,9 @@ show_remaining_containers() {
   fi
 }
 
-# 🧹 Xoá alias trong file shell config
+# =====================================
+# 🧹 Remove alias from shell config
+# =====================================
 remove_alias() {
   local shell_config
   if [[ "$SHELL" == *"zsh"* ]]; then
@@ -151,7 +171,9 @@ remove_alias() {
   fi
 }
 
-# 🚀 Main
+# =====================================
+# 🚀 MAIN: Start Uninstall Process
+# =====================================
 print_msg warning "$WARNING_UNINSTALL_CONFIRM"
 print_msg info "$INFO_UNINSTALL_NOTICE"
 

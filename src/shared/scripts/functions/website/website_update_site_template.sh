@@ -1,35 +1,50 @@
 #!/bin/bash
 #shellcheck disable=SC2207
+
+# =====================================
+# website_prompt_update_template: Prompt user to select and update outdated site template
+# Behavior:
+#   - Calls logic function to find outdated sites
+#   - Displays list and lets user select one
+#   - Calls CLI updater with selected domain
+# =====================================
 website_prompt_update_template() {
 
-  # Lấy danh sách các website cần cập nhật template
+  # Get list of outdated site templates
   outdated_sites=($(website_logic_update_template))
 
-  # Kiểm tra xem có website nào cần cập nhật không
+  # Check if there are any sites to update
   if [[ ${#outdated_sites[@]} -eq 0 ]]; then
     echo -e "${YELLOW}${WARNING} No outdated sites found.${NC}"
-    return 0  # Không tiếp tục nếu không có website cần cập nhật
+    return 0  # Do not continue if there are no sites to update
   fi
 
-  # Hiển thị danh sách các website cần cập nhật template
+  # Display list of sites needing update
   echo -e "${CYAN}🔧 List of sites needing update:${NC}"
   for site in "${outdated_sites[@]}"; do
     echo "  $site"
   done
 
-  # Hỏi người dùng có muốn cập nhật website nào không
+  # Ask user to select a site to update
   SELECTED_SITE=$(select_from_list "🔹 Select a website to update:" "${outdated_sites[@]}")
   if [[ -z "$SELECTED_SITE" ]]; then
     echo -e "${RED}${CROSSMARK} Invalid selection!${NC}"
-    return 1  # Nếu người dùng không chọn website hợp lệ, dừng lại
+    return 1  # If the user does not select a valid site, stop
   fi
 
-  # Tiến hành cập nhật website đã chọn
+  # Proceed to update selected site
   echo -e "${GREEN}${CHECKMARK} Updating website '$SELECTED_SITE'...${NC}"
   bash "$SCRIPTS_DIR/cli/website_update_template.sh" --domain="$SELECTED_SITE"
 
 }
 
+# =====================================
+# website_logic_update_template: Detect websites with outdated templates
+# Behavior:
+#   - Compares each site's .template_version with the latest version
+# Returns:
+#   - List of outdated domains (printed to stdout)
+# =====================================
 website_logic_update_template() {
   TEMPLATE_VERSION_NEW=$(cat "$BASE_DIR/shared/templates/.template_version" 2>/dev/null || echo "unknown")
 

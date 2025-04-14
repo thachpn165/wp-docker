@@ -80,7 +80,7 @@ choose_editor() {
 check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
 
-  required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab jq)
+  required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
 
   for cmd in "${required_cmds[@]}"; do
     if [[ "$cmd" == "docker compose" ]]; then

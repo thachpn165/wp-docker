@@ -1,35 +1,54 @@
-#shellcheck disable=SC1091
+# shellcheck disable=SC1091
 safe_source "$CLI_DIR/database_actions.sh"
 
+# =====================================
+# database_prompt_export: Prompt user to select a site and run database export
+# Requires: select_website function, global variable $save_location
+# =====================================
 database_prompt_export() {
-    # Ensure SITE_DOMAIN is set by calling select_website
+    # Prompt user to select a website
     echo "🔧 Choose the website for backup:"
     select_website || exit 1
 
-    # Check if SITE_DOMAIN is still empty
+    # Validate domain selection
     if [[ -z "$domain" ]]; then
         echo "${CROSSMARK} Site name is not set. Exiting..."
         exit 1
     fi
+
     echo "💾 Backup will be saved to: $save_location"
 
+    # Call CLI export command
     database_cli_export --domain="$domain" --save_location="$save_location"
 }
 
+# =====================================
+# database_export_logic: Export database to a given location
+# Parameters:
+#   $1 - domain: The site domain name
+#   $2 - save_location: Destination path for the backup file
+# Requires:
+#   - json_get_site_value to extract DB info
+#   - is_mariadb_running to check DB container
+#   - print_msg for i18n logging
+# =====================================
 database_export_logic() {
     local domain="$1"
     local save_location="$2"
 
+    # Check if the sites directory is set
     if [[ -z "$SITES_DIR" ]]; then
         print_msg error "$ERROR_CONFIG_SITES_DIR_NOT_SET"
         return 1
     fi
 
+    # Validate required parameter: domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
         return 1
     fi
 
+    # Ensure backup directory exists
     local backup_dir
     backup_dir="$(dirname "$save_location")"
     if [[ ! -d "$backup_dir" ]]; then
@@ -40,17 +59,20 @@ database_export_logic() {
         }
     fi
 
+    # Retrieve database credentials from JSON config
     local db_name db_user db_password
     db_name="$(json_get_site_value "$domain" "MYSQL_DATABASE")"
     db_user="$(json_get_site_value "$domain" "MYSQL_USER")"
     db_password="$(json_get_site_value "$domain" "MYSQL_PASSWORD")"
-    debug_log "[DB IMPORT] db_name=$db_name, db_user=$db_user"
+    debug_log "[DB EXPORT] db_name=$db_name, db_user=$db_user"
 
+    # Ensure MariaDB container is running
     if ! is_mariadb_running "$domain"; then
         print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     fi
 
+    # Start database export using mysqldump
     print_msg step "$(printf "$STEP_BACKUP_DATABASE" "$db_name")"
     debug_log "[Backup] Running mysqldump for: $db_name → $save_location"
 
@@ -69,6 +91,7 @@ database_export_logic() {
 
     print_msg success "$SUCCESS_BACKUP_RESTORED_DB: $db_name"
 
+    # Display backup metadata
     local file_name file_size file_time
     file_name="$(basename "$save_location")"
     file_size="$(du -sh "$save_location" | cut -f1)"

@@ -1,3 +1,11 @@
+# =====================================
+# system_logic_cleanup_docker: Clean up unused Docker resources
+# Performs:
+#   - Full system prune (containers, images, volumes)
+#   - Unused network prune
+# Requires:
+#   - Docker must be installed
+# =====================================
 system_logic_cleanup_docker() {
   if ! command -v docker &> /dev/null; then
     print_and_debug error "$ERROR_DOCKER_NOT_INSTALLED"
