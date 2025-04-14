@@ -7,12 +7,12 @@
 # =====================================
 website_prompt_delete() {
   safe_source "$CLI_DIR/website_manage.sh"
-  safe_source "$CLI_DIR/database_actions"
+  safe_source "$CLI_DIR/database_actions.sh"
   # === UI ===
   print_msg title "$TITLE_WEBSITE_DELETE"
 
   # Select website
-  domain=""
+  local domain
   select_website
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
@@ -81,16 +81,17 @@ website_logic_delete() {
   if [[ "$backup_enabled" == true ]]; then
     print_msg step "$MSG_WEBSITE_BACKUP_BEFORE_REMOVE: $domain"
 
-    ARCHIVE_DIR="$ARCHIVES_DIR/old_website/${domain}-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$ARCHIVE_DIR"
-
+    local archive_file old_web_dir
+    old_web_dir="$ARCHIVES_DIR/old_website/$domain"
+    archive_file="$ARCHIVES_DIR/old_website/${domain}-$(date +%Y%m%d-%H%M%S)_${domain}_db.sql"
+    is_directory_exist "$old_web_dir" || mkdir -p "$old_web_dir"
     print_msg step "$MSG_WEBSITE_BACKING_UP_DB: $domain"
-    database_cli_export "--domain=$domain --save_location=$ARCHIVE_DIR/${domain}_db.sql"
+    database_cli_export --domain="$domain" --save_location="$archive_file"
 
     print_msg step "$MSG_WEBSITE_BACKING_UP_FILES: $SITE_DIR/wordpress"
     backup_cli_file --domain="$domain" true
 
-    print_msg success "$MSG_WEBSITE_BACKUP_FILE_CREATED: $ARCHIVE_DIR"
+    print_msg success "$MSG_WEBSITE_BACKUP_FILE_CREATED: $archive_file"
   fi
 
   print_msg step "$MSG_WEBSITE_STOPPING_CONTAINERS: $domain"
