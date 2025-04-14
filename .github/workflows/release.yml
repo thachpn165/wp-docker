@@ -3,7 +3,7 @@ name: Official Release
 on:
   push:
     tags:
-      - 'v*'  # Tự động chạy khi push tag dạng v1.2.3
+      - "v*" # Tự động chạy khi push tag dạng v1.2.3
   workflow_dispatch:
 
 permissions:
@@ -32,6 +32,18 @@ jobs:
           git add src/version.txt -f
           git commit -m "🔖 Update version.txt to ${{ github.ref_name }}"
           git push origin HEAD:main
+
+      - name: 🛠 Force set DEBUG_MODE to false
+        run: |
+          CONFIG_FILE="src/shared/config/config.sh"
+          if [[ -f "$CONFIG_FILE" ]]; then
+            echo "🔧 Updating DEBUG_MODE=false in $CONFIG_FILE"
+            sed -i 's/^DEBUG_MODE=.*/DEBUG_MODE="false"/' "$CONFIG_FILE"
+            grep DEBUG_MODE "$CONFIG_FILE"
+          else
+            echo "❌ config.sh not found at $CONFIG_FILE"
+            exit 1
+          fi
 
       - name: 🧼 Cleanup & Build
         run: |
