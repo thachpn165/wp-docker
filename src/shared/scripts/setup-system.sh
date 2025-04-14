@@ -97,22 +97,27 @@ if [[ "$status" != "running" ]]; then
   echo -e "$ERROR_NGINX_PROXY_LOG_HINT"
   exit 1
 fi
+# =============================================
+# ✅ Verify required commands are available
+# =============================================
+check_required_commands
+
+# =============================================
+# Start MySQL if not running
+# =============================================
+core_mysql_start
 
 # =============================================
 # 🕸 Create Docker network if missing
 # =============================================
 create_docker_network "$DOCKER_NETWORK"
 
+
 # =============================================
 # 🚀 Start all existing websites
 # =============================================
 # TODO: Improve by checking both folder and .config.json
 website_check_and_up
-
-# =============================================
-# ✅ Verify required commands are available
-# =============================================
-check_required_commands
 
 # =============================================
 # Check logs directory and create if missing
