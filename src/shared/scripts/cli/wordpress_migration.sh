@@ -21,24 +21,15 @@ done
 # === Load WordPress logic functions ===
 safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# === Parse parameters ===
-domain=""
+wordpress_cli_migration() {
+  local domain
+  domain=$(_parse_params "--domain" "$@")
+  # === Validate required parameters ===
+  if [[ -z "$domain" ]]; then
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
+    exit 1
+  fi
 
-for arg in "$@"; do
-  case "$arg" in
-    --domain=*) domain="${arg#*=}" ;;
-    *)
-      print_and_debug error "$ERROR_UNKNOW_PARAM: $arg"
-      exit 1
-      ;;
-  esac
-done
-
-# === Validate required parameters ===
-if [[ -z "$domain" ]]; then
-  print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-  exit 1
-fi
-
-# === Execute migration logic ===
-wordpress_migration_logic "$domain"
+  # === Execute migration logic ===
+  wordpress_migration_logic "$domain"
+}

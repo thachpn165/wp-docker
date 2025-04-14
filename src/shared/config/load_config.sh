@@ -96,4 +96,10 @@ load_config_file() {
 # =====================================
 # 🚀 Auto-load config at runtime
 # =====================================
-load_config_file
+#load_config_file
+# Check if the function is already loaded 
+if declare -F load_config_file &>/dev/null; then
+  echo "Hàm load_config_file đã được load, bỏ qua việc load lại"
+else
+  load_config_file
+fi

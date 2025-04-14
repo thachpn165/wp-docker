@@ -1,14 +1,5 @@
 #!/bin/bash
-#shellcheck disable=SC1091
-
-# =====================================
-# 🧱 website_cli_update_template – Update NGINX template for a website
-# Parameters:
-#   --domain=<domain>
-#   --action=<rebuild|reset|...>
-# =====================================
-
-# === Auto-detect BASE_DIR and load configuration ===
+# ✅ Load configuration from any directory
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
 while [[ "$SEARCH_PATH" != "/" ]]; do
@@ -20,31 +11,19 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
   SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
 
-# === Load WordPress-related logic functions ===
+# Load functions for website management
 safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-website_cli_update_template() {
+wordpress_cli_auto_update_plugin() {
   local domain action
+  domain=$(_parse_params "--domain" "$@")
+  action=$(_parse_params "--action" "$@")
 
-  # === Parse CLI parameters ===
-  while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-      --domain=*) domain="${1#*=}" ;;
-      --action=*) action="${1#*=}" ;;
-      *) 
-        print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
-        exit 1
-        ;;
-    esac
-    shift
-  done
-
-  # === Validate required parameters ===
   if [[ -z "$domain" || -z "$action" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain & --action"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain, --action"
+    print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld --action=enable|disable"
     exit 1
   fi
 
-  # === Execute logic ===
-  website_logic_update_template "$domain" "$action"
+  wordpress_auto_update_plugin_logic "$domain" "$action"
 }

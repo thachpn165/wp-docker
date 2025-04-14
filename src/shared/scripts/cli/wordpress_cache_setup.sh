@@ -22,27 +22,13 @@ done
 # === Load WordPress logic functions ===
 safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# === Parse parameters ===
-domain=""
-cache_type=""
-
-while [[ "$#" -gt 0 ]]; do
-  case "$1" in
-    --domain=*)     domain="${1#*=}" ;;
-    --cache_type=*) cache_type="${1#*=}" ;;
-    *)
-      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
-      exit 1
-      ;;
-  esac
-  shift
-done
-
-# === Validate required parameters ===
-if [[ -z "$domain" || -z "$cache_type" ]]; then
-  print_and_debug error "$ERROR_MISSING_PARAM: --domain & --cache_type"
-  exit 1
-fi
-
-# === Execute logic ===
-wordpress_cache_setup_logic "$domain" "$cache_type"
+wordpress_cli_cache_setup() {
+  local domain="$1"
+  local cache_type="$2"
+  if [[ -z "$domain" || -z "$cache_type" ]]; then
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain & --cache_type"
+    exit 1
+  fi
+  # Call the logic function to set up the cache
+  wordpress_cache_setup_logic "$domain" "$cache_type"
+}

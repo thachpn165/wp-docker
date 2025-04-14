@@ -28,25 +28,15 @@ done
 # === Load WordPress-related functions ===
 safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# === Parse parameters ===
-domain=""
-
-while [[ "$#" -gt 0 ]]; do
-  case "$1" in
-    --domain=*) domain="${1#*=}" ;;
-    *)
-      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
-      exit 1
-      ;;
-  esac
-  shift
-done
-
-# === Validate required parameter ===
-if [[ -z "$domain" ]]; then
-  print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-  exit 1
-fi
-
-# === Execute logic to reset roles ===
-reset_user_role_logic "$domain"
+wordpress_cli_reset_roles() {
+  local domain 
+  domain=$(_parse_params "--domain" "$@")
+  # === Validate required parameters ===
+  if [[ -z "$domain" ]]; then
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
+    print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld"
+    exit 1
+  fi
+  # === Execute logic to reset roles ===
+  reset_user_role_logic "$domain"
+}

@@ -30,27 +30,16 @@ done
 # === Load WordPress logic functions ===
 safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# === Parse parameters ===
-domain=""
-user_id=""
-
-while [[ "$#" -gt 0 ]]; do
-  case "$1" in
-    --domain=*)   domain="${1#*=}" ;;
-    --user_id=*)  user_id="${1#*=}" ;;
-    *)
-      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
-      exit 1
-      ;;
-  esac
-  shift
-done
-
-# === Validate required parameters ===
-if [[ -z "$domain" || -z "$user_id" ]]; then
-  print_and_debug error "$ERROR_MISSING_PARAM: --domain and --user_id"
-  exit 1
-fi
-
-# === Execute password reset logic ===
-reset_admin_password_logic "$domain" "$user_id"
+wordpress_cli_reset_admin_passwd() {
+  local domain user_id
+  domain=$(_parse_params "--domain" "$@")
+  user_id=$(_parse_params "--user_id" "$@")
+  # === Validate required parameters ===
+  if [[ -z "$domain" || -z "$user_id" ]]; then
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain, --user_id"
+    print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld --user_id=1"
+    exit 1
+  fi
+  # === Execute logic to reset password ===
+  reset_admin_password_logic "$domain" "$user_id"
+}

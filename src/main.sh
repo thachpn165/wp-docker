@@ -35,7 +35,7 @@ safe_source "$MENU_DIR/database_menu.sh"
 safe_source "$FUNCTIONS_DIR/core_loader.sh"
 # ⚙️ Run initial system setup (timezone, permissions, etc.)
 safe_source "$SCRIPTS_DIR/setup-system.sh"
-
+safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 # 🏆 Display system information and version header
 print_header() {
     clear
@@ -87,7 +87,7 @@ while true; do
         4) rclone_menu ;;
         5) wordpress_tools_menu ;;
         6) backup_menu ;;
-        7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+        7) wordpress_prompt_cache_setup; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         8) php_menu ;;
         9) database_menu ;;
         10) core_version_update_latest; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;  # Call function to display version and update

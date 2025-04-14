@@ -1,16 +1,45 @@
+wordpress_prompt_migration() {
+  # === Display welcome message ===
+  print_msg title "$TITLE_MIGRATION_TOOL"
+  echo ""
+  print_msg warning "$WARNING_MIGRATION_PREPARE"
+  echo "  - $TIP_MIGRATION_FOLDER_PATH: ${BLUE}$INSTALL_DIR/archives/domain.ltd${NC}"
+  echo "  - $TIP_MIGRATION_FOLDER_CONTENT"
+  echo "     - $TIP_MIGRATION_SOURCE"
+  echo "     - $TIP_MIGRATION_SQL"
+  echo ""
+
+  # === Confirm user is ready ===
+  ready=$(get_input_or_test_value "$QUESTION_MIGRATION_READY" "${TEST_READY:-y}")
+  if [[ "$ready" != "y" && "$ready" != "Y" ]]; then
+    print_msg error "$ERROR_MIGRATION_CANCEL"
+    exit 1
+  fi
+
+  echo ""
+  domain=$(get_input_or_test_value "$PROMPT_ENTER_DOMAIN_TO_MIGRATE" "${TEST_DOMAIN:-example.com}")
+  if [[ -z "$domain" ]]; then
+    print_msg error "$ERROR_DOMAIN_REQUIRED"
+    exit 1
+  fi
+
+  echo ""
+  print_msg info "$(printf "$INFO_MIGRATION_STARTING" "$domain")"
+  wordpress_cli_migration --domain="$domain"
+}
+# =====================================
+# wordpress_migration_logic: Migrate a WordPress site from archive to live environment
+# Parameters:
+#   $1 - domain
+# Behavior:
+#   - Validates archive and SQL files
+#   - Recreates or creates site if needed
+#   - Restores source code and database
+#   - Fixes wp-config.php with correct DB credentials and table prefix
+#   - Offers Let's Encrypt SSL installation
+#   - Verifies DNS record matches server IP
+# =====================================
 wordpress_migration_logic() {
-  # =====================================
-  # wordpress_migration_logic: Migrate a WordPress site from archive to live environment
-  # Parameters:
-  #   $1 - domain
-  # Behavior:
-  #   - Validates archive and SQL files
-  #   - Recreates or creates site if needed
-  #   - Restores source code and database
-  #   - Fixes wp-config.php with correct DB credentials and table prefix
-  #   - Offers Let's Encrypt SSL installation
-  #   - Verifies DNS record matches server IP
-  # =====================================
 
   local domain="$1"
 
@@ -47,9 +76,10 @@ wordpress_migration_logic() {
   fi
 
   if [[ -d "$site_dir" ]]; then
-    print_msg warning "$(printf "$MSG_WEBSITE_EXIST" "$domain")"
-    confirm_action "$QUESTION_OVERWRITE_SITE" || {
-      print_msg warning "$MSG_OPERATION_CANCELLED"
+    print_msg warning "$MSG_WEBSITE_EXIST: $domain"
+    forrmatted_msg_override="$(printf "$QUESTION_OVERWRITE_SITE" "${YELLOW}$domain${NC}")"
+    confirm_action "$forrmatted_msg_override" || {
+      print_msg cancel "$MSG_OPERATION_CANCELLED"
       return 0
     }
 
