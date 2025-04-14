@@ -138,7 +138,8 @@ php_logic_change_version() {
   # Update PHP version in .config.json
   print_msg step "$STEP_PHP_UPDATING_ENV"
   json_set_site_value "$domain" "PHP_VERSION" "$php_version"
-  print_msg success "$(printf "$SUCCESS_PHP_ENV_UPDATED" "$php_version")"
+  FORMATTED_SUCCESS_PHP_ENV_UPDATED=$(printf "$SUCCESS_PHP_ENV_UPDATED" "$php_version")
+  print_msg success "$FORMATTED_SUCCESS_PHP_ENV_UPDATED"
 
   # Modify docker-compose.yml to update PHP image version
   if [[ -f "$docker_compose_file" ]]; then

@@ -18,7 +18,6 @@ done
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
 safe_source "$FUNCTIONS_DIR/setup-aliases.sh"
-safe_source "$FUNCTIONS_DIR/utils/env_utils.sh"  #! TODO: Temporary, will be deprecated
 
 # =============================================
 # 🔧 Initialize config (.config.json with language, channel,...)
@@ -115,6 +114,15 @@ website_check_and_up
 # =============================================
 check_required_commands
 
+# =============================================
+# Check logs directory and create if missing
+# =============================================
+if [[ ! -d "$LOGS_DIR" ]]; then
+  mkdir -p "$LOGS_DIR" || exit_if_error 1 "$ERROR_LOGS_DIR_CREATE_FAILED"
+  echo -e "$(printf "$SUCCESS_LOGS_DIR_CREATED" "$LOGS_DIR")"
+else
+  echo -e "$(printf "$SUCCESS_LOGS_DIR_EXISTS" "$LOGS_DIR")"
+fi
 # =============================================
 # 🎉 System ready
 # =============================================
