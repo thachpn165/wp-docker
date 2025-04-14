@@ -15,6 +15,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
 done
 
 # === Load necessary functions ===
+safe_source "$CORE_LIB_DIR/mysql_init.sh"
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
 safe_source "$FUNCTIONS_DIR/setup-aliases.sh"
