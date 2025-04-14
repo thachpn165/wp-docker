@@ -85,10 +85,10 @@ check_required_commands() {
   for cmd in "${required_cmds[@]}"; do
     if [[ "$cmd" == "docker compose" ]]; then
       if docker compose version &> /dev/null; then
-        print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
+        print_msg success "$SUCCESS_COMMAND_AVAILABLE: $cmd"
         continue
       else
-        print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
+        print_msg warning "$WARNING_COMMAND_NOT_FOUND: $cmd"
         install_docker_compose
         continue
       fi
