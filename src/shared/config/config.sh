@@ -25,11 +25,7 @@ else
   DEV_MODE=false
 fi
 PROJECT_DIR=$BASE_DIR
-<<<<<<< HEAD
 DEBUG_MODE="true"
-=======
-DEBUG_MODE="false"
->>>>>>> main
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
