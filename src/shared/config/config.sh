@@ -120,7 +120,7 @@ safe_source "$FUNCTIONS_DIR/utils/website_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/misc_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/cli_params.sh"
-
+safe_source "$FUNCTIONS_DIR/core/core_state_utils.sh"
 WPDK_LOAD_CONFIG_LOADED=true
 
 #Debug
