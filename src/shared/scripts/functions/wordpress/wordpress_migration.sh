@@ -3,7 +3,7 @@ wordpress_prompt_migration() {
   print_msg title "$TITLE_MIGRATION_TOOL"
   echo ""
   print_msg warning "$WARNING_MIGRATION_PREPARE"
-  echo "  - $TIP_MIGRATION_FOLDER_PATH: ${BLUE}$INSTALL_DIR/archives/domain.ltd${NC}"
+  echo "  - $TIP_MIGRATION_FOLDER_PATH: ${BLUE}$INSTALL_DIR/archives/<domain.ltd> <- Replace your domain${NC}"
   echo "  - $TIP_MIGRATION_FOLDER_CONTENT"
   echo "     - $TIP_MIGRATION_SOURCE"
   echo "     - $TIP_MIGRATION_SQL"
