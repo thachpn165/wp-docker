@@ -95,11 +95,11 @@ if [[ -z "$BASE_DIR" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$CONFIG_JSON_FILE" ]]; then
-  echo "{}" > "$CONFIG_JSON_FILE"
-  echo "Created initial config file: $CONFIG_JSON_FILE"
+if [[ ! -f "$JSON_CONFIG_FILE" ]]; then
+  echo "{}" > "$JSON_CONFIG_FILE"
+  echo "Created initial config file: $JSON_CONFIG_FILE"
 else
-  echo "Config file already exists: $CONFIG_JSON_FILE"
+  echo "Config file already exists: $JSON_CONFIG_FILE"
 fi
 
 # ========================
@@ -116,7 +116,6 @@ check_and_add_alias
 # ========================
 # 💾 Save install channel to .config.json
 # ========================
-safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
 
 if [[ -n "$INSTALL_CHANNEL" ]]; then
   core_set_channel "$INSTALL_CHANNEL"
