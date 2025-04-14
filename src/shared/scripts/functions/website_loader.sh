@@ -12,8 +12,9 @@ fi
 
 # Load all .sh files in website/
 for f in "$FUNCTIONS_DIR/website/"*.sh; do
-  [[ -f "$f" ]] && source "$f"
+  # shellcheck source=/dev/null
+  [[ -f "$f" ]] && safe_source "$f"
 done
 
 # Load PHP version chooser
-source "$FUNCTIONS_DIR/php/php_choose_version.sh"
+safe_source "$FUNCTIONS_DIR/php/php_version.sh"

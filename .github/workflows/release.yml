@@ -3,7 +3,7 @@ name: Official Release
 on:
   push:
     tags:
-      - 'v*'  # Tự động chạy khi push tag dạng v1.2.3
+      - "v*" # Tự động chạy khi push tag dạng v1.2.3
   workflow_dispatch:
 
 permissions:
@@ -27,9 +27,22 @@ jobs:
         run: |
           echo "${{ github.ref_name }}" > src/version.txt
 
+      - name: 🛠 Force set DEBUG_MODE to false
+        run: |
+          CONFIG_FILE="src/shared/config/config.sh"
+          if [[ -f "$CONFIG_FILE" ]]; then
+            echo "🔧 Updating DEBUG_MODE=false in $CONFIG_FILE"
+            sed -i 's/^DEBUG_MODE=.*/DEBUG_MODE="false"/' "$CONFIG_FILE"
+            grep DEBUG_MODE "$CONFIG_FILE"
+          else
+            echo "❌ config.sh not found at $CONFIG_FILE"
+            exit 1
+          fi
+
       - name: 💾 Commit and Push version files
         run: |
           git add src/version.txt -f
+          git add "src/shared/config/config.sh"
           git commit -m "🔖 Update version.txt to ${{ github.ref_name }}"
           git push origin HEAD:main
 
@@ -69,3 +82,13 @@ jobs:
         run: |
           git tag -f latest
           git push origin -f latest
+
+      - name: 🚀 Create GitHub Release (latest tag)
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "latest"
+          tag_name: "latest"
+          files: dist/wp-docker.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

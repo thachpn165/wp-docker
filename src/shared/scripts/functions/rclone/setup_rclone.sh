@@ -1,12 +1,20 @@
 #!/bin/bash
 
-# Function to setup Rclone
+# =====================================
+# rclone_setup: Install and configure Rclone with user-defined storage
+# Requires:
+#   - $RCLONE_CONFIG_FILE and $RCLONE_CONFIG_DIR defined
+#   - brew or curl access depending on OS
+#   - Prompts user to select and configure storage type
+# =====================================
 rclone_setup() {
   is_directory_exist "$RCLONE_CONFIG_DIR" || mkdir -p "$RCLONE_CONFIG_DIR"
 
+  # Check if rclone is installed
   if ! command -v rclone &> /dev/null; then
     print_and_debug warning "$WARNING_RCLONE_NOT_INSTALLED"
 
+    # Install based on OS
     if [[ "$(uname)" == "Darwin" ]]; then
       brew install rclone || {
         print_and_debug error "$ERROR_RCLONE_INSTALL_FAILED"
@@ -26,6 +34,7 @@ rclone_setup() {
 
   print_msg run "$INFO_RCLONE_SETUP_START"
 
+  # Create rclone config file if not exists
   if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
     local create_msg
     create_msg="$(printf "$INFO_RCLONE_CREATING_CONF" "$RCLONE_CONFIG_FILE")"
@@ -36,6 +45,7 @@ rclone_setup() {
     }
   fi
 
+  # Prompt for unique storage name
   while true; do
     STORAGE_NAME=$(get_input_or_test_value "📌 $PROMPT_ENTER_STORAGE_NAME" "$TEST_STORAGE_NAME")
     STORAGE_NAME=$(echo "$STORAGE_NAME" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | tr -cd '[:alnum:]_-')
@@ -49,20 +59,20 @@ rclone_setup() {
     fi
   done
 
+  # Prompt to choose storage type
   print_msg info "$INFO_RCLONE_SELECT_STORAGE_TYPE"
   echo -e "  ${GREEN}[1]${NC} Google Drive"
   echo -e "  ${GREEN}[2]${NC} Dropbox"
-  echo -e "  ${GREEN}[3]${NC} AWS S3"
-  echo -e "  ${GREEN}[4]${NC} DigitalOcean Spaces"
-  echo -e "  ${GREEN}[5]${NC} Thoát"
+  echo -e "  ${GREEN}[3]${NC} S3 Storage"
+  echo -e "  ${GREEN}[4]${NC} Exit"
 
   choice=$(get_input_or_test_value "$PROMPT_SELECT_OPTION" "$TEST_STORAGE_CHOICE")
 
   case "$choice" in
     1) STORAGE_TYPE="drive" ;;
     2) STORAGE_TYPE="dropbox" ;;
-    3|4) STORAGE_TYPE="s3" ;;
-    5) print_msg cancel "$MSG_EXITING"; return ;;
+    3) STORAGE_TYPE="s3" ;;
+    4) print_msg cancel "$MSG_EXITING"; return ;;
     *) print_msg error "$ERROR_SELECT_OPTION_INVALID"; return ;;
   esac
 
@@ -76,6 +86,7 @@ rclone_setup() {
     echo "type = $STORAGE_TYPE"
   } >> "$RCLONE_CONFIG_FILE"
 
+  # Configure credentials by storage type
   if [[ "$STORAGE_TYPE" == "drive" ]]; then
     print_msg recommend "$INFO_RCLONE_DRIVE_AUTH_GUIDE"
     AUTH_JSON=$(get_input_or_test_value "🔑 $PROMPT_RCLONE_DRIVE_PASTE_TOKEN" "$TEST_RCLONE_AUTH_JSON")

@@ -1,12 +1,31 @@
-# ✅ Prevent multiple loading of language files
+# =============================================
+# 🌐 lang_loader – Load language file from .config.json
+# =============================================
+
+# ✅ Prevent multiple loading
 [[ -n "$LANG_LOADED" ]] && return
 LANG_LOADED=true
 
-LANG_FILE="$BASE_DIR/shared/lang/${LANG_CODE}.sh"
+# === Auto-detect PROJECT_DIR if not set ===
+if [[ -z "$PROJECT_DIR" ]]; then
+  SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+  while [[ "$SCRIPT_PATH" != "/" ]]; do
+    if [[ -f "$SCRIPT_PATH/shared/config/config.sh" ]]; then
+      safe_source "$SCRIPT_PATH/shared/config/config.sh"
+      break
+    fi
+    SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+  done
+fi
 
+# === Read language code from .config.json
+lang_code="$(json_get_value '.core.lang')"
+
+# === Fallback to 'vi' if not found
+LANG_FILE="$BASE_DIR/shared/lang/${lang_code}.sh"
 if [[ -f "$LANG_FILE" ]]; then
-  source "$LANG_FILE"
+  safe_source "$LANG_FILE"
 else
-  echo "⚠️ Language file not found: $LANG_FILE. Falling back to Vietnamese."
-  source "$BASE_DIR/shared/lang/vi.sh"
+  echo -e "⚠️  Language file not found for '${lang_code}' → Using Vietnamese fallback"
+  safe_source "$BASE_DIR/shared/lang/vi.sh"
 fi

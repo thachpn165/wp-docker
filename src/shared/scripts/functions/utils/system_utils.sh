@@ -80,7 +80,7 @@ choose_editor() {
 check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
 
-  required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab dialog)
+  required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
 
   for cmd in "${required_cmds[@]}"; do
     if [[ "$cmd" == "docker compose" ]]; then
@@ -94,30 +94,30 @@ check_required_commands() {
       fi
     fi
 
-    if ! command -v $(echo "$cmd" | awk '{print $1}') &> /dev/null; then
-      print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
+    if ! command -v "$(echo "$cmd" | awk '{print $1}')" &> /dev/null; then
+      print_msg warning "$(printf '%s' "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
 
       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         if command -v apt &> /dev/null; then
-          apt update -y && apt install -y $(echo "$cmd" | awk '{print $1}')
+          apt update -y && apt install -y "$(echo "$cmd" | awk '{print $1}')"
         elif command -v yum &> /dev/null; then
-          yum install -y $(echo "$cmd" | awk '{print $1}')
+          yum install -y "$(echo "$cmd" | awk '{print $1}')"
         elif command -v dnf &> /dev/null; then
-          dnf install -y $(echo "$cmd" | awk '{print $1}')
+          dnf install -y "$(echo "$cmd" | awk '{print $1}')"
         else
-          print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
+          print_msg error "$(printf '%s' "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
         fi
       elif [[ "$OSTYPE" == "darwin"* ]]; then
         if ! command -v brew &> /dev/null; then
           print_msg warning "$WARNING_HOMEBREW_MISSING"
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         fi
-        brew install $(echo "$cmd" | awk '{print $1}')
+        brew install "$(echo "$cmd" | awk '{print $1}')"
       else
-        print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
+        print_msg error "$(printf '%s' "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
       fi
     else
-      print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
+      print_msg success "$(printf '%s' "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
     fi
   done
 }
@@ -145,10 +145,10 @@ check_and_add_alias() {
 
   if [[ "$SHELL" == *"zsh"* ]]; then
     echo "🔄 Reloading .zshrc..."
-    source "$HOME/.zshrc"
+    safe_source "$HOME/.zshrc"
   elif [[ "$SHELL" == *"bash"* ]]; then
     echo "🔄 Reloading .bashrc..."
-    source "$HOME/.bashrc"
+    safe_source "$HOME/.bashrc"
   else
     echo "⚠️ Unsupported shell. Please reload shell config manually."
   fi

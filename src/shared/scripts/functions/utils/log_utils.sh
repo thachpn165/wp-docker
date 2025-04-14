@@ -1,8 +1,7 @@
-# =========================================
-# 🐛 LOG UTILS - Support DEBUG_MODE + Logging
-# =========================================
-
-# Function to display logs when DEBUG_MODE=true
+# =====================================
+# debug_log: Display debug message if DEBUG_MODE is enabled
+# Parameters: $1 - message to log
+# =====================================
 debug_log() {
   local message="$1"
   if [[ "$DEBUG_MODE" == "true" ]]; then
@@ -13,22 +12,30 @@ debug_log() {
   fi
 }
 
-# Function to log with a timestamp (output to terminal + file)
+# =====================================
+# log_with_time: Log a message with timestamp to stderr and log file
+# Parameters: $1 - message to log
+# =====================================
 log_with_time() {
   local message="$1"
   local formatted_time
   formatted_time="$(date '+%Y-%m-%d %H:%M:%S') - $message"
 
-  # Output to terminal as STDERR to tránh gây ảnh hưởng tới stdout
+  # Output to terminal as STDERR to avoid interfering with stdout
   echo -e "$formatted_time" >&2
 
-  # Ghi vào log file nếu có
+  # Write to log file if set
   if [[ -n "$DEBUG_LOG" ]]; then
     echo -e "$formatted_time" >> "$DEBUG_LOG"
   fi
 }
 
-# Function to print messages with a specific type (info, error, etc.)
+# =====================================
+# print_and_debug: Print a message and log it if DEBUG_MODE is enabled
+# Parameters:
+#   $1 - message type (info, error, warning, etc.)
+#   $2 - message content
+# =====================================
 print_and_debug() {
   local type="$1"       # info, error, warning,...
   local message="$2"
@@ -43,14 +50,14 @@ print_and_debug() {
   fi
 }
 
-# Function to execute a command, display when DEBUG_MODE=true, and handle errors smartly
-# Usage:
-#   run_cmd "<command>" [exit_on_fail]
-# Example:
-#   run_cmd "docker compose up -d" true    # Exit script if failed
-#   run_cmd "rm somefile.txt"              # Just return 1 if failed
-
+# =====================================
+# run_cmd: Run a command or function with optional debug and error handling
+# Parameters:
+#   $1 - command or function call string
+#   $2 - exit_on_fail (true/false, default: false)
+# =====================================
 run_cmd() {
+    ensure_safe_cwd
     local cmd="$1"
     local exit_on_fail="${2:-false}"
 
@@ -63,7 +70,7 @@ run_cmd() {
         return 1
     fi
 
-    # === Detect if it's a bash function ===
+    # Detect if it's a bash function
     local is_function=false
     if declare -f "${cmd%% *}" >/dev/null 2>&1; then
         is_function=true
@@ -74,10 +81,10 @@ run_cmd() {
     fi
 
     if [[ "$is_function" == "true" ]]; then
-        # 👉 Call the function directly with args
+        # Call function directly with arguments
         eval "$cmd"
     else
-        # 👉 Run as bash command
+        # Execute as bash command
         if [[ "$DEBUG_MODE" == "true" ]]; then
             bash -c "$cmd" 2>&1 | tee -a "$DEBUG_LOG"
         else
@@ -91,6 +98,6 @@ run_cmd() {
         [[ "$exit_on_fail" == "true" ]] && exit 1
         return 1
     fi
-
+    ensure_safe_cwd
     return 0
 }

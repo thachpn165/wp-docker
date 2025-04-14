@@ -12,5 +12,6 @@ fi
 
 # Load all .sh files in website/
 for f in "$FUNCTIONS_DIR/wordpress/"*.sh; do
-  [[ -f "$f" ]] && source "$f"
+# shellcheck source=/dev/null
+  [[ -f "$f" ]] && safe_source "$f"
 done

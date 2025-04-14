@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# ✅ Load configuration from any directory
+# =====================================
+# 🚀 wordpress_cache_cli.sh – CLI wrapper to configure WordPress cache
+# Parameters:
+#   --domain=<domain>
+#   --cache_type=<fastcgi-cache|wp-super-cache|no-cache|...>
+# =====================================
+
+# === Auto-detect BASE_DIR and load configuration ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
 while [[ "$SEARCH_PATH" != "/" ]]; do
@@ -12,32 +19,16 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
   SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
 
-# Load functions for website management
-source "$FUNCTIONS_DIR/wordpress_loader.sh"
+# === Load WordPress logic functions ===
+safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
-# === Parse command line flags ===
-while [[ "$#" -gt 0 ]]; do
-  case "$1" in
-    --domain=*)
-      domain="${1#*=}"
-      shift
-      ;;
-    --cache_type=*)
-      cache_type="${1#*=}"
-      shift
-      ;;
-    *)
-      print_and_debug error "$ERROR_UNKNOW_PARAM: $1"
-      exit 1
-      ;;
-  esac
-done
-
-# Validate parameters
-if [[ -z "$domain" || -z "$cache_type" ]]; then
-  print_and_debug error "$ERROR_MISSING_PARAM: --domain & --cache_type"
-  exit 1
-fi
-
-# Call the logic function
-wordpress_cache_setup_logic "$domain" "$cache_type"
+wordpress_cli_cache_setup() {
+  local domain="$1"
+  local cache_type="$2"
+  if [[ -z "$domain" || -z "$cache_type" ]]; then
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain & --cache_type"
+    exit 1
+  fi
+  # Call the logic function to set up the cache
+  wordpress_cache_setup_logic "$domain" "$cache_type"
+}

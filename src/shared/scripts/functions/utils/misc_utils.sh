@@ -1,32 +1,20 @@
-# Define utility functions that don't belong to a specific category
-
-# =========================================
-# ✅ Check if required environment variables are defined
-# Usage:
-#   check_required_envs
-# Requires:
-#   - required_vars[]: An array of variable names to check
-# Behavior:
-#   - Exits with an error if any required variable is missing.
-check_required_envs() {
-  for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-      echo -e "${RED}${CROSSMARK} Error: Variable '$var' is not defined in config.sh${NC}"
-      exit 1
-    fi
-  done
+# =====================================
+# ensure_safe_cwd: Ensure current working directory is valid
+# Behavior: If invalid, recover to $BASE_DIR or root
+# =====================================
+ensure_safe_cwd() {
+  if ! pwd &>/dev/null; then
+    cd "$BASE_DIR" || cd /
+    debug_log "[ensure_safe_cwd] ❗️Detected invalid CWD → Recovered to $BASE_DIR"
+  fi
 }
 
-
-# ❌ Exit if the last command failed
-# Usage:
-#   exit_if_error $? "An error occurred"
-# Arguments:
-#   1. result (int): Exit code of the previous command
-#   2. error_message (string): Error message to display if failed
-# Behavior:
-#   - Prints error in red and returns 1 if result is non-zero.
-#   - Otherwise does nothing.
+# =====================================
+# exit_if_error: Exit or return error if last command failed
+# Parameters:
+#   $1 - exit code
+#   $2 - error message
+# =====================================
 exit_if_error() { 
     local result=$1
     local error_message=$2
@@ -39,19 +27,21 @@ exit_if_error() {
 # 🧪 TEST_MODE Support Functions
 # =========================================
 
-# 🧪 Check if running in test mode
-# Returns:
-#   - true if TEST_MODE is enabled
+# =====================================
+# is_test_mode: Check if running in TEST_MODE
+# Returns: 0 if true
+# =====================================
 is_test_mode() {
   [[ "$TEST_MODE" == true ]]
 }
 
-# 🧪 Run command unless in TEST_MODE (returns fallback if test)
-# Usage:
-#   value=$(run_if_not_test "fallback" some_function)
-# Arguments:
-#   1. fallback: Value to return in test mode
-#   2. command: Function or command to run if not in test mode
+# =====================================
+# run_if_not_test: Run command unless in TEST_MODE
+# Parameters:
+#   $1 - fallback
+#   $2+ - command
+# Returns: result of command or fallback
+# =====================================
 run_if_not_test() {
   local fallback="$1"
   shift
@@ -62,11 +52,10 @@ run_if_not_test() {
   fi
 }
 
-# 🧪 Execute command only if not in test mode
-# Usage:
-#   run_unless_test docker compose up -d
-# Notes:
-#   - Does nothing in TEST_MODE (for CI testing)
+# =====================================
+# run_unless_test: Execute command only if not in TEST_MODE
+# Skips execution in CI testing mode
+# =====================================
 run_unless_test() {
   if [[ "$TEST_MODE" == true && "$BATS_TEST_FILENAME" != "" ]]; then
     #echo "[MOCK run_unless_test] $*"
@@ -76,10 +65,13 @@ run_unless_test() {
   fi
 }
 
-
-# 🧪 Prompt user or use fallback in TEST_MODE
-# Usage:
-#   value=$(get_input_or_test_value "Enter value: " "test-default")
+# =====================================
+# get_input_or_test_value: Prompt user for input or fallback in TEST_MODE
+# Parameters:
+#   $1 - prompt message
+#   $2 - fallback value
+# Returns: user input or fallback
+# =====================================
 get_input_or_test_value() {
   local prompt="$1"
   local fallback="$2"
@@ -92,11 +84,40 @@ get_input_or_test_value() {
   fi
 }
 
-# 🔢 Prompt user to select from a list (or auto-select in test mode)
-# Usage:
-#   selected=$(select_from_list "Choose option:" "${options[@]}")
-# Notes:
-#   - In TEST_MODE, auto-selects first or TEST_SELECTED_OPTION
+# =====================================
+# get_input_or_test_value_secret: Prompt for hidden input or fallback in TEST_MODE
+# Parameters:
+#   $1 - prompt message
+#   $2 - fallback value
+# Returns: user input or fallback
+# =====================================
+get_input_or_test_value_secret() {
+  local prompt="$1"
+  local fallback="$2"
+  local input=""
+
+  if is_test_mode; then
+    # In test mode, return fallback without prompting
+    echo "$fallback"
+  else
+    # Display prompt without newline
+    printf "%s" "$prompt"
+    # Read password without displaying it on the screen
+    read -s input
+    # Display a new line after input
+    echo
+    # Return input value or fallback if no value
+    echo "${input:-$fallback}"
+  fi
+}
+
+# =====================================
+# select_from_list: Prompt to select from list or auto-select in TEST_MODE
+# Parameters:
+#   $1 - prompt message
+#   $2... - list options
+# Returns: selected option
+# =====================================
 select_from_list() {
     local prompt="$1"
     shift
@@ -119,17 +140,12 @@ select_from_list() {
     fi
 }
 
-
-# =========================================
-# Other Functions
-# =========================================
-
-# 🔄 Show a loading animation (spinner)
-# Usage:
-#   show_loading "Loading..." 0.1
-# Arguments:
-#   1. message: Text to display before spinner
-#   2. delay: Delay in seconds between spinner frames
+# =====================================
+# start_loading: Show spinner loading animation
+# Parameters:
+#   $1 - message
+#   $2 - delay (optional, default 0.1s)
+# =====================================
 start_loading() {
   local message="$1"
   local delay="${2:-0.1}"
@@ -152,6 +168,9 @@ start_loading() {
   LOADING_PID=$!
 }
 
+# =====================================
+# stop_loading: Stop spinner animation
+# =====================================
 stop_loading() {
   if [[ -n "$LOADING_PID" ]]; then
     kill "$LOADING_PID" &>/dev/null
@@ -167,23 +186,7 @@ stop_loading() {
 #   value=$(fetch_env_variable ".env" "DB_NAME")
 # Returns:
 #   - The value of the specified variable, or exits with error if file not found
-fetch_env_variable() {
-    local env_file="$1"
-    local var_name="$2"
 
-    if [ -f "$env_file" ]; then
-        grep -E "^${var_name}=" "$env_file" \
-          | cut -d'=' -f2- \
-          | tr -d '\r' \
-          | sed 's/^"\(.*\)"$/\1/'
-    else
-        echo -e "${RED}${CROSSMARK} Error: .env file does not exist: $env_file${NC}" >&2
-        debug_log "[fetch_env_variable] Error: .env file does not exist: $env_file"
-        return 1
-    fi
-}
-
-random_string=$(date +%s)
 
 # ===========================================================
 # 🖨️ print_msg <type> <message>
@@ -228,7 +231,7 @@ print_msg() {
     success)     emoji="✅" color="$GREEN" ;;
     error)       emoji="❌" color="$RED" ;;
     warning)     emoji="⚠️"  color="$YELLOW" ;;
-    info)        emoji="ℹ️"  color="$WHITE" ;;
+    info)        emoji=""  color="$WHITE" ;;
     save)        emoji="💾" color="$WHITE" ;;
     important)   emoji="🚨" color="$RED" ;;
     step)        emoji="➤"  color="$MAGENTA" ;;
@@ -242,7 +245,8 @@ print_msg() {
     title)     emoji="" color="$CYAN" ;;
     label)     emoji="" color="$BLUE" ;;
     sub_label) emoji="" color="$WHITE" ;;
-    copy)      emoji="→" color="$GREEN";; 
+    copy)      emoji="→" color="$GREEN";;
+    tip)     emoji="💡" color="$YELLOW";;
     
     progress)
       emoji="🚀"
@@ -259,6 +263,12 @@ print_msg() {
   echo -e "${color}${emoji} ${message}${NC}"
 }
 
+# =====================================
+# get_user_confirmation: Ask user to confirm (yes/no)
+# Parameters:
+#   $1 - message
+# Returns: 0 if yes, 1 if no
+# =====================================
 get_user_confirmation() {
   local message="$1"
   local confirm

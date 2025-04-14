@@ -1,32 +1,60 @@
 #!/bin/bash
+safe_source "$CLI_DIR/database_actions.sh"
 
-# === Logic: Reset database ===
-database_reset_logic() {
+# =====================================
+# database_prompt_reset: Prompt user to select a website and perform DB reset
+# Requires:
+#   - select_website to choose domain
+#   - Global variable $domain set by user selection
+# =====================================
+database_prompt_reset() {
+    # Prompt user to select a website
+    select_website || exit 1
+
+    # Ensure domain was selected
+    if [[ -z "$domain" ]]; then
+        print_msg error "$ERROR_SITE_NOT_SELECTED"
+        exit 1
+    fi
+
+    # Trigger the reset logic via CLI wrapper
+    database_cli_reset --domain="$domain"
+}
+
+# =====================================
+# database_logic_reset: Reset the database for a given domain
+# Parameters:
+#   $1 - domain: The domain name of the website to reset the DB for
+# Requires:
+#   - json_get_site_value to retrieve DB/container credentials
+#   - is_mariadb_running to ensure container is active
+#   - docker exec to drop and recreate DB
+# =====================================
+database_logic_reset() {
     local domain="$1"
 
-    # Validate domain
+    # Ensure domain is provided
     if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_PARAM_SITE_NAME_REQUIRED"
+        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
         return 1
     fi
 
-    # Fetch DB credentials
-    local db_info db_name db_user db_password
-    db_info=$(db_fetch_env "$domain")
-    if [[ $? -ne 0 ]]; then
-        print_and_debug error "$(printf "$ERROR_DB_FETCH_CREDENTIALS" "$domain")"
-        return 1
-    fi
-    IFS=' ' read -r db_name db_user db_password <<< "$db_info"
+    # Retrieve DB credentials and container info
+    local db_name db_user db_password db_container
+    db_name="$(json_get_site_value "$domain" "MYSQL_DATABASE")"
+    db_user="$(json_get_site_value "$domain" "MYSQL_USER")"
+    db_password="$(json_get_site_value "$domain" "MYSQL_PASSWORD")"
+    db_container="$(json_get_site_value "$domain" "CONTAINER_DB")"
+    echo "db_container: $db_container"
     debug_log "[DB RESET] db_name=$db_name, db_user=$db_user"
 
-    # Check DB container status
+    # Check if the MariaDB container is running
     if ! is_mariadb_running "$domain"; then
-        print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING: ${domain}-mariadb"
+        print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING: $db_container"
         return 1
     fi
 
-    # Confirm with user
+    # Confirm the reset operation with the user
     print_msg important "$(printf "$QUESTION_DB_RESET_CONFIRM" "$db_name" "$domain")"
     confirm=$(get_input_or_test_value "$CONFIRM_DB_RESET" "${TEST_VALUE:-y}")
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
@@ -34,13 +62,14 @@ database_reset_logic() {
         return 0
     fi
 
-    # Proceed reset
+    # Perform DB reset (drop and recreate)
     print_msg step "$(printf "$STEP_DB_RESETTING" "$db_name" "$domain")"
-    if ! docker exec -i --env MYSQL_PWD="$db_password" ${domain}-mariadb \
-        mysql -u$db_user -e "DROP DATABASE IF EXISTS $db_name; CREATE DATABASE $db_name;"; then
+    if ! docker exec -i --env MYSQL_PWD="$db_password" "$db_container" \
+        mysql -u"$db_user" -e "DROP DATABASE IF EXISTS \`$db_name\`; CREATE DATABASE \`$db_name\`;"; then
         print_msg error "$(printf "$ERROR_DB_RESET_FAILED" "$db_name")"
         return 1
     fi
 
+    # Success message
     print_msg success "$(printf "$SUCCESS_DB_RESET_DONE" "$db_name")"
 }

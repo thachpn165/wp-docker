@@ -3,7 +3,7 @@ name: Dev Build
 on:
   push:
     branches:
-      - 'dev'
+      - "dev"
 
 permissions:
   contents: write
@@ -26,6 +26,19 @@ jobs:
           main_version=$(git show origin/main:src/version.txt)
           echo "$main_version" > tmp_main_version.txt
           echo "MAIN_VERSION=$main_version" >> $GITHUB_ENV
+
+      - name: 🛠 Force set DEBUG_MODE to false
+        run: |
+          CONFIG_FILE="src/shared/config/config.sh"
+          if [[ -f "$CONFIG_FILE" ]]; then
+            echo "🔧 Updating DEBUG_MODE=false in $CONFIG_FILE"
+            sed -i 's/^DEBUG_MODE=.*/DEBUG_MODE="false"/' "$CONFIG_FILE"
+            grep DEBUG_MODE "$CONFIG_FILE"
+          else
+            echo "❌ config.sh not found at $CONFIG_FILE"
+            exit 1
+          fi
+          git add -f "$CONFIG_FILE"
 
       - name: 🧮 Calculate DEV_VERSION & update files
         run: |

@@ -1,101 +1,54 @@
-
-# rclone_storage_list
-# --------------------
-# This function displays a list of configured storage remotes from the rclone configuration file.
-# It extracts the storage names enclosed in square brackets from the configuration file.
-#
-# Globals:
-#   BASE_DIR - Base directory path.
-#   RCLONE_CONFIG_FILE - Name of the rclone configuration file.
-#   ERROR_RCLONE_CONFIG_NOT_FOUND - Error message for missing rclone configuration file.
-#
-# Arguments:
-#   None
-#
+# =====================================
+# rclone_storage_list: List all configured Rclone storages from config file
+# Requires:
+#   - $RCLONE_CONFIG_FILE to be defined and exist
 # Outputs:
-#   Prints the list of configured storage remotes to stdout.
-#
-# Returns:
-#   0 - If the configuration file exists and storage remotes are listed successfully.
-#   1 - If the configuration file does not exist or an error occurs.
-#
-# Dependencies:
-#   is_file_exist - Function to check if a file exists.
-#   print_msg - Function to print messages with different levels (e.g., error, warning, success).
-#
-# Example:
-#   rclone_storage_list
-#   Output:
-#     storage1
-#     storage2
-
-# rclone_storage_delete
-# ----------------------
-# This function deletes a configured storage remote from the rclone configuration file.
-# It allows the user to select a storage remote from a list and removes its configuration.
-#
-# Globals:
-#   RCLONE_CONFIG_FILE - Name of the rclone configuration file.
-#   ERROR_RCLONE_CONFIG_NOT_FOUND - Error message for missing rclone configuration file.
-#   WARNING_RCLONE_NO_STORAGE_CONFIGURED - Warning message for no configured storage remotes.
-#   LABEL_MENU_RCLONE_DELETE_STORAGE - Title message for the delete storage menu.
-#   SUCCESS_RCLONE_STORAGE_REMOVED - Success message for storage removal.
-#   ERROR_SELECT_OPTION_INVALID - Error message for invalid selection.
-#
-# Arguments:
-#   None
-#
-# Outputs:
-#   Prompts the user to select a storage remote to delete.
-#   Prints success or error messages based on the operation result.
-#
-# Returns:
-#   0 - If a storage remote is successfully deleted.
-#   1 - If the configuration file does not exist, no storage remotes are configured, or an error occurs.
-#
-# Dependencies:
-#   is_file_exist - Function to check if a file exists.
-#   print_msg - Function to print messages with different levels (e.g., error, warning, success).
-#
-# Example:
-#   rclone_storage_delete
-#   Output:
-#     1) storage1
-#     2) storage2
-#     Select a storage to delete: 1
-#     Success: Storage 'storage1' has been removed.
-# Function to display list of configured storages
+#   - Echoes storage names (sections in rclone.conf)
+# =====================================
 rclone_storage_list() {
   local rclone_config="$RCLONE_CONFIG_FILE"
 
   debug_log "[RCLONE] Config path: $rclone_config"
 
+  # Check if rclone config file exists
   if ! is_file_exist "$rclone_config"; then
     print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi
 
+  # Extract section names from config (storage names)
   sed -n 's/^\[\(.*\)\]$/\1/p' "$rclone_config"
 }
 
+# =====================================
+# rclone_storage_delete: Prompt user to select and delete an Rclone storage
+# Requires:
+#   - $RCLONE_CONFIG_FILE must exist
+#   - sed to delete storage block from config file
+# =====================================
 rclone_storage_delete() {
   local rclone_config="$RCLONE_CONFIG_FILE"
 
   debug_log "[RCLONE] Loading config: $rclone_config"
 
+  # Check if rclone config file exists
   if ! is_file_exist "$rclone_config"; then
     print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi
 
-  local storages=($(grep '^\[' "$rclone_config" | tr -d '[]'))
+  # Parse list of storages from config
+  local storages=()
+  mapfile -t storages < <(grep '^\[' "$rclone_config" | tr -d '[]')
   debug_log "[RCLONE] Found storages: ${storages[*]}"
 
+  # Show warning if no storage found
   if [[ ${#storages[@]} -eq 0 ]]; then
     print_and_debug warning "$WARNING_RCLONE_NO_STORAGE_CONFIGURED"
     return 1
   fi
 
+  # Show storage deletion menu
   print_msg title "$LABEL_MENU_RCLONE_DELETE_STORAGE"
 
   select storage in "${storages[@]}"; do

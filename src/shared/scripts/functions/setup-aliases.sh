@@ -3,7 +3,8 @@ check_and_add_alias() {
   local shell_config
   local alias_line
   # Get the absolute path of the bin directory
-  local cli_dir_abs=$(realpath "$PROJECT_DIR/shared/bin")
+  local cli_dir_abs
+  cli_dir_abs=$(realpath "$PROJECT_DIR/shared/bin")
   alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
 
   # Check if using Zsh or Bash
@@ -25,11 +26,11 @@ check_and_add_alias() {
   if [[ "$SHELL" == *"zsh"* ]]; then
       # If the current shell is zsh, source .zshrc
       echo "${CHECKMARK} Sourcing .zshrc to reload Zsh configuration..."
-      source "$HOME/.zshrc"
+      safe_source "$HOME/.zshrc"
   elif [[ "$SHELL" == *"bash"* ]]; then
       # If the current shell is bash, source .bashrc
       echo "${CHECKMARK} Sourcing .bashrc to reload Bash configuration..."
-      source "$HOME/.bashrc"
+      safe_source "$HOME/.bashrc"
   else
       echo "${CROSSMARK} Unsupported shell: $SHELL. Please reload your shell configuration manually."
   fi

@@ -1,4 +1,49 @@
 # 📦 CHANGELOG – WP Docker
+## [v1.1.8-beta] - 2025-04-14
+
+### 🚀 Added
+
+- **Improved performance on startup and CLI commands**
+  - `wpdocker` now uses `source main.sh` instead of `bash main.sh` to avoid spawning sub-shells.
+  - `start_docker_if_needed` uses `docker info` instead of `docker stats` for better compatibility and speed.
+
+- **Configuration enhancements**
+  - Automatically enforces `DEBUG_MODE="false"` in `config.sh` during GitHub workflows (`dev-build.yml`, `release.yml`).
+
+- **New i18n variables added**
+  - Introduced many new `readonly` variables to support multilingual CLI prompts and logs.
+  - Full list of added i18n variables included in checklist.
+
+- **Backup & restore improvements**
+  - Prompt-based logic for restoring source code and database independently.
+  - Shows backup file list with timestamps before prompting for selection.
+  - Validates file paths and handles relative/absolute path automatically.
+
+- **Code architecture improvements**
+  - Replaced all old `menu` files under `$FUNCTIONS_DIR/<feature>` with `prompt` functions following naming convention: `<feature>_prompt_<action>`.
+  - All CLI files now interact with prompt functions inside logic files for better structure and testability.
+
+- **Safe `load_config_file` loading**
+  - Added `if declare -F load_config_file` check to prevent duplicate loading during nested sourcing.
+
+
+### 🐞 Fixed
+
+- Fixed `start_docker_if_needed` delay and fallback on macOS when Docker Desktop is slow to boot.
+- Fixed potential issues when selecting storage for cloud backup (ensures correct format, skips invalid index).
+- Fixed backup auto-delete not skipping `.git` or special folders.
+Improved detection of domain directory and backups for edge cases.
+
+### ♻️ Changed
+
+- Simplified and optimized CLI wrappers across all features (backup, database, PHP, SSL, system, website).
+- All CLI scripts use unified `SCRIPT_PATH` + `safe_source` pattern and validate required params.
+Updated backup logic to:
+  - Automatically delete backup files after successful cloud upload.
+  - Fallback to local backup if cloud storage is invalid or not selected.
+Refactored entire prompt system to move user-interactive logic into `prompt_*` functions instead of `menu.sh`.
+
+---
 
 ## [v1.1.7-beta] - 2025-04-07
 
@@ -43,6 +88,7 @@
 ## [v1.1.6-beta] - 2025-04-05
 
 ### 🚀 Added
+
 - **WordPress Migration Tool**:
   - New feature to restore a full WordPress website (code & database) from `archives/$domain/`.
   - Automatically validates prefix, updates `wp-config.php`, checks DNS, and installs SSL.
@@ -57,7 +103,7 @@
   - Rewritten into standardized 3-step structure: logic + cli + menu.
   - Separated version check for `official` and `nightly` via `core_version_main.sh` and `core_version_dev.sh`.
   - Auto-detection and display of latest version at startup menu.
-  - `core_display_version.sh` now adapts to `CORE_CHANNEL` for accurate fetch.
+  - `core_version_display.sh` now adapts to `CORE_CHANNEL` for accurate fetch.
 
 - **New subcommand: `wpdocker system`**:
   - Includes:
@@ -67,6 +113,7 @@
     - `wpdocker system nginx rebuild/restart`: manage NGINX proxy.
 
 ### 🐞 Fixed
+
 - **404 error with WP Fastest Cache**:
   - Fixed by appending `try_files $uri $uri/ /index.php?$args;` into `@cachemiss`.
 
@@ -80,6 +127,7 @@
 - **Fix access denied error** when checking tables prefix due to missing `MYSQL_PWD`.
 
 ### ♻️ Changed
+
 - **Dev build workflow now uses `nightly` as tag** instead of `dev`.
 - **Improved GitHub Actions** for CI/CD:
   - `dev-build.yml` and `release.yml` now update `version.txt` and push to repo.
@@ -94,6 +142,7 @@
 ## [v1.1.5-beta] - 2025-04-04
 
 ### 🚀 Added
+
 - **Refactored all references from `$site_name` to `$domain`** across the entire project for better clarity and domain-based structure.
   - Unified naming convention for folders, containers, and volumes using `$domain`.
   - Introduced backward-compatible script at `upgrade/v1.1.5-beta.sh` to automatically rename old site folders based on `.env` domain.
@@ -113,12 +162,14 @@
   - Automatically downloads from `https://github.com/thachpn165/wp-docker/releases/download/dev/wp-docker-dev.zip`.
 
 ### 🐞 Fixed
+
 - **Fixed volume naming** for domains with `.` by auto-normalizing volume name format to match Docker's actual volume behavior.
 - **Fixed macOS compatibility** in `nginx_remove_mount_docker` by using a portable `grep -vF` logic instead of `sed`.
 - **Ensured `$domain` is passed correctly** from menu → CLI → logic layers.
 - **Fixed emoji display issues** when used in colored terminal output.
 
 ### ♻️ Changed
+
 - **Deprecated usage of `$site_name`** in favor of `$domain`.
   - All logic and variable references now operate on `$domain` only.
 - **Removed `DEV_MODE`** flag from `install.sh`.

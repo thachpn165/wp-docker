@@ -23,19 +23,19 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
 done
 
 # 📦 Import all menu modules
-source "$MENU_DIR/menu_utils.sh"
-source "$MENU_DIR/website_management_menu.sh"
-source "$MENU_DIR/wordpress_tools_menu.sh"
-source "$MENU_DIR/system_tools_menu.sh"
-source "$MENU_DIR/backup_menu.sh"
-source "$MENU_DIR/rclone_menu.sh"
-source "$MENU_DIR/ssl_menu.sh"
-source "$MENU_DIR/php_menu.sh"
-source "$MENU_DIR/database_menu.sh"
-source "$FUNCTIONS_DIR/core_loader.sh"
+safe_source "$MENU_DIR/menu_utils.sh"
+safe_source "$MENU_DIR/website_management_menu.sh"
+safe_source "$MENU_DIR/wordpress_tools_menu.sh"
+safe_source "$MENU_DIR/system_tools_menu.sh"
+safe_source "$MENU_DIR/backup_menu.sh"
+safe_source "$MENU_DIR/rclone_menu.sh"
+safe_source "$MENU_DIR/ssl_menu.sh"
+safe_source "$MENU_DIR/php_menu.sh"
+safe_source "$MENU_DIR/database_menu.sh"
+safe_source "$FUNCTIONS_DIR/core_loader.sh"
 # ⚙️ Run initial system setup (timezone, permissions, etc.)
-source "$SCRIPTS_DIR/setup-system.sh"
-
+safe_source "$SCRIPTS_DIR/setup-system.sh"
+safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 # 🏆 Display system information and version header
 print_header() {
     clear
@@ -57,8 +57,8 @@ print_header() {
     print_msg sub-label "- ${STRONG}$LABEL_DISK${NC}: ${DISK_USAGE}"
     print_msg sub-label "- ${STRONG}$LABEL_IPADDR${NC}: ${IP_ADDRESS}"
     echo ""
-    print_msg label "${STRONG}$LABEL_VERSION_CHANNEL${NC}: ${YELLOW}${CORE_CHANNEL}${NC}"
-    core_display_version
+    #print_msg label "${STRONG}$LABEL_VERSION_CHANNEL${NC}: ${YELLOW}${CORE_CHANNEL}${NC}"
+    core_version_display
     echo -e "${MAGENTA}==============================================${NC}"
 }
 
@@ -87,10 +87,10 @@ while true; do
         4) rclone_menu ;;
         5) wordpress_tools_menu ;;
         6) backup_menu ;;
-        7) bash "$MENU_DIR/wordpress/wordpress_setup_cache_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+        7) wordpress_prompt_cache_setup; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
         8) php_menu ;;
         9) database_menu ;;
-        10) echo "coming soon" ;;  # Call function to display version and update
+        10) core_version_update_latest; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;  # Call function to display version and update
         11) print_msg cancel "$MSG_EXITING" && exit 0 ;;
         *) 
             print_msg error "$ERROR_SELECT_OPTION_INVALID"

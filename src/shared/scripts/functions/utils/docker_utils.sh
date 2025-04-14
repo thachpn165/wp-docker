@@ -49,7 +49,10 @@ remove_volume() {
 }
 
 # ===========================
-# ⚙️ Install Docker
+# ⚙️ Install Docker based on OS
+# Supports:
+#   - Debian/Ubuntu via apt
+#   - CentOS/RedHat via yum
 # ===========================
 install_docker() {
   print_msg step "$STEP_DOCKER_INSTALL"
@@ -58,7 +61,7 @@ install_docker() {
     apt-get update
     apt-get install -y ca-certificates curl gnupg lsb-release
     mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    curl -fsSL "https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") $(lsb_release -cs) stable" \
       > /etc/apt/sources.list.d/docker.list
     apt-get update
@@ -76,7 +79,8 @@ install_docker() {
 }
 
 # ===========================
-# 🧩 Install Docker Compose plugin
+# 🧩 Install Docker Compose plugin (v2)
+# Auto-detect OS and architecture
 # ===========================
 install_docker_compose() {
   print_msg step "$STEP_DOCKER_COMPOSE_INSTALL"
@@ -84,8 +88,10 @@ install_docker_compose() {
   local DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
   mkdir -p "$DOCKER_CONFIG/cli-plugins"
 
-  local OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-  local ARCH=$(uname -m)
+  local OS
+  OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  local ARCH
+  ARCH=$(uname -m)
 
   case "$ARCH" in
     x86_64) ARCH="x86_64" ;;
@@ -109,20 +115,46 @@ install_docker_compose() {
 
 # ===========================
 # 🌀 Start Docker if not running
+# macOS: use `open -a Docker`
+# Linux: use `systemctl start docker`
 # ===========================
 start_docker_if_needed() {
-  if ! docker stats --no-stream &> /dev/null; then
+  if ! docker info &>/dev/null; then
     print_msg warning "$WARNING_DOCKER_NOT_RUNNING"
 
     if [[ "$OSTYPE" == "darwin"* ]]; then
+      # macOS: Start Docker Desktop in background
       open --background -a Docker
-      while ! docker system info &> /dev/null; do
+
+      local timeout=60
+      local start_time
+      start_time=$(date +%s)
+      local current_time
+
+      echo -n "Waiting for Docker"
+      while ! docker info &>/dev/null; do
         echo -n "."
-        sleep 1
+        sleep 0.5
+        current_time=$(date +%s)
+        if (( current_time - start_time > timeout )); then
+          echo ""
+          print_msg warning "Docker took too long to start, continuing anyway..."
+          break
+        fi
       done
       echo ""
     else
-      systemctl start docker
+      # Linux: Start Docker service in background
+      systemctl start docker &
+
+      local counter=0
+      echo -n "Waiting for Docker"
+      while ! docker info &>/dev/null && [ $counter -lt 20 ]; do
+        echo -n "."
+        sleep 0.5
+        counter=$((counter + 1))
+      done
+      echo ""
     fi
   else
     print_msg success "$SUCCESS_DOCKER_RUNNING"
@@ -130,7 +162,8 @@ start_docker_if_needed() {
 }
 
 # ===========================
-# 👥 Check docker group
+# 👥 Ensure user is in Docker group (Linux only)
+# macOS: No need to add group
 # ===========================
 check_docker_group() {
   if [[ "$(uname)" == "Darwin" ]]; then
@@ -145,15 +178,35 @@ check_docker_group() {
 }
 
 # ===========================
-# 🔁 Quick docker exec wrapper
+# 🔁 Execute a command inside the PHP container of a site
+# Creates wp-cli cache directory for better compatibility
+# Parameters:
+#   $1 - domain
+#   $2 - cmd
 # ===========================
 docker_exec_php() {
-  docker exec -u "$PHP_USER" -i "$PHP_CONTAINER" sh -c "mkdir -p /tmp/wp-cli-cache && export WP_CLI_CACHE_DIR='/tmp/wp-cli-cache' && $1"
-  exit_if_error $? "$(printf "$ERROR_COMMAND_EXEC_FAILED" "$1")"
+  local domain="$1"
+  local cmd="$2"
+
+  if [[ -z "$domain" || -z "$cmd" ]]; then
+    print_and_debug error "❌ Missing parameters in docker_exec_php(domain, cmd)"
+    return 1
+  fi
+
+  local container_php
+  container_php=$(json_get_site_value "$domain" "CONTAINER_PHP")
+
+  if [[ -z "$container_php" ]]; then
+    print_and_debug error "❌ Cannot find CONTAINER_PHP for site: $domain"
+    return 1
+  fi
+
+  docker exec -u "$PHP_USER" -i "$container_php" sh -c "mkdir -p /tmp/wp-cli-cache && export WP_CLI_CACHE_DIR='/tmp/wp-cli-cache' && $cmd"
+  exit_if_error $? "$(printf "$ERROR_COMMAND_EXEC_FAILED" "$cmd")"
 }
 
 # ===========================
-# 🧹 Remove core containers
+# 🧹 Remove core containers (NGINX, Redis)
 # ===========================
 remove_core_containers() {
   print_msg warning "$WARNING_REMOVE_CORE_CONTAINERS"
@@ -161,7 +214,8 @@ remove_core_containers() {
 }
 
 # ===========================
-# 🧹 Remove site containers + volumes
+# 🧹 Remove containers and volumes for all websites
+# Uses get_site_list to iterate
 # ===========================
 remove_site_containers() {
   for site in $(get_site_list); do

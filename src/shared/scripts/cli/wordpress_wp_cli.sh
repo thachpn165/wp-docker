@@ -1,10 +1,23 @@
 #!/bin/bash
-# ======================================
-# CLI wrapper: Run WP-CLI inside container for a given site
-# ======================================
-# ✅ Load configuration from any directory
+
+# =============================================
+# 🧩 wordpress_wp_cli.sh – Run WP-CLI inside container for a WordPress site
+# =============================================
+# Description:
+#   - Executes any WP-CLI command inside the PHP container of the specified domain.
+#
+# Usage:
+#   ./wordpress_wp_cli.sh --domain=example.tld -- plugin list
+#
+# Parameters:
+#   --domain=<domain>     (required)
+#   --                    (separator before actual wp-cli args)
+# =============================================
+
+# === Auto-detect BASE_DIR and load configuration ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
+
 while [[ "$SEARCH_PATH" != "/" ]]; do
   if [[ -f "$SEARCH_PATH/shared/config/load_config.sh" ]]; then
     source "$SEARCH_PATH/shared/config/load_config.sh"
@@ -14,8 +27,8 @@ while [[ "$SEARCH_PATH" != "/" ]]; do
   SEARCH_PATH="$(dirname "$SEARCH_PATH")"
 done
 
-# Load functions for website management
-source "$FUNCTIONS_DIR/wordpress_loader.sh"
+# === Load WordPress-related functions ===
+safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 # === Parse arguments ===
 domain=""
@@ -31,7 +44,7 @@ for arg in "$@"; do
   if [[ "$parse_wp_args" == true ]]; then
     params+=("$arg")
   else
-    case $arg in
+    case "$arg" in
       --domain=*) domain="${arg#*=}" ;;
       --domain) shift; domain="$1" ;;
       *)
@@ -43,6 +56,7 @@ for arg in "$@"; do
   fi
 done
 
+# === Validate parameters ===
 if [[ -z "$domain" ]]; then
   print_and_debug error "$ERROR_MISSING_PARAM: --domain"
   print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld -- plugin list"
@@ -55,5 +69,5 @@ if [[ ${#params[@]} -eq 0 ]]; then
   exit 1
 fi
 
-# === Call logic ===
+# === Execute logic ===
 wordpress_wp_cli_logic "$domain" "${params[@]}"

@@ -1,5 +1,5 @@
 #!/bin/bash
-source "$FUNCTIONS_DIR/system_loader.sh"
+safe_source "$FUNCTIONS_DIR/system_loader.sh"
 
 
 print_system_tools_menu_header() {
@@ -16,28 +16,32 @@ system_tools_menu() {
         print_msg label "${GREEN}3)${NC} $LABEL_MENU_SYSTEM_CLEANUP_DOCKER"
         print_msg label "${GREEN}4)${NC} $LABEL_MENU_SYSTEM_REBUILD_NGINX"
         print_msg label "${GREEN}5)${NC} $LABEL_MENU_SYSTEM_CHANGE_LANG"
-        print_msg label "${GREEN}[6]${NC} ${STRONG}$MSG_EXIT${NC}"
+        print_msg label "${GREEN}6)${NC} $LABEL_MENU_SYSTEM_CHANGE_CHANNEL"
+        print_msg label "${GREEN}[7]${NC} ${STRONG}$MSG_EXIT${NC}"
         echo ""
         read -p "$MSG_SELECT_OPTION " choice
 
         
             case $choice in
                 1)
-                    bash "$MENU_DIR/system-tools/system_check_resources_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    system_cli_check_resources; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 2)
-                    bash "$MENU_DIR/system-tools/system_manage_docker_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    system_prompt_manage_docker; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 3)
-                    bash "$CLI_DIR/system_cleanup_docker.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    system_cli_cleanup_docker; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 4)
                     bash "$CLI_DIR/system_nginx_rebuild.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 5)
-                    core_change_lang_logic
+                    core_lang_change_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 6)
+                    core_channel_switch_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    ;;
+                7)
                     break
                     ;;
                 *)

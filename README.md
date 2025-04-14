@@ -1,12 +1,12 @@
 # WP Docker
 
-[![Version](https://img.shields.io/badge/version-v1.1.7--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Version](https://img.shields.io/badge/version-v1.1.8--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker)](./LICENSE)
 
-> **Note**: Version `v1.1.7-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
+> **Note**: Version `v1.1.8-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
 ---
 
 ![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
@@ -26,49 +26,53 @@ The platform adopts a modular architecture supporting interchangeable web server
 
 Unlike conventional WordPress setups, WP Docker embraces infrastructure-as-code (IaC) principles to eliminate vendor lock-in. Its isolated containerized environment—combining Linux, PHP, and database services—ensures maximum portability, scalability, and operational consistency.
 
-By simplifying multi-stage environment replication (dev → staging → prod), WP Docker enhances security posture, accelerates deployment workflows, and ensures consistent performance across different infrastructures.
-
 
 Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
 
 ---
-## Latest Release - v1.1.7-beta
-Release date: 2025-04-07
+## Latest Release - v1.1.8-beta
+Release date: 2025-04-14
+
 ### 🚀 Added
 
-- Integrated i18n (multi-language) system across the project:
-  - All CLI messages are managed in centralized files: `shared/lang/vi.sh` and `en.sh`.
-  - `LANG_CODE` defined in `.env` allows dynamic language switching.
-- New language switch feature (`core_change_lang_logic`) in System Tools menu.
-- Integrated global `DEBUG_MODE` and `DEV_MODE`:
-  - `DEBUG_MODE=true`: displays full log and commands being executed.
-  - `DEV_MODE=true`: shows under-development features.
-- Added `print_msg`, `print_and_debug`, and `debug_log` for unified CLI output.
-- New feature: Restore website from backup (`backup_restore_web_menu.sh`), with support for selecting `.tar.gz` and `.sql` files.
-- Enhanced cron job summary with readable format using `cron_translate()`.
-- The `core_change_lang_logic` now dynamically loads supported languages from `LANG_LIST`.
-- Updated GitHub Actions `dev-build.yml` to automatically generate `nightly` release.
+- **Improved performance on startup and CLI commands**
+  - `wpdocker` now uses `source main.sh` instead of `bash main.sh` to avoid spawning sub-shells.
+  - `start_docker_if_needed` uses `docker info` instead of `docker stats` for better compatibility and speed.
 
----
+- **Configuration enhancements**
+  - Automatically enforces `DEBUG_MODE="false"` in `config.sh` during GitHub workflows (`dev-build.yml`, `release.yml`).
+
+- **New i18n variables added**
+  - Introduced many new `readonly` variables to support multilingual CLI prompts and logs.
+  - Full list of added i18n variables included in checklist.
+
+- **Backup & restore improvements**
+  - Prompt-based logic for restoring source code and database independently.
+  - Shows backup file list with timestamps before prompting for selection.
+  - Validates file paths and handles relative/absolute path automatically.
+
+- **Code architecture improvements**
+  - Replaced all old `menu` files under `$FUNCTIONS_DIR/<feature>` with `prompt` functions following naming convention: `<feature>_prompt_<action>`.
+  - All CLI files now interact with prompt functions inside logic files for better structure and testability.
+
+- **Safe `load_config_file` loading**
+  - Added `if declare -F load_config_file` check to prevent duplicate loading during nested sourcing.
 
 ### 🐞 Fixed
 
-- Fixed issue where `run_cmd` silently failed when `DEBUG_MODE=false` (added `eval` fallback).
-- Resolved incorrect detection of relative backup file paths during restore.
-- Fixed conflict in GitHub Actions builds caused by concurrent edits to `latest_version_dev.txt`.
-- Resolved MySQL error caused by invalid `mysql < db_name` syntax.
-
----
+- Fixed `start_docker_if_needed` delay and fallback on macOS when Docker Desktop is slow to boot.
+- Fixed potential issues when selecting storage for cloud backup (ensures correct format, skips invalid index).
+- Fixed backup auto-delete not skipping `.git` or special folders.
+Improved detection of domain directory and backups for edge cases.
 
 ### ♻️ Changed
 
-- All scripts in `menu/` and `cli/` have been refactored:
-  - Replaced all `read -p` with `get_input_or_test_value` for test compatibility.
-  - Standardized `PROJECT_DIR` detection and sourcing `load_config.sh`.
-- All CLI display logic switched to `print_msg` with i18n support.
-- Refactored path resolution to ensure backup file paths are absolute.
-- Fully refactored all `wordpress_*` logic scripts to adopt i18n/debug/dev standards.
-- All inline CLI messages have been moved to language files (i18n) to eliminate hardcoded text.
+- Simplified and optimized CLI wrappers across all features (backup, database, PHP, SSL, system, website).
+- All CLI scripts use unified `SCRIPT_PATH` + `safe_source` pattern and validate required params.
+Updated backup logic to:
+  - Automatically delete backup files after successful cloud upload.
+  - Fallback to local backup if cloud storage is invalid or not selected.
+Refactored entire prompt system to move user-interactive logic into `prompt_*` functions instead of `menu.sh`.
 
 
 *For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
@@ -113,7 +117,6 @@ This command opens the interactive terminal menu for managing your WordPress sit
 ### WordPress Site Management
 - Create and manage multiple WordPress installations simultaneously
 - Configure independent PHP versions for individual sites
-- Implement multilingual and multisite configurations
 - Restore WordPress source code and database from backup interactively
 
 ### Security Features
@@ -153,8 +156,8 @@ After modifying configuration files, restart the affected services through the s
 
 ## 🚀 WP Docker Roadmap (2025)
 
-### ✅ Current Version: `v1.1.7` (Beta)
-- Planned release of the first stable version (v1.2.0-stable): 2025-04-15
+### ✅ Current Version: `v1.1.8` (Beta)
+- Planned release of the first stable version (v1.2.0-stable): 2025-05-05
 
 ### Core Features Completed:
 - Create WordPress websites with Docker
@@ -173,27 +176,30 @@ After modifying configuration files, restart the affected services through the s
 
 ### 🗓️ Upcoming Milestones
 
-```
 #### v1.3.0
+
 - Refactor to support multiple web servers (OpenResty, Caddy, OpenLiteSpeed, LiteSpeed Enterprise, etc.)
 - Integrate Caddy Server with WordPress using Caddy Route Cache.
 
 #### v1.4.0
-- Add command-line support for common tasks such as site creation, enabling/disabling cache configuration, and updating WP Docker.
+
+- ~Add command-line support for common tasks such as site creation, enabling/disabling cache configuration, and updating WP Docker.~ (Added in v1.1.5-beta)
 - Integrate Fail2Ban for server security.
+- Integrate Telegram notifications for events like backups, Fail2Ban triggers, DDoS detection, updates, SSL expiration, and health checks.
 
 #### v1.5.0
+
 - ~Full CLI support for all available features~ (Added in v1.1.5-beta)
 - IP blocking for DDoS attacks based on access_log analysis (using Lua for OpenResty and Go for Caddy).
 
 #### v1.6.0
-- Integrate Telegram notifications for events like backups, Fail2Ban triggers, DDoS detection, updates, SSL expiration, and health checks.
+
 - Add Webhook support to receive similar notifications.
 
 #### v1.7.0
+
 - Isolated sFTP/SSH access per website
 - Automatically transfer site data to another server proactively
-```
 
 ---
 

@@ -11,30 +11,34 @@ wordpress_tools_menu() {
         echo ""
         read -p "$MSG_SELECT_OPTION " choice
 
-        
-            case $choice in
-                1)
-                    bash "$MENU_DIR/wordpress/wordpress_reset_admin_passwd_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
-                    ;;
-                2)
-                    bash "$MENU_DIR/wordpress/wordpress_reset_user_role_menu.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
-                    ;;
-                3)
-                    bash "$MENU_DIR/wordpress/wordpress_auto_update_plugin_menu.sh" ; read -p "$MSG_PRESS_ENTER_CONTINUE"
-                    ;;
-                4)
-                    bash "$MENU_DIR/wordpress/wordpress_protect_wp_login_menu.sh" ; read -p "$MSG_PRESS_ENTER_CONTINUE"
-                    ;;
-                5) 
-                    bash "$MENU_DIR/wordpress/wordpress_migration_menu.sh" ; read -p "$MSG_PRESS_ENTER_CONTINUE"
-                    ;;
-                6)
-                    break
-                    ;;
-                *)
-                    #echo -e "${RED}${CROSSMARK} Invalid option or you have exited.${NC}"
-                    print_msg error "$ERROR_SELECT_OPTION_INVALID"
-                    ;;
-            esac
+        case $choice in
+        1)
+            wordpress_prompt_reset_admin_passwd 
+            read -p "$MSG_PRESS_ENTER_CONTINUE"
+            ;;
+        2)
+            wordpress_prompt_reset_roles
+            read -p "$MSG_PRESS_ENTER_CONTINUE"
+            ;;
+        3)
+            wordpress_prompt_auto_update_plugin
+            read -p "$MSG_PRESS_ENTER_CONTINUE"
+            ;;
+        4)
+            wordpress_prompt_protect_wplogin
+            read -p "$MSG_PRESS_ENTER_CONTINUE"
+            ;;
+        5)
+            wordpress_prompt_migration
+            read -p "$MSG_PRESS_ENTER_CONTINUE"
+            ;;
+        6)
+            break
+            ;;
+        *)
+            #echo -e "${RED}${CROSSMARK} Invalid option or you have exited.${NC}"
+            print_msg error "$ERROR_SELECT_OPTION_INVALID"
+            ;;
+        esac
     done
 }

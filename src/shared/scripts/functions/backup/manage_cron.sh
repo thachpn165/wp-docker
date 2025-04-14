@@ -18,11 +18,16 @@ cron_translate() {
     local cron_exp="$1"
 
     # Split cron fields
-    local minute=$(echo "$cron_exp" | awk '{print $1}')
-    local hour=$(echo "$cron_exp" | awk '{print $2}')
-    local day=$(echo "$cron_exp" | awk '{print $3}')
-    local month=$(echo "$cron_exp" | awk '{print $4}')
-    local weekday=$(echo "$cron_exp" | awk '{print $5}')
+    local minute
+    minute=$(echo "$cron_exp" | awk '{print $1}')
+    local hour
+    hour=$(echo "$cron_exp" | awk '{print $2}')
+    local day
+    day=$(echo "$cron_exp" | awk '{print $3}')
+    local month
+    month=$(echo "$cron_exp" | awk '{print $4}')
+    local weekday
+    weekday=$(echo "$cron_exp" | awk '{print $5}')
 
     # Determine time
     local time="$hour:$minute"
@@ -43,24 +48,25 @@ cron_translate() {
 
 # Display list of websites with backup schedules and allow viewing details
 schedule_backup_list() {
-    echo -e "${BLUE}📅 List of websites with backup schedules:${NC}"
+
+    print_msg info "$INFO_BACKUP_SCHEDULE_WEBSITE_LIST"
 
     # Get website list from crontab
-    local websites=($(crontab -l 2>/dev/null | grep "backup_website.sh" | awk -F '--domain=' '{print $2}' | awk '{print $1}' | sort -u))
+    mapfile -t websites < <(crontab -l 2>/dev/null | grep "backup_website.sh" | awk -F '--domain=' '{print $2}' | awk '{print $1}' | sort -u)
 
     if [[ ${#websites[@]} -eq 0 ]]; then
-        echo -e "${RED}${CROSSMARK} No websites have backup schedules.${NC}"
+        print_msg error "$ERROR_BACKUP_NO_WEBSITE_SCHENDULED"
         return 1
     fi
 
     # Display website list
-    echo -e "${YELLOW}🔹 Select a website to view its backup schedule:${NC}"
+    print_msg label "$PROMPT_BACKUP_SELECT_WEB_VIEW_SCHEDULE"
     select SITE_DOMAIN in "${websites[@]}"; do
         if [[ -n "$domain" ]]; then
-            echo -e "${GREEN}${CHECKMARK} Viewing backup schedule for: $domain${NC}"
+            print_msg info "$INFO_BACKUP_VIEW_SCHEDULED_WEBSITE: $domain"
             break
         else
-            echo -e "${RED}${CROSSMARK} Invalid selection!${NC}"
+            print_msg error "$ERROR_SELECT_OPTION_INVALID"
         fi
     done
 
@@ -68,9 +74,10 @@ schedule_backup_list() {
     cron_jobs=$(crontab -l 2>/dev/null | grep "backup_website.sh --domain=$domain")
 
     if [[ -z "$cron_jobs" ]]; then
-        echo -e "${RED}${CROSSMARK} No backup schedule found for website: $domain${NC}"
+        print_msg error "$ERROR_BACKUP_NOT_SCHEDULED_FOR_WEBSITE: $domain"
+        return 1
     else
-        echo -e "${GREEN}📜 Backup schedule for $domain:${NC}"
+        print_msg info "$INFO_BACKUP_SCHEDULE_LIST_FOR_WEBSITE: $domain"
         echo -e "${YELLOW}Frequency | Website | Log Path${NC}"
         echo -e "${MAGENTA}------------------------------------------------------${NC}"
         
@@ -92,43 +99,37 @@ schedule_backup_list() {
 schedule_backup_remove() {
     select_website || return
 
-    local temp_cron=$(mktemp)
+    local temp_cron
+    temp_cron=$(mktemp)
     crontab -l 2>/dev/null | grep -v "$BACKUP_RUNNER $domain" > "$temp_cron"
     crontab "$temp_cron"
     rm -f "$temp_cron"
 
-    echo -e "${GREEN}${CHECKMARK} Removed backup schedule for website: $domain${NC}"
+    print_msg 
 }
 
 # Display crontab management menu
 manage_cron_menu() {
     while true; do
         echo -e "${BLUE}============================${NC}"
-        echo -e "${BLUE}   ⚙️ BACKUP SCHEDULE MANAGEMENT (CRON)   ${NC}"
+        echo -e "${BLUE}   $TITLE_MENU_BACKUP_SCHEDULE_MANAGEMENT (CRON)   ${NC}"
         echo -e "${BLUE}============================${NC}"
-        echo -e "  ${GREEN}[1]${NC} 📜 View backup schedules"
-        echo -e "  ${GREEN}[2]${NC} ${CROSSMARK} Remove website backup schedule"
+        print_msg label "${GREEN}1)${NC} $LABEL_MENU_BACKUP_SCHEDULE_VIEW"
+        print_msg label "${GREEN}2)${NC} $LABEL_MENU_BACKUP_SCHEDULE_REMOVE"
+        print_msg label "${GREEN}3)${NC} $MSG_BACK"
         echo -e "  ${GREEN}[3]${NC} 🔙 Back"
         echo -e "${BLUE}============================${NC}"
 
-        [[ "$TEST_MODE" != true ]] && read -p "🔹 Select an option (1-3): " choice
+        choice=$(get_input_or_test_value "$PROMPT_SELECT_OPTION" "${TEST_CHOICE:-3}")
         case "$choice" in
             1) schedule_backup_list ;;
             2) schedule_backup_remove ;;
-            3) echo -e "${GREEN}🔙 Returning to main menu.${NC}"; break ;;
-            *) echo -e "${RED}${CROSSMARK} Invalid option, please try again!${NC}" ;;
+            3) break ;;
+            *)
+                print_msg error "$ERROR_SELECT_OPTION_INVALID"
+                sleep 1
+                ;;
         esac
     done
 }
 
-# Check if a website has a backup schedule
-schedule_backup_exists() {
-    local domain="$1"
-
-    # Check if backup_runner.sh exists in crontab for that website
-    if crontab -l 2>/dev/null | grep -q "backup_runner.sh $domain"; then
-        return 0  # Backup schedule exists
-    else
-        return 1  # No backup schedule
-    fi
-}
