@@ -21,10 +21,20 @@ safe_source "$FUNCTIONS_DIR/website_loader.sh"
 readonly MOVED_BACKUP_DIR="$HOME/archives"
 
 # =====================================
-# 🔐 Confirm uninstall prompt
+# 🔐 Confirm uninstall prompt (for backup)
 # =====================================
-confirm_action() {
+confirm_backup_before_remove() {
   confirm_text=$(get_input_or_test_value "$PROMPT_CONFIRM_UNINSTALL_BACKUP" "${TEST_CONFIRM_UNINSTALL_BACKUP:-n}")
+  [[ "$confirm_text" =~ ^[Yy]$ ]]
+}
+
+# =====================================
+# 🔐 Confirm remove MySQL container + volume
+# =====================================
+confirm_remove_mysql_volume() {
+  local prompt="❓ Do you want to remove the MySQL container ($MYSQL_CONTAINER_NAME) and volume ($MYSQL_VOLUME_NAME)?"
+  local confirm_text
+  confirm_text=$(get_input_or_test_value "$prompt" "n")
   [[ "$confirm_text" =~ ^[Yy]$ ]]
 }
 
@@ -72,7 +82,6 @@ backup_all_sites() {
     }
 
     print_msg success "$(printf "$SUCCESS_SITE_BACKED_UP" "$site" "$backup_target_dir")"
-
   done
 }
 
@@ -98,7 +107,7 @@ remove_site_containers() {
 # 🧨 Confirm and remove MySQL container + volume
 # =====================================
 remove_mysql_container_and_volume() {
-  if confirm_action "❓ Do you want to remove the MySQL container ($MYSQL_CONTAINER_NAME) and volume ($MYSQL_VOLUME_NAME)?"; then
+  if confirm_remove_mysql_volume; then
     print_msg info "🧨 Removing MySQL container and volume..."
     docker rm -f "$MYSQL_CONTAINER_NAME" 2>/dev/null || true
     docker volume rm "$MYSQL_VOLUME_NAME" 2>/dev/null || true
@@ -187,7 +196,7 @@ remove_alias() {
 print_msg warning "$WARNING_UNINSTALL_CONFIRM"
 print_msg info "$INFO_UNINSTALL_NOTICE"
 
-if confirm_action; then
+if confirm_backup_before_remove; then
   backup_all_sites
 else
   print_msg info "$INFO_SKIP_BACKUP"
