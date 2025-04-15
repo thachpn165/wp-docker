@@ -63,21 +63,21 @@ database_import_logic() {
 
     # Get DB container name from config
     local db_container
-    db_container=$(json_get_site_value "$domain" "CONTAINER_DB")
+    db_container="$MYSQL_CONTAINER_NAME"
 
     debug_log "[DB IMPORT] Domain: $domain"
     debug_log "[DB IMPORT] Backup file: $backup_file"
 
     # Get DB credentials
     local db_name db_user db_password
-    db_name="$(json_get_site_value "$domain" "MYSQL_DATABASE")"
-    db_user="$(json_get_site_value "$domain" "MYSQL_USER")"
-    db_password="$(json_get_site_value "$domain" "MYSQL_PASSWORD")"
+    db_name="$(json_get_site_value "$domain" "db_name")"
+    db_user="$(json_get_site_value "$domain" "db_user")"
+    db_password="$(json_get_site_value "$domain" "db_pass")"
     debug_log "[DB IMPORT] db_name=$db_name, db_user=$db_user"
 
     # Ensure MariaDB is running
-    if ! is_mariadb_running "$domain"; then
-        print_msg error "$(printf "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING" "$db_container")"
+    if ! core_mysql_check_running; then
+        print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     fi
 

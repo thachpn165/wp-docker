@@ -47,10 +47,7 @@ EOF
     print_msg success "✅ MySQL config generated successfully."
 }
 
-core_mysql_check_running() {
-    # return true if the container is running
-    docker inspect -f '{{.State.Running}}' "$MYSQL_CONTAINER_NAME" 2>/dev/null | grep -q true
-}
+
 
 core_mysql_generate_compose() {
     local compose_file="$MYSQL_DIR/docker-compose.yml"

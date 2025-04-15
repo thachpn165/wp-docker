@@ -52,8 +52,7 @@ wordpress_migration_logic() {
   local site_dir="$SITES_DIR/$domain"
   local web_root="$site_dir/wordpress"
   local sql_file archive_file server_ip
-  local mariadb_container
-  mariadb_container=$(json_get_site_value "$domain" "CONTAINER_DB")
+  local mariadb_container="$MYSQL_CONTAINER_NAME"
 
   server_ip=$(curl -s ifconfig.me)
 
@@ -95,7 +94,6 @@ wordpress_migration_logic() {
     }
 
     bash "$MENU_DIR/website/website_create_menu.sh"
-    mariadb_container=$(json_get_site_value "$domain" "CONTAINER_DB")
   fi
 
   print_msg step "$STEP_WORDPRESS_MIGRATION_EXTRACTING: $archive_file"
