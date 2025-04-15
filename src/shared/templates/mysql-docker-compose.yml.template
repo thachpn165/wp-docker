@@ -13,6 +13,7 @@ services:
 
 volumes:
     ${mysql_volume_name}:
+      name: ${mysql_volume_name} 
 
 networks:
   proxy_network:
