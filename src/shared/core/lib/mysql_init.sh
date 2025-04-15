@@ -16,7 +16,7 @@ core_mysql_calculate_config() {
     #     max_connections, query_cache_size, innodb_buffer_pool_size,
     #     innodb_log_file_size, table_open_cache, thread_cache_size
     # ============================================
-    
+
     local total_ram total_cpu
     total_ram=$(get_total_ram)
     total_cpu=$(get_total_cpu)
@@ -58,7 +58,7 @@ core_mysql_apply_config() {
     # Returns:
     #   0 if config is already present or successfully created
     # ============================================
-    
+
     if [[ -f "$MYSQL_CONFIG_FILE" ]]; then
         print_and_debug warning "$WARNING_MYSQL_CONFIG_EXISTS: $MYSQL_CONFIG_FILE"
         return 0
@@ -71,7 +71,9 @@ core_mysql_apply_config() {
     debug_log "MySQL config values: $config_values"
     IFS=',' read -r max_connections query_cache_size innodb_buffer_pool_size \
         innodb_log_file_size table_open_cache thread_cache_size <<<"$config_values"
-    mkdir -p "$(dirname "$MYSQL_CONFIG_FILE")"
+
+    is_directory_exist "$(dirname "$MYSQL_CONFIG_FILE")" true
+
     cat >"$MYSQL_CONFIG_FILE" <<EOF
 [mysqld]
 max_connections = $max_connections
@@ -111,7 +113,7 @@ core_mysql_generate_compose() {
     # Returns:
     #   0 if success, 1 if template file is missing
     # ============================================
-    
+
     local compose_file="$MYSQL_DIR/docker-compose.yml"
     local template_file="$TEMPLATES_DIR/mysql-docker-compose.yml.template"
 
@@ -138,6 +140,7 @@ core_mysql_generate_compose() {
     local mysql_root_pass
     mysql_root_pass=$(json_get_value '.mysql.root_password' "$JSON_CONFIG_FILE")
     mkdir -p "$(dirname "$compose_file")"
+    is_directory_exist "$(dirname "$compose_file")" true
     print_msg step "$INFO_MYSQL_GENERATING_DOCKER_COMPOSE"
 
     cp "$template_file" "$compose_file.tmp"
@@ -171,7 +174,7 @@ core_mysql_start() {
     # Returns:
     #   0 if container is already running or started successfully
     # ============================================
-    
+
     local compose_file="$MYSQL_DIR/docker-compose.yml"
     if core_mysql_check_running; then
         print_msg success "$SUCCESS_MYSQL_CONTAINER_RUNNING: $MYSQL_CONTAINER_NAME"
