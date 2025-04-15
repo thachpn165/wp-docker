@@ -1,13 +1,14 @@
 core_init_config() {
   # =============================================
-  # 🧩 1. Tạo file .config.json nếu chưa có
+  # 🧩 Step 1: Create .config.json if not exists
   # =============================================
   json_create_if_not_exists
 
   # =============================================
-  # 📦 2. Khởi tạo giá trị mặc định cho nhóm core
+  # 📦 Step 2: Initialize default values for `core` group
   # =============================================
-  # 2.1 Thiết lập core.channel nếu chưa có
+
+  # 2.1 Set core.channel if not set
   if ! json_key_exists '.core.channel'; then
     echo -e "$PROMPT_SELECT_CHANNEL"
     PS3="$(echo -e "$PROMPT_SELECT_OPTION") "
@@ -24,10 +25,10 @@ core_init_config() {
       esac
     done
   else
-    debug_log "[core_init_config] core.channel đã tồn tại: $(core_channel_get)"
+    debug_log "[core_init_config] core.channel already set: $(core_channel_get)"
   fi
 
-  # 2.2 Khởi tạo core.installed_version nếu cần
+  # 2.2 Set core.installed_version if not set
   if ! json_key_exists '.core.installed_version'; then
     local default_version
     if core_is_dev_mode; then
@@ -36,23 +37,21 @@ core_init_config() {
       default_version="0.0.0"
     fi
     core_set_installed_version "$default_version"
-    debug_log "[core_init_config] Khởi tạo core.installed_version = $default_version"
+    debug_log "[core_init_config] Initialized core.installed_version = $default_version"
   fi
 
-  # ==============================================
-  # 🌐 3 Thiết lập ngôn ngữ mặc định
+  # =============================================
+  # 🌐 Step 3: Set default language if not set
   # =============================================
   if ! json_key_exists '.core.lang'; then
     core_lang_change_prompt
   else
-    debug_log "[core_init_config] Ngôn ngữ đã được đặt: $(json_get_value '.core.lang')"
+    debug_log "[core_init_config] Language already set: $(json_get_value '.core.lang')"
   fi
 
-
-
-
-  # 📌 3. (Tương lai) thêm các thiết lập mặc định khác ở đây
+  # =============================================
+  # 📌 Step 4: (Future) Add other default core settings here
+  # =============================================
   # json_set_value '.core.debug_mode' false
   # json_set_value '.core.auto_update' true
-  # =============================================
 }

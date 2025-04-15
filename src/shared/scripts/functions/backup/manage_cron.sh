@@ -1,5 +1,19 @@
 #!/bin/bash
-# Convert weekday from number to text
+# =============================================
+# 🔤 convert_weekday – Convert weekday number to label
+# =============================================
+# Description:
+#   - Maps a weekday number (0–6) to its corresponding label (Sunday–Saturday).
+#
+# Parameters:
+#   $1 - weekday number (0–6)
+#
+# Globals:
+#   LABEL_SUNDAY, LABEL_MONDAY, ..., LABEL_SATURDAY
+#
+# Returns:
+#   - Echoes the corresponding weekday label
+# =============================================
 convert_weekday() {
     case $1 in
         0) echo "$LABEL_SUNDAY" ;;
@@ -13,7 +27,22 @@ convert_weekday() {
     esac
 }
 
-# Convert cron time to human-readable format
+# =============================================
+# ⏰ cron_translate – Convert cron expression to human-readable text
+# =============================================
+# Description:
+#   - Translates a cron expression into a readable string using defined labels.
+#
+# Parameters:
+#   $1 - cron expression string (5-part)
+#
+# Globals:
+#   LABEL_EVERYDAY, LABEL_EVERY_WEEK, LABEL_EVERY_MONTH,
+#   LABEL_TIME_AT, LABEL_DATE_ON, LABEL_CUSTOM_SCHEDULE
+#
+# Returns:
+#   - Echoes a formatted string describing the schedule
+# =============================================
 cron_translate() {
     local cron_exp="$1"
 
@@ -46,7 +75,22 @@ cron_translate() {
     echo "$schedule"
 }
 
-# Display list of websites with backup schedules and allow viewing details
+# =============================================
+# 📋 schedule_backup_list – List scheduled backup cron jobs per website
+# =============================================
+# Description:
+#   - Displays all websites with active backup cron jobs and lets the user view their details.
+#
+# Globals:
+#   PROMPT_BACKUP_SELECT_WEB_VIEW_SCHEDULE, INFO_BACKUP_SCHEDULE_WEBSITE_LIST,
+#   INFO_BACKUP_VIEW_SCHEDULED_WEBSITE, INFO_BACKUP_SCHEDULE_LIST_FOR_WEBSITE,
+#   ERROR_BACKUP_NO_WEBSITE_SCHENDULED, ERROR_BACKUP_NOT_SCHEDULED_FOR_WEBSITE,
+#   ERROR_SELECT_OPTION_INVALID, BACKUP_RUNNER
+#
+# Returns:
+#   - Displays formatted table of schedules
+#   - Returns 1 if no scheduled websites are found
+# =============================================
 schedule_backup_list() {
 
     print_msg info "$INFO_BACKUP_SCHEDULE_WEBSITE_LIST"
@@ -95,7 +139,18 @@ schedule_backup_list() {
     fi
 }
 
-# Remove backup schedule for a website
+# =============================================
+# ❌ schedule_backup_remove – Remove backup cron job for a website
+# =============================================
+# Description:
+#   - Removes backup cron jobs for the selected domain using a filtered crontab.
+#
+# Globals:
+#   BACKUP_RUNNER, domain
+#
+# Returns:
+#   - None
+# =============================================
 schedule_backup_remove() {
     select_website || return
 
@@ -108,7 +163,20 @@ schedule_backup_remove() {
     print_msg 
 }
 
-# Display crontab management menu
+# =============================================
+# 📅 manage_cron_menu – Interactive cron job management menu
+# =============================================
+# Description:
+#   - Displays a CLI menu for listing or removing scheduled backups via cron.
+#
+# Globals:
+#   TITLE_MENU_BACKUP_SCHEDULE_MANAGEMENT,
+#   LABEL_MENU_BACKUP_SCHEDULE_VIEW, LABEL_MENU_BACKUP_SCHEDULE_REMOVE,
+#   MSG_BACK, PROMPT_SELECT_OPTION, TEST_CHOICE, ERROR_SELECT_OPTION_INVALID
+#
+# Returns:
+#   - None
+# =============================================
 manage_cron_menu() {
     while true; do
         echo -e "${BLUE}============================${NC}"
@@ -132,4 +200,3 @@ manage_cron_menu() {
         esac
     done
 }
-

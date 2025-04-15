@@ -1,6 +1,15 @@
 # =============================================
-# core_lang_convert
-# Chuyển đổi ngôn ngữ từ mã sang tên đầy đủ
+# 🌐 core_lang_convert – Convert language code to human-readable label
+# =============================================
+# Description:
+#   Converts a short language code (e.g., "en", "vi") to its full language label,
+#   using corresponding LABEL_LANG_* constants defined in the language file.
+#
+# Parameters:
+#   $1 - lang_code (e.g., en, vi, ja, ...)
+#
+# Returns:
+#   - Echoes the full language name
 # =============================================
 core_lang_convert() {
   local lang_code="$1"
@@ -27,8 +36,23 @@ core_lang_convert() {
 }
 
 # =============================================
-# 🔤 core_lang_change_logic
-# Chỉ định ngôn ngữ hệ thống (ghi vào .config.json)
+# 🔤 core_lang_change_logic – Change system language and save to .config.json
+# =============================================
+# Description:
+#   Updates the language setting in .config.json based on the provided code.
+#   Ensures the code exists in the allowed LANG_LIST before saving.
+#
+# Parameters:
+#   $1 - lang_code (e.g., en, vi, ja, ...)
+#
+# Globals:
+#   LANG_LIST
+#   SUCCESS_LANG_CODE_UPDATED
+#   ERROR_LANG_SET_FAILED
+#
+# Returns:
+#   - Saves the selected language to JSON
+#   - Returns 1 if invalid or missing
 # =============================================
 core_lang_change_logic() {
   local lang_code="$1"
@@ -38,7 +62,6 @@ core_lang_change_logic() {
     return 1
   fi
 
-  # Kiểm tra lang_code có nằm trong LANG_LIST không
   local valid=false
   for lang in "${LANG_LIST[@]}"; do
     if [[ "$lang_code" == "$lang" ]]; then
@@ -57,9 +80,20 @@ core_lang_change_logic() {
 }
 
 # =============================================
-# 🌐 core_lang_change_prompt
-# Danh sách ngôn ngữ khả dụng thiết lập tại LANG_LIST trong config.sh
-# Hiển thị danh sách ngôn ngữ để người dùng chọn
+# 🌍 core_lang_change_prompt – Prompt user to select a language
+# =============================================
+# Description:
+#   Displays a list of available languages (defined in LANG_LIST)
+#   and allows the user to choose one for the system.
+#
+# Globals:
+#   LANG_LIST
+#   PROMPT_SELECT_LANGUAGE
+#   PROMPT_SELECT_OPTION
+#   ERROR_SELECT_OPTION_INVALID
+#
+# Calls:
+#   - core_lang_change_logic
 # =============================================
 core_lang_change_prompt() {
   echo -e "\n🌐 $PROMPT_SELECT_LANGUAGE"
@@ -81,8 +115,17 @@ core_lang_change_prompt() {
 }
 
 # =============================================
-# core_lang_get_list
-# Lấy danh sách ngôn ngữ từ config.sh
+# 📋 core_lang_list_logic – List all available languages
+# =============================================
+# Description:
+#   Iterates over LANG_LIST and displays each language code and label.
+#
+# Globals:
+#   LANG_LIST
+#   ERROR_LANG_LIST_NOT_SET
+#
+# Returns:
+#   - Lists all available languages in formatted output
 # =============================================
 core_lang_list_logic() {
   if [[ ${#LANG_LIST[@]} -eq 0 ]]; then
@@ -97,9 +140,19 @@ core_lang_list_logic() {
     debug_log "[core_lang_list_logic] $code - $label"
   done
 }
+
 # =============================================
-# core_lang_get
-# Lấy ngôn ngữ hiện tại từ .config.json
+# 🧾 core_lang_get_logic – Get current language from config
+# =============================================
+# Description:
+#   Retrieves the language code from .config.json and converts it to a human-readable label.
+#
+# Globals:
+#   ERROR_LANG_NOT_SET
+#
+# Returns:
+#   - Displays the language label if set
+#   - Returns 1 if not defined
 # =============================================
 core_lang_get_logic() {
   local lang
