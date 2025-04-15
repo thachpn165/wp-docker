@@ -8,29 +8,29 @@
 #   - Calls CLI wrapper with parameters
 # =====================================
 website_prompt_create() {
-  #echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
-  print_msg title "$TITLE_CREATE_NEW_WORDPRESS_WEBSITE"
-  # Get domain from user
-  read -p "$PROMPT_ENTER_DOMAIN: " domain
+    #echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
+    print_msg title "$TITLE_CREATE_NEW_WORDPRESS_WEBSITE"
+    # Get domain from user
+    read -p "$PROMPT_ENTER_DOMAIN: " domain
 
-  php_prompt_choose_version || return 1
-  php_version="$SELECTED_PHP"
+    php_prompt_choose_version || return 1
+    php_version="$SELECTED_PHP"
 
-  echo ""
-  choice=$(get_input_or_test_value "$PROMPT_WEBSITE_CREATE_RANDOM_ADMIN" "${TEST_WEBSITE_CREATE_RANDOM_ADMIN:-y}")
-  echo "🔍 Prompt text: $PROMPT_WEBSITE_CREATE_RANDOM_ADMIN"
-  choice="$(echo "$choice" | tr '[:upper:]' '[:lower:]')"
+    echo ""
+    choice=$(get_input_or_test_value "$PROMPT_WEBSITE_CREATE_RANDOM_ADMIN" "${TEST_WEBSITE_CREATE_RANDOM_ADMIN:-y}")
+    echo "🔍 Prompt text: $PROMPT_WEBSITE_CREATE_RANDOM_ADMIN"
+    choice="$(echo "$choice" | tr '[:upper:]' '[:lower:]')"
 
-  auto_generate=true
-  [[ "$choice" == "n" ]] && auto_generate=false
+    auto_generate=true
+    [[ "$choice" == "n" ]] && auto_generate=false
 
-  print_and_debug "🐝 PHP version: $php_version"
-  print_and_debug "🐝 Domain: $domain"
+    print_and_debug "🐝 PHP version: $php_version"
+    print_and_debug "🐝 Domain: $domain"
 
-  website_cli_create \
-    --domain="$domain" \
-    --php="$php_version" \
-    --auto_generate="$auto_generate" || return 1
+    website_cli_create \
+        --domain="$domain" \
+        --php="$php_version" \
+        --auto_generate="$auto_generate" || return 1
 }
 
 # =====================================
@@ -54,7 +54,6 @@ website_logic_create() {
     SITE_DIR="$SITES_DIR/$domain"
     website_set_config "$domain" "$php_version"
     CONTAINER_PHP=$(json_get_site_value "$domain" "CONTAINER_PHP")
-    CONTAINER_DB=$(json_get_site_value "$domain" "CONTAINER_DB")
     MARIADB_VOLUME="${domain//./}${DB_VOLUME_SUFFIX}"
 
     # cleanup if error
@@ -68,10 +67,6 @@ website_logic_create() {
         if docker ps -a --filter "name=${CONTAINER_PHP}" --format '{{.Names}}' | grep -q "${CONTAINER_PHP}"; then
             run_cmd "docker stop '$CONTAINER_PHP' && docker rm '$CONTAINER_PHP'"
             print_and_debug success "$SUCCESS_CONTAINER_STOP: $CONTAINER_PHP"
-        fi
-        if docker ps -a --filter "name=${CONTAINER_DB}" --format '{{.Names}}' | grep -q "${CONTAINER_DB}"; then
-            run_cmd "docker stop '$CONTAINER_DB' && docker rm '$CONTAINER_DB'"
-            print_and_debug success "$SUCCESS_CONTAINER_STOP: $CONTAINER_DB"
         fi
         if docker volume ls --format '{{.Name}}' | grep -q "$MARIADB_VOLUME"; then
             run_cmd "docker volume rm '$MARIADB_VOLUME'"
@@ -87,11 +82,6 @@ website_logic_create() {
     if is_directory_exist "$SITE_DIR" false; then
         print_msg cancel "$MSG_WEBSITE_EXISTS: $domain"
         return 1
-    fi
-    # Remove old database volume if exist to avoid conflict
-    if docker volume ls --format '{{.Name}}' | grep -q "^$MARIADB_VOLUME$"; then
-        print_msg warning "$MSG_DOCKER_VOLUME_FOUND: $MARIADB_VOLUME"
-        run_cmd "docker volume rm '$MARIADB_VOLUME'"
     fi
     # create essential folders and files in site directory
     run_cmd "mkdir -p '$SITE_DIR/php' '$SITE_DIR/mariadb/conf.d' '$SITE_DIR/wordpress' '$SITE_DIR/logs' '$SITE_DIR/backups'"
@@ -128,7 +118,7 @@ website_logic_create() {
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_SSL: $domain"
     ssl_logic_install_selfsigned "$domain"
 
-    #Copy docker-compose template and config 
+    #Copy docker-compose template and config
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_DOCKER_COMPOSE: $domain"
     website_generate_docker_compose "$domain"
 
@@ -142,9 +132,8 @@ website_logic_create() {
     print_msg progress "$MSG_CHECKING_CONTAINER"
 
     debug_log "  ➤ CONTAINER_PHP: $CONTAINER_PHP"
-    debug_log "  ➤ CONTAINER_DB: $CONTAINER_DB"
 
-    if ! is_container_running "$CONTAINER_PHP" "$CONTAINER_DB"; then
+    if ! is_container_running "$CONTAINER_PHP"; then
         stop_loading
         print_msg error "$ERROR_CONTAINER_NOT_READY_AFTER_30S"
         return 1
@@ -154,7 +143,7 @@ website_logic_create() {
 
     # Restart NGINX to apply new configuration
     print_msg step "$MSG_DOCKER_NGINX_RESTART"
-    
+
     nginx_reload
 
     # Set permissions for website folder in PHP container

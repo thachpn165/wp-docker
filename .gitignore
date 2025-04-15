@@ -26,7 +26,7 @@ src/webserver/nginx/ssl/*
 **/docker-compose.override.yml
 **/docker-compose.yml.bak
 **/docker-compose.override.yml.bak
-
+src/shared/core/*/docker-compose.yml
 # 🔍 LOG & CACHE 🔍
 src/logs/
 src/sites/*/logs/

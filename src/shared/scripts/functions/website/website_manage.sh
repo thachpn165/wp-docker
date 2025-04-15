@@ -59,9 +59,9 @@ website_logic_info() {
   fi
 
   # Fetch website information from .config.json
-  db_name=$(json_get_site_value "$domain" "MYSQL_DATABASE")
-  db_user=$(json_get_site_value "$domain" "MYSQL_USER")
-  db_pass=$(json_get_site_value "$domain" "MYSQL_PASSWORD")
+  db_name=$(json_get_site_value "$domain" "db_name")
+  db_user=$(json_get_site_value "$domain" "db_user")
+  db_pass=$(json_get_site_value "$domain" "db_pass")
 
   # Display website information
   print_msg label "$LABEL_WEBSITE_INFO: ${YELLOW}$domain${NC}"

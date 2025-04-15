@@ -19,30 +19,8 @@ services:
       - PHP_MAX_EXECUTION_TIME=300
       - PHP_OPCACHE_ENABLE=1
 
-  mariadb:
-    image: mariadb:10.11
-    container_name: $db_container
-    volumes:
-      - ./mariadb/conf.d:/etc/mysql/conf.d:ro
-      - mariadb_data:/var/lib/mysql
-      - ./backups:/backups
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MARIADB_CHARACTER_SET=utf8mb4
-      - MARIADB_COLLATE=utf8mb4_unicode_ci
-    networks:
-      - ${domain}_site_network
-    restart: unless-stopped
-
 networks:
   proxy_network:
     external: true
   ${domain}_site_network:
     driver: bridge
-
-volumes:
-  mariadb_data:
-    driver: local

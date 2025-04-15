@@ -69,6 +69,25 @@ json_set_value() {
   fi
 }
 
+json_set_string_value() {
+  local key="$1"
+  local value="$2"
+  local file="${3:-$JSON_CONFIG_FILE}"
+
+  json_create_if_not_exists "$file"
+  debug_log "[json_set_string_value] START → key=$key value=$value file=$file"
+
+  local tmp_file
+  tmp_file=$(mktemp)
+
+  if jq --arg val "$value" "$key = \$val" "$file" > "$tmp_file"; then
+    mv "$tmp_file" "$file"
+    debug_log "[json_set_string_value] SUCCESS → key=$key"
+  else
+    debug_log "[json_set_string_value] ERROR → failed to set $key in $file"
+    rm -f "$tmp_file"
+  fi
+}
 # =====================================
 # json_delete_key: Delete a key from JSON file
 # Usage:

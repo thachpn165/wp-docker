@@ -18,7 +18,7 @@ done
 
 safe_source "$FUNCTIONS_DIR/website_loader.sh"
 
-readonly BACKUP_DIR="$BASE_DIR/archives/backups_before_remove"
+readonly MOVED_BACKUP_DIR="$HOME/archives"
 
 # =====================================
 # 🔐 Confirm uninstall prompt
@@ -39,34 +39,31 @@ get_site_list() {
 # 💾 Backup all sites before deletion
 # =====================================
 backup_all_sites() {
-  print_msg info "$(printf "$INFO_BACKUP_BEFORE_REMOVE" "$BACKUP_DIR")"
-  mkdir -p "$BACKUP_DIR"
+  print_msg info "$(printf "$INFO_BACKUP_BEFORE_REMOVE" "$MOVED_BACKUP_DIR")"
+  mkdir -p "$MOVED_BACKUP_DIR"
 
   for site in $(get_site_list); do
     print_msg info "$(printf "$INFO_SITE_BACKUP" "$site")"
     local site_path="$SITES_DIR/$site"
-    local env_file="$site_path/.env"
     local wordpress_dir="$site_path/wordpress"
-    local backup_target_dir="$BACKUP_DIR/$site"
+    local backup_target_dir="$MOVED_BACKUP_DIR/$site"
     mkdir -p "$backup_target_dir"
 
-    if [[ ! -f "$env_file" ]]; then
-      print_msg warning "$(printf "$WARNING_ENV_FILE_NOT_FOUND" "$site")"
-      continue
-    fi
+    local db_name db_user db_pass
+    db_name="$(json_get_site_value "$site" "db_name")"
+    db_user="$(json_get_site_value "$site" "db_user")"
+    db_pass="$(json_get_site_value "$site" "db_pass")"
 
-    local db_info
-    db_info=$(db_fetch_env "$site")
-    if [[ $? -ne 0 ]]; then
+    if [[ -z "$db_name" || -z "$db_user" || -z "$db_pass" ]]; then
       print_msg warning "$(printf "$ERROR_DB_INFO_MISSING" "$site")"
       continue
     fi
-    IFS=' ' read -r DB_NAME DB_USER DB_PASS <<< "$db_info"
 
     local db_backup_file="$backup_target_dir/${site}_db.sql"
-    run_cmd docker exec "${site}-mariadb" sh -c "exec mysqldump -u$DB_USER -p\"$DB_PASS\" $DB_NAME" true > "$db_backup_file" || {
-      print_msg warning "$(printf "$ERROR_DB_BACKUP_FAILED" "$site")"
-      continue
+    run_cmd docker exec --env MYSQL_PWD="$db_pass" "$MYSQL_CONTAINER_NAME" \
+      sh -c "exec mysqldump -u$db_user $db_name" true > "$db_backup_file" || {
+        print_msg warning "$(printf "$ERROR_DB_BACKUP_FAILED" "$site")"
+        continue
     }
 
     tar -czf "$backup_target_dir/${site}_wordpress.tar.gz" -C "$wordpress_dir" . || {
@@ -75,6 +72,7 @@ backup_all_sites() {
     }
 
     print_msg success "$(printf "$SUCCESS_SITE_BACKED_UP" "$site" "$backup_target_dir")"
+
   done
 }
 
@@ -87,14 +85,26 @@ remove_core_containers() {
 }
 
 # =====================================
-# 🧨 Remove each site's containers and volumes
+# 🧨 Remove each site's containers (only PHP)
 # =====================================
 remove_site_containers() {
   for site in $(get_site_list); do
     print_msg info "$(printf "$INFO_REMOVING_SITE_CONTAINERS" "$site")"
-    docker rm -f "$site-php" "$site-mariadb" 2>/dev/null || true
-    docker volume rm "${site}_db_data" 2>/dev/null || true
+    docker rm -f "$site-php" 2>/dev/null || true
   done
+}
+
+# =====================================
+# 🧨 Confirm and remove MySQL container + volume
+# =====================================
+remove_mysql_container_and_volume() {
+  if confirm_action "❓ Do you want to remove the MySQL container ($MYSQL_CONTAINER_NAME) and volume ($MYSQL_VOLUME_NAME)?"; then
+    print_msg info "🧨 Removing MySQL container and volume..."
+    docker rm -f "$MYSQL_CONTAINER_NAME" 2>/dev/null || true
+    docker volume rm "$MYSQL_VOLUME_NAME" 2>/dev/null || true
+  else
+    print_msg warning "⚠️ Skipped removing MySQL container and volume."
+  fi
 }
 
 # =====================================
@@ -103,7 +113,7 @@ remove_site_containers() {
 remove_all_except_backup() {
   print_msg info "$INFO_REMOVING_ALL_EXCEPT_BACKUP"
   for item in "$BASE_DIR"/*; do
-    [[ "$item" == "$BACKUP_DIR" ]] && continue
+    [[ "$item" == "$MOVED_BACKUP_DIR" ]] && continue
     [[ "$item" == "$BASE_DIR/.git" || "$item" == "$BASE_DIR/.github" ]] && continue
     if [[ -e "$item" ]]; then
       remove_file "$item" || {
@@ -185,12 +195,12 @@ fi
 
 remove_core_containers
 remove_site_containers
+remove_mysql_container_and_volume
 remove_cronjobs
 remove_symlink
 remove_all_except_backup
 remove_alias
 
-print_msg success "$(printf "$SUCCESS_SYSTEM_UNINSTALLED" "$BACKUP_DIR")"
-print_msg info "$(printf "$INFO_RESTORE_INSTRUCTION" "$BACKUP_DIR")"
-
-show_remaining_containers
+print_msg success "$(printf "$SUCCESS_SYSTEM_UNINSTALLED" "$MOVED_BACKUP_DIR")"
+print_msg info "$(printf "$INFO_RESTORE_INSTRUCTION" "$MOVED_BACKUP_DIR")"
+rm -rf "$INSTALL_DIR"

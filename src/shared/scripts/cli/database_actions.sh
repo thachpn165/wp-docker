@@ -16,8 +16,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
 done
 
 # === Load logic functions (optional) ===
-# safe_source "$FUNCTIONS_DIR/database_loader.sh"
-
+safe_source "$FUNCTIONS_DIR/database_loader.sh"
 # =====================================
 # 📤 database_cli_export – Export WordPress database to SQL file
 # Parameters:

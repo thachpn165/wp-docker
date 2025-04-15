@@ -116,3 +116,12 @@ website_generate_docker_compose() {
 
     print_msg success "$MSG_CREATED: $docker_compose_target"
 }
+
+generate_sitename_from_domain() {
+    local domain="$1"
+    # Loại bỏ đuôi domain: .com, .com.vn, .org, .co.uk, .net,...
+    local sitename
+    sitename=$(echo "$domain" | sed -E 's/(\.[a-z]{2,})(\.[a-z]{2,})?$//' | tr '.' '_')
+
+    echo "$sitename"
+}

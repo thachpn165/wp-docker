@@ -18,13 +18,6 @@ is_container_running() {
   [[ "$all_running" == true ]]
 }
 
-# ===========================
-# 📦 Check if Docker volume exists
-# ===========================
-is_volume_exist() {
-  local volume_name="$1"
-  docker volume ls --format '{{.Name}}' | grep -q "^${volume_name}$"
-}
 
 # ===========================
 # ❌ Remove container if running
@@ -37,16 +30,6 @@ remove_container() {
   fi
 }
 
-# ===========================
-# ❌ Remove Docker volume if exists
-# ===========================
-remove_volume() {
-  local volume_name="$1"
-  if is_volume_exist "$volume_name"; then
-    print_msg info "$(printf "$INFO_DOCKER_REMOVING_VOLUME" "$volume_name")"
-    docker volume rm "$volume_name"
-  fi
-}
 
 # ===========================
 # ⚙️ Install Docker based on OS

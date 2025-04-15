@@ -112,7 +112,6 @@ chown -R "$USER" "$INSTALL_DIR"
 # 🔗 Setup global alias
 # ========================
 check_and_add_alias
-
 # ========================
 # 💾 Save install channel to .config.json
 # ========================

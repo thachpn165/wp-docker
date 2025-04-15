@@ -42,7 +42,12 @@ print_header() {
     #echo -e "\n\n\n"
     get_system_info
     echo -e "${MAGENTA}==============================================${NC}"
-    print_msg title "$TITLE_MENU_WELCOME"
+    echo "                                              "
+    echo "     __      _____   ___          _           "
+    echo " \ \    / / _ \ |   \ ___  __| |_____ _ _     "
+    echo "  \ \/\/ /|  _/ | |) / _ \/ _| / / -_) '_|    " 
+    echo "   \_/\_/ |_|   |___/\___/\__|_\_\___|_|      " 
+    echo "                                              "
     echo -e "${MAGENTA}==============================================${NC}"
     echo ""
     
