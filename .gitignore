@@ -68,8 +68,8 @@ tests.yml.bak
 src/shared/config/rclone/rclone.conf
 
 # 🌐 NGINX GLOBAL CONFIG - không commit theo site
-src/core/webserver/nginx/globals/wp-login*
-src/core/webserver/nginx/conf.d/*.conf
+src/shared/core/webserver/nginx/globals/wp-login*
+src/shared/core/webserver/nginx/conf.d/*.conf
 
 # 🧩 WP CLI binary (tự động tải lại)
 src/shared/bin/wp
