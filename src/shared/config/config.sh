@@ -25,13 +25,13 @@ else
   DEV_MODE=false
 fi
 PROJECT_DIR=$BASE_DIR
-DEBUG_MODE="false"
+DEBUG_MODE="true"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
-safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
+safe_source "$BASE_DIR/shared/core/lib/json_utils.sh"
 
 # ==== 4. Load log/debug helpers ====
-safe_source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
+safe_source "$BASE_DIR/shared/core/lib/log_utils.sh"
 
 # ==== 3. Load i18n language file ====
 safe_source "$BASE_DIR/shared/lang/lang_loader.sh"
@@ -121,14 +121,14 @@ safe_source "$CORE_LIB_DIR/mysql_utils.sh"
 safe_source "$CORE_LIB_DIR/nginx_utils.sh"
 safe_source "$CORE_LIB_DIR/docker_utils.sh"
 safe_source "$CORE_LIB_DIR/network_utils.sh"
+safe_source "$CORE_LIB_DIR/system_utils.sh"
+safe_source "$CORE_LIB_DIR/file_utils.sh"
+safe_source "$CORE_LIB_DIR/misc_utils.sh"
 
 # Function utils
-safe_source "$FUNCTIONS_DIR/utils/system_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/file_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/php_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/website_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/misc_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/cli_params.sh"
 safe_source "$FUNCTIONS_DIR/core/core_state_utils.sh"
 
