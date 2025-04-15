@@ -81,7 +81,7 @@ backup_all_sites() {
 # =====================================
 remove_core_containers() {
   print_msg info "$INFO_REMOVING_CORE_CONTAINERS"
-  docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
+  docker rm -f "$NGINX_PROXY_CONTAINER" "$REDIS_CONTAINER" 2>/dev/null || true
 }
 
 # =====================================

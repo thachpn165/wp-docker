@@ -25,13 +25,13 @@ else
   DEV_MODE=false
 fi
 PROJECT_DIR=$BASE_DIR
-DEBUG_MODE="false"
+DEBUG_MODE="true"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
-safe_source "$BASE_DIR/shared/scripts/functions/utils/json_utils.sh"
+safe_source "$BASE_DIR/shared/core/lib/json_utils.sh"
 
 # ==== 4. Load log/debug helpers ====
-safe_source "$BASE_DIR/shared/scripts/functions/utils/log_utils.sh"
+safe_source "$BASE_DIR/shared/core/lib/log_utils.sh"
 
 # ==== 3. Load i18n language file ====
 safe_source "$BASE_DIR/shared/lang/lang_loader.sh"
@@ -57,12 +57,13 @@ CORE_CURRENT_VERSION="${CORE_CURRENT_VERSION:-$BASE_DIR/$CORE_VERSION_FILE}"
 CORE_TEMPLATE_VERSION_FILE="${CORE_TEMPLATE_VERSION_FILE:-shared/templates/.template_version}"
 LOG_FILE="${LOG_FILE:-/tmp/update_wp_docker.log}"
 CORE_LATEST_VERSION="${CORE_LATEST_VERSION:-https://raw.githubusercontent.com/thachpn165/${REPO_NAME}/refs/heads/main/src/${CORE_VERSION_FILE}}"
-CORE_NIGHTLY_VERSION="${CORE_NIGHTLY_VERSION:-https://raw.githubusercontent.com/thachpn165/wp-docker/refs/tags/nightly/src/version.txt}"
+CORE_NIGHTLY_VERSION="${CORE_NIGHTLY_VERSION:-https://raw.githubuse/rcontent.com/thachpn165/wp-docker/refs/tags/nightly/src/version.txt}"
 MYSQL_DIR="${CORE_MARIADB_DIR:-$BASE_DIR/shared/core/mysql}"
 MYSQL_IMAGE="${MYSQL_IMAGE:-mariadb:10.11}"
 MYSQL_CONTAINER_NAME="wpdocker-mariadb"
 MYSQL_VOLUME_NAME="wpdocker-mariadb-data"
 MYSQL_CONFIG_FILE="$MYSQL_DIR/mysql.cnf"
+REDIS_CONTAINER="wpdocker-redis"
 # ==== 6. Define directory structure ====
 SITES_DIR="${SITES_DIR:-$BASE_DIR/sites}"
 TEMPLATES_DIR="${TEMPLATES_DIR:-$BASE_DIR/shared/templates}"
@@ -80,7 +81,8 @@ SCRIPTS_FUNCTIONS_DIR="${SCRIPTS_FUNCTIONS_DIR:-$FUNCTIONS_DIR}"
 PHP_CONTAINER_SUFFIX="${PHP_CONTAINER_SUFFIX:--php}"
 DB_CONTAINER_SUFFIX="${DB_CONTAINER_SUFFIX:--mariadb}"
 DB_VOLUME_SUFFIX="_mariadb_data"
-NGINX_PROXY_DIR="${NGINX_PROXY_DIR:-$BASE_DIR/webserver/nginx}"
+WEBSERVER_DIR="${WEBSERVER_DIR:-$CORE_DIR/webserver}"
+NGINX_PROXY_DIR="$WEBSERVER_DIR/nginx"
 PROXY_CONF_DIR="${PROXY_CONF_DIR:-$NGINX_PROXY_DIR/conf.d}"
 NGINX_SCRIPTS_DIR="${NGINX_SCRIPTS_DIR:-$NGINX_PROXY_DIR/scripts}"
 SSL_DIR="${SSL_DIR:-$NGINX_PROXY_DIR/ssl}"
@@ -118,17 +120,17 @@ TEST_ALWAYS_READY="${TEST_ALWAYS_READY:-false}"
 # ==== 14. Load utility functions ====
 #Core functions
 safe_source "$CORE_LIB_DIR/mysql_utils.sh" 
-
+safe_source "$CORE_LIB_DIR/nginx_utils.sh"
+safe_source "$CORE_LIB_DIR/docker_utils.sh"
+safe_source "$CORE_LIB_DIR/network_utils.sh"
+safe_source "$CORE_LIB_DIR/system_utils.sh"
+safe_source "$CORE_LIB_DIR/file_utils.sh"
+safe_source "$CORE_LIB_DIR/misc_utils.sh"
+safe_source "$CORE_LIB_DIR/redis_utils.sh"
 # Function utils
-safe_source "$FUNCTIONS_DIR/utils/system_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/docker_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/file_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/network_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/php_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/website_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/misc_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/cli_params.sh"
 safe_source "$FUNCTIONS_DIR/core/core_state_utils.sh"
 

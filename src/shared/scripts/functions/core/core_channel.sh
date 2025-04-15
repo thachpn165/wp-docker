@@ -1,4 +1,34 @@
-# Hàm chuyển đổi kênh và cập nhật phiên bản
+# ==============================================================================
+# 🎛 core_channel.sh – Functions to manage and switch between release channels
+# ==============================================================================
+# Description:
+#   Provides logic to change the system's release channel (official, nightly, dev),
+#   update installed version information accordingly, and prompt the user interactively.
+#
+# Functions:
+#   - core_channel_switch: Switch to a specified channel and update config/version.
+#   - core_channel_switch_prompt: Prompt the user to choose a release channel.
+#
+# Dependencies:
+#   - json_set_value, core_channel_get, core_set_installed_version,
+#     core_version_get_latest, core_version_update_latest, get_input_or_test_value
+
+# ================================================
+# 🔁 core_channel_switch – Change release channel
+# ================================================
+# Description:
+#   Switches to the specified release channel and updates the installed version.
+#
+# Parameters:
+#   $1 - new_channel (required): The channel to switch to (e.g., official, nightly, dev)
+#
+# Globals:
+#   - Updates .core.channel and .core.installed_version in JSON config
+#
+# Behavior:
+#   - If new_channel is 'dev', sets installed_version to 'dev'
+#   - Otherwise, fetches and updates the latest version
+#   - Prints status messages and returns 0 on success, 1 on error
 core_channel_switch() {
   local new_channel="$1"
 
@@ -46,7 +76,21 @@ core_channel_switch() {
   return 0
 }
 
-# Function to prompt the user to select a channel and switch to it
+# ======================================================
+# 🧭 core_channel_switch_prompt – Prompt for channel switch
+# ======================================================
+# Description:
+#   Prompts the user to select a release channel and switches to it.
+#
+# Globals:
+#   - PROMPT_CHANNEL_SELECT
+#   - MSG_CORE_CHANNEL_AVAILABLE
+#   - ERROR_SELECT_OPTION_INVALID
+#
+# Behavior:
+#   - Displays list of available channels
+#   - Gets user input
+#   - Calls core_channel_switch with the selected value
 core_channel_switch_prompt() {
   # Available channels
   local channels=("official" "nightly" "dev")

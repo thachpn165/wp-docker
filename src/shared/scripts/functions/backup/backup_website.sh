@@ -1,4 +1,27 @@
-#shellcheck disable=SC1091
+# ============================================
+# 📅 backup_prompt_create_schedule – Schedule automatic backups using cron
+# ============================================
+# Description:
+#   - Allows the user to select a website, choose a schedule (cron format), 
+#     and specify local or cloud storage for automated backups.
+#   - Configures a cron job that will trigger the backup with selected settings.
+#
+# Globals:
+#   SITES_DIR, CLI_DIR, RCLONE_CONFIG_FILE
+#   INFO_SELECT_BACKUP_SCHEDULE, PROMPT_SELECT_OPTION, PROMPT_ENTER_CUSTOM_CRON
+#   INFO_SELECT_STORAGE_LOCATION, LABEL_BACKUP_LOCAL, LABEL_BACKUP_CLOUD
+#   PROMPT_SELECT_STORAGE_OPTION, INFO_RCLONE_READING_STORAGE_LIST
+#   LABEL_MENU_RCLONE_AVAILABLE_STORAGE, PROMPT_ENTER_STORAGE_NAME
+#   ERROR_SELECT_OPTION_INVALID, SUCCESS_CRON_JOB_CREATED, TITLE_CRON_SUMMARY
+#   LABEL_CRON_DOMAIN, LABEL_CRON_SCHEDULE, LABEL_CRON_STORAGE, LABEL_CRON_LOG
+#   LABEL_CRON_LINE
+#
+# Parameters:
+#   None
+#
+# Returns:
+#   - Creates a cron job entry
+# ============================================
 backup_prompt_create_schedule() {
     # === Select website ===
     select_website
@@ -89,6 +112,26 @@ backup_prompt_create_schedule() {
     echo
 }
 
+# ============================================
+# 💾 backup_prompt_backup_web – Trigger manual website backup
+# ============================================
+# Description:
+#   - Prompts the user to select a website and backup destination (local/cloud).
+#   - If cloud is selected, prompts for a specific rclone storage.
+#   - Triggers `backup_logic_website` with selected options.
+#
+# Globals:
+#   SITES_DIR, RCLONE_CONFIG_FILE
+#   ERROR_NO_WEBSITE_SELECTED, PROMPT_BACKUP_CHOOSE_STORAGE
+#   LABEL_MENU_RCLONE_AVAILABLE_STORAGE, WARNING_RCLONE_NO_STORAGE_CONFIGURED
+#   ERROR_SELECT_OPTION_INVALID, SUCCESS_RCLONE_STORAGE_SELECTED
+#
+# Parameters:
+#   None
+#
+# Returns:
+#   - Invokes backup process via `backup_logic_website`
+# ============================================
 backup_prompt_backup_web() {
     # 📋 Hiển thị danh sách website để chọn (dùng select_website)
     select_website
@@ -150,6 +193,32 @@ backup_prompt_backup_web() {
 
 }
 
+# ============================================
+# 🛠 backup_logic_website – Execute the backup process for a website
+# ============================================
+# Description:
+#   - Performs database and file backup for a specific website.
+#   - Supports uploading to cloud storage via rclone if selected.
+#   - Deletes local backup files after successful cloud upload.
+#
+# Parameters:
+#   $1 - domain (required)
+#   $2 - storage type: "local" or "cloud" (required)
+#   $3 - rclone_storage (required if cloud storage is used)
+#
+# Globals:
+#   CLI_DIR, SITES_DIR, SCRIPTS_FUNCTIONS_DIR, RCLONE_CONFIG_FILE
+#   ERROR_MISSING_PARAM, STEP_BACKUP_START, MSG_WEBSITE_BACKING_UP_DB
+#   MSG_WEBSITE_BACKING_UP_FILES, ERROR_BACKUP_FILE_NOT_FOUND
+#   INFO_BACKUP_COMPLETED, ERROR_INVALID_STORAGE_CHOICE
+#   ERROR_RCLONE_STORAGE_REQUIRED, INFO_RCLONE_UPLOAD_START
+#   ERROR_STORAGE_NOT_EXIST, MSG_BACKUP_UPLOAD_DONE, MSG_BACKUP_DELETE_LOCAL
+#   SUCCESS_BACKUP_FILES_DELETED, ERROR_BACKUP_DELETE_FAILED
+#   ERROR_BACKUP_UPLOAD_FAILED, SUCCESS_BACKUP_LOCAL_SAVED
+#
+# Returns:
+#   - 0 on success, 1 on failure
+# ============================================
 backup_logic_website() {
 
     # Define backup and log directories

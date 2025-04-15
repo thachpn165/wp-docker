@@ -145,9 +145,10 @@ fastcgi_cache_path /var/cache/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS
     fi
 
     if [[ "$cache_type" == "fastcgi-cache" ]]; then
+        redis_start
         if ! grep -q "WP_REDIS_HOST" "$wp_config_file"; then
             sedi "/<?php/a\\
-define('WP_REDIS_HOST', 'redis-cache');\\
+define('WP_REDIS_HOST', '${REDIS_CONTAINER}');\\
 define('WP_REDIS_PORT', 6379);\\
 define('WP_REDIS_DATABASE', 0);" "$wp_config_file"
         fi
