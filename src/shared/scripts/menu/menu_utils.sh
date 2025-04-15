@@ -52,3 +52,10 @@ check_nginx_status() {
         print_msg error "$ERROR_DOCKER_NGINX_STATUS ($NGINX_PROXY_CONTAINER)"
     fi
 }
+check_mysql_status() {
+    if is_container_running "$MYSQL_CONTAINER_NAME"; then
+        print_msg success "$SUCCESS_MYSQL_STATUS ($MYSQL_CONTAINER_NAME)"
+    else
+        print_msg error "$ERROR_MYSQL_STATUS ($MYSQL_CONTAINER_NAME)"
+    fi
+}

@@ -38,7 +38,7 @@ safe_source "$SCRIPTS_DIR/setup-system.sh"
 safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 # 🏆 Display system information and version header
 print_header() {
-    clear
+    #clear
     #echo -e "\n\n\n"
     get_system_info
     echo -e "${MAGENTA}==============================================${NC}"
@@ -54,6 +54,7 @@ print_header() {
     print_msg label "$LABEL_DOCKER_STATUS"
     print_msg sub-label "- $LABEL_DOCKER_NETWORK_STATUS: $(check_docker_network)"
     print_msg sub-label "- $LABEL_DOCKER_NGINX_STATUS: $(check_nginx_status)"
+    print_msg sub-label "- $LABEL_DOCKER_MYSQL_STATUS: $(check_mysql_status)"
 
     echo ""
     print_msg label "$LABEL_SYSTEM_INFO"

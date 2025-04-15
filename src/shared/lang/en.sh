@@ -621,7 +621,7 @@ readonly INFO_LABEL_CORE_VERSION="WP Docker Version"
 
 readonly SUCCESS_TIMEZONE_SET="System timezone has been set to Asia/Ho_Chi_Minh."
 readonly SUCCESS_CORE_CHANNEL_SET="CORE_CHANNEL has been set to '%s' at %s."
-readonly SUCCESS_COMMAND_AVAILABLE="Command '%s' is installed and available."
+readonly SUCCESS_COMMAND_AVAILABLE="Command is installed and available "
 readonly SUCCESS_SYSTEM_READY="System is ready to use WP Docker LEMP."
 
 readonly ERROR_VERSION_CHANNEL_INVALID_CHANNEL="Invalid version channel"
@@ -913,3 +913,6 @@ readonly SUCCSES_MYSQL_GENERATED_DOCKER_COMPOSE="docker-compose.yml for MariaDB 
 readonly SUCCESS_MYSQL_CONTAINER_RUNNING="MariaDB container is running."
 readonly INFO_MYSQL_STARTING_CONTAINER="Starting MariaDB container..."
 readonly SUCCESS_MYSQL_CONTAINER_STARTED="MariaDB container has been successfully started."
+readonly LABEL_DOCKER_MYSQL_STATUS="MySQL container status"
+readonly SUCCESS_MYSQL_STATUS="MySQL running"
+readonly ERROR_MYSQL_STATUS="MySQL not running"

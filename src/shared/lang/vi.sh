@@ -622,7 +622,7 @@ readonly INFO_LABEL_CORE_VERSION="Phiên bản WP Docker"
 
 readonly SUCCESS_TIMEZONE_SET="Múi giờ hệ thống đã được thiết lập về Asia/Ho_Chi_Minh."
 readonly SUCCESS_CORE_CHANNEL_SET="CORE_CHANNEL đã được thiết lập thành '%s' tại %s."
-readonly SUCCESS_COMMAND_AVAILABLE="Lệnh '%s' đã được cài đặt và khả dụng."
+readonly SUCCESS_COMMAND_AVAILABLE="Lệnh đã được cài đặt và khả dụng "
 readonly SUCCESS_SYSTEM_READY="Hệ thống đã sẵn sàng để sử dụng WP Docker LEMP."
 
 readonly ERROR_VERSION_CHANNEL_INVALID_CHANNEL="Kênh phiên bản không hợp lệ"
@@ -895,3 +895,6 @@ readonly SUCCSES_MYSQL_GENERATED_DOCKER_COMPOSE="Đã tạo docker-compose.yml c
 readonly SUCCESS_MYSQL_CONTAINER_RUNNING="Container MariaDB đang chạy."
 readonly INFO_MYSQL_STARTING_CONTAINER="Đang khởi động container MariaDB..."
 readonly SUCCESS_MYSQL_CONTAINER_STARTED="Container MariaDB đã được khởi động thành công."
+readonly LABEL_DOCKER_MYSQL_STATUS="Trạng thái container MariaDB"
+readonly SUCCESS_MYSQL_STATUS="MariaDB đang hoạt động"
+readonly ERROR_MYSQL_STATUS="MariaDB không hoạt động"
