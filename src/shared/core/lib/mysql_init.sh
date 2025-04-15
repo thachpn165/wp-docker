@@ -71,7 +71,7 @@ core_mysql_apply_config() {
     debug_log "MySQL config values: $config_values"
     IFS=',' read -r max_connections query_cache_size innodb_buffer_pool_size \
         innodb_log_file_size table_open_cache thread_cache_size <<<"$config_values"
-
+    mkdir -p "$(dirname "$MYSQL_CONFIG_FILE")"
     cat >"$MYSQL_CONFIG_FILE" <<EOF
 [mysqld]
 max_connections = $max_connections
@@ -137,7 +137,7 @@ core_mysql_generate_compose() {
 
     local mysql_root_pass
     mysql_root_pass=$(json_get_value '.mysql.root_password' "$JSON_CONFIG_FILE")
-
+    mkdir -p "$(dirname "$compose_file")"
     print_msg step "$INFO_MYSQL_GENERATING_DOCKER_COMPOSE"
 
     cp "$template_file" "$compose_file.tmp"
