@@ -63,6 +63,7 @@ MYSQL_IMAGE="${MYSQL_IMAGE:-mariadb:10.11}"
 MYSQL_CONTAINER_NAME="wpdocker-mariadb"
 MYSQL_VOLUME_NAME="wpdocker-mariadb-data"
 MYSQL_CONFIG_FILE="$MYSQL_DIR/mysql.cnf"
+REDIS_CONTAINER="wpdocker-redis"
 # ==== 6. Define directory structure ====
 SITES_DIR="${SITES_DIR:-$BASE_DIR/sites}"
 TEMPLATES_DIR="${TEMPLATES_DIR:-$BASE_DIR/shared/templates}"
@@ -125,7 +126,7 @@ safe_source "$CORE_LIB_DIR/network_utils.sh"
 safe_source "$CORE_LIB_DIR/system_utils.sh"
 safe_source "$CORE_LIB_DIR/file_utils.sh"
 safe_source "$CORE_LIB_DIR/misc_utils.sh"
-
+safe_source "$CORE_LIB_DIR/redis_utils.sh"
 # Function utils
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/php_utils.sh"

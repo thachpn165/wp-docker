@@ -193,7 +193,7 @@ docker_exec_php() {
 # ===========================
 remove_core_containers() {
   print_msg warning "$WARNING_REMOVE_CORE_CONTAINERS"
-  docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
+  docker rm -f "$NGINX_PROXY_CONTAINER" "$REDIS_CONTAINER" 2>/dev/null || true
 }
 
 # ===========================

@@ -16,14 +16,6 @@ services:
     networks:
       - proxy_network 
 
-  redis:
-    image: redis:alpine
-    container_name: redis-cache
-    restart: unless-stopped
-    networks:
-      - proxy_network
-    command: redis-server --appendonly yes
-
 networks:
   proxy_network:
     external: true
