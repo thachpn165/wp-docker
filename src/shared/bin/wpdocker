@@ -151,6 +151,7 @@ handle_core() {
     case "$1" in
     version) bash "$CLI_DIR/core_version_display.sh" "${@:2}" ;;
     update) core_version_update_latest "${@:2}" ;;
+    uninstall) bash "$BASE_DIR/uninstall.sh" ;;
     channel)
         case "$2" in
         change) core_channel_switch_prompt "${@:3}" ;;
