@@ -108,7 +108,6 @@ website_logic_create() {
 
     # Create optimized config for MariaDB & PHP-FPM, based on the template
     print_msg step "$STEP_WEBSITE_SETUP_APPLY_CONFIG: $domain"
-    apply_mariadb_config "$SITE_DIR/mariadb/conf.d/custom.cnf"
     create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf"
 
     # Store environment variables in .config.json file
