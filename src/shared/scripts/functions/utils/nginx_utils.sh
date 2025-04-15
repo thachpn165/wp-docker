@@ -15,8 +15,8 @@ nginx_add_mount_docker() {
         OVERRIDE_FILE="/tmp/mock-docker-compose.override.yml"
     fi
 
-    local MOUNT_ENTRY="      - ../../sites/$domain/wordpress:/var/www/$domain"
-    local MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
+    local MOUNT_ENTRY="      - ../../../../sites/$domain/wordpress:/var/www/$domain"
+    local MOUNT_LOGS="      - ../../../../sites/$domain/logs:/var/www/logs/$domain"
 
     if [ ! -f "$OVERRIDE_FILE" ]; then
         print_msg info "$INFO_DOCKER_NGINX_CREATING_DOCKER_COMPOSE_OVERRIDE"

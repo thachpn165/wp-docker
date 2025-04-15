@@ -106,8 +106,8 @@ website_logic_delete() {
   fi
 
   OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
-  MOUNT_ENTRY="      - ../../sites/$domain/wordpress:/var/www/$domain"
-  MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
+  MOUNT_ENTRY="      - ../../../../sites/$domain/wordpress:/var/www/$domain"
+  MOUNT_LOGS="      - ../../../../sites/$domain/logs:/var/www/logs/$domain"
 
   if [[ -f "$OVERRIDE_FILE" ]]; then
     print_msg step "$MSG_NGINX_REMOVE_MOUNT: $domain"

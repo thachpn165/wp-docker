@@ -18,8 +18,8 @@ src/sites/*/backups/
 *.zip
 
 # 🔐 CHỨNG CHỈ SSL 🔐
-src/webserver/nginx/ssl/*
-!src/webserver/nginx/ssl/.gitkeep
+src/core/webserver/nginx/ssl/*
+!src/core/webserver/nginx/ssl/.gitkeep
 !src/sites/**/nginx/ssl/.gitkeep
 
 # 🛠️ DOCKER & COMPOSE 🛠️
@@ -34,8 +34,8 @@ src/sites/*/logs/
 *.log.*
 debug.log
 php-errors.log
-src/webserver/nginx/access.log
-src/webserver/nginx/error.log
+src/core/webserver/nginx/access.log
+src/core/webserver/nginx/error.log
 
 # ⚙️ MAC & LINUX SYSTEM FILES ⚙️
 .DS_Store
@@ -68,8 +68,8 @@ tests.yml.bak
 src/shared/config/rclone/rclone.conf
 
 # 🌐 NGINX GLOBAL CONFIG - không commit theo site
-src/webserver/nginx/globals/wp-login*
-src/webserver/nginx/conf.d/*.conf
+src/core/webserver/nginx/globals/wp-login*
+src/core/webserver/nginx/conf.d/*.conf
 
 # 🧩 WP CLI binary (tự động tải lại)
 src/shared/bin/wp
