@@ -6,6 +6,8 @@ secrets/
 keys/
 config/secrets.yml
 
+# MySQL
+src/shared/core/mysql/mysql.cnf
 # 🚀 BỎ QUA DỮ LIỆU CỦA WORDPRESS 🚀
 src/sites/
 /sites
