@@ -119,9 +119,16 @@ website_generate_docker_compose() {
 
 generate_sitename_from_domain() {
     local domain="$1"
-    # Loại bỏ đuôi domain: .com, .com.vn, .org, .co.uk, .net,...
-    local sitename
-    sitename=$(echo "$domain" | sed -E 's/(\.[a-z]{2,})(\.[a-z]{2,})?$//' | tr '.' '_')
 
+    # Cắt domain thành mảng theo dấu chấm
+    IFS='.' read -ra parts <<< "$domain"
+    local count="${#parts[@]}"
+
+    # Loại bỏ phần đuôi cuối cùng (TLD) và đuôi phụ (ccTLD) nếu có
+    local sitename_parts=("${parts[@]:0:count-2}")
+    [[ ${#sitename_parts[@]} -eq 0 ]] && sitename_parts=("${parts[0]}")
+
+    local sitename
+    sitename=$(IFS=_; echo "${sitename_parts[*]}")
     echo "$sitename"
 }

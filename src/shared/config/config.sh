@@ -118,17 +118,17 @@ TEST_ALWAYS_READY="${TEST_ALWAYS_READY:-false}"
 # ==== 14. Load utility functions ====
 #Core functions
 safe_source "$CORE_LIB_DIR/mysql_utils.sh" 
+safe_source "$CORE_LIB_DIR/nginx_utils.sh"
+safe_source "$CORE_LIB_DIR/docker_utils.sh"
+safe_source "$CORE_LIB_DIR/network_utils.sh"
 
 # Function utils
 safe_source "$FUNCTIONS_DIR/utils/system_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/docker_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/file_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/network_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/php_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/website_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/misc_utils.sh"
-safe_source "$FUNCTIONS_DIR/utils/nginx_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/cli_params.sh"
 safe_source "$FUNCTIONS_DIR/core/core_state_utils.sh"
 
