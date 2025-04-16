@@ -180,20 +180,9 @@ if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
 fi
 
 check_required_commands
-# ========================
-# 🛠 Ensure .config.json exists
-# ========================
-if [[ -z "$BASE_DIR" ]]; then
-  echo "❌ BASE_DIR not defined. Please load config.sh first." >&2
-  exit 1
-fi
 
-if [[ ! -f "$JSON_CONFIG_FILE" ]]; then
-  echo "{}" >"$JSON_CONFIG_FILE"
-  echo "Created initial config file: $JSON_CONFIG_FILE"
-else
-  echo "Config file already exists: $JSON_CONFIG_FILE"
-fi
+
+json_create_if_not_exists
 
 # ========================
 # 🔐 Set Permissions
