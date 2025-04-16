@@ -67,7 +67,6 @@ fi
 # 🌐 Start NGINX Proxy if not running
 # =============================================
 nginx_init
-wait_for_nginx_container || exit 1
 # =============================================
 # ✅ Verify required commands are available
 # =============================================
@@ -111,3 +110,4 @@ fi
 # 🎉 System ready
 # =============================================
 echo -e "$SUCCESS_SYSTEM_READY"
+wait_for_nginx_container || exit 1
