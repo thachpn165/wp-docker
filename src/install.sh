@@ -206,6 +206,10 @@ else
 fi
 
 print_msg success "✅ Installation successful at: $INSTALL_DIR"
+echo ""
+print_msg info "💡 To start using WP Docker, run:"
+echo "  wpdocker"
+echo ""
 
 # =========================
 # Set latest version to .config.json
