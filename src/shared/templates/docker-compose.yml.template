@@ -5,12 +5,14 @@ services:
     volumes:
       - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
       - ./php/php-fpm.conf:/opt/bitnami/php/etc/php-fpm.conf:ro
+      - ./logs/php_slow.log:/var/www/logs/php_slow.log
+      - ./logs/php_error.log:/var/www/logs/php_error.log
       - ./wordpress:/var/www/html
       - ./backups:/backups
       - ../../shared/bin/wp:/usr/local/bin/wp:ro
       - wpdocker_fastcgi_cache_data:/var/cache/nginx
     networks:
-      - proxy_network
+      - wpdocker_network
       - ${domain}_site_network
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
@@ -25,7 +27,7 @@ services:
       - PHP_OPCACHE_REVALIDATE_FREQ=60
 
 networks:
-  proxy_network:
+  wpdocker_network:
     external: true
   ${domain}_site_network:
     driver: bridge

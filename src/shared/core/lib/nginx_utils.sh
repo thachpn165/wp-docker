@@ -22,6 +22,7 @@ nginx_init() {
 
         cp "$template_file" "$compose_file.tmp"
         sedi "s|\${nginx_container_name}|$NGINX_PROXY_CONTAINER|g" "$compose_file.tmp"
+        sedi "s|\${docker-network}|$DOCKER_NETWORK|g" "$compose_file.tmp"
         mv "$compose_file.tmp" "$compose_file"
         print_msg success "✅ Generated NGINX docker-compose.yml from template"
     fi

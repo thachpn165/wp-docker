@@ -9,12 +9,12 @@ services:
       - ${mysql_volume_name}:/var/lib/mysql
       - ./mysql.cnf:/etc/mysql/conf.d/mysql.cnf:ro
     networks:
-      - proxy_network
+      - wpdocker_network
 
 volumes:
     ${mysql_volume_name}:
       name: ${mysql_volume_name} 
 
 networks:
-  proxy_network:
+  wpdocker_network:
     external: true

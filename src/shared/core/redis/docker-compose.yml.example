@@ -4,8 +4,8 @@ services:
     container_name: wpdocker-redis 
     restart: unless-stopped
     networks:
-      - proxy_network 
+      - wpdocker_network 
     command: redis-server --appendonly yes
 networks:
-  proxy_network:
+  wpdocker_network:
     external: true

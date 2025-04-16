@@ -25,7 +25,7 @@ else
   DEV_MODE=false
 fi
 PROJECT_DIR=$BASE_DIR
-DEBUG_MODE="false"
+DEBUG_MODE="true"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 safe_source "$BASE_DIR/shared/core/lib/json_utils.sh"
@@ -94,7 +94,7 @@ RCLONE_CONFIG_DIR="${RCLONE_CONFIG_DIR:-$BASE_DIR/shared/config/rclone}"
 RCLONE_CONFIG_FILE="${RCLONE_CONFIG_FILE:-$RCLONE_CONFIG_DIR/rclone.conf}"
 
 # ==== 9. Docker/network ====
-DOCKER_NETWORK="${DOCKER_NETWORK:-proxy_network}"
+DOCKER_NETWORK="${DOCKER_NETWORK:-wpdocker_network}"
 PHP_USER="${PHP_USER:-nobody}"
 PHP_CONTAINER_WP_PATH="${PHP_CONTAINER_WP_PATH:-/var/www/html}"
 
