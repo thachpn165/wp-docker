@@ -26,6 +26,7 @@ nginx_init() {
         return 0
     fi
 
+    
     # Nếu container tồn tại (but not running) và không có compose → remove container
     if [[ ! -f "$compose_file" ]] && docker ps -a --format '{{.Names}}' | grep -q "^${NGINX_PROXY_CONTAINER}$"; then
         print_msg warning "⚠️ $compose_file not found but container $NGINX_PROXY_CONTAINER exists. Removing container..."
