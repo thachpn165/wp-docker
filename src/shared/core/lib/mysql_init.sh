@@ -148,6 +148,7 @@ core_mysql_generate_compose() {
     sedi "s|\${mysql_image}|$MYSQL_IMAGE|g" "$compose_file.tmp"
     sedi "s|\${mysql_volume_name}|$MYSQL_VOLUME_NAME|g" "$compose_file.tmp"
     sedi "s|\${mysql_root_passwd}|$mysql_root_pass|g" "$compose_file.tmp"
+    sedi "s|\${docker_network}|$DOCKER_NETWORK|g" "$compose_file.tmp"
     mv "$compose_file.tmp" "$compose_file"
 
     print_msg success "$SUCCESS_MYSQL_GENERATED_DOCKER_COMPOSE"
