@@ -240,7 +240,7 @@ sleep 2
 countdown() {
   local seconds=$1
   while [[ $seconds -gt 0 ]]; do
-    echo -ne "🔄 Logging out in $seconds seconds...\r"
+    echo -ne "Logging out in $seconds seconds...\r"
     sleep 1
     ((seconds--))
   done
