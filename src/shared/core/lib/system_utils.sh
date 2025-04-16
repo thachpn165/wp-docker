@@ -119,7 +119,7 @@ choose_editor() {
 
   editor_index=$(get_input_or_test_value "$PROMPT_SELECT_EDITOR" "${TEST_EDITOR:-1}")
 
-  if ! [[ "$editor_index" =~ ^[0-9]+$ ]] || (( editor_index < 1 || editor_index > ${#AVAILABLE_EDITORS[@]} )); then
+  if ! [[ "$editor_index" =~ ^[0-9]+$ ]] || ((editor_index < 1 || editor_index > ${#AVAILABLE_EDITORS[@]})); then
     print_msg warning "$WARNING_EDITOR_INVALID_SELECT"
     EDITOR_CMD="nano"
   else
@@ -146,7 +146,7 @@ choose_editor() {
 # =====================================
 core_system_update() {
   echo "🔄 Updating system packages..."
-  
+
   # Detect OS
   if [[ -f /etc/os-release ]]; then
     . /etc/os-release
@@ -161,12 +161,12 @@ core_system_update() {
       OS_VERSION_ID=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d. -f1)
     fi
   fi
-  
+
   echo "📌 Detected: ${OS_NAME} ${OS_VERSION_ID}"
-  
+
   # Update based on OS type
-  if [[ "$OS_NAME" == "CentOS" && "$OS_VERSION_ID" == "8" ]] || 
-     [[ "$OS_NAME" == "AlmaLinux" && "$OS_VERSION_ID" == "8" ]]; then
+  if [[ "$OS_NAME" == "CentOS" && "$OS_VERSION_ID" == "8" ]] ||
+    [[ "$OS_NAME" == "AlmaLinux" && "$OS_VERSION_ID" == "8" ]]; then
     echo "🔄 Running CentOS/AlmaLinux 8 update with --nogpgcheck..."
     dnf update --nogpgcheck -y
   elif [[ "$OS_NAME" == "Ubuntu" ]]; then
@@ -185,11 +185,10 @@ core_system_update() {
     echo "⚠️ Unsupported operating system: ${OS_NAME}"
     return 1
   fi
-  
+
   echo "✅ System update completed."
   return 0
 }
-
 
 # ============================================
 # 🧪 check_required_commands – Ensure required commands are installed
@@ -208,12 +207,12 @@ core_system_update() {
 check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
   core_system_update
-  
+
   # Loại bỏ "docker compose" khỏi danh sách vì sẽ được cài đặt riêng
   required_cmds=(nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
 
   for cmd in "${required_cmds[@]}"; do
-    if ! command -v "$(echo "$cmd" | awk '{print $1}')" &> /dev/null; then
+    if ! command -v "$(echo "$cmd" | awk '{print $1}')" &>/dev/null; then
       print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
 
       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -224,16 +223,16 @@ check_required_commands() {
             is_alma_centos8=true
           fi
         fi
-        
-        if command -v apt &> /dev/null; then
+
+        if command -v apt &>/dev/null; then
           apt update -y && apt install -y "$(echo "$cmd" | awk '{print $1}')"
-        elif command -v dnf &> /dev/null; then
+        elif command -v dnf &>/dev/null; then
           if [[ "$is_alma_centos8" == "true" ]]; then
             dnf install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
           else
             dnf install -y "$(echo "$cmd" | awk '{print $1}')"
           fi
-        elif command -v yum &> /dev/null; then
+        elif command -v yum &>/dev/null; then
           if [[ "$is_alma_centos8" == "true" ]]; then
             yum install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
           else
@@ -243,7 +242,7 @@ check_required_commands() {
           print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
         fi
       elif [[ "$OSTYPE" == "darwin"* ]]; then
-        if ! command -v brew &> /dev/null; then
+        if ! command -v brew &>/dev/null; then
           print_msg warning "$WARNING_HOMEBREW_MISSING"
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         fi
@@ -252,17 +251,11 @@ check_required_commands() {
         print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
       fi
     else
-      print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
+      print_msg success "$SUCCESS_COMMAND_AVAILABLE: $cmd"
+
     fi
   done
   
-  # Kiểm tra Docker compose riêng - không cài đặt tại đây
-  if docker compose version &> /dev/null; then
-    print_msg success "$SUCCESS_COMMAND_AVAILABLE: docker compose"
-  else
-    print_msg warning "$WARNING_COMMAND_NOT_FOUND: docker compose"
-    print_msg info "Docker Compose will be installed separately"
-  fi
 }
 
 uninstall_required_commands() {
@@ -331,7 +324,7 @@ check_and_add_alias() {
     sed -i.bak '/alias wpdocker=/d' "$shell_config"
   fi
 
-  echo "$alias_line" >> "$shell_config"
+  echo "$alias_line" >>"$shell_config"
   echo "✅ Added alias for wpdocker to $shell_config"
 
   if [[ "$SHELL" == *"zsh"* ]]; then
