@@ -205,9 +205,10 @@ else
   print_msg warning "⚠️ INSTALL_CHANNEL not set. Skipping channel save."
 fi
 
-print_msg success "✅ Installation successful at: $INSTALL_DIR"
+print_msg success "$SUCCESS_WPDOCKER_INSTALLED: $INSTALL_DIR"
+print_msg important "$IMPORTANT_LOGOUT_AFTER_INSTALL"
 echo ""
-print_msg info "💡 To start using WP Docker, run:"
+print_msg info "$INFO_START_USING"
 echo "  wpdocker"
 echo ""
 
