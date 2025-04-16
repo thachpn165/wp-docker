@@ -210,7 +210,7 @@ check_required_commands() {
   core_system_update
   
   # Loại bỏ "docker compose" khỏi danh sách vì sẽ được cài đặt riêng
-  required_cmds=(docker nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
+  required_cmds=(nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
 
   for cmd in "${required_cmds[@]}"; do
     if ! command -v "$(echo "$cmd" | awk '{print $1}')" &> /dev/null; then
