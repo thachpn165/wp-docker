@@ -32,18 +32,7 @@ check_and_add_alias
 # =============================================
 # ⚙️ Check & install Docker and Docker Compose
 # =============================================
-if ! command -v docker &>/dev/null; then
-  install_docker
-else
-  echo -e "$SUCCESS_DOCKER_INSTALLED"
-fi
-
-if ! docker compose version &>/dev/null; then
-  install_docker_compose
-else
-  echo -e "$SUCCESS_DOCKER_COMPOSE_INSTALLED"
-fi
-
+install_docker
 # =============================================
 # 🔁 Setup CRON for PHP version refresh
 # =============================================
