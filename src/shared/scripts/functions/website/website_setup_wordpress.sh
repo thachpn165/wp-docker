@@ -143,5 +143,9 @@ website_setup_wordpress_logic() {
   wp_set_permalinks "$domain"
   website_wordpress_print "$domain" "$admin_user" "$admin_password" "$admin_email"
   print_msg completed "$SUCCESS_WP_INSTALL_DONE"
+
+  # set .site.$domain.cache value to `no-cache`
+  json_set_site_value "$domain" "cache" "no-cache"
+  # 🐳 Restart NGINX to apply new configuration 
   nginx_restart
 }

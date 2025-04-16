@@ -24,7 +24,7 @@ core_mysql_calculate_config() {
     max_connections=$((total_ram / 4))
     query_cache_size=32
     innodb_buffer_pool_size=$((total_ram / 2))
-    innodb_log_file_size=$((innodb_buffer_pool_size / 8))
+    innodb_log_file_size=$((innodb_buffer_pool_size / 6))
     table_open_cache=$((total_ram * 8))
     thread_cache_size=$((total_cpu * 8))
 
@@ -148,6 +148,7 @@ core_mysql_generate_compose() {
     sedi "s|\${mysql_image}|$MYSQL_IMAGE|g" "$compose_file.tmp"
     sedi "s|\${mysql_volume_name}|$MYSQL_VOLUME_NAME|g" "$compose_file.tmp"
     sedi "s|\${mysql_root_passwd}|$mysql_root_pass|g" "$compose_file.tmp"
+    sedi "s|\${docker_network}|$DOCKER_NETWORK|g" "$compose_file.tmp"
     mv "$compose_file.tmp" "$compose_file"
 
     print_msg success "$SUCCESS_MYSQL_GENERATED_DOCKER_COMPOSE"

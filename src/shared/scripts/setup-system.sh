@@ -77,27 +77,7 @@ fi
 # =============================================
 # 🌐 Start NGINX Proxy if not running
 # =============================================
-if ! docker compose -f "$NGINX_PROXY_DIR/docker-compose.yml" ps | grep -q "$NGINX_PROXY_CONTAINER.*Up"; then
-  echo -e "$INFO_NGINX_PROXY_STARTING"
-  docker compose -f "$NGINX_PROXY_DIR/docker-compose.yml" up -d || exit_if_error 1 "$ERROR_NGINX_PROXY_START_FAILED"
-fi
-
-echo -e "$INFO_NGINX_PROXY_WAIT"
-for _ in {1..10}; do
-  status=$(docker inspect -f "{{.State.Status}}" "$NGINX_PROXY_CONTAINER" 2>/dev/null)
-  if [[ "$status" == "running" ]]; then
-    echo -e "$SUCCESS_NGINX_PROXY_RUNNING"
-    break
-  fi
-  sleep 1
-done
-
-if [[ "$status" != "running" ]]; then
-  echo -e "$ERROR_NGINX_PROXY_NOT_RUNNING"
-  docker logs "$NGINX_PROXY_CONTAINER" 2>&1 | tail -n 30
-  echo -e "$ERROR_NGINX_PROXY_LOG_HINT"
-  exit 1
-fi
+nginx_init
 # =============================================
 # ✅ Verify required commands are available
 # =============================================

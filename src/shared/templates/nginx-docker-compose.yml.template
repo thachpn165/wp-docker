@@ -1,6 +1,6 @@
 services:
   nginx-proxy:
-    container_name: nginx-proxy
+    container_name: ${nginx_container_name}
     image: openresty/openresty:1.21.4.1-alpine
     ports:
       - "80:80"
@@ -12,10 +12,14 @@ services:
       - ./cache:/etc/nginx/cache/
       - ./globals:/etc/nginx/globals/
       - ./globals/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
-      - ./cache/fastcgi:/usr/local/openresty/nginx/fastcgi_cache
+      - wpdocker_fastcgi_cache_data:/usr/local/openresty/nginx/fastcgi_cache #Volumes fastcgi_cache shared between NGINX & PHP container
     networks:
-      - proxy_network 
+      - ${docker_network} 
 
 networks:
-  proxy_network:
+  ${docker_network}:
+    external: true
+
+volumes:
+  wpdocker_fastcgi_cache_data:
     external: true

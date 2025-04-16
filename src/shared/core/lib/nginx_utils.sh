@@ -1,3 +1,36 @@
+nginx_init() {
+    if is_container_running "$NGINX_PROXY_CONTAINER"; then
+        debug_log "[nginx_init] ✅ NGINX container '$NGINX_PROXY_CONTAINER' is running"
+        return 0
+    fi
+
+    # Check if the NGINX proxy directory exists, `true` = create if not
+    is_directory_exist "$NGINX_PROXY_DIR" true
+
+    print_msg info "🧪 Checking NGINX container: $NGINX_PROXY_CONTAINER"
+    print_msg warning "⚠️ NGINX container not running. Attempting to start..."
+
+    local compose_file="$NGINX_PROXY_DIR/docker-compose.yml"
+    local template_file="$TEMPLATES_DIR/nginx-docker-compose.yml.template"
+
+    if [[ ! -f "$compose_file" ]]; then
+        debug_log "[nginx_init] 🛠 docker-compose.yml not found, generating from template..."
+        if [[ ! -f "$template_file" ]]; then
+            print_msg error "❌ Missing template: $template_file"
+            return 1
+        fi
+
+        cp "$template_file" "$compose_file.tmp"
+        sedi "s|\${nginx_container_name}|$NGINX_PROXY_CONTAINER|g" "$compose_file.tmp"
+        sedi "s|\${docker_network}|$DOCKER_NETWORK|g" "$compose_file.tmp"
+        mv "$compose_file.tmp" "$compose_file"
+        print_msg success "✅ Generated NGINX docker-compose.yml from template"
+    fi
+
+    docker volume create wpdocker_fastcgi_cache_data >/dev/null
+    docker compose -f "$compose_file" up -d --force-recreate
+    print_msg success "✅ Started NGINX container: $NGINX_PROXY_CONTAINER"
+}
 # =====================================
 # nginx_add_mount_docker: Add volume mount to docker-compose.override.yml for a domain
 # Parameters:

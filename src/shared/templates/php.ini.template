@@ -4,7 +4,13 @@ upload_max_filesize = 128M
 max_execution_time = 300
 max_input_time = 300
 date.timezone = "Asia/Ho_Chi_Minh"
+
+; Error log handling
 error_reporting = E_ALL & ~E_DEPRECATED
+error_log = /var/www/logs/php_error.log
+display_errors = off
+log_errors = on
+
 ; OPcache settings
 opcache.enable=1
 opcache.enable_cli=1

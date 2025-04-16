@@ -86,8 +86,9 @@ website_logic_create() {
     # create essential folders and files in site directory
     run_cmd "mkdir -p '$SITE_DIR/php' '$SITE_DIR/mariadb/conf.d' '$SITE_DIR/wordpress' '$SITE_DIR/logs' '$SITE_DIR/backups'"
     run_cmd "touch '$SITE_DIR/logs/access.log' '$SITE_DIR/logs/error.log'"
+    run_cmd "touch '$SITE_DIR/logs/php_error.log'"
+    run_cmd "touch '$SITE_DIR/logs/php_slow.log'"
     run_cmd "chmod 666 '$SITE_DIR/logs/'*.log"
-
     # copy template version file to manage template version
     TEMPLATE_VERSION_FILE="$TEMPLATES_DIR/.template_version"
     if is_file_exist "$TEMPLATE_VERSION_FILE"; then
@@ -108,7 +109,7 @@ website_logic_create() {
 
     # Create optimized config for MariaDB & PHP-FPM, based on the template
     print_msg step "$STEP_WEBSITE_SETUP_APPLY_CONFIG: $domain"
-    create_optimized_php_fpm_config "$SITE_DIR/php/php-fpm.conf"
+    create_optimized_php_fpm_config "$domain"
 
     # Store environment variables in .config.json file
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_ENV: $domain"
