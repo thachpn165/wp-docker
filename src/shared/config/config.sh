@@ -25,7 +25,7 @@ else
   DEV_MODE=false
 fi
 PROJECT_DIR=$BASE_DIR
-DEBUG_MODE="true"
+DEBUG_MODE="false"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 safe_source "$BASE_DIR/shared/core/lib/json_utils.sh"
