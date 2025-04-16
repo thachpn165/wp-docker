@@ -85,32 +85,36 @@ check_and_install_zip_unzip() {
 
   echo "📦 Installing missing package(s): ${missing[*]}"
 
+  # Kiểm tra OS version
+  local is_alma_centos8=false
+  if [[ -f /etc/redhat-release ]]; then
+    if (grep -q "AlmaLinux" /etc/redhat-release || grep -q "CentOS" /etc/redhat-release) && grep -q "8\." /etc/redhat-release; then
+      is_alma_centos8=true
+      echo "🔄 Detected AlmaLinux/CentOS 8"
+    fi
+  fi
+
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if command -v apt &>/dev/null; then
       sudo apt update -y && sudo apt install -y "${missing[@]}"
-    elif command -v yum &>/dev/null; then
-      # Xử lý GPG key cho CentOS/RHEL/AlmaLinux
-      if [[ -f /etc/redhat-release ]]; then
-        if grep -q "AlmaLinux" /etc/redhat-release; then
-          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
-        elif grep -q "CentOS" /etc/redhat-release; then
-          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
-        elif grep -q "Red Hat" /etc/redhat-release; then
-          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-        fi
-      fi
-      # Cài đặt với cờ nogpgcheck để tránh lỗi
-      sudo yum install -y --nogpgcheck "${missing[@]}"
     elif command -v dnf &>/dev/null; then
-      # Xử lý tương tự cho dnf
-      if [[ -f /etc/redhat-release ]]; then
-        if grep -q "AlmaLinux" /etc/redhat-release || grep -q "Rocky" /etc/redhat-release; then
-          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-*
-        elif grep -q "Fedora" /etc/redhat-release; then
-          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-*
-        fi
+      if [[ "$is_alma_centos8" == "true" ]]; then
+        echo "🔄 Running system update with --nogpgcheck on AlmaLinux/CentOS 8..."
+        sudo dnf update --nogpgcheck -y
+        echo "📦 Installing packages with --nogpgcheck..."
+        sudo dnf install -y --nogpgcheck "${missing[@]}"
+      else
+        sudo dnf install -y "${missing[@]}"
       fi
-      sudo dnf install -y --nogpgcheck "${missing[@]}"
+    elif command -v yum &>/dev/null; then
+      if [[ "$is_alma_centos8" == "true" ]]; then
+        echo "🔄 Running system update with --nogpgcheck on AlmaLinux/CentOS 8..."
+        sudo yum update --nogpgcheck -y
+        echo "📦 Installing packages with --nogpgcheck..."
+        sudo yum install -y --nogpgcheck "${missing[@]}"
+      else
+        sudo yum install -y "${missing[@]}"
+      fi
     else
       echo "❌ Unsupported Linux package manager. Please install: ${missing[*]}"
       return 1
