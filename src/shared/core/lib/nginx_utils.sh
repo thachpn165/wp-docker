@@ -26,7 +26,6 @@ nginx_init() {
         return 0
     fi
 
-    
     # Nếu container tồn tại (but not running) và không có compose → remove container
     if [[ ! -f "$compose_file" ]] && docker ps -a --format '{{.Names}}' | grep -q "^${NGINX_PROXY_CONTAINER}$"; then
         print_msg warning "⚠️ $compose_file not found but container $NGINX_PROXY_CONTAINER exists. Removing container..."
@@ -205,4 +204,24 @@ nginx_reload() {
     fi
     stop_loading
     print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
+}
+
+wait_for_nginx_container() {
+    local timeout=30 # số giây tối đa chờ
+    local interval=1 # thời gian giữa mỗi lần kiểm tra
+    local waited=0
+
+    print_msg info "⏳ Waiting for container '$NGINX_PROXY_CONTAINER' to start..."
+
+    while ! is_container_running "$NGINX_PROXY_CONTAINER"; do
+        sleep "$interval"
+        waited=$((waited + interval))
+        if ((waited >= timeout)); then
+            print_msg error "❌ Timeout: Container '$NGINX_PROXY_CONTAINER' did not start within $timeout seconds."
+            return 1
+        fi
+    done
+
+    print_msg success "✅ Container '$NGINX_PROXY_CONTAINER' is now running."
+    return 0
 }

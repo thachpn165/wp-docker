@@ -67,6 +67,7 @@ fi
 # 🌐 Start NGINX Proxy if not running
 # =============================================
 nginx_init
+wait_for_nginx_container || exit 1
 # =============================================
 # ✅ Verify required commands are available
 # =============================================
