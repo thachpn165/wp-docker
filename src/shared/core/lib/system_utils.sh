@@ -175,9 +175,23 @@ check_required_commands() {
         if command -v apt &> /dev/null; then
           apt update -y && apt install -y "$(echo "$cmd" | awk '{print $1}')"
         elif command -v yum &> /dev/null; then
-          yum install -y "$(echo "$cmd" | awk '{print $1}')"
+          # Import GPG keys first for CentOS/RHEL/AlmaLinux
+          if [[ -f /etc/redhat-release ]]; then
+            # Check if AlmaLinux
+            if grep -q "AlmaLinux" /etc/redhat-release; then
+              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+            # Check if CentOS
+            elif grep -q "CentOS" /etc/redhat-release; then
+              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+            # Check if RHEL
+            elif grep -q "Red Hat" /etc/redhat-release; then
+              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+            fi
+          fi
+          # Install with --nogpgcheck as fallback if key import fails
+          yum install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
         elif command -v dnf &> /dev/null; then
-          dnf install -y "$(echo "$cmd" | awk '{print $1}')"
+          dnf install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
         else
           print_msg error "$(printf '%s' "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
         fi
@@ -195,10 +209,11 @@ check_required_commands() {
     fi
   done
 }
+
 uninstall_required_commands() {
   print_msg info "🧹 Uninstalling required commands..."
 
-  required_cmds=(jq dialog)
+  required_cmds=(jq openssl crontab dialog)
 
   for cmd in "${required_cmds[@]}"; do
     cmd_name="$(echo "$cmd" | awk '{print $1}')"
