@@ -18,25 +18,25 @@ read -rp "Please select an option (1, 2 or 3, default is 1): " version_choice
 version_choice=${version_choice:-1}
 
 case "$version_choice" in
-  2)
-    REPO_TAG="nightly"
-    INSTALL_CHANNEL="nightly"
-    DEV_MODE=false
-    DOWNLOAD_URL="https://github.com/thachpn165/wp-docker/releases/download/$REPO_TAG/$ZIP_NAME"
-    echo "🛠 Installing Nightly (Testing Only) version"
-    ;;
-  3)
-    INSTALL_CHANNEL="dev"
-    DEV_MODE=true
-    echo "🔧 Enabling Dev Mode: Clone from GitHub"
-    ;;
-  *)
-    REPO_TAG="latest"
-    INSTALL_CHANNEL="official"
-    DEV_MODE=false
-    DOWNLOAD_URL="https://github.com/thachpn165/wp-docker/releases/download/$REPO_TAG/$ZIP_NAME"
-    echo "🛠 Installing Official version"
-    ;;
+2)
+  REPO_TAG="nightly"
+  INSTALL_CHANNEL="nightly"
+  DEV_MODE=false
+  DOWNLOAD_URL="https://github.com/thachpn165/wp-docker/releases/download/$REPO_TAG/$ZIP_NAME"
+  echo "🛠 Installing Nightly (Testing Only) version"
+  ;;
+3)
+  INSTALL_CHANNEL="dev"
+  DEV_MODE=true
+  echo "🔧 Enabling Dev Mode: Clone from GitHub"
+  ;;
+*)
+  REPO_TAG="latest"
+  INSTALL_CHANNEL="official"
+  DEV_MODE=false
+  DOWNLOAD_URL="https://github.com/thachpn165/wp-docker/releases/download/$REPO_TAG/$ZIP_NAME"
+  echo "🛠 Installing Official version"
+  ;;
 esac
 
 # ========================
@@ -46,17 +46,70 @@ if [[ "$DEV_MODE" == "true" ]]; then
   if [[ -L "$INSTALL_DIR" || -d "$INSTALL_DIR" ]]; then
     echo "⚠️ $INSTALL_DIR already exists (Dev Mode: likely a symlink)."
     read -rp "❓ Remove and re-create? [y/N]: " confirm
-    [[ "$confirm" =~ ^[yY]$ ]] || { echo "Installation cancelled."; exit 0; }
+    [[ "$confirm" =~ ^[yY]$ ]] || {
+      echo "Installation cancelled."
+      exit 0
+    }
     rm -rf "$INSTALL_DIR"
   fi
 else
   if [[ -d "$INSTALL_DIR" ]]; then
     echo "⚠️ Directory $INSTALL_DIR already exists."
     read -rp "❓ Delete and overwrite? [y/N]: " confirm
-    [[ "$confirm" =~ ^[yY]$ ]] || { echo "Installation cancelled."; exit 0; }
+    [[ "$confirm" =~ ^[yY]$ ]] || {
+      echo "Installation cancelled."
+      exit 0
+    }
     rm -rf "$INSTALL_DIR"
   fi
 fi
+
+check_and_install_zip_unzip() {
+  local cmds=("zip" "unzip")
+  local missing=()
+
+  # Kiểm tra từng lệnh
+  for cmd in "${cmds[@]}"; do
+    if ! command -v "$cmd" &>/dev/null; then
+      echo "⚠️  Command '$cmd' is missing."
+      missing+=("$cmd")
+    else
+      echo "✅ Command '$cmd' is already installed."
+    fi
+  done
+
+  # Nếu không thiếu gì thì thoát
+  if [[ ${#missing[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  echo "📦 Installing missing package(s): ${missing[*]}"
+
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if command -v apt &>/dev/null; then
+      sudo apt update -y && sudo apt install -y "${missing[@]}"
+    elif command -v yum &>/dev/null; then
+      sudo yum install -y "${missing[@]}"
+    elif command -v dnf &>/dev/null; then
+      sudo dnf install -y "${missing[@]}"
+    else
+      echo "❌ Unsupported Linux package manager. Please install: ${missing[*]}"
+      return 1
+    fi
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    if ! command -v brew &>/dev/null; then
+      echo "📦 Homebrew not found. Installing Homebrew..."
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+    brew install "${missing[@]}"
+  else
+    echo "❌ Unsupported OS: $OSTYPE"
+    return 1
+  fi
+
+  echo "✅ Installation of zip/unzip completed."
+}
+check_and_install_zip_unzip
 
 # ========================
 # 📥 Download or Clone Source
@@ -67,7 +120,10 @@ if [[ "$DEV_MODE" == "true" ]]; then
   ln -sfn "$DEV_REPO_DIR/src" "$INSTALL_DIR"
 else
   echo "📦 Downloading source code from GitHub..."
-  curl -L "$DOWNLOAD_URL" -o "$ZIP_NAME" || { echo "❌ Download failed"; exit 1; }
+  curl -L "$DOWNLOAD_URL" -o "$ZIP_NAME" || {
+    echo "❌ Download failed"
+    exit 1
+  }
   echo "📁 Extracting to $INSTALL_DIR..."
   mkdir -p "$INSTALL_DIR"
   unzip -q "$ZIP_NAME" -d "$INSTALL_DIR"
@@ -97,7 +153,7 @@ if [[ -z "$BASE_DIR" ]]; then
 fi
 
 if [[ ! -f "$JSON_CONFIG_FILE" ]]; then
-  echo "{}" > "$JSON_CONFIG_FILE"
+  echo "{}" >"$JSON_CONFIG_FILE"
   echo "Created initial config file: $JSON_CONFIG_FILE"
 else
   echo "Config file already exists: $JSON_CONFIG_FILE"
