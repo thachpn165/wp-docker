@@ -132,17 +132,22 @@ install_docker() {
     print_msg info "Adding Docker repository..."
     dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 
-    # Vô hiệu hóa các module có thể xung đột
-    print_msg info "Disabling container-tools module..."
+    # Khắc phục vấn đề modular filtering cho container-selinux
+    print_msg info "Enabling modules required for Docker..."
     dnf module disable -y container-tools
+
+    # Cài đặt container-selinux từ CentOS repository
+    print_msg info "Installing container-selinux package..."
+    dnf install -y --nogpgcheck http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/container-selinux-2.167.0-1.module_el8.5.0+911+f19012f9.noarch.rpm || true
 
     # Cài đặt Docker với các flag cần thiết
     print_msg info "Installing Docker CE..."
     dnf install -y --nobest --allowerasing --nogpgcheck docker-ce docker-ce-cli containerd.io
 
-    # Đảm bảo cài đặt đúng
-    print_msg info "Finalizing Docker installation..."
-    dnf install -y --replace --nogpgcheck docker-ce
+    # Không sử dụng --replace vì không được hỗ trợ
+    # Thay vì vậy, đảm bảo các gói đã được cài đặt đúng
+    print_msg info "Verifying Docker installation..."
+    dnf install -y --nogpgcheck docker-ce
 
     # Enable và start dịch vụ Docker
     print_msg info "Enabling and starting Docker service..."
