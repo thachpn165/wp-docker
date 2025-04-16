@@ -236,3 +236,14 @@ remove_site_containers() {
     docker volume rm "${site}_db_data" 2>/dev/null || true
   done
 }
+docker_volume_check_fastcgicache() {
+  local volume_name="wpdocker_fastcgi_cache_data"
+
+  if docker volume ls --format '{{.Name}}' | grep -q "^${volume_name}$"; then
+    debug_log "[Docker] ✅ Volume '$volume_name' already exists."
+  else
+    print_msg info "📦 Creating Docker volume: $volume_name"
+    docker volume create "$volume_name" >/dev/null
+    print_msg success "✅ Docker volume '$volume_name' has been created."
+  fi
+}
