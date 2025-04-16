@@ -39,7 +39,7 @@ website_set_config() {
   debug_log "[website_set_config] CONTAINER_PHP=${domain}${PHP_CONTAINER_SUFFIX}" 
   debug_log "[website_set_config] DOMAIN=$domain"
   debug_log "[website_set_config] PHP_VERSION=$php_version"
-  print_msg success "✅ Website config saved to .config.json under site[\"$domain\"]"
+  print_msg success "Website config saved to .config.json for $domain"
 }
 
 # =====================================
