@@ -267,7 +267,7 @@ check_required_commands() {
 uninstall_required_commands() {
   print_msg info "🧹 Uninstalling required commands..."
 
-  required_cmds=(jq openssl crontab dialog)
+  required_cmds=(jq dialog)
 
   for cmd in "${required_cmds[@]}"; do
     cmd_name="$(echo "$cmd" | awk '{print $1}')"
