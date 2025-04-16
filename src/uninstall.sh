@@ -32,7 +32,7 @@ confirm_backup_before_remove() {
 # 🔐 Confirm remove MySQL container + volume
 # =====================================
 confirm_remove_mysql_volume() {
-  local prompt="❓ Do you want to remove the MySQL container ($MYSQL_CONTAINER_NAME) and volume ($MYSQL_VOLUME_NAME)?"
+  local prompt="❓ Do you want to remove the MySQL container ($MYSQL_CONTAINER_NAME) and volume ($MYSQL_VOLUME_NAME)? (y/n) "
   local confirm_text
   confirm_text=$(get_input_or_test_value "$prompt" "n")
   [[ "$confirm_text" =~ ^[Yy]$ ]]
