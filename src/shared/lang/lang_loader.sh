@@ -26,6 +26,6 @@ LANG_FILE="$BASE_DIR/shared/lang/${lang_code}.sh"
 if [[ -f "$LANG_FILE" ]]; then
   safe_source "$LANG_FILE"
 else
-  echo -e "⚠️  Language file not found for '${lang_code}' → Using Vietnamese fallback"
-  safe_source "$BASE_DIR/shared/lang/vi.sh"
+  echo -e "⚠️  Language file not found for '${lang_code}' → Using English fallback"
+  safe_source "$BASE_DIR/shared/lang/en.sh"
 fi

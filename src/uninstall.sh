@@ -32,7 +32,7 @@ confirm_backup_before_remove() {
 # 🔐 Confirm remove MySQL container + volume
 # =====================================
 confirm_remove_mysql_volume() {
-  local prompt="❓ Do you want to remove the MySQL container ($MYSQL_CONTAINER_NAME) and volume ($MYSQL_VOLUME_NAME)?"
+  local prompt="❓ Do you want to remove the MySQL container ($MYSQL_CONTAINER_NAME) and volume ($MYSQL_VOLUME_NAME)? (y/n) "
   local confirm_text
   confirm_text=$(get_input_or_test_value "$prompt" "n")
   [[ "$confirm_text" =~ ^[Yy]$ ]]
@@ -71,9 +71,9 @@ backup_all_sites() {
 
     local db_backup_file="$backup_target_dir/${site}_db.sql"
     run_cmd docker exec --env MYSQL_PWD="$db_pass" "$MYSQL_CONTAINER_NAME" \
-      sh -c "exec mysqldump -u$db_user $db_name" true > "$db_backup_file" || {
-        print_msg warning "$(printf "$ERROR_DB_BACKUP_FAILED" "$site")"
-        continue
+      sh -c "exec mysqldump -u$db_user $db_name" true >"$db_backup_file" || {
+      print_msg warning "$(printf "$ERROR_DB_BACKUP_FAILED" "$site")"
+      continue
     }
 
     tar -czf "$backup_target_dir/${site}_wordpress.tar.gz" -C "$wordpress_dir" . || {
@@ -97,6 +97,11 @@ remove_core_containers() {
 # 🧨 Remove each site's containers (only PHP)
 # =====================================
 remove_site_containers() {
+  if [[ ! -d "$SITES_DIR" ]]; then
+    print_msg warning "⚠️ Directory $SITES_DIR does not exist. Skipping site container removal."
+    return 0
+  fi
+
   for site in $(get_site_list); do
     print_msg info "$(printf "$INFO_REMOVING_SITE_CONTAINERS" "$site")"
     docker rm -f "$site-php" 2>/dev/null || true

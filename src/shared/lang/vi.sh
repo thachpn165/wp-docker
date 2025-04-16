@@ -908,3 +908,7 @@ readonly WARNING_REDIS_DOCKER_COMPOSE_NOT_FOUND="Không tìm thấy docker-compo
 readonly INFO_REDIS_GENERATING_DOCKER_COMPOSE="Đang tạo docker-compose.yml cho Redis..."
 readonly SUCCESS_REDIS_COMPOSE_GENERATED="Đã tạo docker-compose.yml cho Redis thành công."
 readonly SUCCESS_REDIS_STARTED="Container Redis đã được khởi động thành công."
+
+readonly SUCCESS_WPDOCKER_INSTALLED="Đã cài đặt WP Docker thành công. Mã nguồn lưu trữ tại: "
+readonly IMPORTANT_LOGOUT_AFTER_INSTALL="Vui lòng đăng nhập vào lại terminal để áp dụng các thay đổi"
+readonly INFO_START_USING="Để bắt đầu sử dụng, hãy chạy lệnh:"

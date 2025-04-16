@@ -180,20 +180,9 @@ if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
 fi
 
 check_required_commands
-# ========================
-# 🛠 Ensure .config.json exists
-# ========================
-if [[ -z "$BASE_DIR" ]]; then
-  echo "❌ BASE_DIR not defined. Please load config.sh first." >&2
-  exit 1
-fi
 
-if [[ ! -f "$JSON_CONFIG_FILE" ]]; then
-  echo "{}" >"$JSON_CONFIG_FILE"
-  echo "Created initial config file: $JSON_CONFIG_FILE"
-else
-  echo "Config file already exists: $JSON_CONFIG_FILE"
-fi
+
+json_create_if_not_exists
 
 # ========================
 # 🔐 Set Permissions
@@ -216,7 +205,12 @@ else
   print_msg warning "⚠️ INSTALL_CHANNEL not set. Skipping channel save."
 fi
 
-print_msg success "✅ Installation successful at: $INSTALL_DIR"
+print_msg success "$SUCCESS_WPDOCKER_INSTALLED: $INSTALL_DIR"
+print_msg important "$IMPORTANT_LOGOUT_AFTER_INSTALL"
+echo ""
+print_msg info "$INFO_START_USING"
+echo "  wpdocker"
+echo ""
 
 # =========================
 # Set latest version to .config.json
@@ -237,4 +231,16 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   echo " 3. Click Apply & Restart"
   echo "👉 Guide: https://docs.docker.com/desktop/settings/mac/#file-sharing"
   echo ""
+fi
+
+
+# Logout after install
+if [[ $- == *i* ]] && [[ "$SHLVL" -le 2 ]]; then
+  print_msg info "⏳ Logging out of terminal..."
+  sleep 2
+  logout || exit
+else
+  print_msg info "⏳ Exiting current shell..."
+  sleep 2
+  exit
 fi

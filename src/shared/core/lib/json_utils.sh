@@ -61,7 +61,7 @@ json_set_value() {
   tmp_file=$(mktemp)
 
   if jq "$key = \"$value\"" "$file" > "$tmp_file"; then
-    mv "$tmp_file" "$file"
+    mv -f "$tmp_file" "$file"
     debug_log "json_set_value: file=$file key=$key value=$value"
   else
     debug_log "json_set_value ERROR: Failed to set $key in $file"
@@ -81,7 +81,7 @@ json_set_string_value() {
   tmp_file=$(mktemp)
 
   if jq --arg val "$value" "$key = \$val" "$file" > "$tmp_file"; then
-    mv "$tmp_file" "$file"
+    mv -f "$tmp_file" "$file"
     debug_log "[json_set_string_value] SUCCESS → key=$key"
   else
     debug_log "[json_set_string_value] ERROR → failed to set $key in $file"
