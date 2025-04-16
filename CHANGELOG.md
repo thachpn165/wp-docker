@@ -1,4 +1,31 @@
 # 📦 CHANGELOG – WP Docker
+## [v1.1.9-beta] - 2025-04-16
+
+### 🚀 Added
+
+- New command: `wpdocker core uninstall` for full removal flow
+- Centralized MariaDB container with dynamic database/user creation
+- Slowlog file: `logs/php_slow.log` per site (linked via `php-fpm.conf`)
+- PHP error log: `logs/php_error.log` with dynamic injection into `php.ini`
+- Auto-tracking of cache type into `.config.json`
+- Resource-aware PHP-FPM tuning: `pm.max_children`, server tier detection
+- Shared FastCGI cache volume across PHP and NGINX containers
+- Added slowlog + timeout settings into `php-fpm.conf`
+
+### ♻️ Changed
+
+- Moved system-level scripts into `shared/core/` structure
+- Removed `db_utils.sh` and legacy per-site DB containers
+- Changed default `$DOCKER_NETWORK` to `wpdocker-network`
+- All docker-compose files now use `${docker_network}` instead of hardcoded names
+
+### 🐞 Fixed
+
+- Ensured MySQL volume and container names are consistent across installs
+- Fixed error when writing `php.ini` and `php-fpm.conf` when paths are missing
+- Made uninstall script safely ignore `.git/` and preserve archives
+
+---
 ## [v1.1.8-beta] - 2025-04-14
 
 ### 🚀 Added

@@ -228,10 +228,10 @@ check_and_add_alias() {
 
   if [[ "$SHELL" == *"zsh"* ]]; then
     echo "🔄 Reloading .zshrc..."
-    safe_source "$HOME/.zshrc"
+    source "$HOME/.zshrc"
   elif [[ "$SHELL" == *"bash"* ]]; then
     echo "🔄 Reloading .bashrc..."
-    safe_source "$HOME/.bashrc"
+    source "$HOME/.bashrc"
   else
     echo "⚠️ Unsupported shell. Please reload shell config manually."
   fi

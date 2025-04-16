@@ -194,7 +194,7 @@ docker_exec_php() {
   local cmd="$2"
 
   if [[ -z "$domain" || -z "$cmd" ]]; then
-    print_and_debug error "❌ Missing parameters in docker_exec_php(domain, cmd)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain or --cmd" 
     return 1
   fi
 
@@ -202,7 +202,7 @@ docker_exec_php() {
   container_php=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
   if [[ -z "$container_php" ]]; then
-    print_and_debug error "❌ Cannot find CONTAINER_PHP for site: $domain"
+    print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED: $domain"
     return 1
   fi
 
