@@ -137,6 +137,60 @@ choose_editor() {
   return 0
 }
 
+# =====================================
+# core_system_update: Update system packages based on OS type
+# No parameters
+# Behavior:
+#   - Detects OS type and runs appropriate update commands
+#   - Uses --nogpgcheck for CentOS/AlmaLinux 8
+# =====================================
+core_system_update() {
+  echo "🔄 Updating system packages..."
+  
+  # Detect OS
+  if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    OS_NAME="${NAME}"
+    OS_VERSION_ID="${VERSION_ID}"
+  elif [[ -f /etc/redhat-release ]]; then
+    if grep -q "CentOS" /etc/redhat-release; then
+      OS_NAME="CentOS"
+      OS_VERSION_ID=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d. -f1)
+    elif grep -q "AlmaLinux" /etc/redhat-release; then
+      OS_NAME="AlmaLinux"
+      OS_VERSION_ID=$(grep -oE '[0-9]+\.[0-9]+' /etc/redhat-release | cut -d. -f1)
+    fi
+  fi
+  
+  echo "📌 Detected: ${OS_NAME} ${OS_VERSION_ID}"
+  
+  # Update based on OS type
+  if [[ "$OS_NAME" == "CentOS" && "$OS_VERSION_ID" == "8" ]] || 
+     [[ "$OS_NAME" == "AlmaLinux" && "$OS_VERSION_ID" == "8" ]]; then
+    echo "🔄 Running CentOS/AlmaLinux 8 update with --nogpgcheck..."
+    dnf update --nogpgcheck -y
+  elif [[ "$OS_NAME" == "Ubuntu" ]]; then
+    echo "🔄 Running Ubuntu update..."
+    apt update -y && apt upgrade -y
+  elif command -v apt &>/dev/null; then
+    echo "🔄 Running apt-based update..."
+    apt update -y && apt upgrade -y
+  elif command -v dnf &>/dev/null; then
+    echo "🔄 Running dnf-based update..."
+    dnf update -y
+  elif command -v yum &>/dev/null; then
+    echo "🔄 Running yum-based update..."
+    yum update -y
+  else
+    echo "⚠️ Unsupported operating system: ${OS_NAME}"
+    return 1
+  fi
+  
+  echo "✅ System update completed."
+  return 0
+}
+
+
 # ============================================
 # 🧪 check_required_commands – Ensure required commands are installed
 # ============================================
@@ -153,7 +207,7 @@ choose_editor() {
 #   WARNING_HOMEBREW_MISSING
 check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
-
+  core_system_update
   required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
 
   for cmd in "${required_cmds[@]}"; do
@@ -169,17 +223,31 @@ check_required_commands() {
     fi
 
     if ! command -v "$(echo "$cmd" | awk '{print $1}')" &> /dev/null; then
-      print_msg warning "$(printf '%s' "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
+      print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
 
       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         if command -v apt &> /dev/null; then
           apt update -y && apt install -y "$(echo "$cmd" | awk '{print $1}')"
         elif command -v yum &> /dev/null; then
-          yum install -y "$(echo "$cmd" | awk '{print $1}')"
+          # Import GPG keys first for CentOS/RHEL/AlmaLinux
+          if [[ -f /etc/redhat-release ]]; then
+            # Check if AlmaLinux
+            if grep -q "AlmaLinux" /etc/redhat-release; then
+              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+            # Check if CentOS
+            elif grep -q "CentOS" /etc/redhat-release; then
+              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+            # Check if RHEL
+            elif grep -q "Red Hat" /etc/redhat-release; then
+              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+            fi
+          fi
+          # Install with --nogpgcheck as fallback if key import fails
+          yum install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
         elif command -v dnf &> /dev/null; then
-          dnf install -y "$(echo "$cmd" | awk '{print $1}')"
+          dnf install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
         else
-          print_msg error "$(printf '%s' "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
+          print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
         fi
       elif [[ "$OSTYPE" == "darwin"* ]]; then
         if ! command -v brew &> /dev/null; then
@@ -188,13 +256,14 @@ check_required_commands() {
         fi
         brew install "$(echo "$cmd" | awk '{print $1}')"
       else
-        print_msg error "$(printf '%s' "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
+        print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
       fi
     else
-      print_msg success "$(printf '%s' "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
+      print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
     fi
   done
 }
+
 uninstall_required_commands() {
   print_msg info "🧹 Uninstalling required commands..."
 
