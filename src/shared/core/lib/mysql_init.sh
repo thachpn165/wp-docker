@@ -24,7 +24,7 @@ core_mysql_calculate_config() {
     max_connections=$((total_ram / 4))
     query_cache_size=32
     innodb_buffer_pool_size=$((total_ram / 2))
-    innodb_log_file_size=$((innodb_buffer_pool_size / 8))
+    innodb_log_file_size=$((innodb_buffer_pool_size / 6))
     table_open_cache=$((total_ram * 8))
     thread_cache_size=$((total_cpu * 8))
 
