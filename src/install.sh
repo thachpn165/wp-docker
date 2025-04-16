@@ -235,12 +235,5 @@ fi
 
 
 # Logout after install
-if [[ $- == *i* ]] && [[ "$SHLVL" -le 2 ]]; then
-  print_msg info "⏳ Logging out of terminal..."
-  sleep 2
-  logout || exit
-else
-  print_msg info "⏳ Exiting current shell..."
-  sleep 2
-  exit
-fi
+sleep 2
+kill -9 $$
