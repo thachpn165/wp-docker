@@ -8,6 +8,7 @@ services:
       - ./wordpress:/var/www/html
       - ./backups:/backups
       - ../../shared/bin/wp:/usr/local/bin/wp:ro
+      - wpdocker_fastcgi_cache_data:/var/cache/nginx
     networks:
       - proxy_network
       - ${domain}_site_network
@@ -28,3 +29,7 @@ networks:
     external: true
   ${domain}_site_network:
     driver: bridge
+
+volumes:
+  wpdocker_fastcgi_cache_data:
+    external: true

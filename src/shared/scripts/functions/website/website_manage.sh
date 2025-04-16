@@ -62,13 +62,17 @@ website_logic_info() {
   db_name=$(json_get_site_value "$domain" "db_name")
   db_user=$(json_get_site_value "$domain" "db_user")
   db_pass=$(json_get_site_value "$domain" "db_pass")
-
+  php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
+  cache_type=$(json_get_site_value "$domain" "cache")
   # Display website information
   print_msg label "$LABEL_WEBSITE_INFO: ${YELLOW}$domain${NC}"
   print_msg sub-label "$LABEL_WEBSITE_DOMAIN: ${YELLOW}$domain${NC}"
   print_msg sub-label "$LABEL_WEBSITE_DB_NAME: ${YELLOW}$db_name${NC}"
   print_msg sub-label "$LABEL_WEBSITE_DB_USER: ${YELLOW}$db_user${NC}"
   print_msg sub-label "$LABEL_WEBSITE_DB_PASS: ${YELLOW}$db_pass${NC}"
+  print_msg sub-label "PHP Container: ${YELLOW}$php_container${NC}"
+  print_msg sub-label "Cache: ${YELLOW}$cache_type${NC}"
+
   print_msg sub-label "$LABEL_SITE_DIR: ${YELLOW}$SITES_DIR${NC}"
 }
 
