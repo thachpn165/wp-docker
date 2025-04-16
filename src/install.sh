@@ -233,20 +233,3 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   echo ""
 fi
 
-
-# Logout after install
-sleep 2
-# Add a loading effect with countdown
-countdown() {
-  local seconds=$1
-  while [[ $seconds -gt 0 ]]; do
-    echo -ne "Logging out in $seconds seconds...\r"
-    sleep 1
-    ((seconds--))
-  done
-  echo -ne "\n"
-}
-
-# Call the countdown function with 5 seconds
-countdown 5
-kill -HUP $$

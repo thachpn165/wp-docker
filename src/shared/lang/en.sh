@@ -908,5 +908,5 @@ readonly INFO_REDIS_GENERATING_DOCKER_COMPOSE="Generating docker-compose.yml for
 readonly SUCCESS_REDIS_COMPOSE_GENERATED="Docker-compose.yml for Redis has been successfully generated."
 readonly SUCCESS_REDIS_STARTED="Redis container has been successfully started."
 readonly SUCCESS_WPDOCKER_INSTALLED="WP Docker installed successfully. The source code is stored at: "
-readonly IMPORTANT_LOGOUT_AFTER_INSTALL="Please log back into the terminal to apply the changes"
+readonly IMPORTANT_LOGOUT_AFTER_INSTALL="Please logout or reboot the system after installation to be able to use the wpdocker command."
 readonly INFO_START_USING="To start using, run the command:"
