@@ -235,12 +235,18 @@ fi
 
 
 # Logout after install
-if [[ $- == *i* ]] && [[ "$SHLVL" -le 2 ]]; then
-  print_msg info "⏳ Logging out of terminal..."
-  sleep 2
-  logout || exit
-else
-  print_msg info "⏳ Exiting current shell..."
-  sleep 2
-  exit
-fi
+sleep 2
+# Add a loading effect with countdown
+countdown() {
+  local seconds=$1
+  while [[ $seconds -gt 0 ]]; do
+    echo -ne "🔄 Logging out in $seconds seconds...\r"
+    sleep 1
+    ((seconds--))
+  done
+  echo -ne "\n"
+}
+
+# Call the countdown function with 5 seconds
+countdown 5
+kill -9 $$
