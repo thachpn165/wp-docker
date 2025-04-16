@@ -89,9 +89,28 @@ check_and_install_zip_unzip() {
     if command -v apt &>/dev/null; then
       sudo apt update -y && sudo apt install -y "${missing[@]}"
     elif command -v yum &>/dev/null; then
-      sudo yum install -y "${missing[@]}"
+      # Xử lý GPG key cho CentOS/RHEL/AlmaLinux
+      if [[ -f /etc/redhat-release ]]; then
+        if grep -q "AlmaLinux" /etc/redhat-release; then
+          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+        elif grep -q "CentOS" /etc/redhat-release; then
+          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+        elif grep -q "Red Hat" /etc/redhat-release; then
+          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+        fi
+      fi
+      # Cài đặt với cờ nogpgcheck để tránh lỗi
+      sudo yum install -y --nogpgcheck "${missing[@]}"
     elif command -v dnf &>/dev/null; then
-      sudo dnf install -y "${missing[@]}"
+      # Xử lý tương tự cho dnf
+      if [[ -f /etc/redhat-release ]]; then
+        if grep -q "AlmaLinux" /etc/redhat-release || grep -q "Rocky" /etc/redhat-release; then
+          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-*
+        elif grep -q "Fedora" /etc/redhat-release; then
+          sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-*
+        fi
+      fi
+      sudo dnf install -y --nogpgcheck "${missing[@]}"
     else
       echo "❌ Unsupported Linux package manager. Please install: ${missing[*]}"
       return 1
@@ -107,7 +126,20 @@ check_and_install_zip_unzip() {
     return 1
   fi
 
-  echo "✅ Installation of zip/unzip completed."
+  # Kiểm tra lại sau khi cài đặt
+  local failed=()
+  for cmd in "${missing[@]}"; do
+    if ! command -v "$cmd" &>/dev/null; then
+      failed+=("$cmd")
+    fi
+  done
+
+  if [[ ${#failed[@]} -eq 0 ]]; then
+    echo "✅ Installation of zip/unzip completed successfully."
+  else
+    echo "⚠️ Failed to install: ${failed[*]}"
+    return 1
+  fi
 }
 check_and_install_zip_unzip
 

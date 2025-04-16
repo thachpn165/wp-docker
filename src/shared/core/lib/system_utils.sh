@@ -169,7 +169,7 @@ check_required_commands() {
     fi
 
     if ! command -v "$(echo "$cmd" | awk '{print $1}')" &> /dev/null; then
-      print_msg warning "$(printf '%s' "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
+      print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
 
       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         if command -v apt &> /dev/null; then
@@ -193,7 +193,7 @@ check_required_commands() {
         elif command -v dnf &> /dev/null; then
           dnf install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
         else
-          print_msg error "$(printf '%s' "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
+          print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
         fi
       elif [[ "$OSTYPE" == "darwin"* ]]; then
         if ! command -v brew &> /dev/null; then
@@ -202,10 +202,10 @@ check_required_commands() {
         fi
         brew install "$(echo "$cmd" | awk '{print $1}')"
       else
-        print_msg error "$(printf '%s' "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
+        print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
       fi
     else
-      print_msg success "$(printf '%s' "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
+      print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
     fi
   done
 }
