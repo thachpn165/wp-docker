@@ -140,7 +140,7 @@ website_logic_delete() {
   # Remove entry in .config.json
   json_delete_site_key "$domain"
   print_msg success "$SUCCESS_CONFIG_SITE_REMOVED: $domain"
-
+  safe_source "$CORE_LIB_DIR/nginx_utils.sh"
   nginx_restart
   print_msg success "$SUCCESS_WEBSITE_REMOVED: $domain"
 }
