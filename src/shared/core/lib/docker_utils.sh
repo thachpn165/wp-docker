@@ -51,63 +51,148 @@ remove_container() {
 # ===========================
 install_docker() {
   print_msg step "$STEP_DOCKER_INSTALL"
-
-  if command -v apt-get &>/dev/null; then
+  
+  # Kiểm tra hệ điều hành
+  local os_name=""
+  local os_version=""
+  
+  if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    os_name="${ID}"
+    os_version="${VERSION_ID%%.*}"
+  fi
+  
+  print_msg info "Detected OS: ${os_name} ${os_version}"
+  
+  # Kiểm tra Docker đã được cài đặt chưa
+  if command -v docker &>/dev/null; then
+    if docker info &>/dev/null; then
+      print_msg success "Docker is already installed and running"
+      
+      # Cài đặt docker-compose nếu cần
+      if ! docker compose version &>/dev/null; then
+        install_docker_compose
+      else
+        print_msg success "Docker Compose is already installed"
+      fi
+      
+      return 0
+    else
+      print_msg warning "Docker is installed but not running. Attempting to start service..."
+      systemctl enable docker
+      systemctl start docker
+      
+      # Kiểm tra lại
+      if docker info &>/dev/null; then
+        print_msg success "Docker service started successfully"
+        return 0
+      else
+        print_msg warning "Docker service failed to start. Reinstalling..."
+      fi
+    fi
+  fi
+  
+  # Dừng và vô hiệu hóa podman nếu đang chạy (có thể gây xung đột với Docker)
+  if command -v podman &>/dev/null; then
+    print_msg warning "Podman detected. Disabling before installing Docker..."
+    systemctl disable --now podman.socket &>/dev/null || true
+  fi
+  
+  # Dựa trên hệ điều hành để cài đặt
+  if [[ "$os_name" == "almalinux" || "$os_name" == "centos" || "$os_name" == "rhel" ]] && [[ "$os_version" == "8" ]]; then
+    print_msg info "Installing Docker on ${os_name} ${os_version}..."
+    
+    # Xóa các gói có thể xung đột
+    dnf remove -y docker docker-common docker-selinux docker-engine podman containerd runc &>/dev/null || true
+    
+    # Cài đặt các gói cần thiết
+    dnf install -y dnf-utils device-mapper-persistent-data lvm2
+    
+    # Thêm repo Docker CE
+    dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+    
+    # Cài đặt Docker
+    dnf install -y --nobest --nogpgcheck docker-ce docker-ce-cli containerd.io
+    
+    # Enable và start dịch vụ Docker
+    systemctl enable docker
+    systemctl start docker
+    
+    # Cài đặt Docker Compose v2 từ GitHub
+    install_docker_compose
+    
+  elif command -v apt-get &>/dev/null; then
+    print_msg info "Installing Docker on Debian/Ubuntu..."
     apt-get update
     apt-get install -y ca-certificates curl gnupg lsb-release
+    
+    # Thêm Docker repository
     mkdir -p /etc/apt/keyrings
     curl -fsSL "https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$(. /etc/os-release && echo "$ID") $(lsb_release -cs) stable" \
       > /etc/apt/sources.list.d/docker.list
+    
     apt-get update
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
+    
   elif command -v yum &>/dev/null; then
+    print_msg info "Installing Docker using yum..."
     yum install -y yum-utils
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
+    yum install -y docker-ce docker-ce-cli containerd.io
+    
+    systemctl enable docker
+    systemctl start docker
+    
+    install_docker_compose
   else
     print_and_debug error "$ERROR_DOCKER_INSTALL_UNSUPPORTED_OS"
     exit 1
   fi
+  
+  # Kiểm tra lại cài đặt
+  if docker info &>/dev/null; then
+    print_msg success "Docker installed and running successfully"
+    return 0
+  else
+    print_and_debug error "Docker installation failed or service not running"
+    exit 1
+  fi
 }
 
-# ===========================
-# 🧩 Install Docker Compose plugin (v2)
-# Auto-detect OS and architecture, then install Compose v2.
-# Parameters: None
-# Global variables used: DOCKER_CONFIG
-# Result: None
-# ===========================
+# Hàm cài đặt Docker Compose
 install_docker_compose() {
-  print_msg step "$STEP_DOCKER_COMPOSE_INSTALL"
-
-  local DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-  mkdir -p "$DOCKER_CONFIG/cli-plugins"
-
-  local OS
-  OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-  local ARCH
-  ARCH=$(uname -m)
-
-  case "$ARCH" in
-    x86_64) ARCH="x86_64" ;;
-    aarch64 | arm64) ARCH="aarch64" ;;
-    *) print_and_debug error "$(printf "$ERROR_UNSUPPORTED_ARCH" "$ARCH")"; return 1 ;;
-  esac
-
-  local COMPOSE_URL="https://github.com/docker/compose/releases/download/v2.34.0/docker-compose-${OS}-${ARCH}"
-  local DEST="$DOCKER_CONFIG/cli-plugins/docker-compose"
-
-  print_msg info "➡️  $COMPOSE_URL"
-  curl -SL "$COMPOSE_URL" -o "$DEST"
-  chmod +x "$DEST"
-
+  print_msg info "Installing Docker Compose..."
+  
+  # Xóa phiên bản cũ nếu có
+  rm -f /usr/local/bin/docker-compose
+  
+  # Kiểm tra nếu docker compose plugin đã được cài đặt
   if docker compose version &>/dev/null; then
-    print_msg success "$SUCCESS_DOCKER_COMPOSE_INSTALLED"
+    print_msg success "Docker Compose plugin is already installed"
+    return 0
+  fi
+  
+  # Cài đặt Docker Compose V2 (plugin)
+  COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
+  COMPOSE_ARCH="$(uname -s)-$(uname -m)"
+  
+  mkdir -p /usr/local/lib/docker/cli-plugins/
+  curl -sL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-${COMPOSE_ARCH}" \
+    -o /usr/local/lib/docker/cli-plugins/docker-compose
+  
+  chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+  
+  # Tạo symlink nếu cần thiết cho tương thích ngược
+  ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
+  
+  # Kiểm tra cài đặt
+  if docker compose version &>/dev/null; then
+    print_msg success "Docker Compose ${COMPOSE_VERSION} installed successfully"
+    return 0
   else
-    print_and_debug error "$ERROR_DOCKER_COMPOSE_INSTALL_FAILED"
+    print_and_debug error "Docker Compose installation failed"
+    return 1
   fi
 }
 
