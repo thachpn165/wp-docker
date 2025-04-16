@@ -63,7 +63,6 @@ else
     rm -rf "$INSTALL_DIR"
   fi
 fi
-
 check_and_install_zip_unzip() {
   local cmds=("zip" "unzip")
   local missing=()
@@ -179,9 +178,8 @@ if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
   bash "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"
 fi
 
+core_system_update
 check_required_commands
-
-
 json_create_if_not_exists
 
 # ========================
