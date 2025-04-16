@@ -39,56 +39,56 @@ remove_container() {
 }
 
 # =====================================
-# install_docker_almalinux: Cài đặt Docker trên AlmaLinux/CentOS/RHEL 8
-# Không nhận tham số
+# install_docker_almalinux: Install Docker on AlmaLinux/CentOS/RHEL 8
+# No parameters
 # =====================================
 install_docker_almalinux() {
   local os_name=""
   local os_version=""
-  
+
   if [[ -f /etc/os-release ]]; then
     . /etc/os-release
     os_name="${ID}"
     os_version="${VERSION_ID%%.*}"
   fi
-  
+
   print_msg info "Installing Docker on ${os_name} ${os_version}..."
-  
-  # Bước 1: Gỡ bỏ các phiên bản cũ theo tài liệu Docker
+
+  # Step 1: Remove old versions according to Docker documentation
   print_msg info "Removing old versions..."
   dnf remove -y docker \
-              docker-client \
-              docker-client-latest \
-              docker-common \
-              docker-latest \
-              docker-latest-logrotate \
-              docker-logrotate \
-              docker-engine \
-              podman \
-              runc &>/dev/null || true
-  
-  # Bước 2: Cài đặt dnf-plugins-core
+    docker-client \
+    docker-client-latest \
+    docker-common \
+    docker-latest \
+    docker-latest-logrotate \
+    docker-logrotate \
+    docker-engine \
+    podman \
+    runc &>/dev/null || true
+
+  # Step 2: Install dnf-plugins-core
   print_msg info "Installing dnf-plugins-core..."
   dnf -y install dnf-plugins-core
-  
-  # Bước 3: Thiết lập repository Docker
+
+  # Step 3: Set up Docker repository
   print_msg info "Setting up Docker repository..."
   dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-  
-  # Bước 4: Cài đặt Docker Engine
+
+  # Step 4: Install Docker Engine
   print_msg info "Installing Docker Engine..."
   dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-  
-  # Bước 5: Khởi động Docker
+
+  # Step 5: Start Docker
   print_msg info "Starting Docker service..."
   systemctl enable --now docker
-  
-  # Bước 6: Kiểm tra cài đặt
+
+  # Step 6: Verify installation
   print_msg info "Verifying installation..."
   if systemctl is-active docker >/dev/null 2>&1; then
     print_msg success "Docker service is running"
-    
-    # Thử chạy hello-world container để xác nhận cài đặt
+
+    # Try running hello-world container to confirm installation
     if docker run --rm hello-world &>/dev/null; then
       print_msg success "Docker installation verified successfully"
     else
@@ -98,24 +98,23 @@ install_docker_almalinux() {
     print_msg error "Docker service failed to start after installation"
     return 1
   fi
-  
+
   return 0
 }
 
-
 # =====================================
-# install_docker: Cài đặt Docker, phát hiện hệ điều hành và sử dụng phương pháp thích hợp
-# Không nhận tham số
+# install_docker: Install Docker, detect operating system and use appropriate method
+# No parameters
 # =====================================
 install_docker() {
   print_msg step "$STEP_DOCKER_INSTALL"
 
-  # Kiểm tra Docker đã được cài đặt chưa
+  # Check if Docker is already installed
   if command -v docker &>/dev/null; then
     if docker info &>/dev/null; then
       print_msg success "Docker is already installed and running"
 
-      # Kiểm tra Docker Compose
+      # Check Docker Compose
       if docker compose version &>/dev/null; then
         print_msg success "Docker Compose is already installed"
         return 0
@@ -125,41 +124,41 @@ install_docker() {
       return 0
     fi
   fi
-  
-  # Phát hiện hệ điều hành
+
+  # Detect operating system
   local os_name=""
   local os_version=""
-  
+
   if [[ -f /etc/os-release ]]; then
     . /etc/os-release
     os_name="${ID}"
     os_version="${VERSION_ID%%.*}"
   fi
-  
-  # Kiểm tra nếu là AlmaLinux/CentOS/RHEL 8, sử dụng phương pháp riêng
+
+  # Check if it's AlmaLinux/CentOS/RHEL 8, use specific method
   if [[ "$os_name" == "almalinux" || "$os_name" == "centos" || "$os_name" == "rhel" ]] && [[ "$os_version" == "8" || "$os_version" == "9" ]]; then
     print_msg info "Detected ${os_name} ${os_version}, using specialized installation method..."
     install_docker_almalinux
     return $?
   fi
 
-  # Đối với các hệ điều hành khác, sử dụng script get.docker.com
+  # For other operating systems, use get.docker.com script
   print_msg info "Installing Docker using official installation script..."
 
-  # Tạo một tệp tạm thời để lưu script
+  # Create a temporary file to save the script
   local tmp_script=$(mktemp)
 
-  # Tải script cài đặt từ Docker
+  # Download installation script from Docker
   if ! curl -fsSL https://get.docker.com -o "$tmp_script"; then
     print_msg error "Failed to download Docker installation script"
     rm -f "$tmp_script"
     return 1
   fi
 
-  # Cấp quyền thực thi cho script
+  # Grant execution permission to script
   chmod +x "$tmp_script"
 
-  # Chạy script cài đặt
+  # Run installation script
   print_msg info "Running Docker installation script..."
   if sh "$tmp_script"; then
     print_msg success "Docker installed successfully"
@@ -169,10 +168,10 @@ install_docker() {
     return 1
   fi
 
-  # Xóa tệp script tạm thời
+  # Remove temporary script file
   rm -f "$tmp_script"
 
-  # Xác minh cài đặt
+  # Verify installation
   if docker --version &>/dev/null; then
     print_msg success "Docker version: $(docker --version)"
   else
@@ -180,20 +179,20 @@ install_docker() {
     return 1
   fi
 
-  # Xác minh Docker Compose
+  # Verify Docker Compose
   if docker compose version &>/dev/null; then
     print_msg success "Docker Compose is available"
   else
     print_msg warning "Docker Compose should have been installed with Docker but was not found"
   fi
 
-  # Kiểm tra dịch vụ Docker đã chạy chưa
+  # Check if Docker service is running
   if ! systemctl is-active docker &>/dev/null; then
     print_msg info "Starting Docker service..."
     systemctl enable --now docker
   fi
 
-  # Chạy container hello-world để xác nhận cài đặt
+  # Run hello-world container to confirm installation
   print_msg info "Verifying Docker installation with hello-world container..."
   if docker run --rm hello-world &>/dev/null; then
     print_msg success "Docker installation verified successfully"
