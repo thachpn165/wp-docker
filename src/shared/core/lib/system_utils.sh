@@ -195,6 +195,44 @@ check_required_commands() {
     fi
   done
 }
+uninstall_required_commands() {
+  print_msg info "🧹 Uninstalling required commands..."
+
+  required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab dialog)
+
+  for cmd in "${required_cmds[@]}"; do
+    cmd_name="$(echo "$cmd" | awk '{print $1}')"
+
+    if ! command -v "$cmd_name" &>/dev/null; then
+      print_msg skip "⏩ Command not installed: $cmd_name"
+      continue
+    fi
+
+    print_msg warning "⚠️ Attempting to uninstall: $cmd_name"
+
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+      if command -v apt &>/dev/null; then
+        apt remove -y "$cmd_name"
+      elif command -v yum &>/dev/null; then
+        yum remove -y "$cmd_name"
+      elif command -v dnf &>/dev/null; then
+        dnf remove -y "$cmd_name"
+      else
+        print_msg error "❌ Unsupported package manager for: $cmd_name"
+      fi
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+      if command -v brew &>/dev/null; then
+        brew uninstall "$cmd_name"
+      else
+        print_msg error "❌ Homebrew not found. Cannot uninstall: $cmd_name"
+      fi
+    else
+      print_msg error "❌ Unsupported OS: $OSTYPE"
+    fi
+  done
+
+  print_msg success "✅ Uninstall process completed."
+}
 
 # ============================================
 # 🔗 check_and_add_alias – Add wpdocker CLI alias to shell config

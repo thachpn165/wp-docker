@@ -87,6 +87,7 @@ if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
   bash "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"
 fi
 
+check_required_commands
 # ========================
 # 🛠 Ensure .config.json exists
 # ========================
