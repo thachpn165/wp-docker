@@ -14,10 +14,10 @@ services:
       - ./globals/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
       - wpdocker_fastcgi_cache_data:/usr/local/openresty/nginx/fastcgi_cache #Volumes fastcgi_cache shared between NGINX & PHP container
     networks:
-      - ${docker-network} 
+      - ${docker_network} 
 
 networks:
-  ${docker-network}:
+  ${docker_network}:
     external: true
 
 volumes:

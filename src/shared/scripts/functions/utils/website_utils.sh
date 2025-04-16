@@ -111,6 +111,7 @@ website_generate_docker_compose() {
         MYSQL_USER="$mysql_user" \
         MYSQL_PASSWORD="$mysql_password" \
         php_container="$php_container" \
+        docker_network="$DOCKER_NETWORK" \
         db_container="$db_container" \
         envsubst <"$docker_compose_template" >"$docker_compose_target"
 

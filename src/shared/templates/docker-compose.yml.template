@@ -12,7 +12,7 @@ services:
       - ../../shared/bin/wp:/usr/local/bin/wp:ro
       - wpdocker_fastcgi_cache_data:/var/cache/nginx
     networks:
-      - wpdocker_network
+      - ${docker_network}
       - ${domain}_site_network
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
@@ -27,7 +27,7 @@ services:
       - PHP_OPCACHE_REVALIDATE_FREQ=60
 
 networks:
-  wpdocker_network:
+  ${docker_network}:
     external: true
   ${domain}_site_network:
     driver: bridge
