@@ -160,8 +160,9 @@ mysql_logic_delete_db_and_user() {
     local domain="$1"
     local db_name="$2"
     local db_user="$3"
-
-    if ! confirm_action "❓ Are you sure you want to delete database \"$db_name\" and user \"$db_user\"?"; then
+    local formatted_confirm_delete_db
+    formatted_confirm_delete_db="$(printf "$QUESTION_DB_DELETE_CONFIRM" "$db_name" "$db_user")"
+    if ! confirm_action "$formatted_confirm_delete_db"; then
         print_msg warning "⚠️ Skip deleting MySQL database and user for $domain"
         return 0
     fi

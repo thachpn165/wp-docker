@@ -39,7 +39,7 @@ calculate_php_fpm_values() {
     reserved_ram=512
     avg_process_size=50
     pm_mode="ondemand"
-  else
+  elif [[ $is_high_resource == true ]]; then # Thay đổi ở đây
     reserved_ram=1024
     avg_process_size=60
     pm_mode="dynamic"

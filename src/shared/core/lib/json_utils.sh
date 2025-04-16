@@ -155,7 +155,7 @@ json_get_site_value() {
   local file="${3:-$JSON_CONFIG_FILE}"
 
   if [[ -z "$domain" || -z "$key" ]]; then
-    print_and_debug error "❌ Missing parameters in json_get_site_value(domain, key)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain or --key"
     return 1
   fi
 
@@ -178,7 +178,7 @@ json_set_site_value() {
   local file="${4:-$JSON_CONFIG_FILE}"
 
   if [[ -z "$domain" || -z "$key" || -z "$value" ]]; then
-    print_and_debug error "❌ Missing parameters in json_set_site_value(domain, key, value)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain, --key or --value"
     return 1
   fi
 
@@ -199,7 +199,7 @@ json_delete_site_field() {
   local file="${3:-$JSON_CONFIG_FILE}"
 
   if [[ -z "$domain" || -z "$key" ]]; then
-    print_and_debug error "❌ Missing parameters in json_delete_site_field(domain, key)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain or --key"
     return 1
   fi
 
@@ -218,7 +218,7 @@ json_delete_site_key() {
   local file="${2:-$JSON_CONFIG_FILE}"
 
   if [[ -z "$domain" ]]; then
-    print_and_debug error "❌ Missing parameter in json_delete_site_key(domain)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
     return 1
   fi
 

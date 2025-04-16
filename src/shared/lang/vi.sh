@@ -136,7 +136,7 @@ readonly ERROR_DOCKER_COMPOSE_INSTALL_FAILED="Cài đặt Docker Compose thất 
 readonly ERROR_NGINX_PROXY_NOT_RUNNING="Container nginx-proxy KHÔNG chạy được."
 readonly ERROR_NGINX_PROXY_START_FAILED="Không thể khởi động nginx-proxy bằng docker compose."
 readonly ERROR_NGINX_PROXY_LOG_HINT="Vui lòng kiểm tra cấu hình, volume hoặc cổng đang sử dụng."
-readonly ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED="Không tìm thấy tên container database trong .env. Vui lòng kiểm tra lại."
+readonly ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED="Không tìm thấy tên container trong config."
 readonly ERROR_CONTAINER_NAME_OR_ACTION_REQUIRED="Thiếu container hoặc hành động cần thực hiện."
 readonly ERROR_PHP_REBUILD_FAILED="Không thể rebuild container PHP"
 
@@ -898,3 +898,13 @@ readonly SUCCESS_MYSQL_CONTAINER_STARTED="Container MariaDB đã được khởi
 readonly LABEL_DOCKER_MYSQL_STATUS="Trạng thái container MariaDB"
 readonly SUCCESS_MYSQL_STATUS="MariaDB đang hoạt động"
 readonly ERROR_MYSQL_STATUS="MariaDB không hoạt động"
+readonly QUESTION_DB_DELETE_CONFIRM="Bạn có chắc chắn muốn xóa database '%s' và user '%s' không? Tất cả dữ liệu sẽ bị xóa! (y/n): "
+readonly WARNING_NGINX_CONTAINER_NOT_RUNNING="Container NGINX không hoạt động. Đang cố khởi động..."
+readonly SUCCESS_NGINX_COMPOSE_GENERATED="Đã tạo docker-compose.yml cho NGINX thành công."
+
+readonly SUCCESS_REDIS_CONTAINER_RUNNING="Container Redis đang hoạt động."
+readonly STEP_REDIS_STARTING_CONTAINER="Đang khởi động container Redis: "
+readonly WARNING_REDIS_DOCKER_COMPOSE_NOT_FOUND="Không tìm thấy docker-compose.yml cho Redis."
+readonly INFO_REDIS_GENERATING_DOCKER_COMPOSE="Đang tạo docker-compose.yml cho Redis..."
+readonly SUCCESS_REDIS_COMPOSE_GENERATED="Đã tạo docker-compose.yml cho Redis thành công."
+readonly SUCCESS_REDIS_STARTED="Container Redis đã được khởi động thành công."

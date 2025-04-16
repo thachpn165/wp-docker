@@ -45,11 +45,11 @@ redis_check_running() {
 # ============================================
 redis_start() {
     if redis_check_running; then
-        print_msg success "Redis container \"$REDIS_CONTAINER\" is already running."
+        print_msg success "$SUCCESS_REDIS_CONTAINER_RUNNING: $REDIS_CONTAINER"
         return 0
     fi
 
-    print_msg info "Starting Redis container: $REDIS_CONTAINER"
+    print_msg step "$STEP_REDIS_STARTING_CONTAINER: $REDIS_CONTAINER"
 
     local compose_dir="$CORE_DIR/redis"
     local compose_file="$compose_dir/docker-compose.yml"
@@ -57,13 +57,13 @@ redis_start() {
 
     # Generate docker-compose.yml if missing
     if [[ ! -f "$compose_file" ]]; then
-        print_msg warning "Redis docker-compose.yml not found at: $compose_file"
-        print_msg info "Generating docker-compose.yml from template..."
+        print_msg warning "$WARNING_REDIS_DOCKER_COMPOSE_NOT_FOUND: $compose_file"
+        print_msg info "$INFO_REDIS_GENERATING_DOCKER_COMPOSE"
 
         mkdir -p "$compose_dir"
 
         if [[ ! -f "$template_file" ]]; then
-            print_msg error "❌ Template not found: $template_file"
+            print_and_debug error "Template not found: $template_file"
             return 1
         fi
 
@@ -73,9 +73,9 @@ redis_start() {
         sedi "s|\${redis_container}|$REDIS_CONTAINER|g" "$compose_file"
         sedi "s|\${docker_network}|$DOCKER_NETWORK|g" "$compose_file"
 
-        print_msg success "✅ Created Redis docker-compose.yml at: $compose_file"
+        print_msg success "$SUCCESS_REDIS_COMPOSE_GENERATED: $compose_file"
     fi
 
     docker compose -f "$compose_file" up -d
-    print_msg success "✅ Redis container \"$REDIS_CONTAINER\" has been started."
+    print_msg success "$SUCCESS_REDIS_STARTED" 
 }
