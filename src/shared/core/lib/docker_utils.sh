@@ -38,15 +38,75 @@ remove_container() {
   fi
 }
 
-# ===========================
-# ⚙️ Install Docker based on OS
-# Supports:
-#   - Debian/Ubuntu via apt
-#   - CentOS/RedHat via yum
-# Parameters: None
-# Global variables used: None
-# Result: None
-# ===========================
+# =====================================
+# install_docker_almalinux: Cài đặt Docker trên AlmaLinux/CentOS/RHEL 8
+# Không nhận tham số
+# =====================================
+install_docker_almalinux() {
+  local os_name=""
+  local os_version=""
+  
+  if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    os_name="${ID}"
+    os_version="${VERSION_ID%%.*}"
+  fi
+  
+  print_msg info "Installing Docker on ${os_name} ${os_version}..."
+  
+  # Bước 1: Gỡ bỏ các phiên bản cũ theo tài liệu Docker
+  print_msg info "Removing old versions..."
+  dnf remove -y docker \
+              docker-client \
+              docker-client-latest \
+              docker-common \
+              docker-latest \
+              docker-latest-logrotate \
+              docker-logrotate \
+              docker-engine \
+              podman \
+              runc &>/dev/null || true
+  
+  # Bước 2: Cài đặt dnf-plugins-core
+  print_msg info "Installing dnf-plugins-core..."
+  dnf -y install dnf-plugins-core
+  
+  # Bước 3: Thiết lập repository Docker
+  print_msg info "Setting up Docker repository..."
+  dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  
+  # Bước 4: Cài đặt Docker Engine
+  print_msg info "Installing Docker Engine..."
+  dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  
+  # Bước 5: Khởi động Docker
+  print_msg info "Starting Docker service..."
+  systemctl enable --now docker
+  
+  # Bước 6: Kiểm tra cài đặt
+  print_msg info "Verifying installation..."
+  if systemctl is-active docker >/dev/null 2>&1; then
+    print_msg success "Docker service is running"
+    
+    # Thử chạy hello-world container để xác nhận cài đặt
+    if docker run --rm hello-world &>/dev/null; then
+      print_msg success "Docker installation verified successfully"
+    else
+      print_msg warning "Docker installed but hello-world test failed"
+    fi
+  else
+    print_msg error "Docker service failed to start after installation"
+    return 1
+  fi
+  
+  return 0
+}
+
+
+# =====================================
+# install_docker: Cài đặt Docker, phát hiện hệ điều hành và sử dụng phương pháp thích hợp
+# Không nhận tham số
+# =====================================
 install_docker() {
   print_msg step "$STEP_DOCKER_INSTALL"
 
@@ -62,9 +122,28 @@ install_docker() {
       else
         print_msg warning "Docker Compose not found, but should be included with Docker installation"
       fi
+      return 0
     fi
   fi
+  
+  # Phát hiện hệ điều hành
+  local os_name=""
+  local os_version=""
+  
+  if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    os_name="${ID}"
+    os_version="${VERSION_ID%%.*}"
+  fi
+  
+  # Kiểm tra nếu là AlmaLinux/CentOS/RHEL 8, sử dụng phương pháp riêng
+  if [[ "$os_name" == "almalinux" || "$os_name" == "centos" || "$os_name" == "rhel" ]] && [[ "$os_version" == "8" || "$os_version" == "9" ]]; then
+    print_msg info "Detected ${os_name} ${os_version}, using specialized installation method..."
+    install_docker_almalinux
+    return $?
+  fi
 
+  # Đối với các hệ điều hành khác, sử dụng script get.docker.com
   print_msg info "Installing Docker using official installation script..."
 
   # Tạo một tệp tạm thời để lưu script
