@@ -57,7 +57,39 @@ else
     rm -rf "$INSTALL_DIR"
   fi
 fi
+check_and_install_zip() {
+  if command -v zip &>/dev/null; then
+    echo "✅ zip is already installed."
+    return 0
+  fi
 
+  echo "📦 zip not found. Installing..."
+
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if command -v apt &>/dev/null; then
+      sudo apt update -y && sudo apt install -y zip
+    elif command -v yum &>/dev/null; then
+      sudo yum install -y zip
+    elif command -v dnf &>/dev/null; then
+      sudo dnf install -y zip
+    else
+      echo "❌ Unsupported Linux package manager. Please install zip manually."
+      return 1
+    fi
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    if ! command -v brew &>/dev/null; then
+      echo "📦 Homebrew not found. Installing Homebrew..."
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+    brew install zip
+  else
+    echo "❌ Unsupported OS: $OSTYPE"
+    return 1
+  fi
+
+  echo "✅ zip installed successfully."
+}
+check_and_install_zip
 # ========================
 # 📥 Download or Clone Source
 # ========================
