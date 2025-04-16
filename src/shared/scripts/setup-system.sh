@@ -15,6 +15,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
 done
 
 # === Load necessary functions ===
+safe_source "$CORE_LIB_DIR/mysql_init.sh"
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/website/website_check_and_up.sh"
 safe_source "$FUNCTIONS_DIR/setup-aliases.sh"
@@ -76,43 +77,32 @@ fi
 # =============================================
 # 🌐 Start NGINX Proxy if not running
 # =============================================
-if ! docker compose -f "$NGINX_PROXY_DIR/docker-compose.yml" ps | grep -q "$NGINX_PROXY_CONTAINER.*Up"; then
-  echo -e "$INFO_NGINX_PROXY_STARTING"
-  docker compose -f "$NGINX_PROXY_DIR/docker-compose.yml" up -d || exit_if_error 1 "$ERROR_NGINX_PROXY_START_FAILED"
-fi
-
-echo -e "$INFO_NGINX_PROXY_WAIT"
-for _ in {1..10}; do
-  status=$(docker inspect -f "{{.State.Status}}" "$NGINX_PROXY_CONTAINER" 2>/dev/null)
-  if [[ "$status" == "running" ]]; then
-    echo -e "$SUCCESS_NGINX_PROXY_RUNNING"
-    break
-  fi
-  sleep 1
-done
-
-if [[ "$status" != "running" ]]; then
-  echo -e "$ERROR_NGINX_PROXY_NOT_RUNNING"
-  docker logs "$NGINX_PROXY_CONTAINER" 2>&1 | tail -n 30
-  echo -e "$ERROR_NGINX_PROXY_LOG_HINT"
-  exit 1
-fi
+nginx_init
+# =============================================
+# ✅ Verify required commands are available
+# =============================================
+check_required_commands
 
 # =============================================
 # 🕸 Create Docker network if missing
 # =============================================
 create_docker_network "$DOCKER_NETWORK"
 
+
+# =============================================
+# Start MySQL if not running
+# =============================================
+core_mysql_start
+
+# =============================================
+# Start Redis if not running
+# =============================================
+redis_start
 # =============================================
 # 🚀 Start all existing websites
 # =============================================
 # TODO: Improve by checking both folder and .config.json
 website_check_and_up
-
-# =============================================
-# ✅ Verify required commands are available
-# =============================================
-check_required_commands
 
 # =============================================
 # Check logs directory and create if missing

@@ -1,0 +1,11 @@
+services:
+  redis:
+    image: redis:alpine
+    container_name: wpdocker-redis 
+    restart: unless-stopped
+    networks:
+      - wpdocker_network 
+    command: redis-server --appendonly yes
+networks:
+  wpdocker_network:
+    external: true

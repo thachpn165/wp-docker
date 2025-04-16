@@ -2,6 +2,15 @@
 # 🧠 System & CLI Utilities – Refactored for i18n
 # ==================================================
 
+# ============================================
+# 🧠 get_total_ram – Retrieve total RAM in MB
+# ============================================
+# Description:
+#   - Detects and returns the total RAM available in the system.
+#   - Uses `free -m` on Linux, `sysctl` on macOS.
+#
+# Returns:
+#   - Total RAM (in MB) as integer
 get_total_ram() {
   if command -v free >/dev/null 2>&1; then
     free -m | awk '/^Mem:/{print $2}'
@@ -10,6 +19,15 @@ get_total_ram() {
   fi
 }
 
+# ============================================
+# 🧠 get_total_cpu – Retrieve number of CPU cores
+# ============================================
+# Description:
+#   - Detects and returns total number of CPU cores.
+#   - Uses `nproc` on Linux, `sysctl` on macOS.
+#
+# Returns:
+#   - Total number of CPU cores
 get_total_cpu() {
   if command -v nproc >/dev/null 2>&1; then
     nproc
@@ -18,6 +36,17 @@ get_total_cpu() {
   fi
 }
 
+# ============================================
+# 🛠 sedi – Cross-platform sed wrapper
+# ============================================
+# Description:
+#   - Runs `sed -i` with proper syntax based on OS (macOS/Linux).
+#
+# Parameters:
+#   - All parameters passed directly to sed command
+#
+# Globals:
+#   OSTYPE
 sedi() {
   if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "$@"
@@ -26,6 +55,16 @@ sedi() {
   fi
 }
 
+# ============================================
+# 🌐 setup_timezone – Ensure system timezone is Vietnam
+# ============================================
+# Description:
+#   - On Linux, checks and sets system timezone to Asia/Ho_Chi_Minh if not already.
+#
+# Globals:
+#   OSTYPE
+#   WARNING_TIMEZONE_NOT_VIETNAM
+#   SUCCESS_TIMEZONE_SET
 setup_timezone() {
   if [[ "$OSTYPE" != "darwin"* ]]; then
     current_tz=$(timedatectl | grep "Time zone" | awk '{print $3}')
@@ -37,6 +76,27 @@ setup_timezone() {
   fi
 }
 
+# ============================================
+# 📝 choose_editor – Prompt user to select a CLI text editor
+# ============================================
+# Description:
+#   - Lists available editors (`nano`, `vi`, `vim`, `micro`, `code`)
+#   - Prompts user to select one
+#   - Stores selection in global `EDITOR_CMD`
+#
+# Globals:
+#   PROMPT_SELECT_EDITOR
+#   PROMPT_CONFIRM_EDITOR
+#   INFO_CHECKING_EDITORS
+#   INFO_AVAILABLE_EDITORS
+#   INFO_EDITOR_USAGE_GUIDE
+#   WARNING_EDITOR_INVALID_SELECT
+#   WARNING_EDITOR_CANCELLED
+#   DEBUG_MODE
+#
+# Returns:
+#   - 0 if an editor was selected
+#   - 1 if canceled or invalid input
 choose_editor() {
   print_msg info "$INFO_CHECKING_EDITORS"
 
@@ -77,6 +137,20 @@ choose_editor() {
   return 0
 }
 
+# ============================================
+# 🧪 check_required_commands – Ensure required commands are installed
+# ============================================
+# Description:
+#   - Verifies availability of CLI tools like docker, jq, curl, unzip, etc.
+#   - Installs missing ones depending on OS.
+#
+# Globals:
+#   OSTYPE
+#   WARNING_COMMAND_NOT_FOUND
+#   SUCCESS_COMMAND_AVAILABLE
+#   ERROR_INSTALL_COMMAND_NOT_SUPPORTED
+#   ERROR_OS_NOT_SUPPORTED
+#   WARNING_HOMEBREW_MISSING
 check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
 
@@ -85,10 +159,10 @@ check_required_commands() {
   for cmd in "${required_cmds[@]}"; do
     if [[ "$cmd" == "docker compose" ]]; then
       if docker compose version &> /dev/null; then
-        print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
+        print_msg success "$SUCCESS_COMMAND_AVAILABLE: $cmd"
         continue
       else
-        print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
+        print_msg warning "$WARNING_COMMAND_NOT_FOUND: $cmd"
         install_docker_compose
         continue
       fi
@@ -122,7 +196,16 @@ check_required_commands() {
   done
 }
 
-
+# ============================================
+# 🔗 check_and_add_alias – Add wpdocker CLI alias to shell config
+# ============================================
+# Description:
+#   - Adds alias for `wpdocker` to `.bashrc` or `.zshrc`.
+#   - Reloads shell config after writing alias.
+#
+# Globals:
+#   INSTALL_DIR
+#   SHELL
 check_and_add_alias() {
   local shell_config cli_dir_abs alias_line
 
@@ -145,10 +228,10 @@ check_and_add_alias() {
 
   if [[ "$SHELL" == *"zsh"* ]]; then
     echo "🔄 Reloading .zshrc..."
-    safe_source "$HOME/.zshrc"
+    source "$HOME/.zshrc"
   elif [[ "$SHELL" == *"bash"* ]]; then
     echo "🔄 Reloading .bashrc..."
-    safe_source "$HOME/.bashrc"
+    source "$HOME/.bashrc"
   else
     echo "⚠️ Unsupported shell. Please reload shell config manually."
   fi

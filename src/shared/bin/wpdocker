@@ -19,7 +19,7 @@ safe_source "$FUNCTIONS_DIR/rclone/manage_rclone.sh"
 safe_source "$FUNCTIONS_DIR/php/php_edit_conf.sh"
 safe_source "$FUNCTIONS_DIR/php/php_edit_phpini.sh"
 safe_source "$FUNCTIONS_DIR/core/core_version_management.sh"
-
+safe_source "$CORE_LIB_DIR/mysql_utils.sh"
 # Load CLI functions
 source "$CLI_DIR/core_lang.sh"
 source "$CLI_DIR/website_manage.sh"
@@ -151,6 +151,7 @@ handle_core() {
     case "$1" in
     version) bash "$CLI_DIR/core_version_display.sh" "${@:2}" ;;
     update) core_version_update_latest "${@:2}" ;;
+    uninstall) bash "$BASE_DIR/uninstall.sh" ;;
     channel)
         case "$2" in
         change) core_channel_switch_prompt "${@:3}" ;;

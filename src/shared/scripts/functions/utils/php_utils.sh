@@ -1,36 +1,101 @@
 #!/bin/bash
-
 # =====================================
-# calculate_php_fpm_values: Calculate optimal PHP-FPM process values based on system resources
+# calculate_php_fpm_values: Calculate optimal PHP-FPM process values for WordPress
 # Parameters:
 #   $1 - total RAM in MB
 #   $2 - total CPU cores
 # Returns:
-#   max_children start_servers min_spare_servers max_spare_servers
+#   pm pm.max_children pm.start_servers pm.min_spare_servers pm.max_spare_servers
 # =====================================
 calculate_php_fpm_values() {
-  local total_ram=$1     # MB
-  local total_cpu=$2     # Number of cores
+  local total_ram=$1 # MB
+  local total_cpu=$2 # Number of cores
 
-  local ram_based_max=$((total_ram / 30))
-  local cpu_based_max=$((total_cpu * 4))
+  # Define server resource groups
+  local is_low_resource=false
+  local is_medium_resource=false
+  local is_high_resource=false
 
+  # Server categorization
+  if [[ $total_cpu -lt 2 || $total_ram -lt 2048 ]]; then
+    is_low_resource=true
+  elif [[ $total_cpu -ge 8 && $total_ram -ge 8192 ]]; then
+    is_high_resource=true
+  else
+    is_medium_resource=true
+  fi
+
+  # WordPress-specific tuning
+  local reserved_ram=0
+  local avg_process_size=0
+  local pm_mode=""
+
+  # Set reserved RAM and process size based on server group
+  if [[ $is_low_resource == true ]]; then
+    reserved_ram=384
+    avg_process_size=40
+    pm_mode="ondemand"
+  elif [[ $is_medium_resource == true ]]; then
+    reserved_ram=512
+    avg_process_size=50
+    pm_mode="ondemand"
+  elif [[ $is_high_resource == true ]]; then # Thay đổi ở đây
+    reserved_ram=1024
+    avg_process_size=60
+    pm_mode="dynamic"
+  fi
+
+  # Calculate available RAM
+  local available_ram=$((total_ram - reserved_ram))
+
+  # Calculate max_children based on RAM
+  local ram_based_max=$((available_ram / avg_process_size))
+
+  # Calculate max_children based on CPU
+  local cpu_multiplier=0
+  if [[ $is_low_resource == true ]]; then
+    cpu_multiplier=3
+  elif [[ $is_medium_resource == true ]]; then
+    cpu_multiplier=5
+  else
+    cpu_multiplier=8
+  fi
+
+  local cpu_based_max=$((total_cpu * cpu_multiplier))
+
+  # Take the smaller value to avoid resource exhaustion
   local max_children=$((ram_based_max < cpu_based_max ? ram_based_max : cpu_based_max))
   max_children=$((max_children > 4 ? max_children : 4))
 
-  local start_servers=$((max_children / 2))
-  local min_spare_servers=$((start_servers / 2))
-  local max_spare_servers=$((start_servers * 2))
+  # Calculate other values based on server group
+  local start_servers=0
+  local min_spare_servers=0
+  local max_spare_servers=0
 
-  start_servers=$((start_servers > 2 ? start_servers : 2))
+  if [[ $pm_mode == "dynamic" ]]; then
+    start_servers=$((total_cpu + 2))
+    start_servers=$((start_servers < max_children ? start_servers : max_children))
+    min_spare_servers=$total_cpu
+    min_spare_servers=$((min_spare_servers < start_servers ? min_spare_servers : start_servers))
+    max_spare_servers=$((total_cpu * 3))
+    max_spare_servers=$((max_spare_servers < max_children ? max_spare_servers : max_children))
+  else # ondemand
+    start_servers=0
+    min_spare_servers=0
+    max_spare_servers=$((total_cpu * 2))
+    max_spare_servers=$((max_spare_servers < max_children ? max_spare_servers : max_children))
+  fi
+
+  # Ensure minimum values
   min_spare_servers=$((min_spare_servers > 1 ? min_spare_servers : 1))
-  max_spare_servers=$((max_spare_servers > 4 ? max_spare_servers : 4))
+  max_spare_servers=$((max_spare_servers > 2 ? max_spare_servers : 2))
 
-  echo "$max_children $start_servers $min_spare_servers $max_spare_servers"
+  # Return all calculated values
+  echo "$pm_mode $max_children $start_servers $min_spare_servers $max_spare_servers"
 }
 
 # =====================================
-# create_optimized_php_fpm_config: Generate PHP-FPM config file with optimized values
+# create_optimized_php_fpm_config: Generate PHP-FPM config file with optimized values for WordPress
 # Parameters:
 #   $1 - php_fpm_conf_path: path to output config file
 # Behavior:
@@ -38,7 +103,8 @@ calculate_php_fpm_values() {
 #   - Creates file and writes optimized config based on system RAM/CPU
 # =====================================
 create_optimized_php_fpm_config() {
-  local php_fpm_conf_path="$1"
+  local domain="$1"
+  local php_fpm_conf_path="$SITES_DIR/$domain/php/php-fpm.conf"
 
   if [[ -d "$php_fpm_conf_path" ]]; then
     print_msg warning "$(printf "$WARNING_PHP_FPM_REMOVE_DIR" "$php_fpm_conf_path")"
@@ -53,23 +119,29 @@ create_optimized_php_fpm_config() {
   total_ram=$(get_total_ram)
   total_cpu=$(get_total_cpu)
 
-  read max_children start_servers min_spare_servers max_spare_servers <<< "$(calculate_php_fpm_values "$total_ram" "$total_cpu")"
+  read pm_mode max_children start_servers min_spare_servers max_spare_servers <<<"$(calculate_php_fpm_values "$total_ram" "$total_cpu")"
 
-  cat > "$php_fpm_conf_path" <<EOF
+  # Create optimized config with WordPress-specific settings
+  cat >"$php_fpm_conf_path" <<EOF
 [www]
 user = nobody
 group = nogroup
 listen = 9000
-pm = dynamic
+pm = $pm_mode
 pm.max_children = $max_children
 pm.start_servers = $start_servers
 pm.min_spare_servers = $min_spare_servers
 pm.max_spare_servers = $max_spare_servers
 pm.process_idle_timeout = 10s
-pm.max_requests = 500
+pm.max_requests = 1000
+slowlog=/var/www/logs/php_slow.log
+request_slowlog_timeout = 10
+request_terminate_timeout = 60
 EOF
 
   print_msg success "$(printf "$SUCCESS_PHP_FPM_CONFIG_CREATED" "$php_fpm_conf_path")"
+  print_msg info "$(printf "Server resources: %s CPU cores, %s MB RAM" "$total_cpu" "$total_ram")"
+  print_msg info "$(printf "PHP-FPM mode: %s" "$pm_mode")"
 }
 
 # =====================================

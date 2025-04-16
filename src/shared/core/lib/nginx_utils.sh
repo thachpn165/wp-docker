@@ -1,3 +1,36 @@
+nginx_init() {
+    if is_container_running "$NGINX_PROXY_CONTAINER"; then
+        debug_log "[nginx_init] ✅ NGINX container '$NGINX_PROXY_CONTAINER' is running"
+        return 0
+    fi
+
+    # Check if the NGINX proxy directory exists, `true` = create if not
+    is_directory_exist "$NGINX_PROXY_DIR" true
+
+    print_msg step "$MSG_CHECKING_CONTAINER: $NGINX_PROXY_CONTAINER"
+    print_msg warning "$WARNING_NGINX_CONTAINER_NOT_RUNNING: $NGINX_PROXY_CONTAINER"
+
+    local compose_file="$NGINX_PROXY_DIR/docker-compose.yml"
+    local template_file="$TEMPLATES_DIR/nginx-docker-compose.yml.template"
+
+    if [[ ! -f "$compose_file" ]]; then
+        debug_log "[nginx_init] 🛠 docker-compose.yml not found, generating from template..."
+        if [[ ! -f "$template_file" ]]; then
+            print_msg error "❌ Missing template: $template_file"
+            return 1
+        fi
+
+        cp "$template_file" "$compose_file.tmp"
+        sedi "s|\${nginx_container_name}|$NGINX_PROXY_CONTAINER|g" "$compose_file.tmp"
+        sedi "s|\${docker_network}|$DOCKER_NETWORK|g" "$compose_file.tmp"
+        mv "$compose_file.tmp" "$compose_file"
+        print_msg success "$SUCCESS_NGINX_COMPOSE_GENERATED: $compose_file" 
+    fi
+
+    docker volume create wpdocker_fastcgi_cache_data >/dev/null
+    docker compose -f "$compose_file" up -d --force-recreate
+    print_msg success "$MSG_CONTAINER_READY: $NGINX_PROXY_CONTAINER"
+}
 # =====================================
 # nginx_add_mount_docker: Add volume mount to docker-compose.override.yml for a domain
 # Parameters:
@@ -15,8 +48,8 @@ nginx_add_mount_docker() {
         OVERRIDE_FILE="/tmp/mock-docker-compose.override.yml"
     fi
 
-    local MOUNT_ENTRY="      - ../../sites/$domain/wordpress:/var/www/$domain"
-    local MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
+    local MOUNT_ENTRY="      - ../../../../sites/$domain/wordpress:/var/www/$domain"
+    local MOUNT_LOGS="      - ../../../../sites/$domain/logs:/var/www/logs/$domain"
 
     if [ ! -f "$OVERRIDE_FILE" ]; then
         print_msg info "$INFO_DOCKER_NGINX_CREATING_DOCKER_COMPOSE_OVERRIDE"
@@ -102,7 +135,7 @@ nginx_restart() {
     start_loading "$INFO_DOCKER_NGINX_STARTING"
 
     if [[ ! -d "$NGINX_PROXY_DIR" ]]; then
-        print_msg error "❌ NGINX_PROXY_DIR does not exist: $NGINX_PROXY_DIR"
+        print_and_debug error "❌ NGINX_PROXY_DIR does not exist: $NGINX_PROXY_DIR"
         return 1
     fi
 

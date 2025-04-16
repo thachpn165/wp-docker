@@ -69,6 +69,25 @@ json_set_value() {
   fi
 }
 
+json_set_string_value() {
+  local key="$1"
+  local value="$2"
+  local file="${3:-$JSON_CONFIG_FILE}"
+
+  json_create_if_not_exists "$file"
+  debug_log "[json_set_string_value] START → key=$key value=$value file=$file"
+
+  local tmp_file
+  tmp_file=$(mktemp)
+
+  if jq --arg val "$value" "$key = \$val" "$file" > "$tmp_file"; then
+    mv "$tmp_file" "$file"
+    debug_log "[json_set_string_value] SUCCESS → key=$key"
+  else
+    debug_log "[json_set_string_value] ERROR → failed to set $key in $file"
+    rm -f "$tmp_file"
+  fi
+}
 # =====================================
 # json_delete_key: Delete a key from JSON file
 # Usage:
@@ -136,7 +155,7 @@ json_get_site_value() {
   local file="${3:-$JSON_CONFIG_FILE}"
 
   if [[ -z "$domain" || -z "$key" ]]; then
-    print_and_debug error "❌ Missing parameters in json_get_site_value(domain, key)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain or --key"
     return 1
   fi
 
@@ -159,7 +178,7 @@ json_set_site_value() {
   local file="${4:-$JSON_CONFIG_FILE}"
 
   if [[ -z "$domain" || -z "$key" || -z "$value" ]]; then
-    print_and_debug error "❌ Missing parameters in json_set_site_value(domain, key, value)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain, --key or --value"
     return 1
   fi
 
@@ -180,7 +199,7 @@ json_delete_site_field() {
   local file="${3:-$JSON_CONFIG_FILE}"
 
   if [[ -z "$domain" || -z "$key" ]]; then
-    print_and_debug error "❌ Missing parameters in json_delete_site_field(domain, key)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain or --key"
     return 1
   fi
 
@@ -199,7 +218,7 @@ json_delete_site_key() {
   local file="${2:-$JSON_CONFIG_FILE}"
 
   if [[ -z "$domain" ]]; then
-    print_and_debug error "❌ Missing parameter in json_delete_site_key(domain)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
     return 1
   fi
 

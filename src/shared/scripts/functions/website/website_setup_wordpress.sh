@@ -42,14 +42,13 @@ website_setup_wordpress_logic() {
     print_and_debug error "$ERROR_MISSING_PARAM: --domain"
     return 1
   fi
-  local db_name db_user db_pass php_container db_container
+  local db_name db_user db_pass php_container
 
   # 🌍 Load variables from .config.json
-  db_name=$(json_get_site_value "$domain" "MYSQL_DATABASE")
-  db_user=$(json_get_site_value "$domain" "MYSQL_USER")
-  db_pass=$(json_get_site_value "$domain" "MYSQL_PASSWORD")
+  db_name=$(json_get_site_value "$domain" "db_name")
+  db_user=$(json_get_site_value "$domain" "db_user")
+  db_pass=$(json_get_site_value "$domain" "db_pass")
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
-  db_container=$(json_get_site_value "$domain" "CONTAINER_DB")
 
   # 🔐 Create admin account
   local admin_user admin_password admin_email
@@ -128,7 +127,7 @@ website_setup_wordpress_logic() {
 
   # ⚙️ Configure wp-config
   print_msg step "$STEP_WEBSITE_SETUP_WORDPRESS: $domain"
-  wp_set_wpconfig "$php_container" "$db_name" "$db_user" "$db_pass" "$db_container"
+  wp_set_wpconfig "$php_container" "$db_name" "$db_user" "$db_pass"
   wp_install "$domain" "https://$domain" "$domain" "$admin_user" "$admin_password" "$admin_email"
 
   print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
@@ -144,5 +143,9 @@ website_setup_wordpress_logic() {
   wp_set_permalinks "$domain"
   website_wordpress_print "$domain" "$admin_user" "$admin_password" "$admin_email"
   print_msg completed "$SUCCESS_WP_INSTALL_DONE"
+
+  # set .site.$domain.cache value to `no-cache`
+  json_set_site_value "$domain" "cache" "no-cache"
+  # 🐳 Restart NGINX to apply new configuration 
   nginx_restart
 }

@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
 # ===========================
-# 🔍 Check if container is running
+# 🔍 Check if multiple containers are running
+# Returns true if all specified containers are running.
+# Parameters:
+#   $@ - List of container names to check
+# Global variables used: None
+# Result: Returns true if all containers are running, false otherwise
 # ===========================
 is_container_running() {
   local all_running=true
@@ -18,16 +23,13 @@ is_container_running() {
   [[ "$all_running" == true ]]
 }
 
-# ===========================
-# 📦 Check if Docker volume exists
-# ===========================
-is_volume_exist() {
-  local volume_name="$1"
-  docker volume ls --format '{{.Name}}' | grep -q "^${volume_name}$"
-}
 
 # ===========================
-# ❌ Remove container if running
+# ❌ Remove container if it is running
+# Parameters:
+#   $1 - Name of the container to remove
+# Global variables used: None
+# Result: None
 # ===========================
 remove_container() {
   local container_name="$1"
@@ -37,22 +39,15 @@ remove_container() {
   fi
 }
 
-# ===========================
-# ❌ Remove Docker volume if exists
-# ===========================
-remove_volume() {
-  local volume_name="$1"
-  if is_volume_exist "$volume_name"; then
-    print_msg info "$(printf "$INFO_DOCKER_REMOVING_VOLUME" "$volume_name")"
-    docker volume rm "$volume_name"
-  fi
-}
 
 # ===========================
 # ⚙️ Install Docker based on OS
 # Supports:
 #   - Debian/Ubuntu via apt
 #   - CentOS/RedHat via yum
+# Parameters: None
+# Global variables used: None
+# Result: None
 # ===========================
 install_docker() {
   print_msg step "$STEP_DOCKER_INSTALL"
@@ -80,7 +75,10 @@ install_docker() {
 
 # ===========================
 # 🧩 Install Docker Compose plugin (v2)
-# Auto-detect OS and architecture
+# Auto-detect OS and architecture, then install Compose v2.
+# Parameters: None
+# Global variables used: DOCKER_CONFIG
+# Result: None
 # ===========================
 install_docker_compose() {
   print_msg step "$STEP_DOCKER_COMPOSE_INSTALL"
@@ -114,9 +112,11 @@ install_docker_compose() {
 }
 
 # ===========================
-# 🌀 Start Docker if not running
-# macOS: use `open -a Docker`
-# Linux: use `systemctl start docker`
+# 🌀 Start Docker if it is not running
+# Handles macOS and Linux separately.
+# Parameters: None
+# Global variables used: None
+# Result: None
 # ===========================
 start_docker_if_needed() {
   if ! docker info &>/dev/null; then
@@ -163,7 +163,10 @@ start_docker_if_needed() {
 
 # ===========================
 # 👥 Ensure user is in Docker group (Linux only)
-# macOS: No need to add group
+# Checks and adds the user to the Docker group if not already a member.
+# Parameters: None
+# Global variables used: None
+# Result: None
 # ===========================
 check_docker_group() {
   if [[ "$(uname)" == "Darwin" ]]; then
@@ -179,17 +182,19 @@ check_docker_group() {
 
 # ===========================
 # 🔁 Execute a command inside the PHP container of a site
-# Creates wp-cli cache directory for better compatibility
+# Creates a wp-cli cache directory for better compatibility.
 # Parameters:
 #   $1 - domain
 #   $2 - cmd
+# Global variables used: PHP_USER
+# Result: None
 # ===========================
 docker_exec_php() {
   local domain="$1"
   local cmd="$2"
 
   if [[ -z "$domain" || -z "$cmd" ]]; then
-    print_and_debug error "❌ Missing parameters in docker_exec_php(domain, cmd)"
+    print_and_debug error "$ERROR_MISSING_PARAM: --domain or --cmd" 
     return 1
   fi
 
@@ -197,7 +202,7 @@ docker_exec_php() {
   container_php=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
   if [[ -z "$container_php" ]]; then
-    print_and_debug error "❌ Cannot find CONTAINER_PHP for site: $domain"
+    print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED: $domain"
     return 1
   fi
 
@@ -207,15 +212,22 @@ docker_exec_php() {
 
 # ===========================
 # 🧹 Remove core containers (NGINX, Redis)
+# Removes core containers including NGINX and Redis.
+# Parameters: None
+# Global variables used: NGINX_PROXY_CONTAINER, REDIS_CONTAINER
+# Result: None
 # ===========================
 remove_core_containers() {
   print_msg warning "$WARNING_REMOVE_CORE_CONTAINERS"
-  docker rm -f "$NGINX_PROXY_CONTAINER" redis-cache 2>/dev/null || true
+  docker rm -f "$NGINX_PROXY_CONTAINER" "$REDIS_CONTAINER" 2>/dev/null || true
 }
 
 # ===========================
 # 🧹 Remove containers and volumes for all websites
-# Uses get_site_list to iterate
+# Uses get_site_list to iterate and remove site-specific containers and volumes.
+# Parameters: None
+# Global variables used: None
+# Result: None
 # ===========================
 remove_site_containers() {
   for site in $(get_site_list); do

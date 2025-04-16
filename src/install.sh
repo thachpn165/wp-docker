@@ -112,7 +112,6 @@ chown -R "$USER" "$INSTALL_DIR"
 # 🔗 Setup global alias
 # ========================
 check_and_add_alias
-
 # ========================
 # 💾 Save install channel to .config.json
 # ========================
@@ -126,6 +125,12 @@ fi
 
 print_msg success "✅ Installation successful at: $INSTALL_DIR"
 
+# =========================
+# Set latest version to .config.json
+# =========================
+safe_source "$INSTALL_DIR/shared/scripts/functions/core/core_version_management.sh"
+latest_version=$(core_version_get_latest)
+core_set_installed_version "$latest_version"
 # ========================
 # 🍏 macOS File Sharing Warning
 # ========================

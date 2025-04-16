@@ -29,6 +29,7 @@ wordpress_prompt_cache_setup() {
     esac
 
     print_msg success "$SUCCESS_WORDPRESS_CHOOSE_CACHE: $cache_type"
+    json_set_site_value "$domain" "cache" "$cache_type"
 
     # Call the logic function to set up the cache
     wordpress_cli_cache_setup "$domain" "$cache_type"
@@ -58,7 +59,7 @@ wordpress_cache_setup_logic() {
         return 1
     fi
 
-    local cache_plugins=("wp-super-cache" "nginx-helper" "w3-total-cache" "redis-cache" "wp-fastest-cache")
+    local cache_plugins=("wp-super-cache" "nginx-cache" "w3-total-cache" "redis-cache" "wp-fastest-cache")
     local active_plugins
     active_plugins=$(wordpress_wp_cli_logic "$domain" "plugin list --status=active --field=name --path=$PHP_CONTAINER_WP_PATH")
 
@@ -121,7 +122,7 @@ wordpress_cache_setup_logic() {
     local plugin_slug
     case "$cache_type" in
     "wp-super-cache") plugin_slug="wp-super-cache" ;;
-    "fastcgi-cache") plugin_slug="nginx-helper" ;;
+    "fastcgi-cache") plugin_slug="nginx-cache" ;;
     "w3-total-cache") plugin_slug="w3-total-cache" ;;
     "wp-fastest-cache") plugin_slug="wp-fastest-cache" ;;
     esac
@@ -135,21 +136,29 @@ wordpress_cache_setup_logic() {
     if [[ "$cache_type" == "fastcgi-cache" || "$cache_type" == "w3-total-cache" ]]; then
         if ! grep -q "fastcgi_cache_path" "$NGINX_MAIN_CONF"; then
             sedi "/http {/a\\
-fastcgi_cache_path /var/cache/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS:100m inactive=60m use_temp_path=off;" "$NGINX_MAIN_CONF"
+fastcgi_cache_path /usr/local/openresty/nginx/fastcgi_cache levels=1:2 keys_zone=WORDPRESS:100m inactive=60m use_temp_path=off;" "$NGINX_MAIN_CONF"
             exit_if_error $? "$ERROR_ADD_FASTCGI_PATH"
             print_msg success "$SUCCESS_FASTCGI_PATH_ADDED"
         fi
+        # add fastcgi cache path to nginx-cache config
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update nginx_cache_path "/var/cache/nginx" 
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- wp option update nginx_auto_purge "1" 
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update rt_wp_nginx_helper_options '{"enable_purge":true}' --format=json
         exit_if_error $? "$ERROR_UPDATE_NGINX_HELPER"
     fi
 
+    # Setup redis cache if cache type is fastcgi-cache
     if [[ "$cache_type" == "fastcgi-cache" ]]; then
+        redis_start
         if ! grep -q "WP_REDIS_HOST" "$wp_config_file"; then
             sedi "/<?php/a\\
-define('WP_REDIS_HOST', 'redis-cache');\\
+define('WP_REDIS_HOST', '${REDIS_CONTAINER}');\\
 define('WP_REDIS_PORT', 6379);\\
-define('WP_REDIS_DATABASE', 0);" "$wp_config_file"
+define('WP_REDIS_DATABASE', 0); \\
+define('RT_WP_NGINX_HELPER_CACHE_PATH','/var/cache/nginx');" "$wp_config_file"
+
+            exit_if_error $? "$ERROR_ADD_REDIS_DEFINES"
+            print_msg success "$SUCCESS_REDIS_DEFINES_ADDED"
         fi
 
         bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install redis-cache --activate

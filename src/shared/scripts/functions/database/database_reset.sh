@@ -41,16 +41,16 @@ database_logic_reset() {
 
     # Retrieve DB credentials and container info
     local db_name db_user db_password db_container
-    db_name="$(json_get_site_value "$domain" "MYSQL_DATABASE")"
-    db_user="$(json_get_site_value "$domain" "MYSQL_USER")"
-    db_password="$(json_get_site_value "$domain" "MYSQL_PASSWORD")"
-    db_container="$(json_get_site_value "$domain" "CONTAINER_DB")"
+    db_name="$(json_get_site_value "$domain" "db_name")"
+    db_user="$(json_get_site_value "$domain" "db_user")"
+    db_password="$(json_get_site_value "$domain" "db_pass")"
+    db_container="$MYSQL_CONTAINER_NAME"
     echo "db_container: $db_container"
     debug_log "[DB RESET] db_name=$db_name, db_user=$db_user"
 
     # Check if the MariaDB container is running
-    if ! is_mariadb_running "$domain"; then
-        print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING: $db_container"
+    if ! core_mysql_check_running; then
+        print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     fi
 

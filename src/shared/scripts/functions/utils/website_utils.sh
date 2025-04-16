@@ -111,8 +111,25 @@ website_generate_docker_compose() {
         MYSQL_USER="$mysql_user" \
         MYSQL_PASSWORD="$mysql_password" \
         php_container="$php_container" \
+        docker_network="$DOCKER_NETWORK" \
         db_container="$db_container" \
         envsubst <"$docker_compose_template" >"$docker_compose_target"
 
     print_msg success "$MSG_CREATED: $docker_compose_target"
+}
+
+generate_sitename_from_domain() {
+    local domain="$1"
+
+    # Cắt domain thành mảng theo dấu chấm
+    IFS='.' read -ra parts <<< "$domain"
+    local count="${#parts[@]}"
+
+    # Loại bỏ phần đuôi cuối cùng (TLD) và đuôi phụ (ccTLD) nếu có
+    local sitename_parts=("${parts[@]:0:count-2}")
+    [[ ${#sitename_parts[@]} -eq 0 ]] && sitename_parts=("${parts[0]}")
+
+    local sitename
+    sitename=$(IFS=_; echo "${sitename_parts[*]}")
+    echo "$sitename"
 }

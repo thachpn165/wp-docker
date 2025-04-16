@@ -5,11 +5,14 @@ services:
     volumes:
       - ./php/php.ini:/opt/bitnami/php/etc/php.ini:ro
       - ./php/php-fpm.conf:/opt/bitnami/php/etc/php-fpm.conf:ro
+      - ./logs/php_slow.log:/var/www/logs/php_slow.log
+      - ./logs/php_error.log:/var/www/logs/php_error.log
       - ./wordpress:/var/www/html
       - ./backups:/backups
       - ../../shared/bin/wp:/usr/local/bin/wp:ro
+      - wpdocker_fastcgi_cache_data:/var/cache/nginx
     networks:
-      - proxy_network
+      - ${docker_network}
       - ${domain}_site_network
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
@@ -17,32 +20,18 @@ services:
       - PHP_POST_MAX_SIZE=128M
       - PHP_UPLOAD_MAX_FILESIZE=128M
       - PHP_MAX_EXECUTION_TIME=300
-      - PHP_OPCACHE_ENABLE=1
-
-  mariadb:
-    image: mariadb:10.11
-    container_name: $db_container
-    volumes:
-      - ./mariadb/conf.d:/etc/mysql/conf.d:ro
-      - mariadb_data:/var/lib/mysql
-      - ./backups:/backups
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MARIADB_CHARACTER_SET=utf8mb4
-      - MARIADB_COLLATE=utf8mb4_unicode_ci
-    networks:
-      - ${domain}_site_network
-    restart: unless-stopped
+      - PHP_ENABLE_OPCACHE=1
+      - PHP_OPCACHE_MEMORY_CONSUMPTION=256
+      - PHP_OPCACHE_MAX_ACCELERATED_FILES=10000
+      - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1
+      - PHP_OPCACHE_REVALIDATE_FREQ=60
 
 networks:
-  proxy_network:
+  ${docker_network}:
     external: true
   ${domain}_site_network:
     driver: bridge
 
 volumes:
-  mariadb_data:
-    driver: local
+  wpdocker_fastcgi_cache_data:
+    external: true

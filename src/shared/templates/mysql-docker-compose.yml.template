@@ -1,0 +1,20 @@
+services:
+  mariadb:
+    container_name: ${mysql_container}
+    image: ${mysql_image}
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${mysql_root_passwd}
+    volumes:
+      - ${mysql_volume_name}:/var/lib/mysql
+      - ./mysql.cnf:/etc/mysql/conf.d/mysql.cnf:ro
+    networks:
+      - ${docker_network} 
+
+volumes:
+    ${mysql_volume_name}:
+      name: ${mysql_volume_name} 
+
+networks:
+  ${docker_network}:
+    external: true

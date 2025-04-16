@@ -33,7 +33,7 @@ system_tools_menu() {
                     system_cli_cleanup_docker; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 4)
-                    bash "$CLI_DIR/system_nginx_rebuild.sh"; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    system_cli_nginx_rebuild; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 5)
                     core_lang_change_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"

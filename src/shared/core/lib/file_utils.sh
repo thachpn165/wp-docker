@@ -72,10 +72,10 @@ is_directory_exist() {
   local create_if_missing="$2"
 
   if [[ ! -d "$dir" ]]; then
-    if [[ "$create_if_missing" != "false" ]]; then
+    if [[ "$create_if_missing" == "true" ]]; then
       debug_log "[is_directory_exist] Directory not exist, creating: $dir"
       print_msg debug "$MSG_NOT_FOUND : $dir"
-      #mkdir -p "$dir" # commented intentionally
+      mkdir -p "$dir"
     else
       return 1
     fi

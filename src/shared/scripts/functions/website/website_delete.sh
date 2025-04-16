@@ -69,11 +69,9 @@ website_logic_delete() {
     return 1
   fi
 
-  MARIADB_VOLUME="${domain//./}${DB_VOLUME_SUFFIX}"
   SITE_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$domain.conf"
 
   debug_log "Deleting website '$domain'..."
-  debug_log "MariaDB Volume: $MARIADB_VOLUME"
   debug_log "Site conf file: $SITE_CONF_FILE"
   debug_log "Site directory: $SITE_DIR"
   debug_log "backup_enabled: $backup_enabled"
@@ -98,9 +96,18 @@ website_logic_delete() {
   run_cmd "docker compose -f $SITE_DIR/docker-compose.yml down" true
   debug_log "Stopped containers for website '$domain'."
 
+  # Xoá database/user nếu có trong .config.json (không cần tự xóa key vì json_delete_site_key sẽ xử lý toàn bộ)
+  local db_name db_user
+  db_name="$(json_get_site_value "$domain" "db_name")"
+  db_user="$(json_get_site_value "$domain" "db_user")"
+
+  if [[ -n "$db_name" && -n "$db_user" ]]; then
+    mysql_logic_delete_db_and_user "$domain" "$db_name" "$db_user"
+  fi
+
   OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
-  MOUNT_ENTRY="      - ../../sites/$domain/wordpress:/var/www/$domain"
-  MOUNT_LOGS="      - ../../sites/$domain/logs:/var/www/logs/$domain"
+  MOUNT_ENTRY="      - ../../../../sites/$domain/wordpress:/var/www/$domain"
+  MOUNT_LOGS="      - ../../../../sites/$domain/logs:/var/www/logs/$domain"
 
   if [[ -f "$OVERRIDE_FILE" ]]; then
     print_msg step "$MSG_NGINX_REMOVE_MOUNT: $domain"
@@ -115,10 +122,6 @@ website_logic_delete() {
   run_cmd "rm -rf \"$SSL_DIR/$domain.crt\"" true
   run_cmd "rm -rf \"$SSL_DIR/$domain.key\"" true
   print_msg success "$SUCCESS_SSL_CERTIFICATE_REMOVED: $domain"
-
-  print_msg step "$MSG_WEBSITE_DELETING_VOLUME: $MARIADB_VOLUME"
-  run_cmd "docker volume rm \"$MARIADB_VOLUME\"" true
-  print_msg success "$SUCCESS_CONTAINER_VOLUME_REMOVE: $MARIADB_VOLUME"
 
   if is_file_exist "$SITE_CONF_FILE"; then
     print_msg step "$MSG_WEBSITE_DELETING_NGINX_CONF: $SITE_CONF_FILE"

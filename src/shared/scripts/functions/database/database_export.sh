@@ -42,7 +42,8 @@ database_export_logic() {
         return 1
     fi
 
-    # Validate required parameter: domain
+    # Validate required parameter: domain/mysqldump
+
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
         return 1
@@ -61,13 +62,16 @@ database_export_logic() {
 
     # Retrieve database credentials from JSON config
     local db_name db_user db_password
-    db_name="$(json_get_site_value "$domain" "MYSQL_DATABASE")"
-    db_user="$(json_get_site_value "$domain" "MYSQL_USER")"
-    db_password="$(json_get_site_value "$domain" "MYSQL_PASSWORD")"
+    db_name="$(json_get_site_value "$domain" "db_name")"
+    db_user="$(json_get_site_value "$domain" "db_user")"
+    db_password="$(json_get_site_value "$domain" "db_pass")"
     debug_log "[DB EXPORT] db_name=$db_name, db_user=$db_user"
+    debug_log "[DB EXPORT] save_location=$save_location"
+    debug_log "[DB EXPORT] domain=$domain"
+    debug_log "[DB EXPORT] backup_dir=$backup_dir"
 
     # Ensure MariaDB container is running
-    if ! is_mariadb_running "$domain"; then
+    if ! core_mysql_check_running; then
         print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     fi
@@ -76,14 +80,7 @@ database_export_logic() {
     print_msg step "$(printf "$STEP_BACKUP_DATABASE" "$db_name")"
     debug_log "[Backup] Running mysqldump for: $db_name → $save_location"
 
-    local db_container
-    db_container=$(json_get_site_value "$domain" "CONTAINER_DB")
-    if [[ -z "$db_container" ]]; then
-        print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED"
-        return 1
-    fi
-
-    if ! docker exec --env MYSQL_PWD="$db_password" "$db_container" \
+    if ! docker exec --env MYSQL_PWD="$db_password" "$MYSQL_CONTAINER_NAME" \
         mysqldump -u"$db_user" "$db_name" >"$save_location"; then
         print_msg error "$(printf "$ERROR_BACKUP_DB_DUMP_FAILED" "$db_name")"
         return 1

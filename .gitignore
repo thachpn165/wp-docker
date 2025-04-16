@@ -6,6 +6,8 @@ secrets/
 keys/
 config/secrets.yml
 
+# MySQL
+src/shared/core/mysql/mysql.cnf
 # 🚀 BỎ QUA DỮ LIỆU CỦA WORDPRESS 🚀
 src/sites/
 /sites
@@ -18,15 +20,16 @@ src/sites/*/backups/
 *.zip
 
 # 🔐 CHỨNG CHỈ SSL 🔐
-src/webserver/nginx/ssl/*
-!src/webserver/nginx/ssl/.gitkeep
+src/core/webserver/nginx/ssl/*
+!src/core/webserver/nginx/ssl/.gitkeep
 !src/sites/**/nginx/ssl/.gitkeep
 
 # 🛠️ DOCKER & COMPOSE 🛠️
 **/docker-compose.override.yml
 **/docker-compose.yml.bak
 **/docker-compose.override.yml.bak
-
+src/shared/core/*/docker-compose.yml
+src/shared/core/webserver/*/docker-compose.yml
 # 🔍 LOG & CACHE 🔍
 src/logs/
 src/sites/*/logs/
@@ -34,8 +37,8 @@ src/sites/*/logs/
 *.log.*
 debug.log
 php-errors.log
-src/webserver/nginx/access.log
-src/webserver/nginx/error.log
+src/core/webserver/nginx/access.log
+src/core/webserver/nginx/error.log
 
 # ⚙️ MAC & LINUX SYSTEM FILES ⚙️
 .DS_Store
@@ -68,8 +71,8 @@ tests.yml.bak
 src/shared/config/rclone/rclone.conf
 
 # 🌐 NGINX GLOBAL CONFIG - không commit theo site
-src/webserver/nginx/globals/wp-login*
-src/webserver/nginx/conf.d/*.conf
+src/shared/core/webserver/nginx/globals/wp-login*
+src/shared/core/webserver/nginx/conf.d/*.conf
 
 # 🧩 WP CLI binary (tự động tải lại)
 src/shared/bin/wp

@@ -11,14 +11,13 @@
 #   $2 - DB name
 #   $3 - DB user
 #   $4 - DB password
-#   $5 - DB container host
 # =====================================
 wp_set_wpconfig() {
   local container_php="$1"
   local db_name="$2"
   local db_user="$3"
   local db_pass="$4"
-  local container_db="$5"
+  local container_db="$MYSQL_CONTAINER_NAME"
 
   print_msg info "$INFO_WP_CONFIGURING"
 
