@@ -208,44 +208,37 @@ core_system_update() {
 check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
   core_system_update
-  required_cmds=(docker "docker compose" nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
+  
+  # Loại bỏ "docker compose" khỏi danh sách vì sẽ được cài đặt riêng
+  required_cmds=(docker nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
 
   for cmd in "${required_cmds[@]}"; do
-    if [[ "$cmd" == "docker compose" ]]; then
-      if docker compose version &> /dev/null; then
-        print_msg success "$SUCCESS_COMMAND_AVAILABLE: $cmd"
-        continue
-      else
-        print_msg warning "$WARNING_COMMAND_NOT_FOUND: $cmd"
-        install_docker_compose
-        continue
-      fi
-    fi
-
     if ! command -v "$(echo "$cmd" | awk '{print $1}')" &> /dev/null; then
       print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
 
       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Xác định phiên bản hệ điều hành
+        local is_alma_centos8=false
+        if [[ -f /etc/redhat-release ]]; then
+          if (grep -q "AlmaLinux" /etc/redhat-release || grep -q "CentOS" /etc/redhat-release) && grep -q "8\." /etc/redhat-release; then
+            is_alma_centos8=true
+          fi
+        fi
+        
         if command -v apt &> /dev/null; then
           apt update -y && apt install -y "$(echo "$cmd" | awk '{print $1}')"
-        elif command -v yum &> /dev/null; then
-          # Import GPG keys first for CentOS/RHEL/AlmaLinux
-          if [[ -f /etc/redhat-release ]]; then
-            # Check if AlmaLinux
-            if grep -q "AlmaLinux" /etc/redhat-release; then
-              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
-            # Check if CentOS
-            elif grep -q "CentOS" /etc/redhat-release; then
-              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
-            # Check if RHEL
-            elif grep -q "Red Hat" /etc/redhat-release; then
-              rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-            fi
-          fi
-          # Install with --nogpgcheck as fallback if key import fails
-          yum install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
         elif command -v dnf &> /dev/null; then
-          dnf install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
+          if [[ "$is_alma_centos8" == "true" ]]; then
+            dnf install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
+          else
+            dnf install -y "$(echo "$cmd" | awk '{print $1}')"
+          fi
+        elif command -v yum &> /dev/null; then
+          if [[ "$is_alma_centos8" == "true" ]]; then
+            yum install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
+          else
+            yum install -y "$(echo "$cmd" | awk '{print $1}')"
+          fi
         else
           print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
         fi
@@ -262,6 +255,14 @@ check_required_commands() {
       print_msg success "$(printf "$SUCCESS_COMMAND_AVAILABLE" "$cmd")"
     fi
   done
+  
+  # Kiểm tra Docker compose riêng - không cài đặt tại đây
+  if docker compose version &> /dev/null; then
+    print_msg success "$SUCCESS_COMMAND_AVAILABLE: docker compose"
+  else
+    print_msg warning "$WARNING_COMMAND_NOT_FOUND: docker compose"
+    print_msg info "Docker Compose will be installed separately"
+  fi
 }
 
 uninstall_required_commands() {
