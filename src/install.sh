@@ -249,4 +249,4 @@ countdown() {
 
 # Call the countdown function with 5 seconds
 countdown 5
-kill -9 $$
+kill -HUP $$
