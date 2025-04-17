@@ -29,7 +29,7 @@ website_logic_restart() {
   # Restart the website using Docker Compose
   print_msg step "$STEP_WEBSITE_RESTARTING: $domain"
   cd "$SITES_DIR" || return
-  docker-compose down && docker-compose up -d
+  docker compose down && docker compose up -d
   cd "$BASH_DIR" || return
 
   print_msg success "$SUCCESS_WEBSITE_RESTARTED: $domain"
