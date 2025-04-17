@@ -914,3 +914,5 @@ readonly IMPORTANT_LOGOUT_AFTER_INSTALL="Hãy logout hoặc reboot hệ thống 
 readonly INFO_START_USING="Để bắt đầu sử dụng, hãy chạy lệnh:"
 readonly PROMPT_ENTER_EMAIL="Nhập địa chỉ email: "
 readonly ERROR_MISSING_EMAIL="Thiếu địa chỉ email. Vui lòng nhập địa chỉ email hợp lệ."
+readonly ERROR_WEBSITE_STOP_FAILED="Dừng website thất bại"
+readonly ERROR_WEBSITE_START_FAILED="Khởi động website thất bại"

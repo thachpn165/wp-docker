@@ -11,27 +11,33 @@
 # =====================================
 website_logic_restart() {
   local domain="$1"
-  local SITES_DIR="$SITES_DIR/$domain"
+
   # If domain is empty, call select_website to choose domain
   if [[ -z "$domain" ]]; then
     select_website
-    local SITES_DIR="$SITES_DIR/$domain"
   fi
 
+  local site_dir="$SITES_DIR/$domain"
+  local docker_compose_file="$site_dir/docker-compose.yml"
   # Check if domain is still empty after selection
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
     return 1
   fi
-
+  debug_log "[website_logic_restart] site_dir=$site_dir"
   debug_log "[website_logic_restart] domain=$domain"
 
   # Restart the website using Docker Compose
   print_msg step "$STEP_WEBSITE_RESTARTING: $domain"
-  cd "$SITES_DIR" || return
-  docker compose down && docker compose up -d
-  cd "$BASH_DIR" || return
-
+ 
+  if ! run_cmd "docker compose -f $docker_compose_file down" true; then
+    print_msg error "$ERROR_WEBSITE_STOP_FAILED: $domain"
+    return 1
+  fi
+  if ! run_cmd "docker compose -f $docker_compose_file up -d" true; then
+    print_msg error "$ERROR_WEBSITE_START_FAILED: $domain"
+    return 1
+  fi
   print_msg success "$SUCCESS_WEBSITE_RESTARTED: $domain"
 }
 

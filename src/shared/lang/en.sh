@@ -912,3 +912,5 @@ readonly IMPORTANT_LOGOUT_AFTER_INSTALL="Please logout or reboot the system afte
 readonly INFO_START_USING="To start using, run the command:"
 readonly PROMPT_ENTER_EMAIL="Enter email address: "
 readonly ERROR_MISSING_EMAIL="Missing email address. Please enter a valid email address."
+readonly ERROR_WEBSITE_STOP_FAILED="Website failed to stop"
+readonly ERROR_WEBSITE_START_FAILED="Website failed to start"
