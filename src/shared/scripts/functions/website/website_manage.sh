@@ -118,16 +118,16 @@ website_logic_list() {
 website_logic_logs() {
   local domain="$1"
   local log_type="$2"
-  local access_log="$SITES_DIR/$domain/logs/access.log"
-  local error_log="$SITES_DIR/$domain/logs/error.log"
 
   # If domain is not provided, call select_website to choose one
   if [[ -z "$domain" ]]; then
     select_website
-    local access_log="$SITES_DIR/$domain/logs/access.log"
-    local error_log="$SITES_DIR/$domain/logs/error.log"
   fi
 
+  local access_log="$SITES_DIR/$domain/logs/access.log"
+  local error_log="$SITES_DIR/$domain/logs/error.log"
+  local php_slow_log="$SITES_DIR/$domain/logs/php_slow.log"
+  local php_error_log="$SITES_DIR/$domain/logs/php_error.log"
   # Check if domain is still empty after selection
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
@@ -139,12 +139,18 @@ website_logic_logs() {
     echo -e "${YELLOW}⚡ You are about to view logs for the website '$domain'. Choose log type:${NC}"
     echo "1. Access Logs"
     echo "2. Error Logs"
+    echo "3. PHP Error Logs"
+    echo "4. PHP Slow Logs"
     # Read user input
-    log_option=$(select_from_list "$PROMPT_SELECT_OPTION (1-2)" "1" "2")
+    log_option=$(select_from_list "$PROMPT_SELECT_OPTION (1-4)" "1" "2" "3" "4")
     if [[ "$log_option" == "1" ]]; then
       log_type="access"
     elif [[ "$log_option" == "2" ]]; then
       log_type="error"
+    elif [[ "$log_option" == "3" ]]; then
+      log_type="php_error"
+    elif [[ "$log_option" == "4" ]]; then
+      log_type="php_slow"
     else
       print_msg error "$ERROR_INVALID_LOG_TYPE: $log_option"
       return 1
@@ -161,6 +167,8 @@ website_logic_logs() {
   debug_log "Selected log type: $log_type"
   debug_log "error_log: $error_log"
   debug_log "access_log: $access_log"
+  debug_log "php_error: $php_error_log"
+  debug_log "php_slow: $php_slow_log"
 
   echo ""${NC}
   # Display logs based on the log type
@@ -173,6 +181,14 @@ website_logic_logs() {
     echo -e "\n${MAGENTA}📛 Following Error Log (Ctrl+C to Exit): $error_log${NC}"
     tail -f "$error_log"
     ;;
+  php_error)
+    echo -e "\n${MAGENTA}📛 Following PHP Error Log (Ctrl+C to Exit): $php_error_log${NC}"
+    tail -f "$php_error_log"
+    ;;
+  php_slow)
+    echo -e "\n${MAGENTA}📛 Following PHP Slow Log (Ctrl+C to Exit): $php_slow_log${NC}"
+    tail -f "$php_slow_log"
+    ;;  
   *)
     print_msg error "$ERROR_INVALID_LOG_TYPE: $log_type"
     return 1
