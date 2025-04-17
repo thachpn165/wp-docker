@@ -8,10 +8,8 @@ safe_source "$CLI_DIR/database_actions.sh"
 #   - Global variable $domain set by user selection
 # =====================================
 database_prompt_reset() {
-    # Prompt user to select a website
-    select_website || exit 1
-
-    # Ensure domain was selected
+    local domain 
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1

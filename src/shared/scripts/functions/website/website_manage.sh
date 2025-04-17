@@ -14,7 +14,7 @@ website_logic_restart() {
 
   # If domain is empty, call select_website to choose domain
   if [[ -z "$domain" ]]; then
-    select_website
+    website_get_selected domain
   fi
 
   local site_dir="$SITES_DIR/$domain"
@@ -29,7 +29,7 @@ website_logic_restart() {
 
   # Restart the website using Docker Compose
   print_msg step "$STEP_WEBSITE_RESTARTING: $domain"
- 
+
   if ! run_cmd "docker compose -f $docker_compose_file down" true; then
     print_msg error "$ERROR_WEBSITE_STOP_FAILED: $domain"
     return 1
@@ -55,7 +55,7 @@ website_logic_info() {
   local SITES_DIR="$SITES_DIR/$domain"
   # If domain is not provided, call select_website to choose one
   if [[ -z "$domain" ]]; then
-    select_website
+    website_get_selected domain
   fi
 
   # Check if domain is still empty after selection
@@ -127,7 +127,7 @@ website_logic_logs() {
 
   # If domain is not provided, call select_website to choose one
   if [[ -z "$domain" ]]; then
-    select_website
+    website_get_selected domain
   fi
 
   local access_log="$SITES_DIR/$domain/logs/access.log"
@@ -194,7 +194,7 @@ website_logic_logs() {
   php_slow)
     echo -e "\n${MAGENTA}📛 Following PHP Slow Log (Ctrl+C to Exit): $php_slow_log${NC}"
     tail -f "$php_slow_log"
-    ;;  
+    ;;
   *)
     print_msg error "$ERROR_INVALID_LOG_TYPE: $log_type"
     return 1

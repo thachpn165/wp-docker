@@ -2,12 +2,12 @@
 # 📋 backup_prompt_backup_manage – Menu for managing backups
 # ================================================
 backup_prompt_backup_manage() {
+    local domain
     safe_source "$CLI_DIR/backup_manage.sh"
-    select_website
-
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_and_debug error "$ERROR_MISSING_PARAM: --domain must be provided"
-        exit 1
+        return 1
     fi
 
     print_msg info "$MSG_WEBSITE_SELECTED: $domain"
