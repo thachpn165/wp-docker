@@ -912,3 +912,5 @@ readonly SUCCESS_REDIS_STARTED="Container Redis đã được khởi động th�
 readonly SUCCESS_WPDOCKER_INSTALLED="Đã cài đặt WP Docker thành công. Mã nguồn lưu trữ tại: "
 readonly IMPORTANT_LOGOUT_AFTER_INSTALL="Hãy logout hoặc reboot hệ thống sau khi cài đặt xong để có thể sử dụng lệnh wpdocker."
 readonly INFO_START_USING="Để bắt đầu sử dụng, hãy chạy lệnh:"
+readonly PROMPT_ENTER_EMAIL="Nhập địa chỉ email: "
+readonly ERROR_MISSING_EMAIL="Thiếu địa chỉ email. Vui lòng nhập địa chỉ email hợp lệ."

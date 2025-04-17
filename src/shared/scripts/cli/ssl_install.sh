@@ -35,7 +35,7 @@ ssl_cli_install_selfsigned() {
 }
 
 # =====================================
-# 🔐 ssl_cli_install_letsencrypt
+# 🔐 ssl_cli_install_ssl_prompt_general
 # Parameters: --domain --email [--staging]
 # =====================================
 ssl_cli_install_letsencrypt() {

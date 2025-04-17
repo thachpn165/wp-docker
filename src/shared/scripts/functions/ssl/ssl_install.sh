@@ -12,10 +12,7 @@ ssl_prompt_general() {
     local domain
 
     # Select website
-    select_website || {
-        print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
-        return 1
-    }
+    select_website
     domain="$SELECTED_WEBSITE"
 
     # Validate callback function existence
@@ -29,6 +26,22 @@ ssl_prompt_general() {
     return $?
 }
 
+ssl_prompt_letsencrypt() {
+    local domain email staging
+
+    # Select website
+    select_website
+    domain="$SELECTED_WEBSITE"
+
+    # Prompt for email
+    email=$(get_input_or_test_value "$PROMPT_ENTER_EMAIL" "test@local")
+    if [[ -z "$email" ]]; then
+        print_and_debug error "$ERROR_MISSING_EMAIL"
+        email=$(get_input_or_test_value "$PROMPT_ENTER_EMAIL" "test@local")
+    fi
+    # Send command to install SSL
+    ssl_cli_install_letsencrypt --domain="$domain" --email="$email"
+}
 # ===========================================
 # SSL INSTALLATION LOGIC
 # ===========================================
