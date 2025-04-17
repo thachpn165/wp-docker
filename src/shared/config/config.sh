@@ -22,7 +22,7 @@ else
 fi
 PROJECT_DIR="$BASE_DIR"
 
-DEBUG_MODE="true"
+DEBUG_MODE="false"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 # ==== 2. Load core libs and i18n ====
