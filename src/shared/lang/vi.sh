@@ -767,7 +767,7 @@ readonly INFO_UPDATING_CORE="Đang cập nhật hệ thống"
 
 readonly INFO_DOWNLOADING_CORE_UPDATE="Đang tải về bản cập nhật mới nhất từ GitHub..."
 readonly STEP_EXTRACT_AND_UPDATE="Đang giải nén và thay thế mã nguồn..."
-readonly SUCCESS_CORE_UPDATED="🎉 Đã cập nhật hệ thống thành công!"
+readonly SUCCESS_CORE_UPDATED="🎉 Đã cập nhật hệ thống thành công!. Vui lòng thoát khỏi terminal và đăng nhập lại để áp dụng thay đổi."
 readonly INFO_BACKUP_OLD_SRC="Mã nguồn cũ đã được sao lưu tại"
 readonly ERROR_DOWNLOAD_FAILED="Tải về thất bại từ"
 readonly ERROR_EXTRACT_FAILED="Không thể giải nén tệp cập nhật"

@@ -764,7 +764,7 @@ readonly INFO_RESTORE_INSTRUCTION="You can restore sites from the backup folder:
 readonly INFO_UPDATING_CORE="Updating WP Docker system"
 readonly INFO_DOWNLOADING_CORE_UPDATE="Downloading the latest update from GitHub..."
 readonly STEP_EXTRACT_AND_UPDATE="Extracting and replacing source code..."
-readonly SUCCESS_CORE_UPDATED="🎉 WP Docker has been updated successfully!"
+readonly SUCCESS_CORE_UPDATED="🎉 System updated successfully!. Please exit the terminal and log in again to apply the changes."
 readonly INFO_BACKUP_OLD_SRC="Previous source has been backed up to"
 
 readonly ERROR_DOWNLOAD_FAILED="Download failed from"
