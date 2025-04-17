@@ -142,7 +142,7 @@ fastcgi_cache_path /usr/local/openresty/nginx/fastcgi_cache levels=1:2 keys_zone
         fi
         # add fastcgi cache path to nginx-cache config
         bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update nginx_cache_path "/var/cache/nginx" 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- wp option update nginx_auto_purge "1" 
+        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update nginx_auto_purge "1" 
 
         exit_if_error $? "$ERROR_UPDATE_NGINX_HELPER"
     fi
