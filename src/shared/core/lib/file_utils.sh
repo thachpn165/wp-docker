@@ -93,7 +93,7 @@ confirm_action() {
   local message="$1"
   local answer
 
-  answer=$(get_input_or_test_value "$message (y/n)")
+  answer=$(get_input_or_test_value "$message (y/n) ")
   case "$answer" in
     [yY][eE][sS]|[yY]) return 0 ;;
     *) return 1 ;;

@@ -898,7 +898,7 @@ readonly SUCCESS_MYSQL_CONTAINER_STARTED="Container MariaDB đã được khởi
 readonly LABEL_DOCKER_MYSQL_STATUS="Trạng thái container MariaDB"
 readonly SUCCESS_MYSQL_STATUS="MariaDB đang hoạt động"
 readonly ERROR_MYSQL_STATUS="MariaDB không hoạt động"
-readonly QUESTION_DB_DELETE_CONFIRM="Bạn có chắc chắn muốn xóa database '%s' và user '%s' không? Tất cả dữ liệu sẽ bị xóa! (y/n): "
+readonly QUESTION_DB_DELETE_CONFIRM="Bạn có chắc chắn muốn xóa database '%s' và user '%s' không? Tất cả dữ liệu sẽ bị xóa!"
 readonly WARNING_NGINX_CONTAINER_NOT_RUNNING="Container NGINX không hoạt động. Đang cố khởi động..."
 readonly SUCCESS_NGINX_COMPOSE_GENERATED="Đã tạo docker-compose.yml cho NGINX thành công."
 
