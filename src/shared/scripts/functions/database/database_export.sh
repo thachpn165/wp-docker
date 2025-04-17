@@ -6,19 +6,18 @@ safe_source "$CLI_DIR/database_actions.sh"
 # Requires: select_website function, global variable $save_location
 # =====================================
 database_prompt_export() {
-    # Prompt user to select a website
-    echo "🔧 Choose the website for backup:"
-    select_website || exit 1
+    local domain 
+    local save_location 
+    local timestamp
+    timestamp="$(date +%s)"
+    website_get_selected domain
+    [[ -z "$domain" ]] && print_msg error "$ERROR_SITE_NOT_SELECTED" && exit 1
+    print_msg info "$INFO_BACKUP_SAVE_LOCATION: $save_location"
 
-    # Validate domain selection
-    if [[ -z "$domain" ]]; then
-        echo "${CROSSMARK} Site name is not set. Exiting..."
-        exit 1
-    fi
-
-    echo "💾 Backup will be saved to: $save_location"
-
+    save_location="${SITES_DIR}/$domain/backups/${domain}-backup-$(date +%F)-$timestamp.sql"
     # Call CLI export command
+    debug_log "[DB EXPORT] domain=$domain"
+    debug_log "[DB EXPORT] save_location=$save_location"
     database_cli_export --domain="$domain" --save_location="$save_location"
 }
 

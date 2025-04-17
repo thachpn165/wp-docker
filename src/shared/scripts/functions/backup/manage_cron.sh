@@ -152,8 +152,12 @@ schedule_backup_list() {
 #   - None
 # =============================================
 schedule_backup_remove() {
-    select_website || return
-
+    local domain 
+    website_get_selected domain
+    if [[ -z "$domain" ]]; then
+        print_msg error "You must select a website to remove the backup schedule."
+        return 1
+    fi
     local temp_cron
     temp_cron=$(mktemp)
     crontab -l 2>/dev/null | grep -v "$BACKUP_RUNNER $domain" > "$temp_cron"

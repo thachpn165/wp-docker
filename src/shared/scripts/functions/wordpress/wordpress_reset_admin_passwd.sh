@@ -1,8 +1,9 @@
 #!/bin/bash
 
 wordpress_prompt_reset_admin_passwd() {
+    local domain 
     # 📋 Chọn website
-    select_website
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
         exit 1

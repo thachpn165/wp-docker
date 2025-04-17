@@ -8,9 +8,9 @@ safe_source "$CLI_DIR/database_actions.sh"
 #   - Global variable TEST_BACKUP_FILE (optional)
 # =====================================
 database_prompt_import() {
+    local domain 
     print_msg info "$PROMPT_DATABASE_IMPORT_WEBSITE"
-    select_website || exit 1
-
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1

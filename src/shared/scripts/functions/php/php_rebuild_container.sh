@@ -6,9 +6,12 @@
 # =====================================
 php_prompt_rebuild_container() {
   safe_source "$CLI_DIR/php_rebuild_container.sh"
-
-  select_website || exit 1 # Use the existing select_website function to allow user to select a site
-
+  local domain
+  website_get_selected domain
+  if [[ -z "$domain" ]]; then
+    print_msg error "$ERROR_SITE_NOT_SELECTED"
+    exit 1
+  fi
   # === Confirm rebuild of PHP container ===
   echo -e "${YELLOW}🔁 Rebuild the PHP container for site: $domain${NC}"
   read -p "Are you sure you want to rebuild the PHP container for this site? (y/n): " confirm_rebuild

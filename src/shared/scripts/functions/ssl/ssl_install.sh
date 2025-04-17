@@ -12,9 +12,11 @@ ssl_prompt_general() {
     local domain
 
     # Select website
-    select_website
-    domain="$SELECTED_WEBSITE"
-
+    website_get_selected domain
+    if [[ -z "$domain" ]]; then
+        print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
+        return 1
+    fi
     # Validate callback function existence
     if [[ "$(type -t "$callback_function")" != "function" ]]; then
         print_and_debug error "Error: Function $callback_function does not exist"
@@ -28,11 +30,13 @@ ssl_prompt_general() {
 
 ssl_prompt_letsencrypt() {
     local domain email staging
-
-    # Select website
-    select_website
-    domain="$SELECTED_WEBSITE"
-
+    
+    # Prompt for $domain
+    website_get_selected domain
+    if [[ -z "$domain" ]]; then
+        print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
+        return 1
+    fi
     # Prompt for email
     email=$(get_input_or_test_value "$PROMPT_ENTER_EMAIL" "test@local")
     if [[ -z "$email" ]]; then

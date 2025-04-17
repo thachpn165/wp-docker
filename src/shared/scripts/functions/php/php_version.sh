@@ -74,30 +74,29 @@ php_prompt_choose_version() {
 # =====================================
 php_prompt_change_version() {
   local php_version
+  local domain
 
-  # === Select Website ===
-  echo -e "${YELLOW}🔧 Choose the website to change PHP version:${NC}"
+  # === Chọn website ===
+  website_get_selected domain
   if [[ -z "$domain" ]]; then
-    select_website || {
-      echo -e "${RED}${CROSSMARK} No website selected.${NC}"
-      exit 1
-    }
+    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
+    return 1
   fi
 
-  # === Prompt for PHP version ===
-  echo -e "${YELLOW}🔧 Select PHP version for $domain:${NC}"
+  # === Prompt chọn phiên bản PHP ===
+  print_msg step "$STEP_PHP_SELECT_VERSION_FOR_DOMAIN: $domain"
   php_prompt_choose_version "$domain"
 
-  # === Handle PHP version change logic ===
-  if [[ -n "$SELECTED_PHP" ]]; then
-    php_version="$SELECTED_PHP" # Assign selected version
-    echo -e "${GREEN}${CHECKMARK} PHP version for $domain has been updated to $php_version.${NC}"
-
-    # === Send command to CLI ===
-    php_cli_change_version --domain="$domain" --php_version="$php_version"
+  # === Nếu không chọn version, thì dừng tại đây ===
+  if [[ -z "$SELECTED_PHP" ]]; then
+    print_msg warning "$WARNING_PHP_NO_VERSION_SELECTED"
+    return 1
   fi
 
-  # Ensure CLI command is always called (even if not inside IF block)
+  # === Nếu có chọn, xử lý thay đổi ===
+  php_version="$SELECTED_PHP"
+  print_msg success "$SUCCESS_PHP_VERSION_SELECTED: $php_version"
+
   php_cli_change_version --domain="$domain" --php_version="$php_version"
 }
 
@@ -160,4 +159,5 @@ php_logic_change_version() {
   run_in_dir "$site_dir" docker compose up -d php
 
   print_msg success "$(printf "$SUCCESS_PHP_CHANGED" "$domain" "$php_version")"
+  docker_exec_php "$domain" "php -v"
 }

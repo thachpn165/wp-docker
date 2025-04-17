@@ -1,6 +1,6 @@
 wordpress_prompt_reset_roles() {
-    # 📋 Chọn website
-    select_website
+    local domain 
+    website_get_selected domain 
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
         exit 1

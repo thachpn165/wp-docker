@@ -1,8 +1,8 @@
 wordpress_prompt_cache_setup() {
+    local domain
     safe_source "$CLI_DIR/wordpress_cache_setup.sh"
-    # 📋 Hiển thị danh sách website để chọn (dùng select_website)
 
-    select_website
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
         exit 1

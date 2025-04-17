@@ -23,8 +23,8 @@
 #   - Creates a cron job entry
 # ============================================
 backup_prompt_create_schedule() {
-    # === Select website ===
-    select_website
+    local domain 
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1
@@ -133,8 +133,9 @@ backup_prompt_create_schedule() {
 #   - Invokes backup process via `backup_logic_website`
 # ============================================
 backup_prompt_backup_web() {
-    # 📋 Hiển thị danh sách website để chọn (dùng select_website)
-    select_website
+    local domain 
+    website_get_selected domain
+
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
         exit 1

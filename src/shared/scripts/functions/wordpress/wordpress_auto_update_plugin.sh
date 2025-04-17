@@ -1,7 +1,7 @@
 wordpress_prompt_auto_update_plugin() {
-
+    local domain 
     # 📋 Select website
-    select_website
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1

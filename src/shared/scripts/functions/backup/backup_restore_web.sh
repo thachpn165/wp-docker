@@ -16,8 +16,8 @@
 
 backup_prompt_restore_web() {
     safe_source "$CLI_DIR/backup_restore.sh"
-
-    select_website
+    local domain
+    website_get_selected domain
     [[ -z "$domain" ]] && print_msg error "$ERROR_SITE_NOT_SELECTED" && exit 1
     print_msg info "$MSG_WEBSITE_SELECTED: $domain"
 
