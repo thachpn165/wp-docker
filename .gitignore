@@ -1,88 +1,103 @@
-# 🛑 ẨN CÁC FILE NHẠY CẢM 🛑
+# ========================================
+# 🔐 Sensitive & Private Files
+# ========================================
 .env
-.env.* 
+.env.*
 !*.env.example
+.config.json
+src/.config.json
 secrets/
 keys/
 config/secrets.yml
 
-# MySQL
-src/shared/core/mysql/mysql.cnf
-# 🚀 BỎ QUA DỮ LIỆU CỦA WORDPRESS 🚀
-src/sites/
-/sites
+# ========================================
+# 🧪 Testing & Scripts
+# ========================================
+sync_to_vps.sh
+tests.yml.bak
 
-# ⚡️ BỎ QUA FILE BACKUP ⚡️
+# ========================================
+# ⚙️ System Files (macOS, Linux, IDE)
+# ========================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+__MACOSX
+*.code-workspace
+.idea/
+.vscode/
+
+# ========================================
+# 🧩 WordPress Data & Generated Files
+# ========================================
+src/sites/
 src/sites/*/backups/
+src/sites/*/logs/
 *.sql
 *.sql.gz
 *.tar.gz
 *.zip
 
-# 🔐 CHỨNG CHỈ SSL 🔐
+# ========================================
+# 🔐 SSL Certificates
+# ========================================
+*.crt
+*.key
+*.pem
 src/core/webserver/nginx/ssl/*
 !src/core/webserver/nginx/ssl/.gitkeep
 !src/sites/**/nginx/ssl/.gitkeep
 
-# 🛠️ DOCKER & COMPOSE 🛠️
+# ========================================
+# 🐳 Docker Compose & Containers
+# ========================================
 **/docker-compose.override.yml
 **/docker-compose.yml.bak
 **/docker-compose.override.yml.bak
 src/shared/core/*/docker-compose.yml
 src/shared/core/webserver/*/docker-compose.yml
-# 🔍 LOG & CACHE 🔍
-src/logs/
-src/sites/*/logs/
+
+# ========================================
+# 📦 Rclone Configuration
+# ========================================
+src/shared/config/rclone/rclone.conf
+
+# ========================================
+# 🌐 NGINX Generated Configs
+# ========================================
+src/shared/core/webserver/nginx/globals/wp-login*
+src/shared/core/webserver/nginx/conf.d/*.conf
+
+# ========================================
+# 🔍 Logs & Debug Files
+# ========================================
 *.log
 *.log.*
 debug.log
 php-errors.log
+src/logs/
 src/core/webserver/nginx/access.log
 src/core/webserver/nginx/error.log
 
-# ⚙️ MAC & LINUX SYSTEM FILES ⚙️
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-*.swp
-*.swo
-__MACOSX
-*.code-workspace
-# ⛔ NODE & DEPENDENCIES ⛔
-node_modules/
-npm-debug.log
-yarn.lock
-
-# ${SAVE} GIT TRACKING FILES ${SAVE}
-#.gitignore
-
-# 📦 MISC
-*.crt
-*.key
-*.pem
-.wp-login-auth-*
+# ========================================
+# 🚀 Build Artifacts
+# ========================================
+dist/*
+wp-docker-lemp/
 tmp/
 latest_version.txt
 .cursorignore
-tests.yml.bak
 
-# ☁️ RCLONE CONFIG
-src/shared/config/rclone/rclone.conf
-
-# 🌐 NGINX GLOBAL CONFIG - không commit theo site
-src/shared/core/webserver/nginx/globals/wp-login*
-src/shared/core/webserver/nginx/conf.d/*.conf
-
-# 🧩 WP CLI binary (tự động tải lại)
+# ========================================
+# 🧩 WP-CLI Binary (auto-downloaded)
+# ========================================
 src/shared/bin/wp
 src/shared/bin/wp-cli.phar
 
-# 🚀 BUILD DIRECTORY
-dist/*
-wp-docker-lemp/
-.config.json
-src/.config.json
-
-# Testing
-sync_to_vps.sh
+# ========================================
+# ⛔ Node & JS Dependencies
+# ========================================
+node_modules/
+npm-debug.log
+yarn.lock
