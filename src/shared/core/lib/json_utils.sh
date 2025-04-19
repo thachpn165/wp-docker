@@ -41,7 +41,70 @@ json_get_value() {
   debug_log "json_get_value: file=$file key=$key value=$value"
   echo "$value"
 }
+# =============================================
+# 🔓 json_get_value_decrypted – Decrypt global value from .config.json
+# ---------------------------------------------
+# Parameters:
+#   $1 - jq path (e.g. .mysql.root_password)
+#   $2 - file (optional)
+# =============================================
+json_get_value_decrypted() {
+  local key="$1"
+  local file="${2:-$JSON_CONFIG_FILE}"
+  local keyfile="$BASE_DIR/.secret_key"
 
+  if [[ -z "$key" ]]; then
+    print_and_debug error "❌ Missing key in json_get_value_decrypted"
+    return 1
+  fi
+
+  local encrypted
+  encrypted=$(json_get_value "$key" "$file")
+
+  if [[ "$encrypted" =~ ^ENC:: ]]; then
+    local enc_data="${encrypted#ENC::}"
+
+    if [[ ! -f "$keyfile" ]]; then
+      print_msg warning "🔐 Secret key file not found. Regenerating: $keyfile"
+      openssl rand -hex 32 > "$keyfile"
+    fi
+
+    echo "$enc_data" | openssl enc -aes-256-cbc -a -d -salt -pass file:"$keyfile" 2>/dev/null
+  else
+    echo "$encrypted"
+  fi
+}
+
+# =============================================
+# 🔐 json_set_value_encrypted – Set encrypted global value into .config.json
+# ---------------------------------------------
+# Parameters:
+#   $1 - jq path (e.g. .mysql.root_password)
+#   $2 - plain-text value
+#   $3 - file (optional)
+# =============================================
+json_set_value_encrypted() {
+  local key="$1"
+  local value="$2"
+  local file="${3:-$JSON_CONFIG_FILE}"
+  local keyfile="$BASE_DIR/.secret_key"
+
+  if [[ -z "$key" || -z "$value" ]]; then
+    print_and_debug error "❌ Missing param: key or value in json_set_value_encrypted"
+    return 1
+  fi
+
+  # Tạo file key nếu chưa có
+  if [[ ! -f "$keyfile" ]]; then
+    print_msg warning "🔐 No secret key found. Generating new key at $keyfile"
+    openssl rand -hex 32 > "$keyfile"
+  fi
+
+  local encrypted
+  encrypted="ENC::$(echo -n "$value" | openssl enc -aes-256-cbc -a -salt -pass file:"$keyfile" 2>/dev/null)"
+
+  json_set_string_value "$key" "$encrypted" "$file"
+}
 # =====================================
 # json_set_value: Set a value in JSON file by jq path
 # Usage:
@@ -224,4 +287,73 @@ json_delete_site_key() {
 
   local path=".site[\"$domain\"]"
   json_delete_key "$path"
+}
+
+# =============================================
+# 🔐 json_set_site_value_encrypted – Set encrypted value into .config.json
+# ---------------------------------------------
+# Parameters:
+#   $1 - domain (site key)
+#   $2 - key (e.g. db_pass)
+#   $3 - plain-text value
+# =============================================
+json_set_site_value_encrypted() {
+  local domain="$1"
+  local key="$2"
+  local value="$3"
+  local file="${4:-$JSON_CONFIG_FILE}"
+  local keyfile="$BASE_DIR/.secret_key"
+
+  if [[ -z "$domain" || -z "$key" || -z "$value" ]]; then
+    print_and_debug error "❌ Missing param: domain/key/value in json_set_site_value_encrypted"
+    return 1
+  fi
+
+  # Tự động tạo file key nếu chưa có
+  if [[ ! -f "$keyfile" ]]; then
+    print_msg warning "🔐 No secret key found. Generating new key at $keyfile"
+    openssl rand -hex 32 > "$keyfile"
+  fi
+
+  local encrypted
+  encrypted="ENC::$(echo -n "$value" | openssl enc -aes-256-cbc -a -salt -pass file:"$keyfile" 2>/dev/null)"
+
+  local json_path=".site[\"$domain\"].$key"
+  json_set_string_value "$json_path" "$encrypted" "$file"
+}
+
+
+# =============================================
+# 🔓 json_get_site_value_decrypted – Decrypt value from .config.json
+# ---------------------------------------------
+# Parameters:
+#   $1 - domain (site key)
+#   $2 - key (default: db_pass)
+#   $3 - file (optional)
+# =============================================
+json_get_site_value_decrypted() {
+  local domain="$1"
+  local key="${2:-db_pass}"
+  local file="${3:-$JSON_CONFIG_FILE}"
+  local keyfile="$BASE_DIR/.secret_key"
+
+  if [[ -z "$domain" ]]; then
+    print_and_debug error "❌ Missing domain in json_get_site_value_decrypted"
+    return 1
+  fi
+
+  local encrypted
+  encrypted=$(json_get_site_value "$domain" "$key" "$file")
+
+  if [[ "$encrypted" =~ ^ENC:: ]]; then
+    local enc_data="${encrypted#ENC::}"
+    # Tự động tạo file key nếu chưa có (tránh lỗi khi người dùng xóa nhầm)
+    if [[ ! -f "$keyfile" ]]; then
+      print_msg warning "🔐 Secret key file not found. Regenerating: $keyfile"
+      openssl rand -hex 32 > "$keyfile"
+    fi
+    echo "$enc_data" | openssl enc -aes-256-cbc -a -d -salt -pass file:"$keyfile" 2>/dev/null
+  else
+    echo "$encrypted"
+  fi
 }

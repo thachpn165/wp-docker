@@ -18,16 +18,30 @@ wp_set_wpconfig() {
   local db_user="$3"
   local db_pass="$4"
   local container_db="$MYSQL_CONTAINER_NAME"
+  local wp_path="/var/www/html"
+  local config_sample="$wp_path/wp-config-sample.php"
+  local config_file="$wp_path/wp-config.php"
 
   print_msg info "$INFO_WP_CONFIGURING"
 
+  if ! is_container_running "$container_php"; then
+    print_and_debug error "$ERROR_CONTAINER_NOT_RUNNING: $container_php" 
+    return 1
+  fi
+
+  if ! docker exec "$container_php" test -f "$config_sample"; then
+    print_and_debug error "$MSG_NOT_FOUND: $config_sample"
+    return 1
+  fi
+
+  # === Tạo wp-config.php từ sample và cấu hình DB ===
   docker exec -i "$container_php" sh -c "
-    cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php && \
-    sed -i 's/database_name_here/$db_name/' /var/www/html/wp-config.php && \
-    sed -i 's/username_here/$db_user/' /var/www/html/wp-config.php && \
-    sed -i 's/password_here/$db_pass/' /var/www/html/wp-config.php && \
-    sed -i 's/localhost/$container_db/' /var/www/html/wp-config.php && \
-    cat <<'EOF' | tee -a /var/www/html/wp-config.php
+    cp $config_sample $config_file && \
+    sed -i 's/database_name_here/$db_name/' $config_file && \
+    sed -i 's/username_here/$db_user/' $config_file && \
+    sed -i 's/password_here/$db_pass/' $config_file && \
+    sed -i 's/localhost/$container_db/' $config_file && \
+    cat <<'EOF' >> $config_file
 
 if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos(\$_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
     \$_SERVER['HTTPS'] = 'on';
@@ -39,7 +53,7 @@ EOF
     print_msg success "$SUCCESS_WP_CONFIG_DONE"
   else
     print_and_debug error "$ERROR_WP_CONFIG_FAILED"
-    exit 1
+    return 1
   fi
 }
 

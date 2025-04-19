@@ -71,7 +71,7 @@ website_logic_info() {
 
   db_name=$(json_get_site_value "$domain" "db_name")
   db_user=$(json_get_site_value "$domain" "db_user")
-  db_pass=$(json_get_site_value "$domain" "db_pass")
+  db_pass=$(json_get_site_value_decrypted "$domain" "db_pass")
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
   cache_type=$(json_get_site_value "$domain" "cache")
 

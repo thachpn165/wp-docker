@@ -9,7 +9,7 @@ src/.config.json
 secrets/
 keys/
 config/secrets.yml
-
+.secret_key
 # ========================================
 # 🧪 Testing & Scripts
 # ========================================

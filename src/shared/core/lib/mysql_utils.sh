@@ -104,8 +104,8 @@ mysql_logic_create_db_user() {
     local final_db_user="${sitename}_${db_user}"
 
     json_set_site_value "$domain" "db_user" "$final_db_user"
-    json_set_site_value "$domain" "db_pass" "$db_password"
-
+    #json_set_site_value "$domain" "db_pass" "$db_password"
+    json_set_site_value_encrypted "$domain" "db_pass" "$db_password"
     # Check if the user already exists
     if mysql_exec "SELECT User FROM mysql.user WHERE User = '$final_db_user';" | grep -q "$final_db_user"; then
         msg_print error "❌ Database user \"$final_db_user\" already exists."

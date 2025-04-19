@@ -25,8 +25,8 @@ website_set_config() {
   local db_name db_user db_pass
   db_name="wpdb"
   db_user="wpusr"
-  db_pass="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 18)"
-
+  db_pass="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 18)" # Will be decrypted in mysql_logic_create_db_user 
+  
   mysql_logic_create_db_name "$domain" "$db_name" || return 1
   mysql_logic_create_db_user "$domain" "$db_user" "$db_pass" || return 1
 
