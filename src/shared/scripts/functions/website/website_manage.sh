@@ -54,31 +54,63 @@ website_logic_info() {
   local domain="$1"
   local db_name db_user db_pass
   local SITES_DIR="$SITES_DIR/$domain"
-  # If domain is not provided, call select_website to choose one
+  local log_dir="$SITES_DIR/logs"
+  local access_log="$log_dir/access.log"
+  local error_log="$log_dir/error.log"
+  local php_slow_log="$log_dir/php_slow.log"
+  local php_error_log="$log_dir/php_error.log"
+
   if [[ -z "$domain" ]]; then
     website_get_selected domain
   fi
 
-  # Check if domain is still empty after selection
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
     return 1
   fi
 
-  # Fetch website information from .config.json
   db_name=$(json_get_site_value "$domain" "db_name")
   db_user=$(json_get_site_value "$domain" "db_user")
   db_pass=$(json_get_site_value "$domain" "db_pass")
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
   cache_type=$(json_get_site_value "$domain" "cache")
-  # Display website information
-  print_msg label "$LABEL_WEBSITE_INFO: ${YELLOW}$domain${NC}"
-  print_msg sub-label "$LABEL_WEBSITE_DOMAIN: ${YELLOW}$domain${NC}"
-  print_msg sub-label "$LABEL_WEBSITE_DB_NAME: ${YELLOW}$db_name${NC}"
-  print_msg sub-label "$LABEL_WEBSITE_DB_USER: ${YELLOW}$db_user${NC}"
-  print_msg sub-label "$LABEL_WEBSITE_DB_PASS: ${YELLOW}$db_pass${NC}"
-  print_msg sub-label "PHP Container: ${YELLOW}$php_container${NC}"
-  print_msg sub-label "Cache: ${YELLOW}$cache_type${NC}"
+
+  print_msg label "ℹ️ $LABEL_WEBSITE_INFO: ${YELLOW}$domain${NC}"
+  print_msg sub-label "   $LABEL_WEBSITE_DOMAIN: ${YELLOW}$domain${NC}"
+  print_msg sub-label "   $LABEL_WEBSITE_DB_NAME: ${YELLOW}$db_name${NC}"
+  print_msg sub-label "   $LABEL_WEBSITE_DB_USER: ${YELLOW}$db_user${NC}"
+  print_msg sub-label "   $LABEL_WEBSITE_DB_PASS: ${YELLOW}$db_pass${NC}"
+  print_msg sub-label "   PHP Container: ${YELLOW}$php_container${NC}"
+  print_msg sub-label "   Cache: ${YELLOW}$cache_type${NC}"
+
+  # Display backup schedule if exists
+  local backup_enabled backup_interval backup_storage next_run last_file now_ts last_run_ts interval_days interval_sec
+  backup_enabled=$(json_get_site_value "$domain" "backup_schedule.enabled")
+  if [[ "$backup_enabled" == "true" ]]; then
+    interval_days=$(json_get_site_value "$domain" "backup_schedule.interval_days")
+    backup_storage=$(json_get_site_value "$domain" "backup_schedule.storage")
+    print_msg sub-label "   Backup: ${YELLOW}Enabled every $interval_days day(s) → $backup_storage${NC}"
+
+    # Calculate next run time if .cron timestamp file exists
+    last_file="$BASE_DIR/.cron/.backup_${domain}"
+    if [[ -f "$last_file" ]]; then
+      now_ts=$(date +%s)
+      last_run_ts=$(<"$last_file")
+      interval_sec=$((interval_days * 86400))
+      next_run=$((last_run_ts + interval_sec))
+      next_run_formatted=$(date -d "@$next_run" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || date -r "$next_run" '+%Y-%m-%d %H:%M:%S')
+      print_msg sub-label "   Next Backup: ${YELLOW}$next_run_formatted${NC}"
+    fi
+  else
+    print_msg sub-label "   Backup: ${YELLOW}Disabled${NC}"
+  fi
+
+  print_msg label "📝 Log: ${YELLOW}$log_dir${NC}"
+  print_msg sub-label "   Access Log: ${YELLOW}$access_log${NC}"
+  print_msg sub-label "   Error Log: ${YELLOW}$error_log${NC}"
+  print_msg sub-label "   PHP Slow Log: ${YELLOW}$php_slow_log${NC}"
+  print_msg sub-label "   PHP Error Log: ${YELLOW}$php_error_log${NC}"
+  echo ""
 
   print_msg sub-label "$LABEL_SITE_DIR: ${YELLOW}$SITES_DIR${NC}"
 }
