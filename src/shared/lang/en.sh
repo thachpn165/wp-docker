@@ -930,3 +930,4 @@ readonly PROMPT_ENTER_CUSTOM_INTERVAL_DAYS="Enter number of days (e.g. 1 = every
 readonly LABEL_CRON_INTERVAL="Cycle"
 readonly LABEL_DAYS_LOWERCASE="days"
 readonly LABEL_DAY_LOWERCASE="days"
+readonly IMPORTANT_EXIT_AFTER_SECS="The system will automatically exit after %s seconds."

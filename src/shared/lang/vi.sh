@@ -932,3 +932,4 @@ readonly PROMPT_ENTER_CUSTOM_INTERVAL_DAYS="Nhập số ngày (ví dụ 1 = mỗ
 readonly LABEL_CRON_INTERVAL="Chu kỳ"
 readonly LABEL_DAYS_LOWERCASE="ngày"
 readonly LABEL_DAY_LOWERCASE="ngày"
+readonly IMPORTANT_EXIT_AFTER_SECS="Hệ thống sẽ tự động thoát sau %s giây."

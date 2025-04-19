@@ -336,3 +336,19 @@ check_and_add_alias() {
     echo "⚠️ Unsupported shell. Please reload shell config manually."
   fi
 }
+
+exit_after_10s() {
+  local seconds=10
+
+  echo ""
+  local formatted_exit_msg
+  formatted_exit_msg=$(printf "$IMPORTANT_EXIT_AFTER_SECS" "$seconds")
+  print_msg important "$formatted_exit_msg"
+  for ((i=seconds; i>0; i--)); do
+    echo -ne "Exiting after $i seconds    \r"
+    sleep 1
+  done
+
+  echo -e "\n🚪 Exiting..."
+  exit 0
+}

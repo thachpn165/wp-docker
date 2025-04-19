@@ -182,6 +182,7 @@ core_version_update_latest() {
 
   # In thông báo thành công
   print_msg success "$SUCCESS_CORE_UPDATED"
+  exit_after_10s
 }
 
 # ============================================

@@ -231,3 +231,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   echo ""
 fi
 
+exit_after_10s
+
