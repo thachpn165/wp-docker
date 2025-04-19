@@ -197,7 +197,7 @@ ssl_logic_install_letsencrypt() {
     debug_log "[SSL] Certificate copied successfully: $ssl_dir/$domain.crt and $ssl_dir/$domain.key"
 
     print_msg step "$STEP_NGINX_RELOADING"
-    nginx_reload
+    nginx_restart
     print_msg success "$(printf "$SUCCESS_SSL_INSTALLED" "$domain")"
 }
 
