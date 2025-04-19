@@ -91,28 +91,6 @@ core_mysql_generate_compose() {
     # ============================================
     # 🐳 core_mysql_generate_compose – Generate docker-compose.yml for MySQL container
     # ============================================
-    # Description:
-    #   - Creates docker-compose.yml using a template with variable substitution.
-    #   - Ensures root password is present in config; generates one if missing.
-    #
-    # Parameters:
-    #   None
-    #
-    # Globals:
-    #   MYSQL_DIR
-    #   MYSQL_CONTAINER_NAME
-    #   MYSQL_IMAGE
-    #   MYSQL_VOLUME_NAME
-    #   TEMPLATES_DIR
-    #   JSON_CONFIG_FILE
-    #   MYSQL_CONTAINER_NAME
-    #   JSON_UTILS functions: json_create_if_not_exists, json_key_exists, json_set_string_value, json_get_value
-    #   SUCCESS_MYSQL_ROOT_PASSWORD_GENERATED
-    #   SUCCESS_MYSQL_GENERATED_DOCKER_COMPOSE
-    #
-    # Returns:
-    #   0 if success, 1 if template file is missing
-    # ============================================
 
     local compose_file="$MYSQL_DIR/docker-compose.yml"
     local template_file="$TEMPLATES_DIR/mysql-docker-compose.yml.template"
@@ -130,15 +108,26 @@ core_mysql_generate_compose() {
     json_create_if_not_exists "$JSON_CONFIG_FILE"
     debug_log "[core_mysql_generate_compose] JSON CONFIG: $JSON_CONFIG_FILE"
 
-    if ! json_key_exists '.mysql.root_password' "$JSON_CONFIG_FILE"; then
+    local current_pass
+    current_pass=$(mysql_get_root_passwd)
+    # Set new password (encrypted) if not set, or if it is null
+    if [[ -z "$current_pass" || "$current_pass" == "null" ]]; then
         local generated_root_pass
         generated_root_pass="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 20)"
-        json_set_string_value '.mysql.root_password' "$generated_root_pass" "$JSON_CONFIG_FILE"
+        json_set_value_encrypted '.mysql.root_password' "$generated_root_pass" "$JSON_CONFIG_FILE"
         print_msg success "$SUCCESS_MYSQL_ROOT_PASSWORD_GENERATED: $generated_root_pass"
+    else
+        # Nếu chưa mã hóa (không có prefix ENC::) → mã hóa lại
+        if [[ "$current_pass" != ENC::* ]]; then
+            json_set_value_encrypted '.mysql.root_password' "$current_pass" "$JSON_CONFIG_FILE"
+            print_msg success "🔐 Migrated existing plain-text root password to encrypted format"
+        fi
     fi
 
+    # Giải mã để dùng trong docker-compose
     local mysql_root_pass
-    mysql_root_pass=$(json_get_value '.mysql.root_password' "$JSON_CONFIG_FILE")
+    mysql_root_pass=$(json_get_value_decrypted '.mysql.root_password' "$JSON_CONFIG_FILE")
+
     mkdir -p "$(dirname "$compose_file")"
     is_directory_exist "$(dirname "$compose_file")" true
     print_msg step "$INFO_MYSQL_GENERATING_DOCKER_COMPOSE"
@@ -190,3 +179,5 @@ core_mysql_start() {
 
     print_msg success "$SUCCESS_MYSQL_CONTAINER_STARTED: $MYSQL_CONTAINER_NAME"
 }
+
+

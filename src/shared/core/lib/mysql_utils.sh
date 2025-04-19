@@ -1,20 +1,23 @@
 mysql_get_root_passwd() {
     # ============================================
-    # 📘 mysql_get_root_passwd – Retrieve the MySQL root password
+    # 📘 mysql_get_root_passwd – Retrieve the MySQL root password (decrypted)
     # ============================================
     # Description:
-    #   - This function fetches the MySQL root password from the JSON configuration file.
-    #
-    # Parameters:
-    #   - None
-    #
-    # Globals:
-    #   - JSON_CONFIG_FILE
+    #   - Reads and decrypts the MySQL root password from .config.json
+    #   - Supports both encrypted and plain text format (backward compatible)
     #
     # Returns:
-    #   - The MySQL root password as a string.
+    #   - Decrypted MySQL root password, or plain if not encrypted
     # ============================================
-    json_get_value '.mysql.root_password' "$JSON_CONFIG_FILE"
+
+    local value
+    value=$(json_get_value '.mysql.root_password' "$JSON_CONFIG_FILE")
+
+    if [[ "$value" =~ ^ENC:: ]]; then
+        json_get_value_decrypted '.mysql.root_password' "$JSON_CONFIG_FILE"
+    else
+        echo "$value"
+    fi
 }
 
 mysql_exec() {
@@ -22,20 +25,35 @@ mysql_exec() {
     # 📘 mysql_exec – Execute a MySQL command in the container
     # ============================================
     # Description:
-    #   - This function runs a given MySQL command inside the Docker container
-    #     using the MySQL root password for authentication.
+    #   - Runs a MySQL command inside the Docker container
+    #   - Uses the decrypted MySQL root password from .config.json
     #
     # Parameters:
-    #   - $1 - command (the MySQL command to be executed)
+    #   - $1 - SQL command string
     #
     # Globals:
-    #   - MYSQL_CONTAINER_NAME
+    #   - MYSQL_CONTAINER_NAME, JSON_CONFIG_FILE
     #
     # Returns:
     #   - None
     # ============================================
+
     local command="$1"
-    docker exec --env MYSQL_PWD="$(mysql_get_root_passwd)" \
+    local root_pass
+
+    # Prefer using regular password (if using unencrypted password)
+    root_pass="$(json_get_value '.mysql.root_password' "$JSON_CONFIG_FILE")"
+
+    if [[ "$root_pass" =~ ^ENC:: ]]; then
+        root_pass=$(json_get_value_decrypted '.mysql.root_password' "$JSON_CONFIG_FILE")
+    fi
+
+    if [[ -z "$root_pass" ]]; then
+        print_msg error "❌ Unable to read MySQL root password from config"
+        return 1
+    fi
+
+    docker exec --env MYSQL_PWD="$root_pass" \
         "$MYSQL_CONTAINER_NAME" \
         mysql -uroot -e "$command"
 }

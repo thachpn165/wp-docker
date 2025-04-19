@@ -4,7 +4,7 @@ services:
     image: ${mysql_image}
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${mysql_root_passwd}
+      MYSQL_ROOT_PASSWORD={{MYSQL_ROOT_PASSWORD}} 
     volumes:
       - ${mysql_volume_name}:/var/lib/mysql
       - ./mysql.cnf:/etc/mysql/conf.d/mysql.cnf:ro
