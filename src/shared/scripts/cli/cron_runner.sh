@@ -22,7 +22,7 @@ all)
     # cron_backup_auto
     ;;
 *)
-    echo "⚙️  Usage: $0 {ssl_renew|all}" >&2
+    echo "⚙️  Usage: $0 {letsencrypt_renew|all}" >&2
     exit 1
     ;;
 esac

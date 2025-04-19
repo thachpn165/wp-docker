@@ -41,7 +41,7 @@ handle_cron() {
     # wpdocker cron
     case "$1" in
     le_renew)
-        bash "$CLI_DIR/cron_runner.sh letsencrypt_renew" "${@:2}" ;;
+        bash "$CLI_DIR/cron_runner.sh" letsencrypt_renew "${@:2}" ;;
     all)
         bash "$CLI_DIR/cron_runner.sh all" "${@:2}" ;;
     *) echo "${CROSSMARK} Unknown subcommand for cron: $1" ;;
