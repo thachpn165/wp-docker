@@ -927,3 +927,8 @@ readonly ERROR_SSL_LETSENCRYPT_RENEW_FAILED="Gia hạn chứng chỉ SSL Let's E
 readonly IMPORTANT_CHECK_LOG="Vui lòng kiểm tra log để biết thêm thông tin."
 readonly TITLE_SSL_LETSCERTIFICATE_RENEWAL="Gia hạn chứng chỉ SSL Let's Encrypt"
 readonly WARNING_SSL_NOT_LETSENCRYPT="không sử dụng chứng chỉ Let's Encrypt. Bỏ qua bước này."
+readonly LABEL_CUSTOM_INTERVAL="Khoảng thời gian tùy chỉnh"
+readonly PROMPT_ENTER_CUSTOM_INTERVAL_DAYS="Nhập số ngày (ví dụ 1 = mỗi ngày)"
+readonly LABEL_CRON_INTERVAL="Chu kỳ"
+readonly LABEL_DAYS_LOWERCASE="ngày"
+readonly LABEL_DAY_LOWERCASE="ngày"

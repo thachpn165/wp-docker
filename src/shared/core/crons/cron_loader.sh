@@ -31,7 +31,10 @@ done
 
 # === Load individual cron task implementations ===
 safe_source "$CORE_DIR/crons/cron_letsencrypt_renew.sh"
+safe_source "$CORE_DIR/crons/cron_backup.sh"
 # Add more source lines for other cron modules (e.g., backup, system)
+
+mapfile -t sites < <(website_list)
 
 # === Check and run cron job based on time interval (in minutes) ===
 cron_run_general() {
@@ -58,9 +61,11 @@ cron_run_general() {
     return 1
 }
 
-# === Define which cron jobs to run and how often ===
 
 # 🔁 Renew SSL certificates every 12 hours
 if cron_run_general "ssl_renew" 720; then
     cron_letsencrypt_renew
 fi
+for site in "${sites[@]}"; do
+    cron_run_backup "$site"
+done
