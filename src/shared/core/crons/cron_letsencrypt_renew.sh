@@ -7,6 +7,8 @@ cron_letsencrypt_renew() {
     fi
 
     local site domain cert_path issuer expire_date expire_ts now_ts remaining_days log_file site_path
+    local certbot_data="$BASE_DIR/.certbot"
+    mkdir -p "$certbot_data"
 
     while IFS= read -r site; do
         site_path="$SITES_DIR/$site"
@@ -15,7 +17,6 @@ cron_letsencrypt_renew() {
 
         print_msg info "🔍 Checking: $domain ($site)"
 
-        # Ensure log file and its directory exist
         mkdir -p "$(dirname "$log_file")"
         touch "$log_file"
 
@@ -27,7 +28,6 @@ cron_letsencrypt_renew() {
             continue
         fi
 
-        # Check if certificate is issued by Let's Encrypt
         issuer=$(openssl x509 -issuer -noout -in "$cert_path" 2>/dev/null)
         if ! echo "$issuer" | grep -qi "Let's Encrypt"; then
             print_msg warning "$domain $WARNING_SSL_NOT_LETSENCRYPT"
@@ -35,7 +35,6 @@ cron_letsencrypt_renew() {
             continue
         fi
 
-        # Check certificate expiration
         expire_date=$(openssl x509 -enddate -noout -in "$cert_path" 2>/dev/null | cut -d= -f2)
         expire_ts=$(date -d "$expire_date" +%s 2>/dev/null || gdate -d "$expire_date" +%s)
         now_ts=$(date +%s)
@@ -47,15 +46,18 @@ cron_letsencrypt_renew() {
             formatted_renewing_cert="$(printf "$STEP_SSL_LETSENCRYPT_RENEWING" "$domain" "$remaining_days")"
             print_msg step "$formatted_renewing_cert"
 
-            certbot certonly --quiet --non-interactive --renew-by-default --webroot \
-                -w "$site_path/wordpress" -d "$domain" >>"$log_file" 2>&1
+            docker run --rm \
+                -v "$site_path/wordpress:/var/www/html" \
+                -v "$certbot_data:/etc/letsencrypt" \
+                certbot/certbot certonly \
+                --quiet --non-interactive --renew-by-default \
+                --webroot -w /var/www/html -d "$domain" >>"$log_file" 2>&1
 
             if [[ $? -eq 0 ]]; then
                 print_msg success "$SUCCESS_SSL_LETSENCRYPT_RENEWED: $domain"
                 echo "$(date '+%F %T') ✅ Renewed: $domain" >>"$log_file"
 
-                # Copy renewed certificate files to $SSL_DIR
-                local live_path="/etc/letsencrypt/live/$domain"
+                local live_path="$certbot_data/live/$domain"
                 if [[ -f "$live_path/fullchain.pem" && -f "$live_path/privkey.pem" ]]; then
                     cp "$live_path/fullchain.pem" "$SSL_DIR/$domain.crt"
                     cp "$live_path/privkey.pem" "$SSL_DIR/$domain.key"
