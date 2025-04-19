@@ -136,7 +136,7 @@ core_version_update_latest() {
   confirm_update=$(get_input_or_test_value "$PROMPT_UPDATE_CONFIRMATION ($latest_version) (yes/no): " "no")
 
   if [[ "$confirm_update" != "yes" ]]; then
-    print_msg warning "$WARNING_DEV_MODE_NO_UPDATE"
+    print_msg cancel "$CANCEL_CORE_UPDATE"
     return 0
   fi
 
