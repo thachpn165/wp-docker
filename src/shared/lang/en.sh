@@ -933,3 +933,6 @@ readonly LABEL_DAY_LOWERCASE="days"
 readonly IMPORTANT_EXIT_AFTER_SECS="The system will automatically exit after %s seconds."
 readonly CANCEL_CORE_UPDATE="Update canceled."
 readonly LABEL_CURRENT_SELECTED="currently in use"
+readonly PROMPT_ENTER_CUSTOM_PHP_VERSION="Enter custom PHP version (e.g. 8.2): "
+readonly LABEL_PHP_CUSTOM_VERSION="Custom PHP version"
+readonly TIP_PHP_VERSION_REF="For a comprehensive list of available PHP versions, refer to: ";
