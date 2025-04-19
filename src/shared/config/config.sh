@@ -22,7 +22,7 @@ else
 fi
 PROJECT_DIR="$BASE_DIR"
 
-DEBUG_MODE="false"
+DEBUG_MODE="true"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 # ==== 2. Load core libs and i18n ====
@@ -125,6 +125,7 @@ safe_source "$CORE_LIB_DIR/system_utils.sh"
 safe_source "$CORE_LIB_DIR/file_utils.sh"
 safe_source "$CORE_LIB_DIR/misc_utils.sh"
 safe_source "$CORE_LIB_DIR/redis_utils.sh"
+safe_source "$CORE_LIB_DIR/cron_utils.sh"
 
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/php_utils.sh"

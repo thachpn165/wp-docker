@@ -1,5 +1,16 @@
 #!/bin/bash
+# === Auto-detect BASE_DIR & load configuration ===
+SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
+while [[ "$SCRIPT_PATH" != "/" ]]; do
+  if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
+    source "$SCRIPT_PATH/shared/config/load_config.sh"
+    break
+  fi
+  SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
+done
 
+# === Load backup logic ===
+safe_source "$FUNCTIONS_DIR/backup_loader.sh"
 # =====================================
 # 📁 backup_cli_file – CLI wrapper to backup only WordPress files
 # Parameters:
