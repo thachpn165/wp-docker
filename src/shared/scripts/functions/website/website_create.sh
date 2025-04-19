@@ -12,7 +12,7 @@ website_prompt_create() {
     print_msg title "$TITLE_CREATE_NEW_WORDPRESS_WEBSITE"
     # Get domain from user
     read -p "$PROMPT_ENTER_DOMAIN: " domain
-
+    is_valid_domain "$domain" || return 1
     php_prompt_choose_version || return 1
     php_version="$SELECTED_PHP"
 
@@ -48,7 +48,7 @@ website_logic_create() {
     local domain="$1"
     local php_version="$2"
     export domain php_version
-
+    is_valid_domain "$domain" || return 1
     SITE_DIR="$SITES_DIR/$domain"
     website_set_config "$domain" "$php_version"
     CONTAINER_PHP=$(json_get_site_value "$domain" "CONTAINER_PHP")

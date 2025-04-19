@@ -936,3 +936,5 @@ readonly LABEL_CURRENT_SELECTED="currently in use"
 readonly PROMPT_ENTER_CUSTOM_PHP_VERSION="Enter custom PHP version (e.g. 8.2): "
 readonly LABEL_PHP_CUSTOM_VERSION="Custom PHP version"
 readonly TIP_PHP_VERSION_REF="For a comprehensive list of available PHP versions, refer to: ";
+readonly ERROR_DOMAIN_INVALID_FORMAT="Domain name is invalid. Please enter a valid domain name."
+readonly ERROR_DOMAIN_INVALID_HYPHEN="Domain name cannot contain the '-' character. Please enter a valid domain name." 

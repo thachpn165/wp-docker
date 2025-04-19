@@ -42,6 +42,7 @@ website_setup_wordpress_logic() {
     print_and_debug error "$ERROR_MISSING_PARAM: --domain"
     return 1
   fi
+  is_valid_domain "$domain" || return 1
   local db_name db_user db_pass php_container
 
   # 🌍 Load variables from .config.json
@@ -50,7 +51,7 @@ website_setup_wordpress_logic() {
   db_pass=$(json_get_site_value "$domain" "db_pass")
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
-  # 🔐 Create admin account
+# 🔐 Create admin account
   local admin_user admin_password admin_email
   if [[ "$TEST_MODE" == true ]]; then
     admin_user="${admin_user:-admin-test}"
@@ -62,32 +63,36 @@ website_setup_wordpress_logic() {
 
   if [[ "$auto_generate" == true ]]; then
     admin_user="admin-$(openssl rand -base64 6 | tr -dc 'a-zA-Z0-9' | head -c 8)"
-    admin_password="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
+    admin_password=$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9' | head -c 16)
     admin_email="admin@$domain"
   else
-    # Get the username entered by the user, if empty will use the default value
-    admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
-    debug_log "Admin username entered: $admin_user" # Added debug line here
-
-    while [[ -z "$admin_user" ]]; do
-      print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
+    # === Username ===
+    while true; do
       admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
-      debug_log "Admin username entered (again): $admin_user" # Added debug line here
+      debug_log "[wordpress] Admin username: $admin_user"
+      [[ -n "$admin_user" ]] && break
+      print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
     done
 
-    # Get the password entered by the user
-    admin_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
-    confirm_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
+    # === Password (with confirmation) ===
+    while true; do
+      echo -ne "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: "
+      read -rs admin_password
+      echo
+      echo -ne "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: "
+      read -rs confirm_password
+      echo
 
-    while [[ "$admin_password" != "$confirm_password" || -z "$admin_password" ]]; do
+      if [[ -n "$admin_password" && "$admin_password" == "$confirm_password" ]]; then
+        break
+      fi
+
       print_msg warning "$WARNING_ADMIN_PASSWORD_MISMATCH"
-      admin_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
-      confirm_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
     done
 
-    # Get the email entered by the user
-    admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL: " "${admin_email:-admin@$domain}")
-  fi
+    # === Email ===
+    admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL: " "${TEST_ADMIN_EMAIL:-admin@$domain}")
+  fi 
 
   # 🐳 Check if PHP container is running
   local php_ready_ok=false
