@@ -131,49 +131,32 @@ ssl_logic_install_letsencrypt() {
 
     local ssl_dir=${SSL_DIR:-"$NGINX_PROXY_DIR/ssl"}
     local webroot="$SITES_DIR/$domain/wordpress"
+    local certbot_data="$BASE_DIR/.certbot"
 
     if [[ ! -d "$webroot" ]]; then
         print_and_debug error "$ERROR_DIRECTORY_NOT_FOUND: $webroot"
         return 1
     fi
 
-    is_directory_exist "$ssl_dir" || {
-        print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
-        mkdir -p "$ssl_dir"
-        debug_log "[SSL] Not found and created: $ssl_dir"
-        return 1
-    }
-
-    # Install certbot if missing
-    if ! command -v certbot &>/dev/null; then
-        print_msg warning "$WARNING_CERTBOT_NOT_INSTALLED"
-        if [[ "$(uname -s)" == "Linux" ]]; then
-            if [[ -f /etc/debian_version ]]; then
-                apt update && apt install -y certbot
-            elif [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
-                yum install epel-release -y && yum install -y certbot
-            else
-                debug_log "⚠️ Unsupported Linux distribution: $(cat /etc/*release 2>/dev/null || echo 'unknown')"
-                print_and_debug error "$ERROR_CERTBOT_INSTALL_UNSUPPORTED_OS"
-                return 1
-            fi
-        else
-            debug_log "⚠️ Unsupported OS: $(uname -s)"
-            print_and_debug error "$ERROR_CERTBOT_INSTALL_MAC"
-            return 1
-        fi
-    fi
+    is_directory_exist "$ssl_dir" || mkdir -p "$ssl_dir"
+    mkdir -p "$certbot_data"
 
     print_msg step "$STEP_REQUEST_CERT_WEBROOT"
-    debug_log "[SSL] Running certbot for domain: $domain with webroot: $webroot"
+    debug_log "[SSL] Running certbot container for domain: $domain with webroot: $webroot"
 
-    local certbot_cmd="certbot certonly --webroot -w $webroot -d $domain --non-interactive --agree-tos -m $email"
-    [[ "$staging" == "true" ]] && certbot_cmd="$certbot_cmd --staging"
+    local certbot_args=(
+        certonly --webroot -w /var/www/html -d "$domain" \
+        --non-interactive --agree-tos -m "$email"
+    )
+    [[ "$staging" == "true" ]] && certbot_args+=(--staging)
 
-    eval "$certbot_cmd"
+    docker run --rm \
+        -v "$webroot:/var/www/html" \
+        -v "$certbot_data:/etc/letsencrypt" \
+        certbot/certbot "${certbot_args[@]}"
 
-    local CERT_PATH="/etc/letsencrypt/live/$domain/fullchain.pem"
-    local KEY_PATH="/etc/letsencrypt/live/$domain/privkey.pem"
+    local CERT_PATH="$certbot_data/live/$domain/fullchain.pem"
+    local KEY_PATH="$certbot_data/live/$domain/privkey.pem"
 
     if [[ ! -f "$CERT_PATH" || ! -f "$KEY_PATH" ]]; then
         print_and_debug error "$(printf "$ERROR_SSL_CERT_NOT_FOUND" "$domain")"
@@ -182,13 +165,6 @@ ssl_logic_install_letsencrypt() {
 
     print_msg success "$SUCCESS_SSL_LETS_ENCRYPT_ISSUED: $domain"
     debug_log "[SSL] Copying certificate to directory: $ssl_dir"
-
-    is_directory_exist "$ssl_dir" || {
-        print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
-        mkdir -p "$ssl_dir"
-        debug_log "[SSL] Not found and created: $ssl_dir"
-        return 1
-    }
 
     run_cmd "sudo chown -R $USER:$USER $ssl_dir"
     copy_file "$CERT_PATH" "$ssl_dir/$domain.crt"
@@ -200,6 +176,7 @@ ssl_logic_install_letsencrypt() {
     nginx_restart
     print_msg success "$(printf "$SUCCESS_SSL_INSTALLED" "$domain")"
 }
+
 
 # =====================================
 # ssl_logic_install_manual: Use manually provided SSL certificate and key
