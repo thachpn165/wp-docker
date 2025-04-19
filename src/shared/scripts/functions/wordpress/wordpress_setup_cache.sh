@@ -43,31 +43,30 @@ wordpress_prompt_cache_setup() {
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
         exit 1
     fi
+
     current_cache=$(json_get_site_value "$domain" "cache")
+
     # === Load cache type list from JSON ===
     print_msg title "$LABEL_MENU_MAIN_WORDPRESS_CACHE"
-    # Lấy danh sách các cache types, trừ 'no-cache'
-    mapfile -t cache_types < <(jq -r 'keys[] | select(. != "no-cache")' <<<"$WP_CACHE_PLUGIN_JSON" | sort)
 
-    # Thêm 'no-cache' vào cuối cùng
+    mapfile -t cache_types < <(jq -r 'keys[] | select(. != "no-cache")' <<<"$WP_CACHE_PLUGIN_JSON" | sort)
     cache_types+=("no-cache")
 
-    # Hiển thị menu
     for i in "${!cache_types[@]}"; do
-        local label
         local type="${cache_types[$i]}"
+        local label
         label=$(jq -r --arg type "$type" '.[$type].name' <<<"$WP_CACHE_PLUGIN_JSON")
 
         if [[ "$type" == "$current_cache" ]]; then
             label="$label ${YELLOW}($LABEL_CURRENT_SELECTED)${NC}"
-            default_index=$((i + 1))
         fi
 
         print_msg info "  ${GREEN}[$((i + 1))]${NC} $label"
     done
 
+    # Yêu cầu nhập từ người dùng
     local cache_type_index
-    cache_type_index=$(get_input_or_test_value "$PROMPT_WORDPRESS_CHOOSE_CACHE" "${TEST_CACHE_TYPE:-$default_index}")
+    cache_type_index=$(get_input_or_test_value "$PROMPT_WORDPRESS_CHOOSE_CACHE")
 
     if ! [[ "$cache_type_index" =~ ^[0-9]+$ ]] || ((cache_type_index < 1 || cache_type_index > ${#cache_types[@]})); then
         print_msg error "$ERROR_SELECT_OPTION_INVALID"
@@ -80,7 +79,7 @@ wordpress_prompt_cache_setup() {
     print_msg success "$SUCCESS_WORDPRESS_CHOOSE_CACHE: $cache_type"
     json_set_site_value "$domain" "cache" "$cache_type"
 
-    # Call the logic function to set up the cache
+    # Gọi logic để cài cache
     wordpress_cli_cache_setup "$domain" "$cache_type"
 }
 
@@ -118,7 +117,7 @@ wordpress_cache_setup_logic() {
     plugin_slug=$(jq -r --arg type "$cache_type" '.[$type].plugin' <<<"$WP_CACHE_PLUGIN_JSON")
 
     local cache_plugins
-    cache_plugins=($(jq -r '.[] | .plugin' <<<"$WP_CACHE_PLUGIN_JSON" | grep -v '^$'))
+    mapfile -t cache_plugins < <(jq -r '.[] | .plugin' <<<"$WP_CACHE_PLUGIN_JSON" | grep -v '^$')
     cache_plugins+=("redis-cache")
 
     local active_plugins
@@ -180,7 +179,7 @@ wordpress_cache_setup_logic() {
         return 1
     fi
 
-    bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install "$plugin_slug" --activate
+    wordpress_wp_cli_logic "$domain" plugin install "$plugin_slug" --activate
     exit_if_error $? "$(printf "$ERROR_PLUGIN_INSTALL" "$plugin_slug")"
 
     docker exec -u root -i "$php_container" chown -R "$PHP_USER" /var/www/html/wp-content
@@ -193,8 +192,8 @@ fastcgi_cache_path /usr/local/openresty/nginx/fastcgi_cache levels=1:2 keys_zone
             exit_if_error $? "$ERROR_ADD_FASTCGI_PATH"
             print_msg success "$SUCCESS_FASTCGI_PATH_ADDED"
         fi
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update nginx_cache_path "/var/cache/nginx"
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update nginx_auto_purge "1"
+        wordpress_wp_cli_logic "$domain" option update nginx_cache_path "/var/cache/nginx"
+        wordpress_wp_cli_logic "$domain" option update nginx_auto_purge 1
         exit_if_error $? "$ERROR_UPDATE_NGINX_HELPER"
     fi
 
@@ -210,16 +209,16 @@ define('RT_WP_NGINX_HELPER_CACHE_PATH','/var/cache/nginx');" "$wp_config_file"
             print_msg success "$SUCCESS_REDIS_DEFINES_ADDED"
         fi
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install redis-cache --activate
+        wordpress_wp_cli_logic "$domain" plugin install redis-cache --activate
         exit_if_error $? "$ERROR_REDIS_PLUGIN_INSTALL"
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- redis update-dropin
+        wordpress_wp_cli_logic "$domain" redis update-dropin
         exit_if_error $? "$ERROR_REDIS_UPDATE_DROPIN"
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update redis-cache
+        wordpress_wp_cli_logic "$domain" option update redis-cache
         exit_if_error $? "$ERROR_REDIS_UPDATE_OPTIONS"
 
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- redis enable
+        wordpress_wp_cli_logic "$domain" redis enable
         exit_if_error $? "$ERROR_REDIS_ENABLE"
     fi
 
