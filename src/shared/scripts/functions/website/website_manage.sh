@@ -15,6 +15,7 @@ website_logic_restart() {
   # If domain is empty, call select_website to choose domain
   if [[ -z "$domain" ]]; then
     website_get_selected domain
+    # website_list
   fi
 
   local site_dir="$SITES_DIR/$domain"

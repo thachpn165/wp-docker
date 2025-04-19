@@ -1,3 +1,44 @@
+website_list() {
+    if [[ -z "$SITES_DIR" ]]; then
+        print_and_debug error "SITES_DIR is not defined."
+        return 1
+    fi
+
+    if [[ -z "$JSON_CONFIG_FILE" ]] || [[ ! -f "$JSON_CONFIG_FILE" ]]; then
+        print_and_debug error "JSON_CONFIG_FILE is not defined or not found: $JSON_CONFIG_FILE"
+        return 1
+    fi
+
+    local site_dirs=()
+    local config_sites=()
+    local valid_sites=()
+
+    while IFS= read -r -d '' dir; do
+        site_dirs+=("$(basename "$dir")")
+    done < <(find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -print0)
+
+    mapfile -t config_sites < <(jq -r '.site | keys[]' "$JSON_CONFIG_FILE" 2>/dev/null)
+
+    for site in "${config_sites[@]}"; do
+        if [[ -d "$SITES_DIR/$site" ]]; then
+            valid_sites+=("$site")
+        else
+            debug_log "[website_list] ⚠️ Config có site '$site' nhưng không có thư mục tại $SITES_DIR"
+        fi
+    done
+
+    for dir in "${site_dirs[@]}"; do
+        if ! printf '%s\n' "${config_sites[@]}" | grep -qx "$dir"; then
+            debug_log "[website_list] ⚠️ Thư mục '$dir' có trong $SITES_DIR nhưng không có key .site trong config"
+        fi
+    done
+
+    # 🟢 Chỉ in ra danh sách hợp lệ (dòng đơn)
+    for site in "${valid_sites[@]}"; do
+        echo "$site"
+    done
+}
+
 website_prompt_select() {
     if [[ -z "$SITES_DIR" ]]; then
         print_msg error "SITES_DIR is not defined."
@@ -5,10 +46,9 @@ website_prompt_select() {
     fi
 
     local sites=()
-    while IFS= read -r -d '' dir; do
-        sites+=("$(basename "$dir")")
-    done < <(find "$SITES_DIR" -mindepth 1 -maxdepth 1 -type d -print0)
-
+    while IFS= read -r site; do
+        sites+=("$site")
+    done < <(website_list)
     if [[ ${#sites[@]} -eq 0 ]]; then
         print_and_debug error "$ERROR_NO_WEBSITES_FOUND $SITES_DIR"
         return 1
@@ -22,7 +62,6 @@ website_prompt_select() {
         return 0
     fi
 
-    # Loop until valid selection
     while true; do
         echo -e "\n📄 Available websites:"
         for i in "${!sites[@]}"; do
@@ -36,12 +75,7 @@ website_prompt_select() {
             continue
         fi
 
-        if [[ ! -d "$SITES_DIR/$selected" ]]; then
-            print_msg error "$ERROR_WEBSITE_NOT_EXIST: $selected"
-            continue
-        fi
-
-        if ! json_get_site_value "$selected" "DOMAIN" >/dev/null 2>&1; then
+        if ! printf '%s\n' "${sites[@]}" | grep -qx "$selected"; then
             print_msg error "$ERROR_WEBSITE_NOT_EXIST: $selected"
             continue
         fi
@@ -51,11 +85,10 @@ website_prompt_select() {
 
     debug_log "[website_prompt_select] selected=$selected"
     echo "$selected"
-
 }
 website_get_selected() {
     local __result_var="$1"
-    local tmp_output result
+    local result tmp_output
 
     if [[ -z "$__result_var" ]]; then
         print_and_debug error "Missing variable name to store selected domain."
@@ -63,7 +96,10 @@ website_get_selected() {
     fi
 
     tmp_output="$(mktemp)"
-    website_prompt_select | tee "$tmp_output"
+
+    # Cho phép hiển thị ra màn hình, đồng thời ghi kết quả vào file tạm
+    website_prompt_select > >(tee "$tmp_output")
+
     result="$(tail -n 1 "$tmp_output")"
     rm -f "$tmp_output"
 

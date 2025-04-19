@@ -101,3 +101,9 @@ src/shared/bin/wp-cli.phar
 node_modules/
 npm-debug.log
 yarn.lock
+
+# ========================================
+# ⏰ Cron
+# ========================================
+.cron/*
+src/.cron/*

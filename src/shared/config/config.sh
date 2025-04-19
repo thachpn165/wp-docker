@@ -22,7 +22,7 @@ else
 fi
 PROJECT_DIR="$BASE_DIR"
 
-DEBUG_MODE="false"
+DEBUG_MODE="true"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 
 # ==== 2. Load core libs and i18n ====
@@ -66,7 +66,7 @@ WP_SCRIPTS_DIR="$SCRIPTS_DIR/wp-scripts"
 WEBSITE_MGMT_DIR="$SCRIPTS_DIR/website-management"
 SYSTEM_TOOLS_FUNC_DIR="$FUNCTIONS_DIR/system-tools"
 SCRIPTS_FUNCTIONS_DIR="$FUNCTIONS_DIR"
-
+DEBUG_LOG="${DEBUG_LOG:-$LOGS_DIR/debug.log}"
 # ==== 7. MySQL / Database ====
 MYSQL_IMAGE="mariadb:10.11"
 MYSQL_CONTAINER_NAME="wpdocker-mariadb"
