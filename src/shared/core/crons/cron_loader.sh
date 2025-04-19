@@ -32,6 +32,7 @@ done
 # === Load individual cron task implementations ===
 safe_source "$CORE_DIR/crons/cron_letsencrypt_renew.sh"
 safe_source "$CORE_DIR/crons/cron_backup.sh"
+safe_source "$FUNCTIONS_DIR/php/php_get_version.sh"
 # Add more source lines for other cron modules (e.g., backup, system)
 
 mapfile -t sites < <(website_list)
@@ -66,6 +67,13 @@ cron_run_general() {
 if cron_run_general "ssl_renew" 720; then
     cron_letsencrypt_renew
 fi
+
+# 🔁 Run PHP version check every 12 hours
+if cron_run_general "php_get_version" 720; then
+    php_get_version
+fi
+
+# 🔁 Run backup 
 for site in "${sites[@]}"; do
     cron_run_backup "$site"
 done

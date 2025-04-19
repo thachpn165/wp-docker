@@ -32,16 +32,14 @@ check_and_add_alias
 # =============================================
 # ⚙️ Check & install Docker and Docker Compose
 # =============================================
+
 install_docker
-# =============================================
-# 🔁 Setup CRON for PHP version refresh
-# =============================================
-if ! crontab -l | grep -q "$CLI_DIR/php_get_version.sh"; then
-  echo "0 2 * * * bash $CLI_DIR/php_get_version.sh" | crontab -
-  echo -e "$SUCCESS_CRON_PHP_VERSION_SET"
-else
-  echo -e "$WARNING_CRON_PHP_VERSION_EXISTS"
-fi
+
+# ==============================================
+# cron_loader.sh
+# ==============================================
+# Check if the cron job is already set
+cron_register_loader_if_needed
 
 # =============================================
 # 🐳 Start Docker if not running & check group
