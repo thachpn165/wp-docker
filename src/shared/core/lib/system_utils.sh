@@ -344,11 +344,22 @@ exit_after_10s() {
   local formatted_exit_msg
   formatted_exit_msg=$(printf "$IMPORTANT_EXIT_AFTER_SECS" "$seconds")
   print_msg important "$formatted_exit_msg"
-  for ((i=seconds; i>0; i--)); do
-    echo -ne "Exiting after $i seconds    \r"
+
+  for ((i = seconds; i > 0; i--)); do
+    echo -ne "⏳ Exiting after $i seconds...   \r"
     sleep 1
   done
 
   echo -e "\n🚪 Exiting..."
-  exit 0
+
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    exit 0
+  else
+    # Nếu là login shell (có thể logout), thì dùng logout
+    if shopt -q login_shell; then
+      logout
+    else
+      exit 0
+    fi
+  fi
 }
