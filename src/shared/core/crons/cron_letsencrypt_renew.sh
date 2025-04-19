@@ -53,6 +53,17 @@ cron_letsencrypt_renew() {
             if [[ $? -eq 0 ]]; then
                 print_msg success "$SUCCESS_SSL_LETSENCRYPT_RENEWED: $domain"
                 echo "$(date '+%F %T') ✅ Renewed: $domain" >>"$log_file"
+
+                # Copy renewed certificate files to $SSL_DIR
+                local live_path="/etc/letsencrypt/live/$domain"
+                if [[ -f "$live_path/fullchain.pem" && -f "$live_path/privkey.pem" ]]; then
+                    cp "$live_path/fullchain.pem" "$SSL_DIR/$domain.crt"
+                    cp "$live_path/privkey.pem" "$SSL_DIR/$domain.key"
+                    print_msg success "🔒 Updated certificate files in $SSL_DIR for $domain"
+                else
+                    print_msg warning "⚠️ Missing renewed cert files for $domain in $live_path"
+                fi
+
                 nginx_reload
             else
                 print_msg error "$ERROR_SSL_LETSENCRYPT_RENEW_FAILED: $domain"
