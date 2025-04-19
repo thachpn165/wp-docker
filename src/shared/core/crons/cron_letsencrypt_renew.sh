@@ -6,12 +6,11 @@ cron_letsencrypt_renew() {
         return 1
     fi
 
-    local site ssl_type cert_path domain expire_date expire_ts now_ts remaining_days log_file site_path
+    local site domain cert_path issuer expire_date expire_ts now_ts remaining_days log_file site_path
 
     while IFS= read -r site; do
         site_path="$SITES_DIR/$site"
         domain="$(json_get_site_value "$site" "DOMAIN")"
-        ssl_type="$(json_get_site_value "$site" "SSL.TYPE")"
         log_file="$site_path/logs/ssl-renew.log"
 
         print_msg info "🔍 Checking: $domain ($site)"
@@ -20,17 +19,19 @@ cron_letsencrypt_renew() {
         mkdir -p "$(dirname "$log_file")"
         touch "$log_file"
 
-        if [[ "$ssl_type" != "letsencrypt" ]]; then
-            print_msg warning "$domain $WARNING_SSL_NOT_LETSENCRYPT"
-            echo "$(date '+%F %T') ⚠️ Not using Let's Encrypt: $domain" >>"$log_file"
-            continue
-        fi
-
-        cert_path="/etc/letsencrypt/live/$domain/fullchain.pem"
+        cert_path="$SSL_DIR/$domain.crt"
         if [[ ! -f "$cert_path" ]]; then
             formatted_not_found_cert="$(printf "$ERROR_SSL_CERT_NOT_FOUND" "$domain")"
             print_msg error "$formatted_not_found_cert"
             echo "$(date '+%F %T') ❌ Certificate not found: $domain" >>"$log_file"
+            continue
+        fi
+
+        # Check if certificate is issued by Let's Encrypt
+        issuer=$(openssl x509 -issuer -noout -in "$cert_path" 2>/dev/null)
+        if ! echo "$issuer" | grep -qi "Let's Encrypt"; then
+            print_msg warning "$domain $WARNING_SSL_NOT_LETSENCRYPT"
+            echo "$(date '+%F %T') ⚠️ Not Let's Encrypt cert: $domain (issuer: $issuer)" >>"$log_file"
             continue
         fi
 
@@ -52,13 +53,12 @@ cron_letsencrypt_renew() {
             if [[ $? -eq 0 ]]; then
                 print_msg success "$SUCCESS_SSL_LETSENCRYPT_RENEWED: $domain"
                 echo "$(date '+%F %T') ✅ Renewed: $domain" >>"$log_file"
+                nginx_reload
             else
                 print_msg error "$ERROR_SSL_LETSENCRYPT_RENEW_FAILED: $domain"
                 print_msg important "$IMPORTANT_CHECK_LOG: $log_file"
                 echo "$(date '+%F %T') ❌ Failed to renew: $domain" >>"$log_file"
             fi
-
-            nginx_reload
         else
             print_msg info "✅ Certificate still valid for $domain ($remaining_days days left)"
             echo "$(date '+%F %T') ⏳ Still valid: $domain ($remaining_days days left)" >>"$log_file"

@@ -30,7 +30,7 @@ ssl_prompt_general() {
 
 ssl_prompt_letsencrypt() {
     local domain email staging
-    
+
     # Prompt for $domain
     website_get_selected domain
     if [[ -z "$domain" ]]; then
@@ -191,8 +191,8 @@ ssl_logic_install_letsencrypt() {
     }
 
     run_cmd "sudo chown -R $USER:$USER $ssl_dir"
-    copy_file "$CERT_PATH" "$ssl_dir/$domain.crt"
-    copy_file "$KEY_PATH" "$ssl_dir/$domain.key"
+    ln -sf "$CERT_PATH" "$ssl_dir/$domain.crt"
+    ln -sf "$KEY_PATH" "$ssl_dir/$domain.key"
 
     debug_log "[SSL] Certificate copied successfully: $ssl_dir/$domain.crt and $ssl_dir/$domain.key"
 
