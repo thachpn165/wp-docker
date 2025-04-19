@@ -525,7 +525,7 @@ readonly STEP_PHP_FETCHING_FROM_DOCKER="Downloading data from Docker Hub..."
 
 readonly DEBUG_PHP_FPM_CALCULATED="Optimized PHP-FPM values based on RAM=%sMB, CPU=%s: max_children=%s, start=%s, min_spare=%s, max_spare=%s"
 
-readonly WARNING_PHP_FPM_REMOVE_DIR="Directory '%s' will be deleted because new configuration files need to be created"
+readonly WARNING_PHP_FPM_REMOVE_FILE="Directory '%s' will be deleted because new configuration files need to be created"
 readonly SUCCESS_PHP_FPM_CONFIG_CREATED="Optimized PHP-FPM configuration created at: %s"
 
 # =============================================

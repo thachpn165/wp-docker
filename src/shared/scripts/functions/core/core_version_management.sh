@@ -174,8 +174,8 @@ core_version_update_latest() {
   stop_loading
 
   # Sau khi đồng bộ, xóa tập tin zip và thư mục tạm
-  rm -rf "$temp_dir"
-  rm -f "$temp_zip"
+  remove_directory "$temp_dir"
+  remove_file "$temp_zip"
 
   # Cập nhật lại phiên bản đã cài đặt trong config
   core_set_installed_version "$latest_version"

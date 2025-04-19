@@ -1,4 +1,4 @@
-#shellcheck disable=SC2154
+# shellcheck disable=SC2317
 # =====================================
 # website_prompt_create: Prompt user for domain and PHP version, then call website_cli_create
 # Behavior:
@@ -49,47 +49,55 @@ website_logic_create() {
     local php_version="$2"
     export domain php_version
 
-    #shellcheck disable=SC2153
-    # SITES_DIR is set in config.sh ($SITES_DIR=$BASE_DIR/sites)
     SITE_DIR="$SITES_DIR/$domain"
     website_set_config "$domain" "$php_version"
     CONTAINER_PHP=$(json_get_site_value "$domain" "CONTAINER_PHP")
-    MARIADB_VOLUME="${domain//./}${DB_VOLUME_SUFFIX}"
 
-    # cleanup if error
-    #shellcheck disable=SC2317
+    # Cleanup function
     cleanup() {
         print_msg cancel "$MSG_CLEANING_UP"
-        if [[ -d "$SITE_DIR" ]]; then
-            run_cmd "rm -rf '$SITE_DIR'"
-            print_msg success "$SUCCESS_DIRECTORY_REMOVE: $SITE_DIR"
-        fi
+
         if docker ps -a --filter "name=${CONTAINER_PHP}" --format '{{.Names}}' | grep -q "${CONTAINER_PHP}"; then
-            run_cmd "docker stop '$CONTAINER_PHP' && docker rm '$CONTAINER_PHP'"
+            docker rm -f "$CONTAINER_PHP" &>/dev/null
             print_and_debug success "$SUCCESS_CONTAINER_STOP: $CONTAINER_PHP"
         fi
-        if docker volume ls --format '{{.Name}}' | grep -q "$MARIADB_VOLUME"; then
-            run_cmd "docker volume rm '$MARIADB_VOLUME'"
-            print_and_debug success "$SUCCESS_CONTAINER_VOLUME_REMOVE: $MARIADB_VOLUME"
+
+
+        if [[ -d "$SITE_DIR" ]]; then
+            rm -rf "$SITE_DIR"
+            print_msg success "$SUCCESS_DIRECTORY_REMOVE: $SITE_DIR"
         fi
-        if [[ -d "$SSL_DIR" ]]; then
-            run_cmd "rm -rf '$SSL_DIR'"
-            print_and_debug success "$SUCCESS_DIRECTORY_REMOVE: $SSL_DIR"
+
+        if [[ -f "$NGINX_PROXY_DIR/conf.d/${domain}.conf" ]]; then
+            rm -f "$NGINX_PROXY_DIR/conf.d/${domain}.conf"
+            print_msg success "$SUCCESS_FILE_REMOVE: $NGINX_PROXY_DIR/conf.d/${domain}.conf"
         fi
+
+        if [[ -f "$SSL_DIR/$domain.crt" ]]; then
+            rm -f "$SSL_DIR/$domain.crt"
+        fi
+        if [[ -f "$SSL_DIR/$domain.key" ]]; then
+            rm -f "$SSL_DIR/$domain.key"
+        fi
+
+        # Remove site config from .config.json
+        json_delete_site_key "$domain"
+        print_msg info "🔁 Rollback complete."
     }
 
-    # Create website folder
+    trap cleanup ERR
+
     if is_directory_exist "$SITE_DIR" false; then
         print_msg cancel "$MSG_WEBSITE_EXISTS: $domain"
         return 1
     fi
-    # create essential folders and files in site directory
+
     run_cmd "mkdir -p '$SITE_DIR/php' '$SITE_DIR/mariadb/conf.d' '$SITE_DIR/wordpress' '$SITE_DIR/logs' '$SITE_DIR/backups'"
     run_cmd "touch '$SITE_DIR/logs/access.log' '$SITE_DIR/logs/error.log'"
     run_cmd "touch '$SITE_DIR/logs/php_error.log'"
     run_cmd "touch '$SITE_DIR/logs/php_slow.log'"
     run_cmd "chmod 666 '$SITE_DIR/logs/'*.log"
-    # copy template version file to manage template version
+
     TEMPLATE_VERSION_FILE="$TEMPLATES_DIR/.template_version"
     if is_file_exist "$TEMPLATE_VERSION_FILE"; then
         copy_file "$TEMPLATE_VERSION_FILE" "$SITE_DIR/.template_version"
@@ -98,39 +106,31 @@ website_logic_create() {
         print_msg warning "$MSG_NOT_FOUND: $TEMPLATE_VERSION_FILE"
     fi
 
-    # Setup NGINX
     print_msg step "$STEP_WEBSITE_SETUP_NGINX: $domain"
     nginx_add_mount_docker "$domain"
     website_setup_nginx "$domain"
 
-    # Copy templates
     print_msg step "$STEP_WEBSITE_SETUP_COPY_CONFIG: $domain"
     copy_file "$TEMPLATES_DIR/php.ini.template" "$SITE_DIR/php/php.ini"
 
-    # Create optimized config for MariaDB & PHP-FPM, based on the template
     print_msg step "$STEP_WEBSITE_SETUP_APPLY_CONFIG: $domain"
     create_optimized_php_fpm_config "$domain"
 
-    # Store environment variables in .config.json file
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_ENV: $domain"
 
-    # Create self-signed SSL certificate
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_SSL: $domain"
     ssl_logic_install_selfsigned "$domain"
 
-    #Copy docker-compose template and config
     print_msg step "$STEP_WEBSITE_SETUP_CREATE_DOCKER_COMPOSE: $domain"
     website_generate_docker_compose "$domain"
 
-    # Start containers before setup WordPress
     print_msg step "$MSG_START_CONTAINER: $domain"
-
     run_in_dir "$SITE_DIR" docker compose up -d || {
         print_msg error "$ERROR_COMMAND_FAILED: docker compose up -d"
         return 1
     }
-    print_msg progress "$MSG_CHECKING_CONTAINER"
 
+    print_msg progress "$MSG_CHECKING_CONTAINER"
     debug_log "  ➤ CONTAINER_PHP: $CONTAINER_PHP"
 
     if ! is_container_running "$CONTAINER_PHP"; then
@@ -138,18 +138,16 @@ website_logic_create() {
         print_msg error "$ERROR_CONTAINER_NOT_READY_AFTER_30S"
         return 1
     fi
+
     stop_loading
     print_msg success "$MSG_CONTAINER_READY"
 
-    # Restart NGINX to apply new configuration
     print_msg step "$MSG_DOCKER_NGINX_RESTART"
-
     nginx_reload
 
-    # Set permissions for website folder in PHP container
     print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
     run_cmd "docker exec -u root '$CONTAINER_PHP' chown -R nobody:nogroup /var/www/"
     debug_log "✅ website_logic_create completed"
 
-    # Start WordPress installation in next stage
+    trap - ERR
 }

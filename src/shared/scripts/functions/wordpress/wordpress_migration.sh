@@ -83,7 +83,7 @@ wordpress_migration_logic() {
     }
 
     print_msg step "$STEP_WORDPRESS_MIGRATION_DELETING_OLD_SOURCE: $web_root"
-    rm -rf "$web_root"
+    remove_directory "$web_root"
     mkdir -p "$web_root"
     print_msg success "$SUCCESS_DIRECTORY_REMOVE"
   else

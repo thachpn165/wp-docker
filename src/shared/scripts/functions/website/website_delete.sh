@@ -21,12 +21,12 @@ website_prompt_delete() {
 
   # Ask for backup before delete
   backup_enabled=true # default
-  backup_confirm=$(get_input_or_test_value "$PROMPT_BACKUP_BEFORE_DELETE $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "yes")
+  backup_confirm=$(get_input_or_test_value "💾 $PROMPT_BACKUP_BEFORE_DELETE $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "yes")
   [[ "$backup_confirm" != "yes" ]] && backup_enabled=false
   debug_log "[DEBUG] Backup before delete: $backup_enabled"
 
   # Ask for final delete confirmation
-  delete_confirm=$(get_input_or_test_value "$PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
+  delete_confirm=$(get_input_or_test_value "❗ $PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
   if [[ "$delete_confirm" != "yes" ]]; then
     print_msg warning "$WARNING_ACTION_CANCELLED"
     exit 0
@@ -115,12 +115,12 @@ website_logic_delete() {
   fi
 
   print_msg step "$MSG_WEBSITE_DELETING_DIRECTORY: $SITE_DIR"
-  run_cmd "rm -rf \"$SITE_DIR\"" true
+  remove_directory "$SITE_DIR"
   print_msg success "$SUCCESS_DIRECTORY_REMOVE: $SITE_DIR"
 
   print_msg step "$MSG_WEBSITE_DELETING_SSL: $domain"
-  run_cmd "rm -rf \"$SSL_DIR/$domain.crt\"" true
-  run_cmd "rm -rf \"$SSL_DIR/$domain.key\"" true
+  remove_file "$SSL_DIR/$domain.crt"
+  remove_file "$SSL_DIR/$domain.key"
   print_msg success "$SUCCESS_SSL_CERTIFICATE_REMOVED: $domain"
 
   if is_file_exist "$SITE_CONF_FILE"; then

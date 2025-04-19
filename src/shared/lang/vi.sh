@@ -526,7 +526,7 @@ readonly STEP_PHP_FETCHING_FROM_DOCKER="Đang tải dữ liệu từ Docker Hub.
 
 readonly DEBUG_PHP_FPM_CALCULATED="Giá trị PHP-FPM tối ưu dựa trên RAM=%sMB, CPU=%s: max_children=%s, start=%s, min_spare=%s, max_spare=%s"
 
-readonly WARNING_PHP_FPM_REMOVE_DIR="Thư mục '%s' sẽ bị xoá vì cần tạo tập tin cấu hình mới"
+readonly WARNING_PHP_FPM_REMOVE_FILE="Thư mục '%s' sẽ bị xoá vì cần tạo tập tin cấu hình mới"
 readonly SUCCESS_PHP_FPM_CONFIG_CREATED="Đã tạo cấu hình PHP-FPM tối ưu tại: %s"
 
 # =============================================
