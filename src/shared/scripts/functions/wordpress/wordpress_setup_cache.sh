@@ -43,7 +43,7 @@ wordpress_prompt_cache_setup() {
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
         exit 1
     fi
-
+    current_cache=$(json_get_site_value "$domain" "cache")
     # === Load cache type list from JSON ===
     print_msg title "$LABEL_MENU_MAIN_WORDPRESS_CACHE"
     # Lấy danh sách các cache types, trừ 'no-cache'
@@ -55,12 +55,19 @@ wordpress_prompt_cache_setup() {
     # Hiển thị menu
     for i in "${!cache_types[@]}"; do
         local label
-        label=$(jq -r --arg type "${cache_types[$i]}" '.[$type].name' <<<"$WP_CACHE_PLUGIN_JSON")
+        local type="${cache_types[$i]}"
+        label=$(jq -r --arg type "$type" '.[$type].name' <<<"$WP_CACHE_PLUGIN_JSON")
+
+        if [[ "$type" == "$current_cache" ]]; then
+            label="$label ${YELLOW}($LABEL_CURRENT_SELECTED)${NC}"
+            default_index=$((i + 1))
+        fi
+
         print_msg info "  ${GREEN}[$((i + 1))]${NC} $label"
     done
 
     local cache_type_index
-    cache_type_index=$(get_input_or_test_value "$PROMPT_WORDPRESS_CHOOSE_CACHE" "${TEST_CACHE_TYPE:-${#cache_types[@]}}")
+    cache_type_index=$(get_input_or_test_value "$PROMPT_WORDPRESS_CHOOSE_CACHE" "${TEST_CACHE_TYPE:-$default_index}")
 
     if ! [[ "$cache_type_index" =~ ^[0-9]+$ ]] || ((cache_type_index < 1 || cache_type_index > ${#cache_types[@]})); then
         print_msg error "$ERROR_SELECT_OPTION_INVALID"
