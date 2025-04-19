@@ -9,7 +9,7 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
     fi
     SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
-safe_source "$BASE_DIR/shared/core/crons/cron_letsencrypt_renew.sh"
+safe_source "$CORE_DIR/crons/cron_letsencrypt_renew.sh"
 
 # === Xử lý lệnh truyền vào ===
 case "$1" in
