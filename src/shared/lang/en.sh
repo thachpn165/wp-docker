@@ -597,7 +597,7 @@ readonly INFO_RCLONE_CREATING_CONF="Creating new Rclone configuration file: %s"
 readonly INFO_RCLONE_SELECT_STORAGE_TYPE="Select the storage type you want to set up:"
 readonly INFO_RCLONE_DRIVE_AUTH_GUIDE="Run command: rclone authorize drive on your computer to get the OAuth token."
 
-readonly PROMPT_ENTER_STORAGE_NAME="Select storage to use: "
+readonly PROMPT_ENTER_STORAGE_NAME="Enter the name of the storage you want to set up: "
 readonly STEP_RCLONE_SETTING_UP="Setting up Storage: %s..."
 
 # =============================================
