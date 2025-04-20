@@ -12,6 +12,7 @@ edit_php_fpm_conf() {
     print_msg error "$ERROR_SITE_NOT_SELECTED"
     return 1
   fi
+  _is_valid_domain "$domain" || return 1
   conf_file="$SITES_DIR/$domain/php/php-fpm.conf"
 
   # Check if the php-fpm.conf file exists

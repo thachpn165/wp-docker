@@ -16,7 +16,7 @@ website_set_config() {
     print_msg info "Usage: website_set_config <domain> <php_version>"
     return 1
   fi
-
+  _is_valid_domain "$domain" || return 1
   # ✅ Save config to .config.json using json_set_site_value
   json_set_site_value "$domain" "DOMAIN" "$domain"
   json_set_site_value "$domain" "PHP_VERSION" "$php_version"
@@ -77,7 +77,7 @@ website_setup_nginx() {
       exit 1
     fi
 
-    cp "$NGINX_TEMPLATE" "$NGINX_CONF"
+    copy_file "$NGINX_TEMPLATE" "$NGINX_CONF"
     sedi "s|\\\${DOMAIN}|$domain|g" "$NGINX_CONF"
     php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
     sedi "s|\\\${PHP_CONTAINER}|$php_container|g" "$NGINX_CONF"

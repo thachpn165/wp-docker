@@ -283,3 +283,30 @@ get_user_confirmation() {
     esac
   done
 }
+
+# =============================================
+# 🌐 safe_curl – Secure and validated curl wrapper (pipeable version)
+# ---------------------------------------------
+# Usage:
+#   safe_curl "<url>" | bash
+# Parameters:
+#   $1 - URL to fetch
+# Behavior:
+#   - Validates and upgrades URL via network_check_http
+#   - Executes curl with best practices and outputs to stdout
+# =============================================
+safe_curl() {
+  local url="$1"
+
+  if [[ -z "$url" ]]; then
+    print_msg error "❌ Missing URL in safe_curl"
+    return 1
+  fi
+
+  # 🧠 Lấy URL đã chuyển hướng (HTTPS)
+  local validated_url
+  validated_url=$(network_check_http "$url") || return 1
+
+  # ✅ Dùng URL đã chuẩn hóa
+  curl --fail --silent --show-error --location --max-time 30 "$validated_url"
+}

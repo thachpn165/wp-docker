@@ -403,7 +403,11 @@ readonly STEP_SSL_REGENERATE_SELF_SIGNED="Regenerating self-signed SSL certifica
 readonly STEP_LE_REQUESTING_CERT="Requesting Let's Encrypt certificate using webroot method..."
 readonly STEP_REQUEST_CERT_WEBROOT="Requesting Let's Encrypt certificate using webroot method..."
 readonly STEP_SSL_LETSENCRYPT="Installing free SSL certificate from Let's Encrypt"
-
+readonly WARNING_SSL_EXPIRING_SOON="The SSL certificate will expire in %s days. Please renew the certificate."
+readonly SUCCESS_SSL_VALID="The certificate is valid. %s days of validity remaining."
+readonly INFO_SSL_PASTE_CRT="Please paste the SSL certificate content (including certificate, CA root,...)"
+readonly TIPS_SSL_PASTE_INTRODUCE="Paste the content, ending with Ctrl+D (or Ctrl+Z on Windows) to finish."
+readonly INFO_SSL_PASTE_KEY="Please paste the SSL private key content"
 # =============================================
 # 💾 BACKUP & RESTORE
 # =============================================
@@ -938,3 +942,5 @@ readonly LABEL_PHP_CUSTOM_VERSION="Custom PHP version"
 readonly TIP_PHP_VERSION_REF="For a comprehensive list of available PHP versions, refer to: ";
 readonly ERROR_DOMAIN_INVALID_FORMAT="Domain name is invalid. Please enter a valid domain name."
 readonly ERROR_DOMAIN_INVALID_HYPHEN="Domain name cannot contain the '-' character. Please enter a valid domain name." 
+readonly TITLE_BACKUP_SCHEDULE_LIST="Backup Schedule List"
+readonly ERROR_WP_SOURCE_URL_NOT_REACHABLE="WordPress source URL is not reachable. Please check your internet connection."

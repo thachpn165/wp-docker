@@ -12,6 +12,7 @@ edit_php_ini() {
     print_msg error "$ERROR_SITE_NOT_SELECTED"
     return 1
   fi
+  _is_valid_domain "$domain" || return 1
   ini_file="$SITES_DIR/$domain/php/php.ini"
 
   # Check if the php.ini file exists

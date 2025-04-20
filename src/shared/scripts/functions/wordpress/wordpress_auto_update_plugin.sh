@@ -6,6 +6,7 @@ wordpress_prompt_auto_update_plugin() {
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1
     fi
+    _is_valid_domain "$domain" || return 1
 
     # 📋 Prompt action
     print_msg info "$(printf "$PROMPT_CHOOSE_ACTION_FOR_SITE" "$domain")"
@@ -38,7 +39,6 @@ wordpress_prompt_auto_update_plugin() {
 wordpress_auto_update_plugin_logic() {
 
     domain="$1" # site_name will be passed from the menu file or CLI
-
     # **Handle enabling/disabling automatic plugin updates**
     if [[ "$2" == "enable" ]]; then
         print_msg info "$LABEL_ENABLE_AUTO_UPDATE_PLUGIN"

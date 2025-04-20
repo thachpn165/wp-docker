@@ -9,7 +9,7 @@ backup_prompt_backup_manage() {
         print_and_debug error "$ERROR_MISSING_PARAM: --domain must be provided"
         return 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     print_msg info "$MSG_WEBSITE_SELECTED: $domain"
 
     # === Choose action: list or clean ===
@@ -42,7 +42,7 @@ backup_logic_manage() {
     local action="$2"
     local max_age_days="${3:-7}"
     local backup_dir="$SITES_DIR/$domain/backups"
-
+    _is_valid_domain "$domain" || return 1
     # Ensure backup directory exists
     if ! is_directory_exist "$backup_dir"; then
         print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$backup_dir")"

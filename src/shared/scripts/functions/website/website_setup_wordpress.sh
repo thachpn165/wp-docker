@@ -38,11 +38,8 @@ website_setup_wordpress_logic() {
   local domain="$1"
   local auto_generate="${2:-true}"
 
-  if [[ -z "$domain" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
-  is_valid_domain "$domain" || return 1
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
   local db_name db_user db_pass php_container
 
   # 🌍 Load variables from .config.json
@@ -51,7 +48,7 @@ website_setup_wordpress_logic() {
   db_pass=$(json_get_site_value "$domain" "db_pass")
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
-# 🔐 Create admin account
+  # 🔐 Create admin account
   local admin_user admin_password admin_email
   if [[ "$TEST_MODE" == true ]]; then
     admin_user="${admin_user:-admin-test}"
@@ -92,7 +89,7 @@ website_setup_wordpress_logic() {
 
     # === Email ===
     admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL: " "${TEST_ADMIN_EMAIL:-admin@$domain}")
-  fi 
+  fi
 
   # 🐳 Check if PHP container is running
   local php_ready_ok=false
@@ -112,13 +109,18 @@ website_setup_wordpress_logic() {
 
   # 📆 Download WordPress if not already present
   if [[ ! -f "$site_dir/wordpress/index.php" ]]; then
+    local wp_url="https://wordpress.org/latest.tar.gz"
+    if ! network_check_http "$wp_url"; then
+      print_msg error "$ERROR_WP_SOURCE_URL_NOT_REACHABLE: $wp_url"
+      return 1
+    fi
     print_msg step "$INFO_DOWNLOADING_WP"
     docker_exec_php "$domain" "chown -R nobody:nogroup /var/www/"
     debug_log "\n➤ chown -R nobody:nogroup /var/www/: domain=$domain"
     local wp_download_cmd
-    wp_download_cmd='curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
-      tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && \
-      rm /var/www/html/wordpress.tar.gz'
+    wp_download_cmd="curl -o /var/www/html/wordpress.tar.gz -L $wp_url && \
+  tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && \
+  rm /var/www/html/wordpress.tar.gz"
 
     docker_exec_php "$domain" "$wp_download_cmd"
     exit_if_error $? "failed to download WordPress"
@@ -151,6 +153,6 @@ website_setup_wordpress_logic() {
 
   # set .site.$domain.cache value to `no-cache`
   json_set_site_value "$domain" "cache" "no-cache"
-  # 🐳 Restart NGINX to apply new configuration 
+  # 🐳 Restart NGINX to apply new configuration
   nginx_restart
 }

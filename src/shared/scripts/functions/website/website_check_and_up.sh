@@ -27,6 +27,9 @@ _check_and_start_container() {
     local domain="$2"
     local is_running
 
+    _is_missing_param "$container_name" "--container_name" || return 1
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
     if [[ -z "$container_name" ]]; then
         print_and_debug warning "⚠️  Skipped empty container for domain: $domain"
         return

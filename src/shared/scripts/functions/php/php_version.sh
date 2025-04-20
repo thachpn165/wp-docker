@@ -96,11 +96,8 @@ php_prompt_change_version() {
 
   # === Chọn website ===
   website_get_selected domain
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
-    return 1
-  fi
-
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
   # === Prompt chọn phiên bản PHP ===
   print_msg step "$STEP_PHP_SELECT_VERSION_FOR_DOMAIN: $domain"
   php_prompt_choose_version "$domain"
@@ -118,7 +115,7 @@ php_prompt_change_version() {
   php_cli_change_version --domain="$domain" --php_version="$php_version"
 }
 
-# =====================================
+# ====================================
 # php_logic_change_version: Core logic to update PHP version for a website
 # Parameters:
 #   $1 - domain: The website domain
@@ -133,12 +130,8 @@ php_logic_change_version() {
   local domain="$1"
   local php_version="$2"
 
-  # Check if domain is provided
-  if [[ -z "$1" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
-
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
   local site_dir="$SITES_DIR/$domain"
   local docker_compose_file="$site_dir/docker-compose.yml"
 
@@ -151,6 +144,7 @@ php_logic_change_version() {
     php_prompt_change_version
     return 1
   fi
+  _is_missing_param "$php_version" "--php_version" || return 1
 
   # Update PHP version in .config.json
   print_msg step "$STEP_PHP_UPDATING_ENV"

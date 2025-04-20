@@ -405,6 +405,11 @@ readonly STEP_REQUEST_CERT_WEBROOT="Đang yêu cầu chứng chỉ Let's Encrypt
 readonly STEP_SSL_LETSENCRYPT="Cài đặt chứng chỉ SSL miễn phí từ Let's Encrypt"
 readonly SUCCESS_SSL_LETS_ENCRYPT_ISSUED="Chứng chỉ Let's Encrypt đã cấp thành công: "
 
+readonly WARNING_SSL_EXPIRING_SOON="Chứng chỉ SSL sẽ hết hạn trong vòng %s ngày. Vui lòng gia hạn chứng chỉ."
+readonly SUCCESS_SSL_VALID="Chứng chỉ hợp lệ. Còn %s ngày hiệu lực."
+readonly INFO_SSL_PASTE_CRT="Vui lòng dán nội dung chứng chỉ SSL (bao gồm certificate, CA root,...)"
+readonly TIPS_SSL_PASTE_INTRODUCE="Dán nội dung vào, kết thúc bằng phím Ctrl+D (hoặc Ctrl+Z trên Windows) để kết thúc."
+readonly INFO_SSL_PASTE_KEY="Vui lòng dán nội dung private key SSL"
 # =============================================
 # 💾 SAO LƯU & KHÔI PHỤC
 # =============================================
@@ -940,3 +945,5 @@ readonly LABEL_PHP_CUSTOM_VERSION="Phiên bản PHP tùy chỉnh"
 readonly TIP_PHP_VERSION_REF="Tham khảo danh sách phiên bản PHP khả dụng tại: "
 readonly ERROR_DOMAIN_INVALID_FORMAT="Tên miền không hợp lệ. Vui lòng nhập tên miền hợp lệ."
 readonly ERROR_DOMAIN_INVALID_HYPHEN="Tên miền không được chứa ký tự '-'. Vui lòng nhập tên miền hợp lệ."
+readonly TITLE_BACKUP_SCHEDULE_LIST="Danh sách lịch sao lưu"
+readonly ERROR_WP_SOURCE_URL_NOT_REACHABLE="Không thể truy cập vào URL nguồn WordPress. Vui lòng kiểm tra lại."

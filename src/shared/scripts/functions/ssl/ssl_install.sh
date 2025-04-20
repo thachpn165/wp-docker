@@ -122,10 +122,10 @@ ssl_logic_install_letsencrypt() {
     local email="$2"
     local staging="$3"
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        return 1
-    fi
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
+    _is_missing_param "$email" "--email" || return 1
+    _is_valid_email "$email" || return 1
 
     print_msg info "$(printf "$INFO_DOMAIN_SELECTED" "$domain")"
 
@@ -145,7 +145,7 @@ ssl_logic_install_letsencrypt() {
     debug_log "[SSL] Running certbot container for domain: $domain with webroot: $webroot"
 
     local certbot_args=(
-        certonly --webroot -w /var/www/html -d "$domain" \
+        certonly --webroot -w /var/www/html -d "$domain"
         --non-interactive --agree-tos -m "$email"
     )
     [[ "$staging" == "true" ]] && certbot_args+=(--staging)
@@ -177,7 +177,6 @@ ssl_logic_install_letsencrypt() {
     print_msg success "$(printf "$SUCCESS_SSL_INSTALLED" "$domain")"
 }
 
-
 # =====================================
 # ssl_logic_install_manual: Use manually provided SSL certificate and key
 # Parameters:
@@ -186,13 +185,11 @@ ssl_logic_install_letsencrypt() {
 # =====================================
 ssl_logic_install_manual() {
     local domain="$1"
-    local SSL_DIR="$2"
+    local ssl_dir
+    ssl_dir="$SSL_DIR"
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_SITE_NOT_SELECTED"
-        return 1
-    fi
-
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
     is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
@@ -202,15 +199,23 @@ ssl_logic_install_manual() {
 
     local target_crt="$SSL_DIR/$domain.crt"
     local target_key="$SSL_DIR/$domain.key"
+    if [[ ! -f "$target_crt" || ! -f "$target_key" ]]; then
+        touch "$target_crt" "$target_key"
+    fi
 
     debug_log "[SSL INSTALL MANUAL] Domain: $domain"
     debug_log "[SSL INSTALL MANUAL] CRT path: $target_crt"
     debug_log "[SSL INSTALL MANUAL] KEY path: $target_key"
 
-    if [[ ! -s "$target_crt" || ! -s "$target_key" ]]; then
-        print_and_debug error "$ERROR_SSL_FILE_EMPTY_OR_MISSING"
-        return 1
-    fi
+    print_msg step "$INFO_SSL_PASTE_CRT: $domain"
+    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
+    echo ""
+    cat >"$target_crt"
+
+    print_msg step "$INFO_SSL_PASTE_KEY: $domain"
+    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
+    echo ""
+    cat >"$target_key"
 
     print_msg success "$SUCCESS_SSL_MANUAL_SAVED"
 
@@ -243,10 +248,12 @@ ssl_logic_edit_cert() {
     print_msg info "$(printf "$INFO_SSL_EDITING_FOR_DOMAIN" "$domain")"
 
     print_msg question "$(printf "$PROMPT_SSL_ENTER_NEW_CRT" "$domain")"
+    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
     read -r new_cert
     new_cert=$(get_input_or_test_value "$new_cert" "$PROMPT_SSL_ENTER_NEW_CRT" "$domain")
 
     print_msg question "$(printf "$PROMPT_SSL_ENTER_NEW_KEY" "$domain")"
+    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
     new_key=$(get_input_or_test_value "$new_key" "$PROMPT_SSL_ENTER_NEW_KEY" "$domain")
 
     echo "$new_cert" >"$target_crt"

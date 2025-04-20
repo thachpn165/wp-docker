@@ -18,7 +18,7 @@ website_prompt_delete() {
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
     exit 1
   fi
-
+  _is_valid_domain "$domain" || return 1
   # Ask for backup before delete
   backup_enabled=true # default
   backup_confirm=$(get_input_or_test_value "💾 $PROMPT_BACKUP_BEFORE_DELETE $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "yes")
@@ -57,11 +57,8 @@ website_logic_delete() {
     website_prompt_delete
   fi
 
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
-  #shellcheck disable=SC2153
+  _is_missing_param "$domain" "domain" || return 1
+  _is_valid_domain "$domain" || return 1
   SITE_DIR="$SITES_DIR/$domain"
 
   if ! is_directory_exist "$SITE_DIR"; then
@@ -123,11 +120,9 @@ website_logic_delete() {
   remove_file "$SSL_DIR/$domain.key"
   print_msg success "$SUCCESS_SSL_CERTIFICATE_REMOVED: $domain"
 
-  if is_file_exist "$SITE_CONF_FILE"; then
-    print_msg step "$MSG_WEBSITE_DELETING_NGINX_CONF: $SITE_CONF_FILE"
-    remove_file "$SITE_CONF_FILE"
-    print_msg success "$SUCCESS_FILE_REMOVED: $SITE_CONF_FILE"
-  fi
+  print_msg step "$MSG_WEBSITE_DELETING_NGINX_CONF: $SITE_CONF_FILE"
+  remove_file "$SITE_CONF_FILE"
+  print_msg success "$SUCCESS_FILE_REMOVED: $SITE_CONF_FILE"
 
   if crontab -l 2>/dev/null | grep -q "$domain"; then
     tmp_cron=$(mktemp)

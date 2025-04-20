@@ -20,7 +20,7 @@ wordpress_prompt_reset_roles() {
 # =====================================
 reset_user_role_logic() {
     local domain="$1" # site_name passed from CLI or menu
-
+    _is_valid_domain "$domain" || return 1
     print_msg step "$STEP_WORDPRESS_RESET_ROLE"
     wordpress_wp_cli_logic "$domain" "role reset --all"
     exit_if_error "$?" "$ERROR_WORDPRESS_RESET_ROLE"

@@ -122,10 +122,8 @@ website_get_selected() {
 website_generate_docker_compose() {
     local domain="$1"
 
-    if [[ -z "$domain" ]]; then
-        print_msg error "❌ Missing domain parameter"
-        return 1
-    fi
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
 
     local site_dir="$SITES_DIR/$domain"
     local docker_compose_template="$TEMPLATES_DIR/docker-compose.yml.template"
@@ -174,7 +172,8 @@ website_generate_docker_compose() {
 
 generate_sitename_from_domain() {
     local domain="$1"
-
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
     # Cắt domain thành mảng theo dấu chấm
     IFS='.' read -ra parts <<<"$domain"
     local count="${#parts[@]}"

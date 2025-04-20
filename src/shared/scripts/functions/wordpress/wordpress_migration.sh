@@ -47,7 +47,7 @@ wordpress_migration_logic() {
     print_and_debug error "$ERROR_DOMAIN_REQUIRED"
     return 1
   fi
-
+  _is_valid_domain "$domain" || return 1
   local archive_dir="$BASE_DIR/archives/$domain"
   local site_dir="$SITES_DIR/$domain"
   local web_root="$site_dir/wordpress"

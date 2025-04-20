@@ -126,7 +126,7 @@ safe_source "$CORE_LIB_DIR/file_utils.sh"
 safe_source "$CORE_LIB_DIR/misc_utils.sh"
 safe_source "$CORE_LIB_DIR/redis_utils.sh"
 safe_source "$CORE_LIB_DIR/cron_utils.sh"
-
+safe_source "$CORE_LIB_DIR/validate.sh"
 safe_source "$FUNCTIONS_DIR/utils/wp_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/php_utils.sh"
 safe_source "$FUNCTIONS_DIR/utils/website_utils.sh"

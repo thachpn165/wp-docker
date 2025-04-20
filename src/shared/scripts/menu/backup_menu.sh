@@ -35,7 +35,7 @@ backup_menu() {
             1) backup_prompt_backup_web; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
             2) backup_prompt_backup_manage; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
             3) backup_prompt_create_schedule ;;
-            4) manage_cron_menu; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
+            4) backup_schedule_menu; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
             5) backup_prompt_restore_web; read -p "$MSG_PRESS_ENTER_CONTINUE" ;;
             6) 
                 break

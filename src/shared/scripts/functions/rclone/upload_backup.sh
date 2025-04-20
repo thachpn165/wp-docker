@@ -24,7 +24,7 @@ select_backup_files() {
   local backup_dir="$1"
   local choice_list=()
   local selected_files=()
-
+  _is_missing_param "$backup_dir" "backup_dir" || return 1
   debug_log "[UPLOAD] Selecting backup files from: $backup_dir"
 
   # Check if backup directory exists
@@ -40,12 +40,10 @@ select_backup_files() {
     return 1
   fi
 
-  # Prepare dialog checklist
   for file in "${backup_files[@]}"; do
     choice_list+=("$file" "$file" "off")
   done
 
-  # Show dialog for selection
   local selected_raw
   selected_raw=$(dialog --stdout --separate-output --checklist "$PROMPT_SELECT_BACKUP_FILES" 15 60 10 "${choice_list[@]}")
 

@@ -12,6 +12,7 @@ php_prompt_rebuild_container() {
     print_msg error "$ERROR_SITE_NOT_SELECTED"
     exit 1
   fi
+  _is_valid_domain "$domain" || return 1
   # === Confirm rebuild of PHP container ===
   echo -e "${YELLOW}🔁 Rebuild the PHP container for site: $domain${NC}"
   read -p "Are you sure you want to rebuild the PHP container for this site? (y/n): " confirm_rebuild

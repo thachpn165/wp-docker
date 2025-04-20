@@ -15,16 +15,17 @@ website_logic_restart() {
   # If domain is empty, call select_website to choose domain
   if [[ -z "$domain" ]]; then
     website_get_selected domain
+    _is_valid_domain "$domain" || return 1
     # website_list
   fi
-
-  local site_dir="$SITES_DIR/$domain"
-  local docker_compose_file="$site_dir/docker-compose.yml"
   # Check if domain is still empty after selection
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_NO_WEBSITE_SELECTED"
     return 1
   fi
+
+  local site_dir="$SITES_DIR/$domain"
+  local docker_compose_file="$site_dir/docker-compose.yml"
   debug_log "[website_logic_restart] site_dir=$site_dir"
   debug_log "[website_logic_restart] domain=$domain"
 
@@ -62,6 +63,7 @@ website_logic_info() {
 
   if [[ -z "$domain" ]]; then
     website_get_selected domain
+    _is_valid_domain "$domain" || return 1
   fi
 
   if [[ -z "$domain" ]]; then
@@ -161,6 +163,7 @@ website_logic_logs() {
   # If domain is not provided, call select_website to choose one
   if [[ -z "$domain" ]]; then
     website_get_selected domain
+    _is_valid_domain "$domain" || return 1
   fi
 
   local access_log="$SITES_DIR/$domain/logs/access.log"

@@ -60,7 +60,8 @@ wp_install() {
   local admin_user="$4"
   local admin_pass="$5"
   local admin_email="$6"
-
+  _is_valid_domain "$domain" || return 1
+  _is_valid_email "$admin_email" || return 1
   print_msg info "$INFO_WP_INSTALLING"
   bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- core install \
     --url="$site_url" --title="$title" \
