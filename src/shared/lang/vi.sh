@@ -561,7 +561,10 @@ readonly STEP_DB_RESETTING="Đang reset lại database '%s' cho website '%s'..."
 readonly WARNING_BACKUP_BEFORE_CONTINUE="📌 Vui lòng sao lưu đầy đủ trước khi tiếp tục."
 readonly WARNING_RESET_DATABASE_CANCELLED="Thao tác reset database đã bị hủy."
 readonly INFO_LIST_WEBSITES_FOR_DB_RESET="📋 Danh sách các website có thể reset database:"
-
+readonly SUCCESS_DB_CREATED="Đã tạo database thành công"
+readonly SUCCESS_DB_USER_CREATED="Đã tạo người dùng database thành công"
+readonly SUCCESS_DB_DELETED="Đã xóa database thành công"
+readonly SUCCESS_DB_USER_DELETED="Đã xóa người dùng database thành công"
 # =============================================
 # ☁️ RCLONE
 # =============================================
@@ -947,3 +950,6 @@ readonly ERROR_DOMAIN_INVALID_FORMAT="Tên miền không hợp lệ. Vui lòng n
 readonly ERROR_DOMAIN_INVALID_HYPHEN="Tên miền không được chứa ký tự '-'. Vui lòng nhập tên miền hợp lệ."
 readonly TITLE_BACKUP_SCHEDULE_LIST="Danh sách lịch sao lưu"
 readonly ERROR_WP_SOURCE_URL_NOT_REACHABLE="Không thể truy cập vào URL nguồn WordPress. Vui lòng kiểm tra lại."
+readonly ERROR_CORE_VERSION_URL_NOT_REACHABLE="Không thể truy cập vào URL phiên bản WP Docker. Vui lòng kiểm tra lại."
+readonly ERROR_CORE_ZIP_URL_NOT_REACHABLE="Không thể truy cập vào URL tệp zip WP Docker. Vui lòng kiểm tra lại."
+readonly ERROR_WP_USER_ID_INVALID="User ID phải là số nguyên dương."

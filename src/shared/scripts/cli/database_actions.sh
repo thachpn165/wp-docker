@@ -31,10 +31,8 @@ database_cli_export() {
     domain=$(_parse_params "--domain" "$@")
     save_location=$(_parse_params "--save_location" "$@")
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        exit 1
-    fi
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
 
     # Default save path if not specified
     if [[ -z "$save_location" ]]; then
@@ -56,11 +54,10 @@ database_cli_import() {
     domain=$(_parse_params "--domain" "$@")
     backup_file=$(_parse_params "--backup_file" "$@")
 
-    if [[ -z "$domain" || -z "$backup_file" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain & --backup_file"
-        exit 1
-    fi
-
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_missing_param "$backup_file" "--backup_file" || return 1
+    _is_valid_domain "$domain" || return 1
+    is_file_exists "$backup_file" || return 1
     debug_log "Domain: $domain"
     debug_log "Backup file: $backup_file"
 
@@ -76,10 +73,8 @@ database_cli_reset() {
     local domain
     domain=$(_parse_params "--domain" "$@")
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        exit 1
-    fi
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
 
     database_logic_reset "$domain"
 }

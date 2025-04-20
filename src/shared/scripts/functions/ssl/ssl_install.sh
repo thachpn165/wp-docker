@@ -11,10 +11,7 @@ ssl_prompt_general() {
     local callback_function="$1"
     local domain
 
-    # Select website
-    website_get_selected domain
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
+    if ! website_get_selected domain; then
         return 1
     fi
     # Validate callback function existence
@@ -30,13 +27,10 @@ ssl_prompt_general() {
 
 ssl_prompt_letsencrypt() {
     local domain email staging
-
-    # Prompt for $domain
-    website_get_selected domain
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
+    if ! website_get_selected domain; then
         return 1
     fi
+
     # Prompt for email
     email=$(get_input_or_test_value "$PROMPT_ENTER_EMAIL" "test@local")
     if [[ -z "$email" ]]; then
@@ -57,11 +51,6 @@ ssl_prompt_letsencrypt() {
 # =====================================
 ssl_logic_install_selfsigned() {
     local domain="$1"
-
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_SITE_NOT_SELECTED"
-        return 1
-    fi
 
     local ssl_dir
     ssl_dir="${TEST_MODE:+/tmp/test_ssl_directory}"
@@ -122,9 +111,7 @@ ssl_logic_install_letsencrypt() {
     local email="$2"
     local staging="$3"
 
-    _is_missing_param "$domain" "--domain" || return 1
     _is_valid_domain "$domain" || return 1
-    _is_missing_param "$email" "--email" || return 1
     _is_valid_email "$email" || return 1
 
     print_msg info "$(printf "$INFO_DOMAIN_SELECTED" "$domain")"
@@ -188,7 +175,6 @@ ssl_logic_install_manual() {
     local ssl_dir
     ssl_dir="$SSL_DIR"
 
-    _is_missing_param "$domain" "--domain" || return 1
     _is_valid_domain "$domain" || return 1
     is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
@@ -231,11 +217,6 @@ ssl_logic_install_manual() {
 # =====================================
 ssl_logic_edit_cert() {
     local domain="$1"
-
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
-        return 1
-    fi
 
     local target_crt="$SSL_DIR/$domain.crt"
     local target_key="$SSL_DIR/$domain.key"

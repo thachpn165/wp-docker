@@ -7,11 +7,7 @@
 _is_valid_domain() {
     local domain="$1"
 
-    # Empty check
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_DOMAIN_EMPTY"
-        return 1
-    fi
+    _is_missing_param "$domain" "domain" || return 1
 
     # Must match standard domain pattern: sub.domain.tld
     if ! [[ "$domain" =~ ^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$ ]]; then
@@ -53,10 +49,7 @@ _is_missing_param() {
 _is_valid_email() {
     local email="$1"
 
-    if [[ -z "$email" ]]; then
-        print_msg error "❌ Email is required."
-        return 1
-    fi
+    _is_missing_param "$email" "email" || return 1
 
     # RFC 5322-compliant basic pattern, accepts name@domain.com or name@domain.com.vn
     if [[ ! "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then

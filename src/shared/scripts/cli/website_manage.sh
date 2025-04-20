@@ -26,11 +26,8 @@ safe_source "$FUNCTIONS_DIR/website_loader.sh"
 website_cli_restart() {
   local domain
   domain=$(_parse_params "--domain" "$@")
-
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
 
   website_logic_restart "$domain"
 }
@@ -43,11 +40,8 @@ website_cli_info() {
   local domain
   domain=$(_parse_params "--domain" "$@")
 
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
-
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
   website_logic_info "$domain"
 }
 
@@ -67,10 +61,9 @@ website_cli_logs() {
   domain=$(_parse_params "--domain" "$@")
   log_type=$(_parse_params "--log_type" "$@")
 
-  if [[ -z "$domain" || -z "$log_type" ]]; then
-    print_msg error "$ERROR_MISSING_PARAM: --domain, --log_type"
-    return 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$log_type" "--log_type" || return 1
+  _is_valid_domain "$domain" || return 1
 
   website_logic_logs "$domain" "$log_type"
 }
@@ -84,10 +77,9 @@ website_cli_delete() {
   domain=$(_parse_params "--domain" "$@")
   backup_enabled=$(_parse_params "--backup_enabled" "$@")
 
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$backup_enabled" "--backup_enabled" || return 1
+  _is_valid_domain "$domain" || return 1
 
   website_logic_delete "$domain" "$backup_enabled"
 }

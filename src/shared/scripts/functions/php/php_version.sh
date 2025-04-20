@@ -10,10 +10,19 @@ php_prompt_choose_version() {
   local PHP_VERSION_FILE="$BASE_DIR/php_versions.txt"
   local doc_url="https://hub.docker.com/r/bitnami/php-fpm/tags"
 
-  # Check if the PHP version list file exists
   if [[ ! -f "$PHP_VERSION_FILE" ]]; then
-    print_msg error "$MSG_NOT_FOUND: $PHP_VERSION_FILE"
-    return 1
+    print_msg warning "$MSG_NOT_FOUND: $PHP_VERSION_FILE"
+    print_msg info "📦 Using fallback PHP version list..."
+
+    cat <<EOF >"$PHP_VERSION_FILE"
+8.3.6
+8.2.12
+8.1.22
+8.0.30
+7.4.33
+EOF
+
+    print_msg success "✅ Created fallback version list at $PHP_VERSION_FILE"
   fi
 
   # Read PHP versions into an array
@@ -21,13 +30,6 @@ php_prompt_choose_version() {
   while IFS= read -r line || [[ -n "$line" ]]; do
     [[ -n "$line" ]] && PHP_VERSIONS+=("$line")
   done <"$PHP_VERSION_FILE"
-
-  # If no versions available
-  if [[ ${#PHP_VERSIONS[@]} -eq 0 ]]; then
-    print_msg error "$ERROR_PHP_LIST_EMPTY"
-    print_msg tip "wpdocker php get"
-    return 1
-  fi
 
   if [[ "$TEST_MODE" == true ]]; then
     REPLY="${TEST_PHP_VERSION:-${PHP_VERSIONS[0]}}"
@@ -95,20 +97,18 @@ php_prompt_change_version() {
   local domain
 
   # === Chọn website ===
-  website_get_selected domain
-  _is_missing_param "$domain" "--domain" || return 1
+  if ! website_get_selected domain; then
+    return 1
+  fi
   _is_valid_domain "$domain" || return 1
-  # === Prompt chọn phiên bản PHP ===
   print_msg step "$STEP_PHP_SELECT_VERSION_FOR_DOMAIN: $domain"
   php_prompt_choose_version "$domain"
 
-  # === Nếu không chọn version, thì dừng tại đây ===
   if [[ -z "$SELECTED_PHP" ]]; then
     print_msg warning "$WARNING_PHP_NO_VERSION_SELECTED"
     return 1
   fi
 
-  # === Nếu có chọn, xử lý thay đổi ===
   php_version="$SELECTED_PHP"
   print_msg success "$SUCCESS_PHP_VERSION_SELECTED: $php_version"
 
@@ -130,7 +130,6 @@ php_logic_change_version() {
   local domain="$1"
   local php_version="$2"
 
-  _is_missing_param "$domain" "--domain" || return 1
   _is_valid_domain "$domain" || return 1
   local site_dir="$SITES_DIR/$domain"
   local docker_compose_file="$site_dir/docker-compose.yml"
@@ -144,7 +143,6 @@ php_logic_change_version() {
     php_prompt_change_version
     return 1
   fi
-  _is_missing_param "$php_version" "--php_version" || return 1
 
   # Update PHP version in .config.json
   print_msg step "$STEP_PHP_UPDATING_ENV"

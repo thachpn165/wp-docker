@@ -30,11 +30,10 @@ backup_cli_manage() {
   domain=$(_parse_params "--domain" "$@")
   action=$(_parse_params "--action" "$@")
 
-  if [[ -z "$domain" || -z "$action" ]]; then
-    print_and_debug error "$ERROR_BACKUP_MANAGE_MISSING_PARAMS"
-    print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld\n  --action=list|clean"
-    exit 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$action" "--action" || return 1
+  _is_valid_domain "$domain" || return 1
+
   
   backup_logic_manage "$domain" "$action"
 }

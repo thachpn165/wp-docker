@@ -26,10 +26,8 @@
 # ============================================
 backup_prompt_create_schedule() {
     local domain
-    website_get_selected domain
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_SITE_NOT_SELECTED"
-        exit 1
+    if ! website_get_selected domain; then
+        return 1
     fi
     _is_valid_domain "$domain" || exit 1
     # === Prompt for interval_days ===
@@ -122,11 +120,9 @@ backup_prompt_create_schedule() {
 # ============================================
 backup_prompt_backup_web() {
     local domain
-    website_get_selected domain
 
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_NO_WEBSITE_SELECTED"
-        exit 1
+    if ! website_get_selected domain; then
+        return 1
     fi
     _is_valid_domain "$domain" || exit 1
     # === Choose storage: local or cloud ===
@@ -188,11 +184,6 @@ backup_logic_create_schedule() {
     local storage="$3"
     local rclone_storage="$4"
 
-    if [[ -z "$domain" || -z "$interval_days" || -z "$storage" ]]; then
-        print_and_debug error "[backup_logic_create_schedule] Missing required parameters"
-        return 1
-    fi
-
     if ! [[ "$interval_days" =~ ^[0-9]+$ ]] || [[ "$interval_days" -lt 1 ]]; then
         print_and_debug error "[backup_logic_create_schedule] Invalid interval_days: $interval_days"
         return 1
@@ -252,10 +243,6 @@ backup_logic_website() {
     log_file="$log_dir/wp-backup.log"
     safe_source "$CLI_DIR/backup_website.sh"
     safe_source "$CLI_DIR/database_actions.sh"
-    if [[ -z "$domain" || -z "$storage" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain and --storage must be provided"
-        return 1
-    fi
     _is_valid_domain "$domain" || return 1
     backup_dir="$(realpath "$SITES_DIR/$domain/backups")"
     log_dir="$(realpath "$SITES_DIR/$domain/logs")"

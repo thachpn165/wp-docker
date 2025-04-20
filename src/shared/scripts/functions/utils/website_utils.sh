@@ -23,13 +23,13 @@ website_list() {
         if [[ -d "$SITES_DIR/$site" ]]; then
             valid_sites+=("$site")
         else
-            debug_log "[website_list] ⚠️ Config có site '$site' nhưng không có thư mục tại $SITES_DIR"
+            debug_log "[website_list] ⚠️ .config.json contain '$site' but not exist in $SITES_DIR"
         fi
     done
 
     for dir in "${site_dirs[@]}"; do
         if ! printf '%s\n' "${config_sites[@]}" | grep -qx "$dir"; then
-            debug_log "[website_list] ⚠️ Thư mục '$dir' có trong $SITES_DIR nhưng không có key .site trong config"
+            debug_log "[website_list] ⚠️ Folder '$dir' already exist $SITES_DIR but not in .config.json"
         fi
     done
 
@@ -86,6 +86,7 @@ website_prompt_select() {
     debug_log "[website_prompt_select] selected=$selected"
     echo "$selected"
 }
+
 website_get_selected() {
     local __result_var="$1"
     local result tmp_output
@@ -97,6 +98,7 @@ website_get_selected() {
 
     tmp_output="$(mktemp)"
 
+    # 🟡 Gọi và kiểm tra status trả về
     if ! website_prompt_select > >(tee "$tmp_output"); then
         rm -f "$tmp_output"
         return 1

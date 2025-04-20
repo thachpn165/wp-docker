@@ -31,11 +31,7 @@ database_prompt_reset() {
 database_logic_reset() {
     local domain="$1"
 
-    # Ensure domain is provided
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        return 1
-    fi
+
     _is_valid_domain "$domain" || return 1
     # Retrieve DB credentials and container info
     local db_name db_user db_password db_container

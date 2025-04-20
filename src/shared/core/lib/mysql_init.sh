@@ -73,7 +73,6 @@ core_mysql_apply_config() {
         innodb_log_file_size table_open_cache thread_cache_size <<<"$config_values"
 
     is_directory_exist "$(dirname "$MYSQL_CONFIG_FILE")" true
-
     cat >"$MYSQL_CONFIG_FILE" <<EOF
 [mysqld]
 max_connections = $max_connections

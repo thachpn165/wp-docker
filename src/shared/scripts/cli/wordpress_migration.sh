@@ -24,12 +24,9 @@ safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 wordpress_cli_migration() {
   local domain
   domain=$(_parse_params "--domain" "$@")
-  # === Validate required parameters ===
-  if [[ -z "$domain" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-    exit 1
-  fi
 
-  # === Execute migration logic ===
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
+
   wordpress_migration_logic "$domain"
 }

@@ -560,6 +560,11 @@ readonly WARNING_BACKUP_BEFORE_CONTINUE="📌 Please backup fully before continu
 readonly WARNING_RESET_DATABASE_CANCELLED="Database reset operation canceled."
 readonly INFO_LIST_WEBSITES_FOR_DB_RESET="📋 List of websites available for database reset:"
 
+readonly SUCCESS_DB_CREATED="Database created successfully"
+readonly SUCCESS_DB_USER_CREATED="Database user created successfully"
+readonly SUCCESS_DB_DELETED="Database deleted successfully"
+readonly SUCCESS_DB_USER_DELETED="Database user deleted successfully"
+
 # =============================================
 # ☁️ RCLONE
 # =============================================
@@ -944,3 +949,5 @@ readonly ERROR_DOMAIN_INVALID_FORMAT="Domain name is invalid. Please enter a val
 readonly ERROR_DOMAIN_INVALID_HYPHEN="Domain name cannot contain the '-' character. Please enter a valid domain name." 
 readonly TITLE_BACKUP_SCHEDULE_LIST="Backup Schedule List"
 readonly ERROR_WP_SOURCE_URL_NOT_REACHABLE="WordPress source URL is not reachable. Please check your internet connection."
+readonly ERROR_CORE_VERSION_URL_NOT_REACHABLE="Unable to access WP Docker version URL. Please check again."
+readonly ERROR_WP_USER_ID_INVALID="User ID must be a positive integer."

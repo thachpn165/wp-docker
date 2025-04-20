@@ -25,10 +25,16 @@ safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 wordpress_cli_cache_setup() {
   local domain="$1"
   local cache_type="$2"
-  if [[ -z "$domain" || -z "$cache_type" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain & --cache_type"
-    exit 1
-  fi
+
+  # Parse parameters
+  domain=$(_parse_params "$domain" "--domain")
+  cache_type=$(_parse_params "$cache_type" "--cache_type")
+
+  # Validate required parameters
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$cache_type" "cache_type" || return 1
+  _is_valid_domain "$domain" || return 1
+
   # Call the logic function to set up the cache
   wordpress_cache_setup_logic "$domain" "$cache_type"
 }

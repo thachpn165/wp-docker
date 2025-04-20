@@ -19,11 +19,8 @@ wordpress_cli_auto_update_plugin() {
   domain=$(_parse_params "--domain" "$@")
   action=$(_parse_params "--action" "$@")
 
-  if [[ -z "$domain" || -z "$action" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain, --action"
-    print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld --action=enable|disable"
-    exit 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$action" "action" || return 1
 
   wordpress_auto_update_plugin_logic "$domain" "$action"
 }

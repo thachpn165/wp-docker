@@ -121,9 +121,7 @@ backup_prompt_list_schedule() {
 # =============================================
 schedule_backup_remove() {
     local domain
-    website_get_selected domain
-    if [[ -z "$domain" ]]; then
-        print_msg error "You must select a website to remove the backup schedule."
+    if ! website_get_selected domain; then
         return 1
     fi
     _is_valid_domain "$domain" || return 1

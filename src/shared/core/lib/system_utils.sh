@@ -337,6 +337,10 @@ check_and_add_alias() {
   fi
 }
 
+
+# ============================================
+# 🕒 exit_after_10s – Exit script after 10 second
+# ============================================
 exit_after_10s() {
   local seconds=10
 

@@ -6,12 +6,14 @@ safe_source "$CLI_DIR/database_actions.sh"
 # Requires: select_website function, global variable $save_location
 # =====================================
 database_prompt_export() {
-    local domain 
-    local save_location 
+    local domain
+    local save_location
     local timestamp
     timestamp="$(date +%s)"
-    website_get_selected domain
-    [[ -z "$domain" ]] && print_msg error "$ERROR_SITE_NOT_SELECTED" && exit 1
+
+    if ! website_get_selected domain; then
+        return 1
+    fi
     _is_valid_domain "$domain" || return 1
     print_msg info "$INFO_BACKUP_SAVE_LOCATION: $save_location"
 
@@ -35,6 +37,8 @@ database_prompt_export() {
 database_export_logic() {
     local domain="$1"
     local save_location="$2"
+    local backup_dir
+    backup_dir="$(dirname "$save_location")"
 
     # Check if the sites directory is set
     if [[ -z "$SITES_DIR" ]]; then
@@ -42,17 +46,9 @@ database_export_logic() {
         return 1
     fi
 
-    # Validate required parameter: domain/mysqldump
-
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
-        return 1
-    fi
     _is_valid_domain "$domain" || return 1
 
     # Ensure backup directory exists
-    local backup_dir
-    backup_dir="$(dirname "$save_location")"
     if [[ ! -d "$backup_dir" ]]; then
         print_msg warning "$(printf "$WARNING_BACKUP_DIR_NOT_EXIST_CREATE" "$backup_dir")"
         mkdir -p "$backup_dir" || {

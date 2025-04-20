@@ -13,10 +13,8 @@ website_prompt_delete() {
 
   # Select website
   local domain
-  website_get_selected domain
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
-    exit 1
+  if ! website_get_selected domain; then
+    return 1 
   fi
   _is_valid_domain "$domain" || return 1
   # Ask for backup before delete
@@ -56,8 +54,6 @@ website_logic_delete() {
   if [[ -z "$domain" ]]; then
     website_prompt_delete
   fi
-
-  _is_missing_param "$domain" "domain" || return 1
   _is_valid_domain "$domain" || return 1
   SITE_DIR="$SITES_DIR/$domain"
 

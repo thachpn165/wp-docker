@@ -3,7 +3,6 @@
 # 🔐 ssl_cli_install – CLI wrapper for SSL installation methods
 # =====================================
 
-
 # === Auto-detect BASE_DIR & load config ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 while [[ "$SCRIPT_PATH" != "/" ]]; do
@@ -25,11 +24,8 @@ ssl_cli_install_selfsigned() {
     local domain
     domain=$(_parse_params "--domain" "$@")
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld"
-        exit 1
-    fi
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
 
     ssl_logic_install_selfsigned "$domain"
 }
@@ -45,11 +41,10 @@ ssl_cli_install_letsencrypt() {
     email=$(_parse_params "--email" "$@")
     staging=$(_parse_optional_params "--staging" "$@")
 
-    if [[ -z "$domain" || -z "$email" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain, --email"
-        print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld --email=contact@yourdomain"
-        exit 1
-    fi
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_missing_param "$email" "--email" || return 1
+    _is_valid_domain "$domain" || return 1
+    _is_valid_email "$email" || return 1
 
     ssl_logic_install_letsencrypt "$domain" "$email" "$staging"
 }
@@ -62,11 +57,8 @@ ssl_cli_install_manual() {
     local domain
     domain=$(_parse_params "--domain" "$@")
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld"
-        exit 1
-    fi
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
 
     ssl_logic_install_manual "$domain"
 }
