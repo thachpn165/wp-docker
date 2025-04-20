@@ -76,7 +76,6 @@ rclone_setup() {
     break
   done
 
-  
   print_msg step "$(printf "$STEP_RCLONE_SETTING_UP" "$STORAGE_NAME")"
 
   {
@@ -109,6 +108,5 @@ rclone_setup() {
 
   print_msg success "$(printf "$SUCCESS_RCLONE_STORAGE_ADDED" "$STORAGE_NAME")"
   print_msg info "📄 Config: $BASE_DIR/$RCLONE_CONFIG_FILE"
-}
   print_msg info "📄 Config: $BASE_DIR/$RCLONE_CONFIG_FILE"
 }
