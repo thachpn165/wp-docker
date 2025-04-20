@@ -872,7 +872,6 @@ readonly PROMPT_BACKUP_SELECT_WEB_VIEW_SCHEDULE="Chọn website để xem lịch
 readonly INFO_BACKUP_VIEW_SCHEDULED_WEBSITE="Đang xem lịch sao lưu cho website"
 readonly ERROR_BACKUP_NOT_SCHEDULED_FOR_WEBSITE="Không có lịch sao lưu nào được lên lịch cho website này."
 readonly INFO_BACKUP_SCHEDULE_LIST_FOR_WEBSITE="Danh sách lịch sao lưu cho website"
-readonly SUCCESS_BACKUP_SCHEDULE_REMOVED="Đã xóa lịch sao lưu cho website"
 readonly LABEL_MENU_BACKUP_SCHEDULE_VIEW="Xem lịch sao lưu"
 readonly LABEL_MENU_BACKUP_SCHEDULE_REMOVE="Xóa lịch sao lưu"
 readonly TITLE_MENU_BACKUP_SCHEDULE_MANAGEMENT="📅 Quản lý lịch sao lưu"

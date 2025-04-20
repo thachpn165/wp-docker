@@ -875,7 +875,6 @@ readonly PROMPT_BACKUP_SELECT_WEB_VIEW_SCHEDULE="Select website to view backup s
 readonly INFO_BACKUP_VIEW_SCHEDULED_WEBSITE="Viewing backup schedule for website"
 readonly ERROR_BACKUP_NOT_SCHEDULED_FOR_WEBSITE="No backup schedule exists for this website."
 readonly INFO_BACKUP_SCHEDULE_LIST_FOR_WEBSITE="Backup schedule list for website"
-readonly SUCCESS_BACKUP_SCHEDULE_REMOVED="Backup schedule removed for website"
 readonly LABEL_MENU_BACKUP_SCHEDULE_VIEW="View backup schedule"
 readonly LABEL_MENU_BACKUP_SCHEDULE_REMOVE="Remove backup schedule"
 readonly TITLE_MENU_BACKUP_SCHEDULE_MANAGEMENT="📅 Backup Schedule Management"
