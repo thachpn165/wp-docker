@@ -113,7 +113,7 @@ wordpress_migration_logic() {
   local db_name db_user db_pass
   db_name=$(json_get_site_value "$domain" "db_name")
   db_user=$(json_get_site_value "$domain" "db_user")
-  db_pass=$(json_get_site_value_decrypted "$domain" "db_pass")
+  db_pass=$(json_get_site_value "$domain" "db_pass")
   database_cli_import --domain="$domain" --backup_file="$sql_file"
 
   print_msg step "$STEP_WORDPRESS_CHECK_DB_PREFIX"

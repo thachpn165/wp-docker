@@ -57,7 +57,6 @@ database_cli_import() {
     _is_missing_param "$domain" "--domain" || return 1
     _is_missing_param "$backup_file" "--backup_file" || return 1
     _is_valid_domain "$domain" || return 1
-    is_file_exists "$backup_file" || return 1
     debug_log "Domain: $domain"
     debug_log "Backup file: $backup_file"
 
