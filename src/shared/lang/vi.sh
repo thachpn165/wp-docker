@@ -597,7 +597,7 @@ readonly INFO_RCLONE_CREATING_CONF="Đang tạo file cấu hình Rclone mới: %
 readonly INFO_RCLONE_SELECT_STORAGE_TYPE="Chọn loại storage bạn muốn thiết lập:"
 readonly INFO_RCLONE_DRIVE_AUTH_GUIDE="Chạy lệnh: rclone authorize drive trên máy tính của bạn để lấy token OAuth."
 
-readonly PROMPT_ENTER_STORAGE_NAME="Chọn storage muốn sử dụng: "
+readonly PROMPT_ENTER_STORAGE_NAME="Nhập tên storage mà bạn muốn lưu (không ký tự đặc biệt, ví dụ: wpdocker-drive) "
 readonly STEP_RCLONE_SETTING_UP="Đang thiết lập Storage: %s..."
 
 # =============================================
