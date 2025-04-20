@@ -21,6 +21,18 @@ wp_set_wpconfig() {
 
   print_msg info "$INFO_WP_CONFIGURING"
 
+  # ✅ Kiểm tra container có đang chạy
+  if ! is_container_running "$container_php"; then
+    print_and_debug error "$(printf "$ERROR_DOCKER_CONTAINER_NOT_RUNNING" "$container_php")"
+    return 1
+  fi
+
+  # ✅ Kiểm tra file wp-config-sample.php có tồn tại không
+  if ! docker exec "$container_php" test -f /var/www/html/wp-config-sample.php; then
+    print_and_debug error "$MSG_NOT_FOUND: /var/www/html/wp-config-sample.php"
+    return 1
+  fi
+
   docker exec -i "$container_php" sh -c "
     cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php && \
     sed -i 's/database_name_here/$db_name/' /var/www/html/wp-config.php && \
@@ -39,7 +51,7 @@ EOF
     print_msg success "$SUCCESS_WP_CONFIG_DONE"
   else
     print_and_debug error "$ERROR_WP_CONFIG_FAILED"
-    exit 1
+    return 1
   fi
 }
 
