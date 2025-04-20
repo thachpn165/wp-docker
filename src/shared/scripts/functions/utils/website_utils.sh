@@ -97,8 +97,10 @@ website_get_selected() {
 
     tmp_output="$(mktemp)"
 
-    # Cho phép hiển thị ra màn hình, đồng thời ghi kết quả vào file tạm
-    website_prompt_select > >(tee "$tmp_output")
+    if ! website_prompt_select > >(tee "$tmp_output"); then
+        rm -f "$tmp_output"
+        return 1
+    fi
 
     result="$(tail -n 1 "$tmp_output")"
     rm -f "$tmp_output"
