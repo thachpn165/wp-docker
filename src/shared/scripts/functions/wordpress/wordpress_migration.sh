@@ -1,4 +1,10 @@
+safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
+safe_source "$FUNCTIONS_DIR/website_loader.sh"
+safe_source "$CLI_DIR/database_actions.sh"
+safe_source "$CLI_DIR/ssl_install.sh"
+# =====================================
 wordpress_prompt_migration() {
+
   # === Display welcome message ===
   print_msg title "$TITLE_MIGRATION_TOOL"
   echo ""
@@ -93,7 +99,7 @@ wordpress_migration_logic() {
       return 0
     }
 
-    bash "$MENU_DIR/website/website_create_menu.sh"
+    website_prompt_create
   fi
 
   print_msg step "$STEP_WORDPRESS_MIGRATION_EXTRACTING: $archive_file"
@@ -105,12 +111,16 @@ wordpress_migration_logic() {
 
   print_msg step "$STEP_WORDPRESS_MIGRATION_IMPORTING_DB: $sql_file"
   local db_name db_user db_pass
-  db_name=$(json_get_site_value "$domain" "MYSQL_DATABASE")
-  db_user=$(json_get_site_value "$domain" "MYSQL_USER")
-  db_pass=$(json_get_site_value "$domain" "MYSQL_PASSWORD")
-  bash "$CLI_DIR/database_import.sh" --domain="$domain" --backup_file="$sql_file"
+  db_name=$(json_get_site_value "$domain" "db_name")
+  db_user=$(json_get_site_value "$domain" "db_user")
+  db_pass=$(json_get_site_value_decrypted "$domain" "db_pass")
+  database_cli_import --domain="$domain" --backup_file="$sql_file"
 
   print_msg step "$STEP_WORDPRESS_CHECK_DB_PREFIX"
+  if ! is_container_running "$mariadb_container"; then
+    print_and_debug error "$(printf "$ERROR_CONTAINER_NOT_RUNNING" "$mariadb_container")"
+    return 1
+  fi
   local prefix
   prefix=$(docker exec --env MYSQL_PWD="$db_pass" "$mariadb_container" \
     mysql -u "$db_user" "$db_name" -e "SHOW TABLES;" |
@@ -144,7 +154,7 @@ wordpress_migration_logic() {
   confirm_action "$QUESTION_INSTALL_SSL"
   if [[ $? -eq 0 ]]; then
     print_msg info "$(printf "$INFO_INSTALLING_SSL" "$domain")"
-    bash "$CLI_DIR/ssl_install_letsencrypt.sh" --domain="$domain"
+    ssl_cli_install_letsencrypt --domain="$domain"
   else
     print_msg info "$INFO_SKIP_SSL_INSTALL"
   fi
