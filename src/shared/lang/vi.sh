@@ -111,7 +111,7 @@ readonly SUCCESS_CONTAINER_RESTARTED="Container '%s' đã được khởi độn
 readonly SUCCESS_DOCKER_RUNNING="Docker đang chạy"
 readonly SUCCESS_NGINX_CONTAINER_STARTED="Container nginx-proxy đã được khởi động lại thành công."
 readonly SUCCESS_CONTAINER_OLD_REMOVED="Đã xóa container PHP cũ (nếu có)"
-
+readonly ERROR_CONTAINER_NOT_RUNNING="Container không hoạt động"
 readonly ERROR_DOCKER_STATUS="Docker không hoạt động"
 readonly ERROR_DOCKER_NETWORK_STATUS="Mạng Docker không hoạt động"
 readonly ERROR_DOCKER_NGINX_STATUS="NGINX Proxy không hoạt động"
@@ -405,6 +405,11 @@ readonly STEP_REQUEST_CERT_WEBROOT="Đang yêu cầu chứng chỉ Let's Encrypt
 readonly STEP_SSL_LETSENCRYPT="Cài đặt chứng chỉ SSL miễn phí từ Let's Encrypt"
 readonly SUCCESS_SSL_LETS_ENCRYPT_ISSUED="Chứng chỉ Let's Encrypt đã cấp thành công: "
 
+readonly WARNING_SSL_EXPIRING_SOON="Chứng chỉ SSL sẽ hết hạn trong vòng %s ngày. Vui lòng gia hạn chứng chỉ."
+readonly SUCCESS_SSL_VALID="Chứng chỉ hợp lệ. Còn %s ngày hiệu lực."
+readonly INFO_SSL_PASTE_CRT="Vui lòng dán nội dung chứng chỉ SSL (bao gồm certificate, CA root,...)"
+readonly TIPS_SSL_PASTE_INTRODUCE="Dán nội dung vào, kết thúc bằng phím Ctrl+D (hoặc Ctrl+Z trên Windows) để kết thúc."
+readonly INFO_SSL_PASTE_KEY="Vui lòng dán nội dung private key SSL"
 # =============================================
 # 💾 SAO LƯU & KHÔI PHỤC
 # =============================================
@@ -526,7 +531,7 @@ readonly STEP_PHP_FETCHING_FROM_DOCKER="Đang tải dữ liệu từ Docker Hub.
 
 readonly DEBUG_PHP_FPM_CALCULATED="Giá trị PHP-FPM tối ưu dựa trên RAM=%sMB, CPU=%s: max_children=%s, start=%s, min_spare=%s, max_spare=%s"
 
-readonly WARNING_PHP_FPM_REMOVE_DIR="Thư mục '%s' sẽ bị xoá vì cần tạo tập tin cấu hình mới"
+readonly WARNING_PHP_FPM_REMOVE_FILE="Thư mục '%s' sẽ bị xoá vì cần tạo tập tin cấu hình mới"
 readonly SUCCESS_PHP_FPM_CONFIG_CREATED="Đã tạo cấu hình PHP-FPM tối ưu tại: %s"
 
 # =============================================
@@ -935,3 +940,10 @@ readonly LABEL_DAY_LOWERCASE="ngày"
 readonly IMPORTANT_EXIT_AFTER_SECS="Hệ thống sẽ tự động thoát sau %s giây."
 readonly CANCEL_CORE_UPDATE="Hủy cập nhật"
 readonly LABEL_CURRENT_SELECTED="hiện đang sử dụng"
+readonly PROMPT_ENTER_CUSTOM_PHP_VERSION="Nhập phiên bản PHP (ví dụ: 8.0, 8.1, 8.2): "
+readonly LABEL_PHP_CUSTOM_VERSION="Phiên bản PHP tùy chỉnh"
+readonly TIP_PHP_VERSION_REF="Tham khảo danh sách phiên bản PHP khả dụng tại: "
+readonly ERROR_DOMAIN_INVALID_FORMAT="Tên miền không hợp lệ. Vui lòng nhập tên miền hợp lệ."
+readonly ERROR_DOMAIN_INVALID_HYPHEN="Tên miền không được chứa ký tự '-'. Vui lòng nhập tên miền hợp lệ."
+readonly TITLE_BACKUP_SCHEDULE_LIST="Danh sách lịch sao lưu"
+readonly ERROR_WP_SOURCE_URL_NOT_REACHABLE="Không thể truy cập vào URL nguồn WordPress. Vui lòng kiểm tra lại."

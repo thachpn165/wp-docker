@@ -14,7 +14,7 @@ database_prompt_reset() {
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     # Trigger the reset logic via CLI wrapper
     database_cli_reset --domain="$domain"
 }
@@ -36,7 +36,7 @@ database_logic_reset() {
         print_and_debug error "$ERROR_MISSING_PARAM: --domain"
         return 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     # Retrieve DB credentials and container info
     local db_name db_user db_password db_container
     db_name="$(json_get_site_value "$domain" "db_name")"

@@ -12,6 +12,7 @@ database_prompt_export() {
     timestamp="$(date +%s)"
     website_get_selected domain
     [[ -z "$domain" ]] && print_msg error "$ERROR_SITE_NOT_SELECTED" && exit 1
+    _is_valid_domain "$domain" || return 1
     print_msg info "$INFO_BACKUP_SAVE_LOCATION: $save_location"
 
     save_location="${SITES_DIR}/$domain/backups/${domain}-backup-$(date +%F)-$timestamp.sql"
@@ -47,6 +48,7 @@ database_export_logic() {
         print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
         return 1
     fi
+    _is_valid_domain "$domain" || return 1
 
     # Ensure backup directory exists
     local backup_dir

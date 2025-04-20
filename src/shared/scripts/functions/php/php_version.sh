@@ -7,8 +7,8 @@
 #   - Sets global variable SELECTED_PHP
 # =====================================
 php_prompt_choose_version() {
-
   local PHP_VERSION_FILE="$BASE_DIR/php_versions.txt"
+  local doc_url="https://hub.docker.com/r/bitnami/php-fpm/tags"
 
   # Check if the PHP version list file exists
   if [[ ! -f "$PHP_VERSION_FILE" ]]; then
@@ -22,49 +22,67 @@ php_prompt_choose_version() {
     [[ -n "$line" ]] && PHP_VERSIONS+=("$line")
   done <"$PHP_VERSION_FILE"
 
-  # If no versions available, show error and suggest update
+  # If no versions available
   if [[ ${#PHP_VERSIONS[@]} -eq 0 ]]; then
     print_msg error "$ERROR_PHP_LIST_EMPTY"
     print_msg tip "wpdocker php get"
     return 1
   fi
 
-  # If in test mode, auto select version
   if [[ "$TEST_MODE" == true ]]; then
     REPLY="${TEST_PHP_VERSION:-${PHP_VERSIONS[0]}}"
     debug_log "[TEST_MODE] Selected PHP version: $REPLY"
+    SELECTED_PHP="$REPLY"
     return 0
   fi
 
-  # Display PHP version list
+  echo ""
+  # Warnings
+  print_msg recommend "$TIPS_PHP_RECOMMEND_VERSION"
+  print_msg warning "$WARNING_PHP_ARM_TITLE"
+  print_msg sub-label "$WARNING_PHP_ARM_LINE1"
+  print_msg sub-label "$WARNING_PHP_ARM_LINE2"
+  print_msg sub-label "$WARNING_PHP_ARM_LINE3"
+  print_msg sub-label "$WARNING_PHP_ARM_LINE4"
+  print_msg sub-label "$WARNING_PHP_ARM_LINE5"
+
+  echo ""
+  # Display version list
   print_msg info "$MSG_PHP_LIST_SUPPORTED"
   for i in "${!PHP_VERSIONS[@]}"; do
     echo -e "  ${GREEN}[$i]${NC} ${PHP_VERSIONS[$i]}"
   done
 
-  # Display tips and warnings for ARM devices
-  print_msg recommend "$TIPS_PHP_RECOMMEND_VERSION"
-  print_msg warning "$WARNING_PHP_ARM_TITLE"
-  print_msg warning "$WARNING_PHP_ARM_LINE1"
-  print_msg warning "$WARNING_PHP_ARM_LINE2"
-  print_msg warning "$WARNING_PHP_ARM_LINE3"
-  print_msg warning "$WARNING_PHP_ARM_LINE4"
-  print_msg warning "$WARNING_PHP_ARM_LINE5"
+  # Add custom option
+  local custom_index="${#PHP_VERSIONS[@]}"
+  echo -e "  ${GREEN}[$custom_index]${NC} $LABEL_PHP_CUSTOM_VERSION"
 
-  echo ""
   sleep 0.2
   php_index=$(get_input_or_test_value "$MSG_SELECT_OPTION" "${TEST_PHP_INDEX:-0}")
 
-  # Validate selection index
-  if ! [[ "$php_index" =~ ^[0-9]+$ ]] || ((php_index < 0 || php_index >= ${#PHP_VERSIONS[@]})); then
+  if ! [[ "$php_index" =~ ^[0-9]+$ ]]; then
     print_msg error "$ERROR_SELECT_OPTION_INVALID"
     return 1
   fi
 
-  # Save selected PHP version
+  if ((php_index == custom_index)); then
+    print_msg tip "$TIP_PHP_VERSION_REF ${CYAN}$doc_url${NC}"
+    REPLY=$(get_input_or_test_value "$PROMPT_ENTER_CUSTOM_PHP_VERSION" "${TEST_PHP_VERSION:-}")
+    if [[ -z "$REPLY" ]]; then
+      print_msg error "$WARNING_PHP_NO_VERSION_SELECTED"
+      return 1
+    fi
+    SELECTED_PHP="$REPLY"
+    return 0
+  fi
+
+  if ((php_index < 0 || php_index >= custom_index)); then
+    print_msg error "$ERROR_SELECT_OPTION_INVALID"
+    return 1
+  fi
+
   SELECTED_PHP="${PHP_VERSIONS[$php_index]}"
 }
-
 # =====================================
 # php_prompt_change_version: Prompt user to change PHP version of a selected site
 # Requires:
@@ -78,11 +96,8 @@ php_prompt_change_version() {
 
   # === Chọn website ===
   website_get_selected domain
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
-    return 1
-  fi
-
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
   # === Prompt chọn phiên bản PHP ===
   print_msg step "$STEP_PHP_SELECT_VERSION_FOR_DOMAIN: $domain"
   php_prompt_choose_version "$domain"
@@ -100,7 +115,7 @@ php_prompt_change_version() {
   php_cli_change_version --domain="$domain" --php_version="$php_version"
 }
 
-# =====================================
+# ====================================
 # php_logic_change_version: Core logic to update PHP version for a website
 # Parameters:
 #   $1 - domain: The website domain
@@ -115,12 +130,8 @@ php_logic_change_version() {
   local domain="$1"
   local php_version="$2"
 
-  # Check if domain is provided
-  if [[ -z "$1" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
-
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
   local site_dir="$SITES_DIR/$domain"
   local docker_compose_file="$site_dir/docker-compose.yml"
 
@@ -133,6 +144,7 @@ php_logic_change_version() {
     php_prompt_change_version
     return 1
   fi
+  _is_missing_param "$php_version" "--php_version" || return 1
 
   # Update PHP version in .config.json
   print_msg step "$STEP_PHP_UPDATING_ENV"

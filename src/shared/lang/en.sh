@@ -403,7 +403,11 @@ readonly STEP_SSL_REGENERATE_SELF_SIGNED="Regenerating self-signed SSL certifica
 readonly STEP_LE_REQUESTING_CERT="Requesting Let's Encrypt certificate using webroot method..."
 readonly STEP_REQUEST_CERT_WEBROOT="Requesting Let's Encrypt certificate using webroot method..."
 readonly STEP_SSL_LETSENCRYPT="Installing free SSL certificate from Let's Encrypt"
-
+readonly WARNING_SSL_EXPIRING_SOON="The SSL certificate will expire in %s days. Please renew the certificate."
+readonly SUCCESS_SSL_VALID="The certificate is valid. %s days of validity remaining."
+readonly INFO_SSL_PASTE_CRT="Please paste the SSL certificate content (including certificate, CA root,...)"
+readonly TIPS_SSL_PASTE_INTRODUCE="Paste the content, ending with Ctrl+D (or Ctrl+Z on Windows) to finish."
+readonly INFO_SSL_PASTE_KEY="Please paste the SSL private key content"
 # =============================================
 # 💾 BACKUP & RESTORE
 # =============================================
@@ -525,7 +529,7 @@ readonly STEP_PHP_FETCHING_FROM_DOCKER="Downloading data from Docker Hub..."
 
 readonly DEBUG_PHP_FPM_CALCULATED="Optimized PHP-FPM values based on RAM=%sMB, CPU=%s: max_children=%s, start=%s, min_spare=%s, max_spare=%s"
 
-readonly WARNING_PHP_FPM_REMOVE_DIR="Directory '%s' will be deleted because new configuration files need to be created"
+readonly WARNING_PHP_FPM_REMOVE_FILE="Directory '%s' will be deleted because new configuration files need to be created"
 readonly SUCCESS_PHP_FPM_CONFIG_CREATED="Optimized PHP-FPM configuration created at: %s"
 
 # =============================================
@@ -933,3 +937,10 @@ readonly LABEL_DAY_LOWERCASE="days"
 readonly IMPORTANT_EXIT_AFTER_SECS="The system will automatically exit after %s seconds."
 readonly CANCEL_CORE_UPDATE="Update canceled."
 readonly LABEL_CURRENT_SELECTED="currently in use"
+readonly PROMPT_ENTER_CUSTOM_PHP_VERSION="Enter custom PHP version (e.g. 8.2): "
+readonly LABEL_PHP_CUSTOM_VERSION="Custom PHP version"
+readonly TIP_PHP_VERSION_REF="For a comprehensive list of available PHP versions, refer to: ";
+readonly ERROR_DOMAIN_INVALID_FORMAT="Domain name is invalid. Please enter a valid domain name."
+readonly ERROR_DOMAIN_INVALID_HYPHEN="Domain name cannot contain the '-' character. Please enter a valid domain name." 
+readonly TITLE_BACKUP_SCHEDULE_LIST="Backup Schedule List"
+readonly ERROR_WP_SOURCE_URL_NOT_REACHABLE="WordPress source URL is not reachable. Please check your internet connection."

@@ -15,7 +15,7 @@ database_prompt_import() {
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     # Prompt user to input the SQL backup file path
     backup_file=$(get_input_or_test_value "$PROMPT_DATABASE_ENTER_SQLFILE" "${TEST_BACKUP_FILE:-backup.sql}")
 
@@ -54,7 +54,7 @@ database_import_logic() {
         print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
         return 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     # Validate the SQL file existence
     if [[ ! -f "$backup_file" ]]; then
         print_msg error "$MSG_NOT_FOUND: $backup_file"

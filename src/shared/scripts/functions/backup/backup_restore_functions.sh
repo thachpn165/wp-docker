@@ -54,7 +54,6 @@ backup_restore_database() {
     debug_log "[Debug] Missing SITE_DOMAIN: $site_domain"
     return 1
   fi
-
   # === Check if file exists ===
   if [[ ! -f "$db_backup" ]]; then
     print_and_debug error "$MSG_NOT_FOUND: $db_backup"

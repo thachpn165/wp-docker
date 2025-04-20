@@ -47,7 +47,7 @@ wordpress_migration_logic() {
     print_and_debug error "$ERROR_DOMAIN_REQUIRED"
     return 1
   fi
-
+  _is_valid_domain "$domain" || return 1
   local archive_dir="$BASE_DIR/archives/$domain"
   local site_dir="$SITES_DIR/$domain"
   local web_root="$site_dir/wordpress"
@@ -83,7 +83,7 @@ wordpress_migration_logic() {
     }
 
     print_msg step "$STEP_WORDPRESS_MIGRATION_DELETING_OLD_SOURCE: $web_root"
-    rm -rf "$web_root"
+    remove_directory "$web_root"
     mkdir -p "$web_root"
     print_msg success "$SUCCESS_DIRECTORY_REMOVE"
   else

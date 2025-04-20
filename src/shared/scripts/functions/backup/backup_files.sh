@@ -25,7 +25,7 @@ backup_file_logic() {
         print_and_debug error "$ERROR_MISSING_PARAM: --domain"
         return 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     local web_root="$SITES_DIR/${domain}/wordpress"
     local backup_dir="$SITES_DIR/${domain}/backups"
     local log_dir="$SITES_DIR/${domain}/logs"

@@ -35,6 +35,6 @@ backup_cli_manage() {
     print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld\n  --action=list|clean"
     exit 1
   fi
-
+  
   backup_logic_manage "$domain" "$action"
 }

@@ -8,7 +8,7 @@
 #   - Prompts user to select and configure storage type
 # =====================================
 rclone_setup() {
-  is_directory_exist "$RCLONE_CONFIG_DIR" || mkdir -p "$RCLONE_CONFIG_DIR"
+  is_directory_exist "$RCLONE_CONFIG_DIR" true 
 
   # Check if rclone is installed
   if ! command -v rclone &> /dev/null; then
@@ -21,7 +21,7 @@ rclone_setup() {
         return 1
       }
     else
-      curl https://rclone.org/install.sh | sudo bash || {
+    safe_curl https://rclone.org/install.sh | sudo bash || {
         print_and_debug error "$ERROR_RCLONE_INSTALL_FAILED"
         return 1
       }

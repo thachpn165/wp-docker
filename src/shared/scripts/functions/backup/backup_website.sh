@@ -31,7 +31,7 @@ backup_prompt_create_schedule() {
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1
     fi
-
+    _is_valid_domain "$domain" || exit 1
     # === Prompt for interval_days ===
     print_msg info "$INFO_SELECT_BACKUP_SCHEDULE"
     echo "1. 1 $LABEL_DAY_LOWERCASE"
@@ -128,7 +128,7 @@ backup_prompt_backup_web() {
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
         exit 1
     fi
-
+    _is_valid_domain "$domain" || exit 1
     # === Choose storage: local or cloud ===
     print_msg info "$PROMPT_BACKUP_CHOOSE_STORAGE"
     select storage_choice in "local" "cloud"; do
@@ -197,8 +197,7 @@ backup_logic_create_schedule() {
         print_and_debug error "[backup_logic_create_schedule] Invalid interval_days: $interval_days"
         return 1
     fi
-
-    # Ghi từng key một bằng json_set_site_value
+    _is_valid_domain "$domain" || return 1
     json_set_site_value "$domain" "backup_schedule.enabled" "true"
     json_set_site_value "$domain" "backup_schedule.interval_days" "$interval_days"
     json_set_site_value "$domain" "backup_schedule.storage" "$storage"
@@ -253,12 +252,11 @@ backup_logic_website() {
     log_file="$log_dir/wp-backup.log"
     safe_source "$CLI_DIR/backup_website.sh"
     safe_source "$CLI_DIR/database_actions.sh"
-    # Kiểm tra nếu domain hoặc storage không có giá trị, thoát hàm ngay lập tức
     if [[ -z "$domain" || -z "$storage" ]]; then
         print_and_debug error "$ERROR_MISSING_PARAM: --domain and --storage must be provided"
         return 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     backup_dir="$(realpath "$SITES_DIR/$domain/backups")"
     log_dir="$(realpath "$SITES_DIR/$domain/logs")"
 
