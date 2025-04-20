@@ -59,10 +59,7 @@ core_version_get_latest() {
     print_msg error "❌ Invalid core channel in config: $channel"
     return 1
   fi
-  if ! network_check_http "$version_url"; then
-    print_msg error "$ERROR_FETCH_LATEST_VERSION_FAILED: $version_url"
-    return 1
-  fi
+
   latest_version=$(curl -fsSL "$version_url" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9]+)*(\+[0-9]+)?' | head -n1)
 
   debug_log "[core_version_get_latest] Channel       : $channel"
