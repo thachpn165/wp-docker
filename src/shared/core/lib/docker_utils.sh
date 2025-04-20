@@ -298,6 +298,11 @@ docker_exec_php() {
     return 1
   fi
 
+  if ! is_container_running "$container_php"; then
+    print_msg error "$ERROR_DOCKER_CONTAINER_NOT_RUNNING: $container_php"
+    return 1
+  fi
+
   docker exec -u "$PHP_USER" -i "$container_php" sh -c "mkdir -p /tmp/wp-cli-cache && export WP_CLI_CACHE_DIR='/tmp/wp-cli-cache' && $cmd"
   exit_if_error $? "$(printf "$ERROR_COMMAND_EXEC_FAILED" "$cmd")"
 }
