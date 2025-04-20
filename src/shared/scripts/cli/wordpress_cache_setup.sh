@@ -27,12 +27,12 @@ wordpress_cli_cache_setup() {
   local cache_type="$2"
 
   # Parse parameters
-  domain=$(_parse_params "$domain" "--domain")
-  cache_type=$(_parse_params "$cache_type" "--cache_type")
+  domain=$(_parse_params "--domain" "$@")
+  cache_type=$(_parse_params "--cache_type" "$@")
 
   # Validate required parameters
   _is_missing_param "$domain" "--domain" || return 1
-  _is_missing_param "$cache_type" "cache_type" || return 1
+  _is_missing_param "$cache_type" "--cache_type" || return 1
   _is_valid_domain "$domain" || return 1
 
   # Call the logic function to set up the cache

@@ -30,7 +30,7 @@ safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 wordpress_cli_reset_wp_db() {
   local domain="$1"
-  domain=$(_parse_params "$domain" "--domain")
+  domain=$(_parse_params "--domain" "$@")
   _is_missing_param "$domain" "--domain" || return 1
   _is_valid_domain "$domain" || return 1
 

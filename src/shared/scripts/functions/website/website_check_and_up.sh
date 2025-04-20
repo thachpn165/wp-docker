@@ -1,19 +1,18 @@
 #!/bin/bash
 
 website_check_and_up() {
-    local site_dir domain
-    local php_container mariadb_container
+    local domain php_container
     local started_any=false
 
-    for site_dir in "$SITES_DIR"*/; do
-        [[ -d "$site_dir" ]] || continue
+    mapfile -t domains < <(website_list)
+    if [[ ${#domains[@]} -eq 0 ]]; then
+        print_msg warning "⚠️ No valid websites found in $SITES_DIR"
+        return 0
+    fi
 
-        domain=$(basename "$site_dir")
+    for domain in "${domains[@]}"; do
         php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
-        mariadb_container=$(json_get_site_value "$domain" "CONTAINER_DB")
-
         _check_and_start_container "$php_container" "$domain"
-        _check_and_start_container "$mariadb_container" "$domain"
     done
 
     if [[ "$started_any" == true ]]; then

@@ -78,9 +78,10 @@ wordpress_prompt_cache_setup() {
 
     print_msg success "$SUCCESS_WORDPRESS_CHOOSE_CACHE: $cache_type"
     json_set_site_value "$domain" "cache" "$cache_type"
-
+    debug_log "domain: $domain"
+    debug_log "cache_type: $cache_type"
     # Gọi logic để cài cache
-    wordpress_cli_cache_setup "$domain" "$cache_type"
+    wordpress_cli_cache_setup --domain="$domain" --cache_type="$cache_type"
 }
 
 # =====================================
