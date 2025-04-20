@@ -35,9 +35,14 @@ mysql_exec() {
     #   - None
     # ============================================
     local command="$1"
+    is_container_running "$MYSQL_CONTAINER_NAME" || {
+        print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
+        return 1
+    }
     docker exec --env MYSQL_PWD="$(mysql_get_root_passwd)" \
         "$MYSQL_CONTAINER_NAME" \
         mysql -uroot -e "$command"
+        debug_log "[DB EXEC] $command"
 }
 
 mysql_logic_create_db_name() {
@@ -66,14 +71,20 @@ mysql_logic_create_db_name() {
     local final_db_name="${sitename}_${db_name}"
 
     json_set_site_value "$domain" "db_name" "$final_db_name"
-
+    debug_log "[DB CREATE] db_name=$final_db_name"
+    
+    is_container_running "$MYSQL_CONTAINER_NAME" || {
+        print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
+        return 1
+    }
     # Check if the database already exists
     if mysql_exec "SHOW DATABASES LIKE '$final_db_name';" | grep -q "$final_db_name"; then
-        msg_print error "❌ Database \"$final_db_name\" already exists."
+        print_and_debug error "❌ Database \"$final_db_name\" already exists."
         return 1
     fi
 
     mysql_exec "CREATE DATABASE IF NOT EXISTS \`$final_db_name\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    print_msg success "$SUCCESS_DB_CREATED: $final_db_name"
 }
 
 mysql_logic_create_db_user() {
@@ -106,6 +117,10 @@ mysql_logic_create_db_user() {
     json_set_site_value "$domain" "db_user" "$final_db_user"
     json_set_site_value "$domain" "db_pass" "$db_password"
 
+    is_container_running "$MYSQL_CONTAINER_NAME" || {
+        print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
+        return 1
+    }
     # Check if the user already exists
     if mysql_exec "SELECT User FROM mysql.user WHERE User = '$final_db_user';" | grep -q "$final_db_user"; then
         msg_print error "❌ Database user \"$final_db_user\" already exists."
@@ -113,6 +128,7 @@ mysql_logic_create_db_user() {
     fi
 
     mysql_exec "CREATE USER IF NOT EXISTS '$final_db_user'@'%' IDENTIFIED BY '$db_password';"
+    print_msg success "$SUCCESS_DB_USER_CREATED: $final_db_user"
 }
 
 mysql_logic_grant_all_privileges() {
@@ -135,6 +151,10 @@ mysql_logic_grant_all_privileges() {
     # ============================================
     local db_name="$1"
     local db_user="$2"
+    is_container_running "$MYSQL_CONTAINER_NAME" || {
+        print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
+        return 1
+    }
     mysql_exec "GRANT ALL PRIVILEGES ON \`$db_name\`.* TO '$db_user'@'%'; FLUSH PRIVILEGES;"
 }
 
@@ -166,12 +186,18 @@ mysql_logic_delete_db_and_user() {
         print_msg warning "⚠️ Skip deleting MySQL database and user for $domain"
         return 0
     fi
-
+    is_container_running "$MYSQL_CONTAINER_NAME" || {
+        print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
+        return 1
+    }
     mysql_exec "DROP DATABASE IF EXISTS \`$db_name\`; DROP USER IF EXISTS '$db_user'@'%';"
 
     json_delete_site_field "$domain" "db_name"
     json_delete_site_field "$domain" "db_user"
     json_delete_site_field "$domain" "db_pass"
+    print_msg success "$SUCCESS_DB_DELETED: $db_name"
+    print_msg success "$SUCCESS_DB_USER_DELETED: $db_user"
+
 }
 
 core_mysql_check_running() {

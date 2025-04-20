@@ -13,11 +13,8 @@ php_cli_rebuild_container() {
   local domain
   domain=$(_parse_params "--domain" "$@")
 
-  if [[ -z "$domain" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-    print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld"
-    exit 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
 
   php_rebuild_container_logic "$domain"
 }

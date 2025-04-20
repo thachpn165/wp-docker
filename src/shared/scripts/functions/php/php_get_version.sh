@@ -37,7 +37,7 @@ php_get_version() {
     : >"$temp_file"
 
     local page_data tags
-    page_data=$(curl -s --max-time 15 "$base_url")
+    page_data=$(safe_curl "$base_url")
     tags=$(echo "$page_data" | grep -oE '"name":"[0-9]+\.[0-9]+\.[0-9]+"' | cut -d':' -f2 | tr -d '"')
     echo "$tags" >>"$temp_file"
 

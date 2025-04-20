@@ -57,11 +57,8 @@ for arg in "$@"; do
 done
 
 # === Validate parameters ===
-if [[ -z "$domain" ]]; then
-  print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-  print_msg tip "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld -- plugin list"
-  exit 1
-fi
+_is_missing_param "$domain" "domain" || exit 1
+_is_valid_domain "$domain" || exit 1
 
 if [[ ${#params[@]} -eq 0 ]]; then
   print_and_debug error "$ERROR_WPCLI_INVALID_PARAMS"

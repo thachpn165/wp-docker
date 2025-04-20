@@ -4,9 +4,7 @@
 backup_prompt_backup_manage() {
     local domain
     safe_source "$CLI_DIR/backup_manage.sh"
-    website_get_selected domain
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain must be provided"
+    if ! website_get_selected domain; then
         return 1
     fi
     _is_valid_domain "$domain" || return 1

@@ -35,6 +35,7 @@ safe_source "$CLI_DIR/wordpress_protect_wp_login.sh"
 safe_source "$CLI_DIR/wordpress_migration.sh"
 safe_source "$CLI_DIR/wordpress_reset_user_role.sh"
 safe_source "$CLI_DIR/wordpress_reset_admin_passwd.sh"
+safe_source "$CLI_DIR/wordpress_cache_setup.sh"
 #safe_source "$CLI_DIR/cron_runner.sh"
 # Define subcommands handlers
 handle_cron() {
@@ -139,6 +140,7 @@ handle_wordpress() {
     case "$1" in
     cli) bash "$CLI_DIR/wordpress_wp_cli.sh" "${@:2}" ;;
     migrate) wordpress_cli_migration "${@:2}" ;;
+        
     reset)
         case "$2" in
         password) wordpress_cli_reset_admin_passwd "${@:3}" ;;

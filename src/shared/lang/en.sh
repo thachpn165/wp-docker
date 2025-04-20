@@ -560,6 +560,11 @@ readonly WARNING_BACKUP_BEFORE_CONTINUE="📌 Please backup fully before continu
 readonly WARNING_RESET_DATABASE_CANCELLED="Database reset operation canceled."
 readonly INFO_LIST_WEBSITES_FOR_DB_RESET="📋 List of websites available for database reset:"
 
+readonly SUCCESS_DB_CREATED="Database created successfully"
+readonly SUCCESS_DB_USER_CREATED="Database user created successfully"
+readonly SUCCESS_DB_DELETED="Database deleted successfully"
+readonly SUCCESS_DB_USER_DELETED="Database user deleted successfully"
+
 # =============================================
 # ☁️ RCLONE
 # =============================================
@@ -846,7 +851,7 @@ readonly PROMPT_RCLONE_DRIVE_PASTE_TOKEN="Paste token here:"
 readonly PROMPT_RCLONE_S3_ACCESS_KEY="Enter Access Key:"
 readonly PROMPT_RCLONE_S3_REGION="Enter Region:"
 readonly PROMPT_RCLONE_S3_SECRET_KEY="Enter Secret Key:"
-readonly QUESTION_OVERWRITE_SITE="Do you want to overwrite the website '%s'? (y/n):"
+readonly QUESTION_OVERWRITE_SITE="Do you want to overwrite the website '%s'?"
 readonly SUCCESS_BACKUP_FILES_DELETED="Backup files deleted."
 readonly SUCCESS_CONFIG_SITE_REMOVED="Website configuration removed successfully."
 readonly SUCCESS_DB_IMPORTED="Data imported into database successfully."
@@ -944,3 +949,14 @@ readonly ERROR_DOMAIN_INVALID_FORMAT="Domain name is invalid. Please enter a val
 readonly ERROR_DOMAIN_INVALID_HYPHEN="Domain name cannot contain the '-' character. Please enter a valid domain name." 
 readonly TITLE_BACKUP_SCHEDULE_LIST="Backup Schedule List"
 readonly ERROR_WP_SOURCE_URL_NOT_REACHABLE="WordPress source URL is not reachable. Please check your internet connection."
+readonly ERROR_CORE_VERSION_URL_NOT_REACHABLE="Unable to access WP Docker version URL. Please check again."
+readonly ERROR_WP_USER_ID_INVALID="User ID must be a positive integer."
+readonly INFO_BACKUP_NO_WEBSITE_SCHEDULED="No websites are scheduled for backup."
+readonly LABEL_BACKUP_EVERY="Perform backup every"
+readonly LABEL_BACKUP_DAYS="days"
+readonly LABEL_BACKUP_NEXT_RUN="Next run"
+readonly INFO_BACKUP_CURRENT_SCHEDULE="Current backup schedule:"
+readonly ERROR_BACKUP_NO_SCHEDULE_FOUND_FOR_SITE="Website has no backup schedule."
+readonly QUESTION_BACKUP_CONFIRM_REMOVE_SCHEDULE="Are you sure you want to remove the backup schedule for this website?"
+readonly SUCCESS_BACKUP_SCHEDULE_REMOVED="Backup schedule removed successfully."
+readonly ERROR_DOCKER_CONTAINER_NOT_RUNNING="Docker container is not running."

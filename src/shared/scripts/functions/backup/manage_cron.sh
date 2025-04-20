@@ -1,90 +1,21 @@
 #!/bin/bash
-# =============================================
-# 🔤 convert_weekday – Convert weekday number to label
-# =============================================
-# Description:
-#   - Maps a weekday number (0–6) to its corresponding label (Sunday–Saturday).
-#
-# Parameters:
-#   $1 - weekday number (0–6)
-#
-# Globals:
-#   LABEL_SUNDAY, LABEL_MONDAY, ..., LABEL_SATURDAY
-#
-# Returns:
-#   - Echoes the corresponding weekday label
-# =============================================
-convert_weekday() {
-    case $1 in
-    0) echo "$LABEL_SUNDAY" ;;
-    1) echo "$LABEL_MONDAY" ;;
-    2) echo "$LABEL_TUESDAY" ;;
-    3) echo "$LABEL_WEDNESDAY" ;;
-    4) echo "$LABEL_THURSDAY" ;;
-    5) echo "$LABEL_FRIDAY" ;;
-    6) echo "$LABEL_SATURDAY" ;;
-    *) echo "Unknown" ;;
-    esac
-}
-
-# =============================================
-# ⏰ cron_translate – Convert cron expression to human-readable text
-# =============================================
-# Description:
-#   - Translates a cron expression into a readable string using defined labels.
-#
-# Parameters:
-#   $1 - cron expression string (5-part)
-#
-# Globals:
-#   LABEL_EVERYDAY, LABEL_EVERY_WEEK, LABEL_EVERY_MONTH,
-#   LABEL_TIME_AT, LABEL_DATE_ON, LABEL_CUSTOM_SCHEDULE
-#
-# Returns:
-#   - Echoes a formatted string describing the schedule
-# =============================================
-cron_translate() {
-    local cron_exp="$1"
-
-    # Split cron fields
-    local minute
-    minute=$(echo "$cron_exp" | awk '{print $1}')
-    local hour
-    hour=$(echo "$cron_exp" | awk '{print $2}')
-    local day
-    day=$(echo "$cron_exp" | awk '{print $3}')
-    local month
-    month=$(echo "$cron_exp" | awk '{print $4}')
-    local weekday
-    weekday=$(echo "$cron_exp" | awk '{print $5}')
-
-    # Determine time
-    local time="$hour:$minute"
-
-    # Determine frequency
-    if [[ "$day" == "*" && "$month" == "*" && "$weekday" == "*" ]]; then
-        schedule="$LABEL_EVERYDAY $LABEL_TIME_AT $time"
-    elif [[ "$day" == "*" && "$month" == "*" && "$weekday" != "*" ]]; then
-        schedule="$LABEL_EVERY_WEEK $LABEL_TIME_AT $time $LABEL_DATE_ON $(convert_weekday "$weekday")"
-    elif [[ "$day" != "*" && "$month" == "*" ]]; then
-        schedule="$LABEL_EVERY_MONTH $LABEL_TIME_AT $time, $LABEL_DATE_ON $day"
-    else
-        schedule="$LABEL_CUSTOM_SCHEDULE: $cron_exp"
-    fi
-
-    echo "$schedule"
-}
 
 backup_prompt_list_schedule() {
     print_msg title "$TITLE_BACKUP_SCHEDULE_LIST"
 
     local has_schedule=false
+    local now_ts
+    now_ts=$(date +%s)
 
     mapfile -t sites < <(website_list)
 
+    if [[ ${#sites[@]} -eq 0 ]]; then
+        print_msg warning "$WARNING_NO_WEBSITE_FOUND"
+        return 1
+    fi
+
     for domain in "${sites[@]}"; do
         local enabled interval storage rclone_storage
-
         enabled=$(json_get_site_value "$domain" "backup_schedule.enabled")
         interval=$(json_get_site_value "$domain" "backup_schedule.interval_days")
         storage=$(json_get_site_value "$domain" "backup_schedule.storage")
@@ -92,12 +23,20 @@ backup_prompt_list_schedule() {
 
         if [[ "$enabled" == "true" ]]; then
             has_schedule=true
-            local schedule_text="⏰ Every ${interval:-1} day(s)"
+
+            # Tính thời gian backup tiếp theo
+            local next_ts next_date
+            next_ts=$((now_ts + (interval * 86400)))
+            next_date=$(date -d "@$next_ts" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || gdate -d "@$next_ts" "+%Y-%m-%d %H:%M:%S")
+
+            local schedule_text="⏰ $LABEL_BACKUP_EVERY ${interval:-1} $LABEL_BACKUP_DAYS"
+            local next_text="🕒 $LABEL_BACKUP_NEXT_RUN: $next_date"
             local storage_text="📦 $storage"
             [[ "$storage" == "cloud" && -n "$rclone_storage" ]] && storage_text+=" → $rclone_storage"
 
             echo -e "${YELLOW}• ${CYAN}$domain${NC}"
             echo -e "   $schedule_text"
+            echo -e "   $next_text"
             echo -e "   $storage_text"
             echo ""
         fi
@@ -120,20 +59,44 @@ backup_prompt_list_schedule() {
 #   - None
 # =============================================
 schedule_backup_remove() {
+    print_msg title "$TITLE_BACKUP_REMOVE_SCHEDULE"
+
     local domain
-    website_get_selected domain
-    if [[ -z "$domain" ]]; then
-        print_msg error "You must select a website to remove the backup schedule."
+    website_get_selected domain || return 1
+    _is_valid_domain "$domain" || return 1
+
+    local enabled
+    enabled=$(json_get_site_value "$domain" "backup_schedule.enabled")
+
+    if [[ "$enabled" != "true" ]]; then
+        print_msg error "$ERROR_BACKUP_NO_SCHEDULE_FOUND_FOR_SITE: $domain)"
         return 1
     fi
-    _is_valid_domain "$domain" || return 1
-    local temp_cron
-    temp_cron=$(mktemp)
-    crontab -l 2>/dev/null | grep -v "$BACKUP_RUNNER $domain" >"$temp_cron"
-    crontab "$temp_cron"
-    rm -f "$temp_cron"
 
-    print_msg
+    # Hiển thị chi tiết lịch backup hiện tại
+    local interval storage rclone_storage
+    interval=$(json_get_site_value "$domain" "backup_schedule.interval_days")
+    storage=$(json_get_site_value "$domain" "backup_schedule.storage")
+    rclone_storage=$(json_get_site_value "$domain" "backup_schedule.rclone_storage")
+
+    print_msg info "$INFO_BACKUP_CURRENT_SCHEDULE: ${CYAN}$domain${NC}:"
+    echo -e "   ⏰ $LABEL_BACKUP_EVERY ${interval:-1} $LABEL_BACKUP_DAYS"
+    if [[ "$storage" == "local" ]]; then
+        echo -e "   📦 Storage: Local"
+    elif [[ "$storage" == "cloud" ]]; then
+        echo -e "   ☁️ Storage: Cloud → ${YELLOW}$rclone_storage${NC}"
+    fi
+    echo ""
+
+    # Hỏi xác nhận trước khi xoá
+    confirm_action "$QUESTION_BACKUP_CONFIRM_REMOVE_SCHEDULE: $domain"
+    if [[ $? -ne 0 ]]; then
+        print_msg info "$MSG_BACKUP_REMOVE_CANCELLED"
+        return 0
+    fi
+
+    json_delete_site_key "$domain" "backup_schedule"
+    print_msg success "$SUCCESS_BACKUP_SCHEDULE_REMOVED: $domain"
 }
 
 # =============================================

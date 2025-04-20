@@ -77,10 +77,11 @@ wordpress_prompt_cache_setup() {
     plugin_slug=$(jq -r --arg type "$cache_type" '.[$type].plugin' <<<"$WP_CACHE_PLUGIN_JSON")
 
     print_msg success "$SUCCESS_WORDPRESS_CHOOSE_CACHE: $cache_type"
-    json_set_site_value "$domain" "cache" "$cache_type"
-
+    #json_set_site_value "$domain" "cache" "$cache_type"
+    debug_log "domain: $domain"
+    debug_log "cache_type: $cache_type"
     # Gọi logic để cài cache
-    wordpress_cli_cache_setup "$domain" "$cache_type"
+    wordpress_cli_cache_setup --domain="$domain" --cache_type="$cache_type"
 }
 
 # =====================================
@@ -225,7 +226,7 @@ define('RT_WP_NGINX_HELPER_CACHE_PATH','/var/cache/nginx');" "$wp_config_file"
     nginx_reload
     exit_if_error $? "$ERROR_NGINX_RELOAD"
     print_msg success "$SUCCESS_NGINX_RELOADED"
-
+    json_set_site_value "$domain" "cache" "$cache_type"
     local tip_msg
     tip_msg=$(jq -r --arg type "$cache_type" '.[$type].tip // empty' <<<"$WP_CACHE_PLUGIN_JSON")
     if [[ -n "$tip_msg" ]]; then

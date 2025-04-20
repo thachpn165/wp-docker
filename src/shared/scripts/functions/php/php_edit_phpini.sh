@@ -7,9 +7,8 @@
 # =====================================
 edit_php_ini() {
   local domain
-  website_get_selected domain
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_SITE_NOT_SELECTED"
+
+  if ! website_get_selected domain; then
     return 1
   fi
   _is_valid_domain "$domain" || return 1
