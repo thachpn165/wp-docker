@@ -134,20 +134,25 @@ _is_test_mode() {
 # =====================================
 _is_file_exist() {
     local file_path="$1"
-    local escaped_file_path
-    escaped_file_path=$(printf "%q" "$file_path")
-    if [[ -f "$file_path" ]]; then
-        if [[ ! -r "$file_path" ]]; then
-            print_msg error "❌ File exists but is not readable: $escaped_file_path"
-            return 1
-        fi
-        if [[ ! -w "$file_path" ]]; then
-            print_msg warning "⚠️ File exists but is not writable: $escaped_file_path"
-        fi
-        return 0
+
+    # Kiểm tra nếu file không tồn tại
+    if [[ ! -f "$file_path" ]]; then
+        print_msg error "❌ File does not exist: $file_path"
+        return 1
     fi
 
-    return 1
+    # Kiểm tra quyền đọc
+    if [[ ! -r "$file_path" ]]; then
+        print_msg error "❌ File exists but is not readable: $(printf "%q" "$file_path")"
+        return 1
+    fi
+
+    # Kiểm tra quyền ghi
+    if [[ ! -w "$file_path" ]]; then
+        print_msg warning "⚠️ File exists but is not writable: $(printf "%q" "$file_path")"
+    fi
+
+    return 0
 }
 
 # =====================================
