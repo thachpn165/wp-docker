@@ -965,3 +965,7 @@ readonly ERROR_EMAIL_EXCEEDS_MAX_LENGTH="Email address cannot exceed 320 charact
 readonly ERROR_EMAIL_INVALID_FORMAT="Email address is invalid."
 readonly ERROR_FILE_NOT_READABLE="File could not be read."
 readonly ERROR_FILE_NOT_WRITABLE="File could not be written."
+readonly ERROR_CRONTAB_NOT_AVAILABLE="The crontab command is not available. Please check that crontab is installed and accessible."
+readonly SUCCESS_CRON_LOADER_ALREADY_ADDED="There is already a cron_loader.sh in the crontab"
+readonly ERROR_CRON_LOADER_NOT_ADDED="Cron_loader.sh cannot be added to the crontab"
+readonly SUCCESS_CRON_LOADER_ADDED="Cron_loader.sh has been added to the crontab and will be executed every 5 minutes."

@@ -966,3 +966,7 @@ readonly ERROR_EMAIL_EXCEEDS_MAX_LENGTH="Địa chỉ email không được vư�
 readonly ERROR_EMAIL_INVALID_FORMAT="Địa chỉ email không hợp lệ."
 readonly ERROR_FILE_NOT_READABLE="Tập tin không thể đọc được."
 readonly ERROR_FILE_NOT_WRITABLE="Tập tin không thể ghi được."
+readonly ERROR_CRONTAB_NOT_AVAILABLE="Lệnh crontab không khả dụng. Hãy kiểm tra crontab đã được cài đặt và có thể truy cập."
+readonly SUCCESS_CRON_LOADER_ALREADY_ADDED="Đã có cron_loader.sh trong crontab"
+readonly ERROR_CRON_LOADER_NOT_ADDED="Không thể thêm cron_loader.sh vào crontab"
+readonly SUCCESS_CRON_LOADER_ADDED="Đã thêm cron_loader.sh vào crontab và thực thi 5 phút một lần."

@@ -44,7 +44,13 @@ cron_run_general() {
     local now_ts
     now_ts=$(date +%s)
 
-    mkdir -p "$BASE_DIR/.cron"
+    if ! is_directory_exist "$BASE_DIR/.cron"; then
+        print_msg info "📂 Creating cron directory: $BASE_DIR/.cron"
+        mkdir -p "$BASE_DIR/.cron" || {
+            print_msg error "❌ Failed to create cron directory: $BASE_DIR/.cron"
+            return 1
+        }
+    fi
 
     if [[ ! -f "$last_file" ]]; then
         echo "$now_ts" >"$last_file"
@@ -62,7 +68,6 @@ cron_run_general() {
     return 1
 }
 
-
 # 🔁 Renew SSL certificates every 12 hours
 if cron_run_general "ssl_renew" 720; then
     cron_letsencrypt_renew
@@ -73,7 +78,7 @@ if cron_run_general "php_get_version" 720; then
     php_get_version
 fi
 
-# 🔁 Run backup 
+# 🔁 Run backup
 for site in "${sites[@]}"; do
     cron_run_backup "$site"
 done

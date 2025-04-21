@@ -10,11 +10,15 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
     SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
 safe_source "$CORE_DIR/crons/cron_letsencrypt_renew.sh"
-
+safe_source "$FUNCTIONS_DIR/php_loader.sh"
 # === Xử lý lệnh truyền vào ===
 case "$1" in
 letsencrypt_renew)
     cron_letsencrypt_renew
+    ;;
+php_get_version)
+    # Lấy phiên bản PHP từ cron
+    php_get_version
     ;;
 all)
     cron_letsencrypt_renew
