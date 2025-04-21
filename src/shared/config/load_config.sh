@@ -4,8 +4,12 @@
 # 🐞 debug_process – Enable detailed shell tracing
 # =====================================
 debug_process() {
-  export PS4='\e[36m+(${BASH_SOURCE}:${LINENO}):\e[0m ${FUNCNAME[0]:+\e[35m${FUNCNAME[0]}():\e[0m }'
-  set -x
+    if [[ "$DEBUG_MODE" == "true" ]]; then
+        export PS4='\e[36m+(${BASH_SOURCE}:${LINENO}):\e[0m ${FUNCNAME[0]:+\e[35m${FUNCNAME[0]}():\e[0m }'
+        set -x
+    else
+        echo "Debug mode is not enabled. Set DEBUG_MODE=true to enable debugging."
+    fi
 }
 
 # =====================================
@@ -96,11 +100,7 @@ load_config_file() {
 # =====================================
 # 🚀 Auto-load config at runtime
 # =====================================
-#load_config_file
-# Check if the function is already loaded 
-if declare -F load_config_file &>/dev/null; then
-  #echo "Hàm load_config_file đã được load, bỏ qua việc load lại"
-  return 0
-else
-  load_config_file
+# Tự động tải config nếu chưa được gọi
+if ! declare -F load_config_file &>/dev/null; then
+    load_config_file
 fi

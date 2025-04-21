@@ -1,11 +1,14 @@
 safe_source "$CLI_DIR/backup_website.sh"
 
-
 _cron_run_backup_trigger() {
     local domain="$1"
     local storage="$2"
     local rclone_storage="$3"
 
+    if [[ -z "$domain" || -z "$storage" ]]; then
+        print_msg error "❌ Missing required parameters for backup trigger (domain: $domain, storage: $storage)"
+        return 1
+    fi
     print_msg step "🚀 Running scheduled backup for $domain → $storage"
 
     if [[ "$storage" == "cloud" && -n "$rclone_storage" ]]; then

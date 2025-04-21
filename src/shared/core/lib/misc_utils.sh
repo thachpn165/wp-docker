@@ -122,12 +122,6 @@ start_loading() {
   if [[ "$DEBUG_MODE" == true ]]; then
     return
   fi
-
-  if [[ -n "$LOADING_PID" && -e /proc/$LOADING_PID ]]; then
-    print_msg warning "⚠️ Loading spinner is already running"
-    return
-  fi
-
   (
     while true; do
       for symbol in "${symbols[@]}"; do
@@ -140,15 +134,16 @@ start_loading() {
   LOADING_PID=$!
 }
 
+# =====================================
+# stop_loading: Stop spinner animation
+# =====================================
 stop_loading() {
-  if [[ -n "$LOADING_PID" && -e /proc/$LOADING_PID ]]; then
+  if [[ -n "$LOADING_PID" ]]; then
     kill "$LOADING_PID" &>/dev/null
     wait "$LOADING_PID" 2>/dev/null
     unset LOADING_PID
     echo -ne "\b \b" # Clear loading symbol
     echo ""
-  else
-    print_msg warning "⚠️ No loading spinner to stop"
   fi
 }
 

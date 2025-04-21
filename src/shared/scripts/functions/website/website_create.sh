@@ -130,16 +130,16 @@ website_logic_create() {
         return 1
     }
 
-    print_msg progress "$MSG_CHECKING_CONTAINER"
+    print_msg step "$MSG_CHECKING_CONTAINER"
     debug_log "  ➤ CONTAINER_PHP: $CONTAINER_PHP"
 
     if ! _is_container_running "$CONTAINER_PHP"; then
-        stop_loading
+
         print_msg error "$ERROR_CONTAINER_NOT_READY_AFTER_30S"
         return 1
     fi
 
-    stop_loading
+
     print_msg success "$MSG_CONTAINER_READY"
 
     print_msg step "$MSG_DOCKER_NGINX_RESTART"
