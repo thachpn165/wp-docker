@@ -970,3 +970,7 @@ readonly ERROR_CRONTAB_NOT_AVAILABLE="Lệnh crontab không khả dụng. Hãy k
 readonly SUCCESS_CRON_LOADER_ALREADY_ADDED="Đã có cron_loader.sh trong crontab"
 readonly ERROR_CRON_LOADER_NOT_ADDED="Không thể thêm cron_loader.sh vào crontab"
 readonly SUCCESS_CRON_LOADER_ADDED="Đã thêm cron_loader.sh vào crontab và thực thi 5 phút một lần."
+readonly TIP_CACHE_FASTCGI_CACHE="FastCGI đã được bật và cấu hình. Bạn cần phải kích hoạt tính năng xóa cache bằng cách vào ADmin => Cài đặt => NGINX Helper => chọn Enable Purge => chọn Caching Method: nginx Fastcgi cache"
+readonly TIP_CACHE_WP_SUPER_CACHE="WP Super Cache đã được cấu hình. Bạn cần phải kích hoạt tùy chọn cache bằng cách vào Admin => Cài đặt => WP Super Cache => Advanced => Bật Enable Caching và chọn Expert Mode."
+readonly TIP_CACHE_W3_TOTAL_CACHE="W3 Total Cache đã được cấu hình. Bạn cần phải kích hoạt tùy chọn cache bằng cách vào Admin => Cài đặt => General => Page Cache và chọn Enable."
+readonly TIP_CACHE_WP_FASTEST_CACHE="WP Fastest Cache đã được cấu hình. Bạn cần phải kích hoạt tùy chọn cache bằng cách vào Admin => Cài đặt => WP Fastest Cache => Caching và chọn Enable."

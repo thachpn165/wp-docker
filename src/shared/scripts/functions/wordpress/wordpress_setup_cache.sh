@@ -8,7 +8,7 @@ readonly WP_CACHE_PLUGIN_JSON='{
   },
   "fastcgi-cache": {
     "name": "FastCGI Cache (Nginx Helper + Redis)",
-    "plugin": "nginx-cache"
+    "plugin": "nginx-helper"
   },
   "w3-total-cache": {
     "name": "W3 Total Cache",
@@ -25,7 +25,7 @@ readonly WP_CACHE_PLUGIN_JSON='{
 }'
 
 # =====================================
-# wordpress_prompt_cache_setup: Prompt user to select and configure cache plugin
+# wordpress_prompt_cache_setup: Prompt user to sel thachpn165/wpdocker-openrestyect and configure cache plugin
 # Parameters:
 #   None (interactive)
 # Behavior:
@@ -193,8 +193,7 @@ fastcgi_cache_path /usr/local/openresty/nginx/fastcgi_cache levels=1:2 keys_zone
             exit_if_error $? "$ERROR_ADD_FASTCGI_PATH"
             print_msg success "$SUCCESS_FASTCGI_PATH_ADDED"
         fi
-        wordpress_wp_cli_logic "$domain" option update nginx_cache_path "/var/cache/nginx"
-        wordpress_wp_cli_logic "$domain" option update nginx_auto_purge 1
+
         exit_if_error $? "$ERROR_UPDATE_NGINX_HELPER"
     fi
 
@@ -227,9 +226,18 @@ define('RT_WP_NGINX_HELPER_CACHE_PATH','/var/cache/nginx');" "$wp_config_file"
     exit_if_error $? "$ERROR_NGINX_RELOAD"
     print_msg success "$SUCCESS_NGINX_RELOADED"
     json_set_site_value "$domain" "cache" "$cache_type"
-    local tip_msg
-    tip_msg=$(jq -r --arg type "$cache_type" '.[$type].tip // empty' <<<"$WP_CACHE_PLUGIN_JSON")
-    if [[ -n "$tip_msg" ]]; then
-        print_msg info "$tip_msg"
-    fi
+    case "$cache_type" in
+    fastcgi-cache)
+        print_msg important "$TIP_CACHE_FASTCGI_CACHE"
+        ;;
+    wp-super-cache)
+        print_msg important "$TIP_CACHE_WP_SUPER_CACHE"
+        ;;
+    w3-total-cache)
+        print_msg important "$TIP_CACHE_W3_TOTAL_CACHE"
+        ;;
+    wp-fastest-cache)
+        print_msg important "$TIP_CACHE_WP_FASTEST_CACHE"
+        ;;
+    esac
 }

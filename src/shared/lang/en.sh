@@ -969,3 +969,7 @@ readonly ERROR_CRONTAB_NOT_AVAILABLE="The crontab command is not available. Plea
 readonly SUCCESS_CRON_LOADER_ALREADY_ADDED="There is already a cron_loader.sh in the crontab"
 readonly ERROR_CRON_LOADER_NOT_ADDED="Cron_loader.sh cannot be added to the crontab"
 readonly SUCCESS_CRON_LOADER_ADDED="Cron_loader.sh has been added to the crontab and will be executed every 5 minutes."
+readonly TIP_CACHE_FASTCGI_CACHE="FastCGI has been enabled and configured. You need to activate the cache clearing feature by going to Admin => Settings => NGINX Helper => select Enable Purge => select Caching Method: nginx Fastcgi cache"
+readonly TIP_CACHE_WP_SUPER_CACHE="WP Super Cache has been configured. You need to activate the caching option by going to Admin => Settings => WP Super Cache => Advanced => Enable 'Enable Caching' and select Expert Mode."
+readonly TIP_CACHE_W3_TOTAL_CACHE="W3 Total Cache has been configured. You need to activate the caching option by going to Admin => Settings => General => Page Cache and select Enable."
+readonly TIP_CACHE_WP_FASTEST_CACHE="WP Fastest Cache has been configured. You need to activate the caching option by going to Admin => Settings => WP Fastest Cache => Caching and select Enable."
