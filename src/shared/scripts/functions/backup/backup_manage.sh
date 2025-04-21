@@ -42,7 +42,7 @@ backup_logic_manage() {
     local backup_dir="$SITES_DIR/$domain/backups"
     _is_valid_domain "$domain" || return 1
     # Ensure backup directory exists
-    if ! is_directory_exist "$backup_dir"; then
+    if ! _is_directory_exist "$backup_dir"; then
         print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$backup_dir")"
         mkdir -p "$backup_dir"
         return 1

@@ -45,7 +45,7 @@ redis_check_running() {
 # ============================================
 redis_start() {
     if redis_check_running; then
-        print_msg success "$SUCCESS_REDIS_CONTAINER_RUNNING: $REDIS_CONTAINER"
+        print_msg success "$SUCCESS_RED_is_container_running: $REDIS_CONTAINER"
         return 0
     fi
 

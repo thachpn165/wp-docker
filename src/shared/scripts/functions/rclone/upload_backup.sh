@@ -28,7 +28,7 @@ select_backup_files() {
   debug_log "[UPLOAD] Selecting backup files from: $backup_dir"
 
   # Check if backup directory exists
-  if ! is_directory_exist "$backup_dir"; then
+  if ! _is_directory_exist "$backup_dir"; then
     print_and_debug error "$ERROR_NOT_EXIST: $backup_dir"
     return 1
   fi
@@ -136,7 +136,7 @@ upload_backup() {
   done
 
   # Validate rclone config exists
-  if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
+  if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
     print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi

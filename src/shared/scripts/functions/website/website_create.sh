@@ -87,7 +87,7 @@ website_logic_create() {
 
     trap cleanup ERR
 
-    if is_directory_exist "$SITE_DIR" false; then
+    if _is_directory_exist "$SITE_DIR" false; then
         print_msg cancel "$MSG_WEBSITE_EXISTS: $domain"
         return 1
     fi
@@ -99,7 +99,7 @@ website_logic_create() {
     run_cmd "chmod 666 '$SITE_DIR/logs/'*.log"
 
     TEMPLATE_VERSION_FILE="$TEMPLATES_DIR/.template_version"
-    if is_file_exist "$TEMPLATE_VERSION_FILE"; then
+    if _is_file_exist "$TEMPLATE_VERSION_FILE"; then
         copy_file "$TEMPLATE_VERSION_FILE" "$SITE_DIR/.template_version"
         print_msg copy "$SUCCESS_COPY $TEMPLATE_VERSION_FILE → $SITE_DIR/.template_version"
     else
@@ -130,16 +130,16 @@ website_logic_create() {
         return 1
     }
 
-    print_msg progress "$MSG_CHECKING_CONTAINER"
+    print_msg step "$MSG_CHECKING_CONTAINER"
     debug_log "  ➤ CONTAINER_PHP: $CONTAINER_PHP"
 
-    if ! is_container_running "$CONTAINER_PHP"; then
-        stop_loading
+    if ! _is_container_running "$CONTAINER_PHP"; then
+
         print_msg error "$ERROR_CONTAINER_NOT_READY_AFTER_30S"
         return 1
     fi
 
-    stop_loading
+
     print_msg success "$MSG_CONTAINER_READY"
 
     print_msg step "$MSG_DOCKER_NGINX_RESTART"

@@ -62,7 +62,7 @@ wordpress_migration_logic() {
 
   server_ip=$(curl -s ifconfig.me)
 
-  if ! is_directory_exist "$archive_dir"; then
+  if ! _is_directory_exist "$archive_dir"; then
     print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$archive_dir")"
     return 1
   fi
@@ -117,7 +117,7 @@ wordpress_migration_logic() {
   database_cli_import --domain="$domain" --backup_file="$sql_file"
 
   print_msg step "$STEP_WORDPRESS_CHECK_DB_PREFIX"
-  if ! is_container_running "$mariadb_container"; then
+  if ! _is_container_running "$mariadb_container"; then
     print_and_debug error "$(printf "$ERROR_CONTAINER_NOT_RUNNING" "$mariadb_container")"
     return 1
   fi

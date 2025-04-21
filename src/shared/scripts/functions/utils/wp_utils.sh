@@ -22,7 +22,7 @@ wp_set_wpconfig() {
   print_msg info "$INFO_WP_CONFIGURING"
 
   # ✅ Kiểm tra container có đang chạy
-  if ! is_container_running "$container_php"; then
+  if ! _is_container_running "$container_php"; then
     print_and_debug error "$(printf "$ERROR_DOCKER_CONTAINER_NOT_RUNNING" "$container_php")"
     return 1
   fi

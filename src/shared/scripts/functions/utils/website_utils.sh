@@ -133,7 +133,7 @@ website_generate_docker_compose() {
     local docker_compose_template="$TEMPLATES_DIR/docker-compose.yml.template"
     local docker_compose_target="$site_dir/docker-compose.yml"
 
-    if ! is_file_exist "$docker_compose_template"; then
+    if ! _is_file_exist "$docker_compose_template"; then
         print_msg error "$MSG_NOT_FOUND: $docker_compose_template"
         return 1
     fi

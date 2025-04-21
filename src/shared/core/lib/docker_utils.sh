@@ -1,29 +1,6 @@
 #!/usr/bin/env bash
 
 # ===========================
-# 🔍 Check if multiple containers are running
-# Returns true if all specified containers are running.
-# Parameters:
-#   $@ - List of container names to check
-# Global variables used: None
-# Result: Returns true if all containers are running, false otherwise
-# ===========================
-is_container_running() {
-  local all_running=true
-
-  for container_name in "$@"; do
-    if docker ps --format '{{.Names}}' | grep -q "^${container_name}$"; then
-      debug_log "[Docker] ✅ Container '$container_name' is running"
-    else
-      debug_log "[Docker] ❌ Container '$container_name' is NOT running"
-      all_running=false
-    fi
-  done
-
-  [[ "$all_running" == true ]]
-}
-
-# ===========================
 # ❌ Remove container if it is running
 # Parameters:
 #   $1 - Name of the container to remove
@@ -32,7 +9,7 @@ is_container_running() {
 # ===========================
 remove_container() {
   local container_name="$1"
-  if is_container_running "$container_name"; then
+  if _is_container_running "$container_name"; then
     print_msg info "$(printf "$INFO_DOCKER_REMOVING_CONTAINER" "$container_name")"
     docker rm -f "$container_name"
   fi
@@ -298,7 +275,7 @@ docker_exec_php() {
     return 1
   fi
 
-  if ! is_container_running "$container_php"; then
+  if ! _is_container_running "$container_php"; then
     print_msg error "$ERROR_DOCKER_CONTAINER_NOT_RUNNING: $container_php"
     return 1
   fi

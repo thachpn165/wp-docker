@@ -28,9 +28,9 @@ backup_file_logic() {
     backup_file="${backup_dir}/files-${domain}-$(date +%Y%m%d-%H%M%S).tar.gz"
 
     # === Ensure necessary directories exist ===
-    is_directory_exist "$web_root"
-    is_directory_exist "$backup_dir" true
-    is_directory_exist "$log_dir" true
+    _is_directory_exist "$web_root"
+    _is_directory_exist "$backup_dir" true
+    _is_directory_exist "$log_dir" true
 
     # === Start backup process ===
     print_and_debug info "$MSG_WEBSITE_BACKING_UP_FILES: $domain"

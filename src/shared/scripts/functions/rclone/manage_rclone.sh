@@ -11,7 +11,7 @@ rclone_storage_list() {
   debug_log "[RCLONE] Config path: $rclone_config"
 
   # Check if rclone config file exists
-  if ! is_file_exist "$rclone_config"; then
+  if ! _is_file_exist "$rclone_config"; then
     print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi
@@ -32,7 +32,7 @@ rclone_storage_delete() {
   debug_log "[RCLONE] Loading config: $rclone_config"
 
   # Check if rclone config file exists
-  if ! is_file_exist "$rclone_config"; then
+  if ! _is_file_exist "$rclone_config"; then
     print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi
