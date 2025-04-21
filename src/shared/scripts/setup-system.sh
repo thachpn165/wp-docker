@@ -100,6 +100,12 @@ if [[ ! -d "$LOGS_DIR" ]]; then
 else
   echo -e "$(printf "$SUCCESS_LOGS_DIR_EXISTS" "$LOGS_DIR")"
 fi
+
+# =============================================
+# Clean orphaned site config in NGINX
+# =============================================
+nginx_remove_orphaned_site_conf
+
 # =============================================
 # 🎉 System ready
 # =============================================

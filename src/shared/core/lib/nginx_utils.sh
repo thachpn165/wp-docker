@@ -225,3 +225,37 @@ wait_for_nginx_container() {
     print_msg success "✅ Container '$NGINX_PROXY_CONTAINER' is now running."
     return 0
 }
+
+# =============================================
+# 🧹 nginx_remove_orphaned_site_conf – Remove orphaned NGINX site configs
+# ---------------------------------------------
+# Description:
+#   - Scan $PROXY_CONF_DIR for *.conf files.
+#   - Extract domain name from each filename.
+#   - If domain does not exist in .site[], delete the config file.
+# =============================================
+nginx_remove_orphaned_site_conf() {
+    _is_missing_var "$PROXY_CONF_DIR" "PROXY_CONF_DIR" || return 1
+    _is_missing_var "$JSON_CONFIG_FILE" "JSON_CONFIG_FILE" || return 1
+
+    local deleted_count=0
+    local conf_file domain
+
+    shopt -s nullglob
+    for conf_file in "$PROXY_CONF_DIR"/*.conf; do
+        domain=$(basename "$conf_file" .conf)
+
+        if ! json_key_exists ".site[\"$domain\"]" "$JSON_CONFIG_FILE"; then
+            print_msg warning "⚠️ Orphaned config found: $conf_file → removing"
+            remove_file "$conf_file"
+            ((deleted_count++))
+        fi
+    done
+    shopt -u nullglob
+
+    if ((deleted_count == 0)); then
+        print_msg success "✅ No orphaned NGINX site configs found."
+    else
+        print_msg success "🧹 Removed $deleted_count broken NGINX config(s)."
+    fi
+}

@@ -140,3 +140,24 @@ _is_directory_exist() {
         fi
     fi
 }
+
+# =============================================
+# 🧪 _is_missing_var – Check if a variable is unset or empty
+# ---------------------------------------------
+# Usage:
+#   _is_missing_var "$VAR" "VAR_NAME" || return 1
+#
+# Parameters:
+#   $1 - Giá trị của biến (giá trị cần kiểm tra)
+#   $2 - Tên biến hiển thị để báo lỗi (ví dụ: "DOMAIN")
+# =============================================
+_is_missing_var() {
+    local value="$1"
+    local name="$2"
+
+    if [[ -z "$value" ]]; then
+        print_and_debug error "❌ Missing or empty variable: \$$name"
+        return 1
+    fi
+    return 0
+}
