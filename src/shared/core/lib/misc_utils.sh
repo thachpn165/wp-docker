@@ -15,13 +15,13 @@ ensure_safe_cwd() {
 #   $1 - exit code
 #   $2 - error message
 # =====================================
-exit_if_error() { 
-    local result=$1
-    local error_message=$2
-    if [[ $result -ne 0 ]]; then
-        print_msg error "$error_message"
-        return 1
-    fi
+exit_if_error() {
+  local result=$1
+  local error_message=$2
+  if [[ $result -ne 0 ]]; then
+    print_msg error "$error_message"
+    return 1
+  fi
 }
 # =========================================
 # 🧪 TEST_MODE Support Functions
@@ -67,38 +67,12 @@ run_unless_test() {
 get_input_or_test_value() {
   local prompt="$1"
   local fallback="$2"
-
-  if _is_test_mode; then
-    echo "$fallback"
-  else
-    [[ "$TEST_MODE" != true ]] && read -p "$prompt" input
-    echo "${input:-$fallback}"
-  fi
-}
-
-# =====================================
-# get_input_or_test_value_secret: Prompt for hidden input or fallback in TEST_MODE
-# Parameters:
-#   $1 - prompt message
-#   $2 - fallback value
-# Returns: user input or fallback
-# =====================================
-get_input_or_test_value_secret() {
-  local prompt="$1"
-  local fallback="$2"
   local input=""
 
   if _is_test_mode; then
-    # In test mode, return fallback without prompting
     echo "$fallback"
   else
-    # Display prompt without newline
-    printf "%s" "$prompt"
-    # Read password without displaying it on the screen
-    read -s input
-    # Display a new line after input
-    echo
-    # Return input value or fallback if no value
+    read -p "$prompt" input
     echo "${input:-$fallback}"
   fi
 }
@@ -111,25 +85,25 @@ get_input_or_test_value_secret() {
 # Returns: selected option
 # =====================================
 select_from_list() {
-    local prompt="$1"
-    shift
-    local options=("$@")
+  local prompt="$1"
+  shift
+  local options=("$@")
 
-    if [[ "$TEST_MODE" == true ]]; then
-        local test_value="${TEST_SELECTED_OPTION:-${options[0]}}"
-        echo "$test_value"
-        return 0
-    fi
+  if [[ "$TEST_MODE" == true ]]; then
+    local test_value="${TEST_SELECTED_OPTION:-${options[0]}}"
+    echo "$test_value"
+    return 0
+  fi
 
-    local choice
-    [[ "$TEST_MODE" != true ]] && read -p "$prompt [1-${#options[@]}]: " choice
-    if [[ "$choice" =~ ^[0-9]+$ && "$choice" -ge 1 && "$choice" -le ${#options[@]} ]]; then
-        echo "${options[$((choice - 1))]}"
-        return 0
-    else
-        echo ""
-        return 1
-    fi
+  local choice
+  [[ "$TEST_MODE" != true ]] && read -p "$prompt [1-${#options[@]}]: " choice
+  if [[ "$choice" =~ ^[0-9]+$ && "$choice" -ge 1 && "$choice" -le ${#options[@]} ]]; then
+    echo "${options[$((choice - 1))]}"
+    return 0
+  else
+    echo ""
+    return 1
+  fi
 }
 
 # =====================================
@@ -144,10 +118,16 @@ start_loading() {
   local symbols=("/" "-" "\\" "|")
 
   print_msg info "$message "
-  
+
   if [[ "$DEBUG_MODE" == true ]]; then
     return
   fi
+
+  if [[ -n "$LOADING_PID" && -e /proc/$LOADING_PID ]]; then
+    print_msg warning "⚠️ Loading spinner is already running"
+    return
+  fi
+
   (
     while true; do
       for symbol in "${symbols[@]}"; do
@@ -160,16 +140,15 @@ start_loading() {
   LOADING_PID=$!
 }
 
-# =====================================
-# stop_loading: Stop spinner animation
-# =====================================
 stop_loading() {
-  if [[ -n "$LOADING_PID" ]]; then
+  if [[ -n "$LOADING_PID" && -e /proc/$LOADING_PID ]]; then
     kill "$LOADING_PID" &>/dev/null
     wait "$LOADING_PID" 2>/dev/null
     unset LOADING_PID
-    echo -ne "\b \b"  # Clear loading symbol
+    echo -ne "\b \b" # Clear loading symbol
     echo ""
+  else
+    print_msg warning "⚠️ No loading spinner to stop"
   fi
 }
 
@@ -178,7 +157,6 @@ stop_loading() {
 #   value=$(fetch_env_variable ".env" "DB_NAME")
 # Returns:
 #   - The value of the specified variable, or exits with error if file not found
-
 
 # ===========================================================
 # 🖨️ print_msg <type> <message>
@@ -220,36 +198,34 @@ print_msg() {
   local color emoji
 
   case "$type" in
-    success)     emoji="✅" color="$GREEN" ;;
-    error)       emoji="❌" color="$RED" ;;
-    warning)     emoji="⚠️"  color="$YELLOW" ;;
-    info)        emoji=""  color="$WHITE" ;;
-    save)        emoji="💾" color="$WHITE" ;;
-    important)   emoji="🚨" color="$RED" ;;
-    step)        emoji="➤"  color="$MAGENTA" ;;
-    check)       emoji="🔍" color="$CYAN" ;;
-    run)         emoji="🚀" color="$GREEN" ;;
-    skip)        emoji="⏭️"  color="$YELLOW" ;;
-    cancel)      emoji="🛑" color="$RED" ;;
-    question)    emoji="❓" color="$WHITE" ;;
-    completed)   emoji="🏁" color="$GREEN" ;;
-    recommend)   emoji="💡" color="$BLUE" ;;
-    title)     emoji="" color="$CYAN" ;;
-    label)     emoji="" color="$BLUE" ;;
-    sub_label) emoji="" color="$WHITE" ;;
-    copy)      emoji="→" color="$GREEN";;
-    tip)     emoji="💡" color="$YELLOW";;
-    
-    progress)
-      emoji="🚀"
-      color="$GREEN"
-      start_loading "${color}${emoji} ${message}${NC}" 2
-      return
-      ;;
-    *)
-      echo -e "$message"
-      return
-      ;;
+  success) emoji="✅" color="$GREEN" ;;
+  error) emoji="❌" color="$RED" ;;
+  warning) emoji="⚠️" color="$YELLOW" ;;
+  info) emoji="ℹ️" color="$WHITE" ;;
+  save) emoji="💾" color="$WHITE" ;;
+  important) emoji="🚨" color="$RED" ;;
+  step) emoji="➤" color="$MAGENTA" ;;
+  check) emoji="🔍" color="$CYAN" ;;
+  run) emoji="🚀" color="$GREEN" ;;
+  skip) emoji="⏭️" color="$YELLOW" ;;
+  cancel) emoji="🛑" color="$RED" ;;
+  question) emoji="❓" color="$WHITE" ;;
+  completed) emoji="🏁" color="$GREEN" ;;
+  recommend) emoji="💡" color="$BLUE" ;;
+  title) emoji="📌" color="$CYAN" ;;
+  label) emoji="" color="$BLUE" ;;
+  sub_label) emoji="➥" color="$WHITE" ;;
+
+  progress)
+    emoji="🚀"
+    color="$GREEN"
+    start_loading "${color}${emoji} ${message}${NC}" 2
+    return
+    ;;
+  *)
+    echo -e "$message"
+    return
+    ;;
   esac
 
   echo -e "${color}${emoji} ${message}${NC}"
