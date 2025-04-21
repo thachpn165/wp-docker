@@ -21,13 +21,12 @@ cron_letsencrypt_renew() {
         touch "$log_file"
 
         cert_path="$SSL_DIR/$domain.crt"
-        if [[ ! -f "$cert_path" ]]; then
-            formatted_not_found_cert="$(printf "$ERROR_SSL_CERT_NOT_FOUND" "$domain")"
-            print_msg error "$formatted_not_found_cert"
+        _is_file_exist "$cert_path" || {
+            print_msg error "$(printf "$ERROR_SSL_CERT_NOT_FOUND" "$domain")"
             echo "$(date '+%F %T') ❌ Certificate not found: $domain" >>"$log_file"
             continue
-        fi
-
+        }
+        
         issuer=$(openssl x509 -issuer -noout -in "$cert_path" 2>/dev/null)
         if ! echo "$issuer" | grep -qi "Let's Encrypt"; then
             print_msg warning "$domain $WARNING_SSL_NOT_LETSENCRYPT"
@@ -58,9 +57,11 @@ cron_letsencrypt_renew() {
                 echo "$(date '+%F %T') ✅ Renewed: $domain" >>"$log_file"
 
                 local live_path="$certbot_data/live/$domain"
+                _is_file_exist "$live_path/fullchain.pem"
+                _is_file_exist "$live_path/privkey.pem"
                 if [[ -f "$live_path/fullchain.pem" && -f "$live_path/privkey.pem" ]]; then
-                    cp "$live_path/fullchain.pem" "$SSL_DIR/$domain.crt"
-                    cp "$live_path/privkey.pem" "$SSL_DIR/$domain.key"
+                    copy_file "$live_path/fullchain.pem" "$SSL_DIR/$domain.crt"
+                    copy_file "$live_path/privkey.pem" "$SSL_DIR/$domain.key"
                     print_msg success "🔒 Updated certificate files in $SSL_DIR for $domain"
                 else
                     print_msg warning "⚠️ Missing renewed cert files for $domain in $live_path"
