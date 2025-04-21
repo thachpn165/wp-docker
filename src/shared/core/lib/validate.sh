@@ -7,35 +7,42 @@
 _is_valid_domain() {
     local domain="$1"
 
-    _is_missing_param "$domain" "domain" || return 1
-
-    # Must match standard domain pattern: sub.domain.tld
-    if ! [[ "$domain" =~ ^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$ ]]; then
-        print_msg error "$(printf "$ERROR_DOMAIN_INVALID_FORMAT" "$domain")"
+    if [[ ${#domain} -gt 253 ]]; then
+        print_msg error "❌ Domain exceeds maximum length (253 characters): $domain"
         return 1
     fi
 
-    # Optional: disallow domain starting or ending with hyphen
-    if [[ "$domain" =~ (^[-])|([-]$) ]]; then
-        print_msg error "$(printf "$ERROR_DOMAIN_INVALID_HYPHEN" "$domain")"
+    if ! [[ "$domain" =~ ^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$ ]]; then
+        print_msg error "❌ Invalid domain format: $domain"
         return 1
     fi
+
+    IFS='.' read -ra labels <<<"$domain"
+    for label in "${labels[@]}"; do
+        if [[ ${#label} -gt 63 ]]; then
+            print_msg error "❌ Domain label exceeds maximum length (63 characters): $label"
+            return 1
+        fi
+    done
 
     return 0
 }
-
 # =============================================
-# ⚠️ _is_missing_param – Check if required param is missing
+# 🛡️ _is_missing_param – Check if required param is missing (with escape protection)
 # ---------------------------------------------
 # Usage:
-#   _is_missing_param "$var" "--domain" || return 1
+#   _is_missing_param "$domain" "--domain" || return 1
 # =============================================
 _is_missing_param() {
     local value="$1"
     local label="$2"
 
+    # Escape label to avoid injection in error output
+    local escaped_label
+    escaped_label="$(printf "%q" "$label")"
+
     if [[ -z "$value" || "$value" == "$label" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: $label"
+        print_and_debug error "$(printf "$ERROR_MISSING_PARAM: %s" "$escaped_label")"
         return 1
     fi
 }
@@ -51,8 +58,14 @@ _is_valid_email() {
 
     _is_missing_param "$email" "email" || return 1
 
-    # RFC 5322-compliant basic pattern, accepts name@domain.com or name@domain.com.vn
-    if [[ ! "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+    # Kiểm tra độ dài tối đa
+    if [[ ${#email} -gt 320 ]]; then
+        print_msg error "❌ Email exceeds maximum length (320 characters): $email"
+        return 1
+    fi
+
+    # Kiểm tra định dạng email
+    if ! [[ "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
         print_msg error "❌ Invalid email format: $email"
         return 1
     fi
@@ -69,6 +82,12 @@ _is_valid_email() {
 # Result: Returns true if all containers are running, false otherwise
 # ===========================
 _is_container_running() {
+    # Check if Docker daemon is running (cross-platform)
+    if ! docker info >/dev/null 2>&1; then
+        print_msg error "❌ Docker is not running or not accessible."
+        return 1
+    fi
+
     local all_running=true
 
     for container_name in "$@"; do
@@ -115,7 +134,20 @@ _is_test_mode() {
 # =====================================
 _is_file_exist() {
     local file_path="$1"
-    [[ -f "$file_path" ]]
+    local escaped_file_path
+    escaped_file_path=$(printf "%q" "$file_path")
+    if [[ -f "$file_path" ]]; then
+        if [[ ! -r "$file_path" ]]; then
+            print_msg error "❌ File exists but is not readable: $escaped_file_path"
+            return 1
+        fi
+        if [[ ! -w "$file_path" ]]; then
+            print_msg warning "⚠️ File exists but is not writable: $escaped_file_path"
+        fi
+        return 0
+    fi
+
+    return 1
 }
 
 # =====================================
@@ -134,7 +166,10 @@ _is_directory_exist() {
         if [[ "$create_if_missing" == "true" ]]; then
             debug_log "[_is_directory_exist] Directory not exist, creating: $dir"
             print_msg debug "$MSG_NOT_FOUND : $dir"
-            mkdir -p "$dir"
+            mkdir -p "$dir" || {
+                debug_log error "❌ Failed to create directory: $dir"
+                return 1
+            }
         else
             return 1
         fi
