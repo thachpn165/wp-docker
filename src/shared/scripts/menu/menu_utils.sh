@@ -38,24 +38,24 @@ check_docker_status() {
 # 🌐 **Check Docker Network Status**
 check_docker_network() {
     if docker network inspect "$DOCKER_NETWORK" &>/dev/null; then
-        print_msg success "$SUCCESS_DOCKER_NETWORK_STATUS ($DOCKER_NETWORK)"
+        print_msg success "$DOCKER_NETWORK"
     else
-        print_msg error "$ERROR_DOCKER_NETWORK_STATUS ($DOCKER_NETWORK)"
+        print_msg error "$DOCKER_NETWORK"
     fi
 }
 
 # 🚀 **Check NGINX Proxy Status**
 check_nginx_status() {
     if _is_container_running "$NGINX_PROXY_CONTAINER"; then
-        print_msg success "$SUCCESS_DOCKER_NGINX_STATUS ($NGINX_PROXY_CONTAINER)"
+        print_msg success "$NGINX_PROXY_CONTAINER"
     else
-        print_msg error "$ERROR_DOCKER_NGINX_STATUS ($NGINX_PROXY_CONTAINER)"
+        print_msg error "$NGINX_PROXY_CONTAINER"
     fi
 }
 check_mysql_status() {
     if _is_container_running "$MYSQL_CONTAINER_NAME"; then
-        print_msg success "$SUCCESS_MYSQL_STATUS ($MYSQL_CONTAINER_NAME)"
+        print_msg success "$MYSQL_CONTAINER_NAME"
     else
-        print_msg error "$ERROR_MYSQL_STATUS ($MYSQL_CONTAINER_NAME)"
+        print_msg error "$MYSQL_CONTAINER_NAME"
     fi
 }

@@ -199,9 +199,9 @@ core_version_display() {
   version_remote=$(core_version_get_latest)
 
   # Hiển thị phiên bản hiện tại và mới nhất
-  print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
-  print_msg info "$INFO_CORE_VERSION_LATEST: $version_remote"
-
+  print_msg sub-label "$INFO_CORE_VERSION_CURRENT: $version_local"
+  print_msg sub-label "$INFO_CORE_VERSION_LATEST: $version_remote"
+  echo ""
   # Kiểm tra phiên bản và cảnh báo nếu có phiên bản mới
   core_version_compare "$version_local" "$version_remote"
   local result=$?
