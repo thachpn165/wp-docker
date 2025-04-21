@@ -3,12 +3,12 @@ nginx_init() {
     local template_file="$TEMPLATES_DIR/nginx-docker-compose.yml.template"
 
     # Đảm bảo thư mục tồn tại
-    is_directory_exist "$NGINX_PROXY_DIR" true
+    _is_directory_exist "$NGINX_PROXY_DIR" true
 
     print_msg step "$MSG_CHECKING_CONTAINER: $NGINX_PROXY_CONTAINER"
 
     # Nếu container đang chạy nhưng file docker-compose.yml bị mất → tạo lại file
-    if is_container_running "$NGINX_PROXY_CONTAINER"; then
+    if _is_container_running "$NGINX_PROXY_CONTAINER"; then
         debug_log "[nginx_init] ✅ Container $NGINX_PROXY_CONTAINER is running"
         if [[ ! -f "$compose_file" ]]; then
             print_msg warning "⚠️ Container is running but $compose_file is missing. Recreating it..."
@@ -213,7 +213,7 @@ wait_for_nginx_container() {
 
     print_msg info "⏳ Waiting for container '$NGINX_PROXY_CONTAINER' to start..."
 
-    while ! is_container_running "$NGINX_PROXY_CONTAINER"; do
+    while ! _is_container_running "$NGINX_PROXY_CONTAINER"; do
         sleep "$interval"
         waited=$((waited + interval))
         if ((waited >= timeout)); then

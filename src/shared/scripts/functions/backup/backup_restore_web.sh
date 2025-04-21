@@ -87,7 +87,7 @@ backup_logic_restore_web() {
     local db_backup_file="$3"
     local site_dir="$SITES_DIR/$domain"
 
-    if ! is_directory_exist "$site_dir"; then
+    if ! _is_directory_exist "$site_dir"; then
         print_and_debug error "$MSG_NOT_FOUND: $site_dir"
         return 1
     fi

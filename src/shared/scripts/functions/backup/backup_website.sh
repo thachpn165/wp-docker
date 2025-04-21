@@ -248,8 +248,8 @@ backup_logic_website() {
     log_dir="$(realpath "$SITES_DIR/$domain/logs")"
 
     # Ensure backup and logs directories exist
-    is_directory_exist "$backup_dir"
-    is_directory_exist "$log_dir"
+    _is_directory_exist "$backup_dir"
+    _is_directory_exist "$log_dir"
 
     # Log start of backup process
     print_msg step "$STEP_BACKUP_START: $domain"

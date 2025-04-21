@@ -62,16 +62,16 @@ website_setup_nginx() {
   NGINX_CONF="$NGINX_CONF_DIR/$domain.conf"
 
   # === Check if target directory exists ===
-  is_directory_exist "$NGINX_CONF_DIR"
+  _is_directory_exist "$NGINX_CONF_DIR"
 
   # === Remove existing config file if exists ===
-  if is_file_exist "$NGINX_CONF"; then
+  if _is_file_exist "$NGINX_CONF"; then
     print_and_debug warning "$WARNING_REMOVE_OLD_NGINX_CONF: $NGINX_CONF"
     rm -f "$NGINX_CONF"
   fi
 
   # === Check and copy template ===
-  if is_file_exist "$NGINX_TEMPLATE"; then
+  if _is_file_exist "$NGINX_TEMPLATE"; then
     if [[ ! -d "$(dirname "$NGINX_TEMPLATE")" ]]; then
       print_and_debug error "$ERROR_NGINX_TEMPLATE_DIR_MISSING: $(dirname "$NGINX_TEMPLATE")"
       exit 1

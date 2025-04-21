@@ -35,7 +35,7 @@ mysql_exec() {
     #   - None
     # ============================================
     local command="$1"
-    is_container_running "$MYSQL_CONTAINER_NAME" || {
+    _is_container_running "$MYSQL_CONTAINER_NAME" || {
         print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     }
@@ -73,7 +73,7 @@ mysql_logic_create_db_name() {
     json_set_site_value "$domain" "db_name" "$final_db_name"
     debug_log "[DB CREATE] db_name=$final_db_name"
     
-    is_container_running "$MYSQL_CONTAINER_NAME" || {
+    _is_container_running "$MYSQL_CONTAINER_NAME" || {
         print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     }
@@ -117,7 +117,7 @@ mysql_logic_create_db_user() {
     json_set_site_value "$domain" "db_user" "$final_db_user"
     json_set_site_value "$domain" "db_pass" "$db_password"
 
-    is_container_running "$MYSQL_CONTAINER_NAME" || {
+    _is_container_running "$MYSQL_CONTAINER_NAME" || {
         print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     }
@@ -151,7 +151,7 @@ mysql_logic_grant_all_privileges() {
     # ============================================
     local db_name="$1"
     local db_user="$2"
-    is_container_running "$MYSQL_CONTAINER_NAME" || {
+    _is_container_running "$MYSQL_CONTAINER_NAME" || {
         print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     }
@@ -186,7 +186,7 @@ mysql_logic_delete_db_and_user() {
         print_msg warning "⚠️ Skip deleting MySQL database and user for $domain"
         return 0
     fi
-    is_container_running "$MYSQL_CONTAINER_NAME" || {
+    _is_container_running "$MYSQL_CONTAINER_NAME" || {
         print_msg error "$ERROR_DOCKER_CONTAINER_DB_NOT_RUNNING"
         return 1
     }

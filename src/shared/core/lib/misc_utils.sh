@@ -28,14 +28,6 @@ exit_if_error() {
 # =========================================
 
 # =====================================
-# is_test_mode: Check if running in TEST_MODE
-# Returns: 0 if true
-# =====================================
-is_test_mode() {
-  [[ "$TEST_MODE" == true ]]
-}
-
-# =====================================
 # run_if_not_test: Run command unless in TEST_MODE
 # Parameters:
 #   $1 - fallback
@@ -45,7 +37,7 @@ is_test_mode() {
 run_if_not_test() {
   local fallback="$1"
   shift
-  if is_test_mode; then
+  if _is_test_mode; then
     echo "$fallback"
   else
     "$@"
@@ -76,7 +68,7 @@ get_input_or_test_value() {
   local prompt="$1"
   local fallback="$2"
 
-  if is_test_mode; then
+  if _is_test_mode; then
     echo "$fallback"
   else
     [[ "$TEST_MODE" != true ]] && read -p "$prompt" input
@@ -96,7 +88,7 @@ get_input_or_test_value_secret() {
   local fallback="$2"
   local input=""
 
-  if is_test_mode; then
+  if _is_test_mode; then
     # In test mode, return fallback without prompting
     echo "$fallback"
   else
@@ -261,27 +253,6 @@ print_msg() {
   esac
 
   echo -e "${color}${emoji} ${message}${NC}"
-}
-
-# =====================================
-# get_user_confirmation: Ask user to confirm (yes/no)
-# Parameters:
-#   $1 - message
-# Returns: 0 if yes, 1 if no
-# =====================================
-get_user_confirmation() {
-  local message="$1"
-  local confirm
-
-  while true; do
-    get_input_or_test_value "$message (y/n): " "y"
-    confirm="$REPLY"
-    case "$confirm" in
-      [Yy]*) return 0 ;;
-      [Nn]*) return 1 ;;
-      *) print_msg warning "$WARNING_INVALID_YN";;
-    esac
-  done
 }
 
 # =============================================

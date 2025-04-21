@@ -93,7 +93,7 @@ website_setup_wordpress_logic() {
 
   # 🐳 Check if PHP container is running
   local php_ready_ok=false
-  if is_container_running "$php_container"; then
+  if _is_container_running "$php_container"; then
     php_ready_ok=true
   fi
   if [[ "$php_ready_ok" == false ]]; then

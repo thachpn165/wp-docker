@@ -909,7 +909,7 @@ readonly QUESTION_DB_DELETE_CONFIRM="Bạn có chắc chắn muốn xóa databas
 readonly WARNING_NGINX_CONTAINER_NOT_RUNNING="Container NGINX không hoạt động. Đang cố khởi động..."
 readonly SUCCESS_NGINX_COMPOSE_GENERATED="Đã tạo docker-compose.yml cho NGINX thành công."
 
-readonly SUCCESS_REDIS_CONTAINER_RUNNING="Container Redis đang hoạt động."
+readonly SUCCESS_RED_is_container_running="Container Redis đang hoạt động."
 readonly STEP_REDIS_STARTING_CONTAINER="Đang khởi động container Redis: "
 readonly WARNING_REDIS_DOCKER_COMPOSE_NOT_FOUND="Không tìm thấy docker-compose.yml cho Redis."
 readonly INFO_REDIS_GENERATING_DOCKER_COMPOSE="Đang tạo docker-compose.yml cho Redis..."

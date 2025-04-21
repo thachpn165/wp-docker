@@ -1,6 +1,6 @@
 #!/bin/bash
 rclone_setup() {
-  is_directory_exist "$RCLONE_CONFIG_DIR" true
+  _is_directory_exist "$RCLONE_CONFIG_DIR" true
 
   # Check if rclone is installed
   if ! command -v rclone &>/dev/null; then
@@ -24,7 +24,7 @@ rclone_setup() {
   print_msg run "$INFO_RCLONE_SETUP_START"
 
   # Create config file if missing
-  if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
+  if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
     local create_msg
     create_msg="$(printf "$INFO_RCLONE_CREATING_CONF" "$RCLONE_CONFIG_FILE")"
     print_msg info "$create_msg"

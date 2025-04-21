@@ -71,7 +71,7 @@ ssl_logic_install_selfsigned() {
     fi
 
     # Ensure SSL directory exists
-    is_directory_exist "$ssl_dir" || {
+    _is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
         debug_log "[SSL] Not found and created: $ssl_dir"
@@ -125,7 +125,7 @@ ssl_logic_install_letsencrypt() {
         return 1
     fi
 
-    is_directory_exist "$ssl_dir" || mkdir -p "$ssl_dir"
+    _is_directory_exist "$ssl_dir" || mkdir -p "$ssl_dir"
     mkdir -p "$certbot_data"
 
     print_msg step "$STEP_REQUEST_CERT_WEBROOT"
@@ -176,7 +176,7 @@ ssl_logic_install_manual() {
     ssl_dir="$SSL_DIR"
 
     _is_valid_domain "$domain" || return 1
-    is_directory_exist "$ssl_dir" || {
+    _is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
         debug_log "[SSL] Not found and created: $ssl_dir"

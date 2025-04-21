@@ -57,7 +57,7 @@ website_logic_delete() {
   _is_valid_domain "$domain" || return 1
   SITE_DIR="$SITES_DIR/$domain"
 
-  if ! is_directory_exist "$SITE_DIR"; then
+  if ! _is_directory_exist "$SITE_DIR"; then
     print_msg error "$ERROR_WEBSITE_NOT_EXIST: $domain"
     return 1
   fi
@@ -75,7 +75,7 @@ website_logic_delete() {
     local archive_file old_web_dir
     old_web_dir="$ARCHIVES_DIR/old_website/$domain"
     archive_file="$ARCHIVES_DIR/old_website/${domain}-$(date +%Y%m%d-%H%M%S)_${domain}_db.sql"
-    is_directory_exist "$old_web_dir" || mkdir -p "$old_web_dir"
+    _is_directory_exist "$old_web_dir" || mkdir -p "$old_web_dir"
     print_msg step "$MSG_WEBSITE_BACKING_UP_DB: $domain"
     database_cli_export --domain="$domain" --save_location="$archive_file"
 
