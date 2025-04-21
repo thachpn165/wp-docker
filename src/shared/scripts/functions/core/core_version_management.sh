@@ -119,6 +119,7 @@ core_get_download_url() {
 }
 
 # === Update to latest version
+# === Update to latest version
 core_version_update_latest() {
   local latest_version
   local channel
@@ -179,6 +180,21 @@ core_version_update_latest() {
 
   # Cập nhật lại phiên bản đã cài đặt trong config
   core_set_installed_version "$latest_version"
+
+  # 🔧 Thực thi script upgrade nếu tồn tại
+  local upgrade_script=""
+  if [[ "$channel" == "dev" ]]; then
+    upgrade_script="$BASE_DIR/upgrade/dev-upgrade.sh"
+  else
+    upgrade_script="$BASE_DIR/upgrade/${latest_version}.sh"
+  fi
+
+  if [[ -f "$upgrade_script" && -x "$upgrade_script" ]]; then
+    print_msg step "🚀 Running upgrade script: $(basename "$upgrade_script")"
+    bash "$upgrade_script" || print_msg warning "⚠️ Upgrade script exited with non-zero status."
+  else
+    debug_log "No upgrade script to run for version: $latest_version"
+  fi
 
   # In thông báo thành công
   print_msg success "$SUCCESS_CORE_UPDATED"
