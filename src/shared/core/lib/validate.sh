@@ -6,14 +6,21 @@
 # =============================================
 _is_valid_domain() {
     local domain="$1"
+    domain="$(echo "$domain" | xargs)" # Trim whitespace
+    _is_missing_var "$domain" "domain" || return 1
 
     if [[ ${#domain} -gt 253 ]]; then
-        print_msg error "❌ Domain exceeds maximum length (253 characters): $domain"
+        print_msg error "$ERROR_DOMAIN_EXCEEDS_MAX_LENGTH: $domain"
         return 1
     fi
 
     if ! [[ "$domain" =~ ^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$ ]]; then
-        print_msg error "❌ Invalid domain format: $domain"
+        print_msg error "$ERROR_DOMAIN_INVALID_FORMAT: $domain"
+        return 1
+    fi
+
+    if [[ "$domain" =~ (^[-])|([-]$) ]]; then
+        print_msg error "$ERROR_DOMAIN_INVALID_HYPHEN: $domain"
         return 1
     fi
 
@@ -60,13 +67,13 @@ _is_valid_email() {
 
     # Kiểm tra độ dài tối đa
     if [[ ${#email} -gt 320 ]]; then
-        print_msg error "❌ Email exceeds maximum length (320 characters): $email"
+        print_msg error "$ERROR_EMAIL_EXCEEDS_MAX_LENGTH"
         return 1
     fi
 
     # Kiểm tra định dạng email
     if ! [[ "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
-        print_msg error "❌ Invalid email format: $email"
+        print_msg error "$ERROR_EMAIL_INVALID_FORMAT: $email"
         return 1
     fi
 
@@ -84,7 +91,7 @@ _is_valid_email() {
 _is_container_running() {
     # Check if Docker daemon is running (cross-platform)
     if ! docker info >/dev/null 2>&1; then
-        print_msg error "❌ Docker is not running or not accessible."
+        print_msg error "$ERROR_DOCKER_NOT_RUNNING"
         return 1
     fi
 
@@ -137,19 +144,19 @@ _is_file_exist() {
 
     # Kiểm tra nếu file không tồn tại
     if [[ ! -f "$file_path" ]]; then
-        print_msg error "❌ File does not exist: $file_path"
+        print_msg error "$MSG_NOT_FOUND: $file_path"
         return 1
     fi
 
     # Kiểm tra quyền đọc
     if [[ ! -r "$file_path" ]]; then
-        print_msg error "❌ File exists but is not readable: $(printf "%q" "$file_path")"
+        print_msg error "$ERROR_FILE_NOT_READABLE: $(printf "%q" "$file_path")"
         return 1
     fi
 
     # Kiểm tra quyền ghi
     if [[ ! -w "$file_path" ]]; then
-        print_msg warning "⚠️ File exists but is not writable: $(printf "%q" "$file_path")"
+        print_msg warning "$ERROR_FILE_NOT_WRITABLE: $(printf "%q" "$file_path")"
     fi
 
     return 0

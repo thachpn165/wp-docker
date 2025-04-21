@@ -31,7 +31,7 @@ check_docker_status() {
     if docker info &>/dev/null; then
         print_msg success "$SUCCESS_DOCKER_STATUS"
     else
-        print_msg error "$ERROR_DOCKER_STATUS"
+        print_msg error "$ERROR_DOCKER_NOT_RUNNING"
     fi
 }
 
