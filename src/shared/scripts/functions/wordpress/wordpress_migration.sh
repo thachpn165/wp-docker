@@ -64,6 +64,9 @@ wordpress_migration_logic() {
 
   if ! _is_directory_exist "$archive_dir"; then
     print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$archive_dir")"
+    local formatted_important_prepare_folder
+    formatted_important_prepare_folder=$(printf "$IMPORTANT_PREPARE_MIGRATION_FOLDER" "$archive_dir")
+    print_msg important "$formatted_important_prepare_folder"
     return 1
   fi
 
