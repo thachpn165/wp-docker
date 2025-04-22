@@ -19,14 +19,14 @@ wordpress_prompt_migration() {
   echo ""
 
   # === Confirm user is ready ===
-  ready=$(get_input_or_test_value "$QUESTION_MIGRATION_READY" "${TEST_READY:-y}")
+  ready=$(get_input_or_test_value "$QUESTION_MIGRATION_READY " "${TEST_READY:-y}")
   if [[ "$ready" != "y" && "$ready" != "Y" ]]; then
     print_msg error "$ERROR_MIGRATION_CANCEL"
     exit 1
   fi
 
   echo ""
-  domain=$(get_input_or_test_value "$PROMPT_ENTER_DOMAIN_TO_MIGRATE" "${TEST_DOMAIN:-example.com}")
+  domain=$(get_input_or_test_value "$PROMPT_ENTER_DOMAIN_TO_MIGRATE " "${TEST_DOMAIN:-example.com}")
   if [[ -z "$domain" ]]; then
     print_msg error "$ERROR_DOMAIN_REQUIRED"
     exit 1
