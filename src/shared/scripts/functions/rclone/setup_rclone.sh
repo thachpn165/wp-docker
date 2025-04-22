@@ -1,3 +1,46 @@
+setup_storage_type() {
+  local config=""
+  case "$STORAGE_TYPE" in
+  drive)
+    # Hiển thị hướng dẫn cho Google Drive
+    print_msg recommend "$INFO_RCLONE_DRIVE_AUTH_GUIDE" >&2
+    AUTH_JSON=$(get_input_or_test_value "🔑 $PROMPT_RCLONE_PASTE_TOKEN")
+    if [[ -z "$AUTH_JSON" ]]; then
+      print_msg error "$ERROR_RCLONE_TOKEN_CANNOT_EMPTY" >&2
+      return 1
+    fi
+    config="token = $AUTH_JSON"
+    ;;
+  dropbox)
+    # Hiển thị hướng dẫn cho Dropbox
+    print_msg recommend "$INFO_RCLONE_DROPBOX_AUTH_GUIDE" >&2
+    AUTH_JSON=$(get_input_or_test_value "🔑 $PROMPT_RCLONE_PASTE_TOKEN")
+    if [[ -z "$AUTH_JSON" ]]; then
+      print_msg error "$ERROR_RCLONE_TOKEN_CANNOT_EMPTY" >&2
+      return 1
+    fi
+    config="token = $AUTH_JSON"
+    ;;
+  s3)
+    # Thiết lập thông tin cho S3
+    ACCESS_KEY=$(get_input_or_test_value "$PROMPT_RCLONE_S3_ACCESS_KEY")
+    SECRET_KEY=$(get_input_or_test_value "$PROMPT_RCLONE_S3_SECRET_KEY")
+    REGION=$(get_input_or_test_value "$PROMPT_RCLONE_S3_REGION")
+    if [[ -z "$ACCESS_KEY" || -z "$SECRET_KEY" || -z "$REGION" ]]; then
+      print_msg error "$ERROR_MISSING_S3_CREDENTIALS" >&2
+      return 1
+    fi
+    config="provider = AWS\naccess_key_id = $ACCESS_KEY\nsecret_access_key = $SECRET_KEY\nregion = $REGION"
+    ;;
+  *)
+    
+    print_msg error "❌ Invalid storage type: $STORAGE_TYPE" >&2
+    return 1
+    ;;
+  esac
+  echo -e "$config"
+}
+
 rclone_setup() {
   _is_directory_exist "$RCLONE_CONFIG_DIR" true
 
@@ -6,17 +49,16 @@ rclone_setup() {
     print_and_debug warning "$WARNING_RCLONE_NOT_INSTALLED"
 
     if [[ "$(uname)" == "Darwin" ]]; then
-      brew install rclone || {
-        print_and_debug error "$ERROR_RCLONE_INSTALL_FAILED"
+      if ! brew install rclone; then
+        print_and_debug error "❌ Failed to install rclone via Homebrew. Please check your Homebrew setup."
         return 1
-      }
+      fi
     else
-      safe_curl https://rclone.org/install.sh | sudo bash || {
-        print_and_debug error "$ERROR_RCLONE_INSTALL_FAILED"
+      if ! safe_curl https://rclone.org/install.sh | sudo bash; then
+        print_and_debug error "❌ Failed to install rclone via install script. Please check your network or permissions."
         return 1
-      }
+      fi
     fi
-
     print_msg success "$SUCCESS_RCLONE_INSTALLED"
   else
     print_msg success "$SUCCESS_RCLONE_ALREADY_INSTALLED"
@@ -62,40 +104,42 @@ rclone_setup() {
   while true; do
     choice=$(get_input_or_test_value "$PROMPT_SELECT_OPTION")
     case "$choice" in
-      1) STORAGE_TYPE="drive"; break ;;
-      2) STORAGE_TYPE="dropbox"; break ;;
-      3) STORAGE_TYPE="s3"; break ;;
-      4) print_msg cancel "$MSG_EXITING"; return ;;
-      *) print_msg error "$ERROR_SELECT_OPTION_INVALID" ;;
+    1)
+      STORAGE_TYPE="drive"
+      break
+      ;;
+    2)
+      STORAGE_TYPE="dropbox"
+      break
+      ;;
+    3)
+      STORAGE_TYPE="s3"
+      break
+      ;;
+    4)
+      print_msg cancel "$MSG_EXITING"
+      return
+      ;;
+    *) print_msg error "$ERROR_SELECT_OPTION_INVALID" ;;
     esac
   done
 
   print_msg step "$(printf "$STEP_RCLONE_SETTING_UP" "$STORAGE_NAME")"
 
   # === Build config block ===
-  local config_block="[$STORAGE_NAME]\ntype = $STORAGE_TYPE"
+  local storage_config
+  storage_config=$(setup_storage_type) || {
+    print_msg error "❌ Failed to configure storage type: $STORAGE_TYPE"
+    return 1
+  }
 
-  if [[ "$STORAGE_TYPE" == "drive" ]]; then
-    print_msg recommend "$INFO_RCLONE_DRIVE_AUTH_GUIDE"
-    AUTH_JSON=$(get_input_or_test_value "🔑 $PROMPT_RCLONE_DRIVE_PASTE_TOKEN")
-    config_block+="\ntoken = $AUTH_JSON"
-
-  elif [[ "$STORAGE_TYPE" == "dropbox" ]]; then
-    TOKEN=$(rclone authorize dropbox)
-    config_block+="\ntoken = $TOKEN"
-
-  elif [[ "$STORAGE_TYPE" == "s3" ]]; then
-    ACCESS_KEY=$(get_input_or_test_value "$PROMPT_RCLONE_S3_ACCESS_KEY")
-    SECRET_KEY=$(get_input_or_test_value "$PROMPT_RCLONE_S3_SECRET_KEY")
-    REGION=$(get_input_or_test_value "$PROMPT_RCLONE_S3_REGION")
-    config_block+="\nprovider = AWS"
-    config_block+="\naccess_key_id = $ACCESS_KEY"
-    config_block+="\nsecret_access_key = $SECRET_KEY"
-    config_block+="\nregion = $REGION"
-  fi
+  local config_block="[$STORAGE_NAME]\ntype = $STORAGE_TYPE\n$storage_config"
 
   # === Write config ===
-  echo -e "$config_block" >> "$RCLONE_CONFIG_FILE"
+  if ! echo -e "$config_block" >>"$RCLONE_CONFIG_FILE"; then
+    print_and_debug error "❌ Failed to write to rclone config file: $RCLONE_CONFIG_FILE"
+    return 1
+  fi
   print_msg success "$(printf "$SUCCESS_RCLONE_STORAGE_ADDED" "$STORAGE_NAME")"
   print_msg info "📄 Config: $BASE_DIR/$RCLONE_CONFIG_FILE"
 }

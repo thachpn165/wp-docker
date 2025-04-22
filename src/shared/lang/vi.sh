@@ -595,11 +595,12 @@ readonly INFO_RCLONE_READING_STORAGE_LIST="Đang đọc danh sách Storage từ 
 readonly INFO_RCLONE_SETUP_START="Đang thiết lập Storage Rclone"
 readonly INFO_RCLONE_CREATING_CONF="Đang tạo file cấu hình Rclone mới: %s"
 readonly INFO_RCLONE_SELECT_STORAGE_TYPE="Chọn loại storage bạn muốn thiết lập:"
-readonly INFO_RCLONE_DRIVE_AUTH_GUIDE="Chạy lệnh: rclone authorize drive trên máy tính của bạn để lấy token OAuth."
-
+readonly INFO_RCLONE_DRIVE_AUTH_GUIDE="Chạy lệnh: rclone authorize drive - trên máy tính của bạn để lấy token OAuth."
+readonly INFO_RCLONE_DROPBOX_AUTH_GUIDE="Chạy lệnh: rclone authorize dropbox - trên máy tính của bạn để lấy token OAuth."
 readonly PROMPT_ENTER_STORAGE_NAME="Nhập tên storage mà bạn muốn lưu (không ký tự đặc biệt, ví dụ: wpdocker-drive) "
 readonly STEP_RCLONE_SETTING_UP="Đang thiết lập Storage: %s..."
-
+readonly ERROR_RCLONE_TOKEN_CANNOT_EMPTY="Token không được để trống. Vui lòng nhập lại."
+readonly ERROR_MISSING_S3_CREDENTIALS="Thiếu thông tin xác thực S3. Vui lòng nhập lại."
 # =============================================
 # 🛠️ HỆ THỐNG & CÔNG CỤ
 # =============================================
@@ -844,7 +845,7 @@ readonly MSG_INVALID_OPTION="Tùy chọn không hợp lệ. Vui lòng chọn l�
 readonly MSG_SITE_NOT_FOUND="Không tìm thấy website nào trong danh sách."
 readonly MSG_WEBSITE_EXISTS="Website đã tồn tại. Vui lòng chọn tên khác."
 readonly PROMPT_CHANNEL_SELECT="Chọn kênh phát hành:"
-readonly PROMPT_RCLONE_DRIVE_PASTE_TOKEN="Dán token vào đây:"
+readonly PROMPT_RCLONE_PASTE_TOKEN="Dán token vào đây:"
 readonly PROMPT_RCLONE_S3_ACCESS_KEY="Nhập Access Key:"
 readonly PROMPT_RCLONE_S3_REGION="Nhập Region:"
 readonly PROMPT_RCLONE_S3_SECRET_KEY="Nhập Secret Key:"

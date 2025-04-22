@@ -595,11 +595,12 @@ readonly INFO_RCLONE_READING_STORAGE_LIST="Reading Storage list from rclone.conf
 readonly INFO_RCLONE_SETUP_START="Setting up Rclone Storage"
 readonly INFO_RCLONE_CREATING_CONF="Creating new Rclone configuration file: %s"
 readonly INFO_RCLONE_SELECT_STORAGE_TYPE="Select the storage type you want to set up:"
-readonly INFO_RCLONE_DRIVE_AUTH_GUIDE="Run command: rclone authorize drive on your computer to get the OAuth token."
-
+readonly INFO_RCLONE_DRIVE_AUTH_GUIDE="Run command: rclone authorize drive - on your computer to get the OAuth token."
+readonly INFO_RCLONE_DROPBOX_AUTH_GUIDE="Run command: rclone authorize dropbox - on your computer to get the OAuth token."
 readonly PROMPT_ENTER_STORAGE_NAME="Enter the name of the storage you want to set up: "
 readonly STEP_RCLONE_SETTING_UP="Setting up Storage: %s..."
-
+readonly ERROR_RCLONE_TOKEN_CANNOT_EMPTY="Token cannot be empty. Please check the token you entered."
+readonly ERROR_MISSING_S3_CREDENTIALS="Missing S3 credentials. Please check the configuration."
 # =============================================
 # 🛠️ SYSTEM & TOOLS
 # =============================================
@@ -974,5 +975,3 @@ readonly TIP_CACHE_WP_SUPER_CACHE="WP Super Cache has been configured. You need 
 readonly TIP_CACHE_W3_TOTAL_CACHE="W3 Total Cache has been configured. You need to activate the caching option by going to Admin => Settings => General => Page Cache and select Enable."
 readonly TIP_CACHE_WP_FASTEST_CACHE="WP Fastest Cache has been configured. You need to activate the caching option by going to Admin => Settings => WP Fastest Cache => Caching and select Enable."
 readonly IMPORTANT_PREPARE_MIGRATION_FOLDER="You need to prepare a directory to store the website data to be migrated at %s and copy the source code files and database into it before beginning."
-readonly STEP_WORDPRESS_MIGRATION_BACKUP_BEFORE_REMOVE="Backup current data before overwriting"
-readonly QUESTION_WORDPRESS_MIGRATION_BACKUP="Do you want to backup current data before overwriting?"
