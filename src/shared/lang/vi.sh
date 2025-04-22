@@ -975,3 +975,5 @@ readonly TIP_CACHE_WP_SUPER_CACHE="WP Super Cache đã được cấu hình. B�
 readonly TIP_CACHE_W3_TOTAL_CACHE="W3 Total Cache đã được cấu hình. Bạn cần phải kích hoạt tùy chọn cache bằng cách vào Admin => Cài đặt => General => Page Cache và chọn Enable."
 readonly TIP_CACHE_WP_FASTEST_CACHE="WP Fastest Cache đã được cấu hình. Bạn cần phải kích hoạt tùy chọn cache bằng cách vào Admin => Cài đặt => WP Fastest Cache => Caching và chọn Enable."
 readonly IMPORTANT_PREPARE_MIGRATION_FOLDER="Bạn cần phải chuẩn bị sẵn thư mục chứa dữ liệu của website cần chuyển về tại %s và copy sẵn tập tin mã nguồn và database vào đó trước khi bắt đầu."
+readonly STEP_WORDPRESS_MIGRATION_BACKUP_BEFORE_REMOVE="Sao lưu dữ liệu hiện tại trước khi ghi đè"
+readonly QUESTION_WORDPRESS_MIGRATION_BACKUP="Bạn có muốn sao lưu dữ liệu hiện tại trước khi ghi đè không?"
