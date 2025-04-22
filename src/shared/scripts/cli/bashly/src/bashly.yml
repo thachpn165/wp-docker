@@ -1,0 +1,204 @@
+name: wpdocker
+help: Manage WordPress Docker environments easily
+version: 1.2.0
+
+commands:
+  - name: website
+    help: Manage WordPress websites
+    commands:
+      - name: create
+        help: Create a new WordPress site
+        args:
+          - name: domain
+            help: Domain name for the new site
+            required: true
+          - name: php
+            help: PHP version for the new site
+            required: true
+      - name: delete
+        help: Delete an existing site
+      - name: list
+        help: List all WordPress sites
+      - name: restart
+        help: Restart a site
+      - name: logs
+        help: Show site logs
+      - name: info
+        help: Show site info
+      - name: restore
+        help: Restore site from backup
+      - name: update_template
+        help: Update site template
+
+  - name: ssl
+    help: SSL certificate management
+    commands:
+      - name: selfsigned
+        help: Install self-signed SSL
+      - name: letsencrypt
+        help: Install Let's Encrypt SSL
+      - name: check
+        help: Check SSL certificate status
+      - name: edit
+        help: Edit SSL configuration
+
+  - name: php
+    help: Manage PHP versions
+    commands:
+      - name: change
+        help: Change PHP version
+      - name: get
+        help: Get PHP version list from Docker Hub
+      - name: rebuild
+        help: Rebuild PHP container
+      - name: edit
+        help: Edit PHP configuration
+        commands:
+          - name: conf
+            help: Edit PHP-FPM configuration
+          - name: ini
+            help: Edit php.ini file
+
+  - name: backup
+    help: Manage backups
+    commands:
+      - name: website
+        help: Backup website source + DB
+      - name: database
+        help: Backup database only
+      - name: file
+        help: Backup file only
+      - name: restore
+        help: Restore backup
+        commands:
+          - name: website
+            help: Restore website source + DB
+          - name: database
+            help: Restore database only
+          - name: file
+            help: Restore file only
+
+  - name: database
+    help: Manage database operations
+    commands:
+      - name: reset
+        help: Reset site database
+      - name: import
+        help: Import a SQL database
+      - name: export
+        help: Export site database
+
+  - name: wordpress
+    help: WordPress tools
+    commands:
+      - name: cli
+        help: Run WP-CLI commands inside container
+      - name: migrate
+        help: Migrate WordPress site
+      - name: reset
+        help: Reset features
+        commands:
+          - name: password
+            help: Reset admin password
+          - name: role
+            help: Reset user roles
+      - name: cache
+        help: Setup caching
+      - name: plugin
+        help: Plugin tools
+        commands:
+          - name: auto-update
+            help: Enable plugin auto update
+      - name: security
+        help: Security enhancements
+        commands:
+          - name: wplogin
+            help: Protect wp-login.php
+
+  - name: system
+    help: System operations
+    commands:
+      - name: check
+        help: Check system resources
+        commands:
+          - name: resources
+            help: Check system resources of Docker
+          - name: disk
+            help: Check disk space usage of WP Docker
+      - name: manage
+        help: Manage Docker containers
+      - name: cleanup
+        help: Cleanup unused Docker resources
+  
+  - name: cron
+    help: Run cron tasks
+    commands:
+      - name: letsencrypt
+        help: Cron related to Let's Encrypt
+        commands:
+          - name: renew
+            help: Renew Let's Encrypt SSL 
+      - name: all
+        help: Run all scheduled crons
+
+  - name: core
+    help: Core management
+    commands:
+      - name: version
+        help: Show current and latest version
+      - name: update
+        help: Update core system to the latest version
+      - name: upgrade
+        help: Run the upgrade scripts 
+      - name: uninstall
+        help: Uninstall WP Docker
+      - name: channel
+        help: Update channel options
+        commands:
+          - name: change
+            help: Change release channel
+          - name: check
+            help: Show current channel
+      - name: lang
+        help: Language options
+        commands:
+          - name: change
+            help: Change CLI language
+          - name: check
+            help: Show current language
+          - name: list
+            help: List supported languages
+  
+  - name: nginx
+    help: NGINX actions
+    commands:
+      - name: rebuild
+        help: Rebuild NGINX proxy
+      - name: restart
+        help: Restart NGINX proxy
+      - name: reload
+        help: Reload NGINX configuration
+
+  - name: rclone
+    help: Rclone operations
+    commands:
+      - name: config
+        help: Rclone configuration
+      - name: upload
+        help: Upload files to remote storage
+        commands:
+          - name: backup
+            help: Upload backup files
+      - name: delete
+        help: delete storage config
+      - name: list
+        help: List storage in config
+  
+  - name: debug
+    help: Debugging tools
+    commands:
+      - name: mode
+        help: Enable and disable debug mode
+      - name: logs
+        help: Show debug logs
+

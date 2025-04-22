@@ -961,7 +961,6 @@ readonly QUESTION_BACKUP_CONFIRM_REMOVE_SCHEDULE="Are you sure you want to remov
 readonly SUCCESS_BACKUP_SCHEDULE_REMOVED="Backup schedule removed successfully."
 readonly ERROR_DOCKER_CONTAINER_NOT_RUNNING="Docker container is not running."
 readonly ERROR_DOMAIN_EXCEEDS_MAX_LENGTH="Domain name cannot exceed 253 characters."
-readonly ERROR_DOMAIN_INVALID_FORMAT="Domain name is invalid. Please ensure that the domain name contains only letters, numbers, and hyphens."
 readonly ERROR_EMAIL_EXCEEDS_MAX_LENGTH="Email address cannot exceed 320 characters."
 readonly ERROR_EMAIL_INVALID_FORMAT="Email address is invalid."
 readonly ERROR_FILE_NOT_READABLE="File could not be read."
@@ -975,3 +974,15 @@ readonly TIP_CACHE_WP_SUPER_CACHE="WP Super Cache has been configured. You need 
 readonly TIP_CACHE_W3_TOTAL_CACHE="W3 Total Cache has been configured. You need to activate the caching option by going to Admin => Settings => General => Page Cache and select Enable."
 readonly TIP_CACHE_WP_FASTEST_CACHE="WP Fastest Cache has been configured. You need to activate the caching option by going to Admin => Settings => WP Fastest Cache => Caching and select Enable."
 readonly IMPORTANT_PREPARE_MIGRATION_FOLDER="You need to prepare a directory to store the website data to be migrated at %s and copy the source code files and database into it before beginning."
+
+# CLI help
+readonly LABEL_HELP_WEBSITE_CLI="Website management commands"
+readonly LABEL_HELP_SSL_CLI="SSL management commands"
+readonly LABEL_HELP_PHP_CLI="PHP operations commands"
+readonly LABEL_HELP_DATABASE_CLI="Database operations commands"
+readonly LABEL_HELP_CORE_CLI="Core operations commands"
+readonly LABEL_HELP_WORDPRESS_CLI="Tools for WordPress"
+readonly LABEL_HELP_BACKUP_CLI="Backup operations commands"
+readonly LABEL_HELP_CRON_CLI="Cron management commands"
+readonly LABEL_HELP_SYSTEM_CLI="System operations commands in WP Docker"
+readonly TIP_HELP_PARAM="Use --help in any of the above commands to lookup"

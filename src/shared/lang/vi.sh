@@ -977,4 +977,16 @@ readonly TIP_CACHE_W3_TOTAL_CACHE="W3 Total Cache đã được cấu hình. B�
 readonly TIP_CACHE_WP_FASTEST_CACHE="WP Fastest Cache đã được cấu hình. Bạn cần phải kích hoạt tùy chọn cache bằng cách vào Admin => Cài đặt => WP Fastest Cache => Caching và chọn Enable."
 readonly IMPORTANT_PREPARE_MIGRATION_FOLDER="Bạn cần phải chuẩn bị sẵn thư mục chứa dữ liệu của website cần chuyển về tại %s và copy sẵn tập tin mã nguồn và database vào đó trước khi bắt đầu."
 readonly STEP_WORDPRESS_MIGRATION_BACKUP_BEFORE_REMOVE="Sao lưu dữ liệu hiện tại trước khi ghi đè"
-readonly QUESTION_WORDPRESS_MIGRATION_BACKUP="Bạn có muốn sao lưu dữ liệu hiện tại trước khi ghi đè không?"
+readonly QUESTION_WORDPRESS_MIGRATION_BACKUP="Bạn có muốn sao lưu dữ liệu hiện tại trước khi ghi đè không"
+
+# CLI help
+readonly LABEL_HELP_WEBSITE_CLI="Các lệnh quản lý website"
+readonly LABEL_HELP_SSL_CLI="Lệnh quản lý SSL"
+readonly LABEL_HELP_PHP_CLI="Lệnh thao tác với PHP"
+readonly LABEL_HELP_DATABASE_CLI="Lệnh thao tác với Database"
+readonly LABEL_HELP_CORE_CLI="Lệnh thao tác với các tính năng trong core"
+readonly LABEL_HELP_WORDPRESS_CLI="Lệnh sử dụng công cụ cho WordPress"
+readonly LABEL_HELP_BACKUP_CLI="Lệnh thao tác với tính năng backup"
+readonly LABEL_HELP_CRON_CLI="Lệnh thao tác quản lý cron"
+readonly LABEL_HELP_SYSTEM_CLI="Các lệnh thao tác với hệ thống trong WP Docker"
+readonly TIP_HELP_PARAM="Sử dụng --help trong bất kỳ lệnh nào ở trên để tra cứu"

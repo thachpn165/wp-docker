@@ -170,7 +170,7 @@ handle_wordpress() {
 handle_core() {
     # wpdocker core
     case "$1" in
-    version) bash "$CLI_DIR/core_version_display.sh" "${@:2}" ;;
+    version) core_version_display "${@:2}" ;;
     update) core_version_update_latest "${@:2}" ;;
     uninstall) bash "$BASE_DIR/uninstall.sh" ;;
     channel)
