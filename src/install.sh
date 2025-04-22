@@ -11,7 +11,7 @@ DEV_MODE=${DEV_MODE:-false}
 # 📌 Version Selection
 # ========================
 echo "❓ What version would you like to install?"
-echo "1) Official"
+echo "1) Official (Default)"
 echo "2) Nightly (Testing Only)"
 echo "3) Dev Mode (Clone source code from GitHub)"
 read -rp "Please select an option (1, 2 or 3, default is 1): " version_choice
