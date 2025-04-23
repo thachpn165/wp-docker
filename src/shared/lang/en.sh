@@ -990,3 +990,7 @@ readonly SUCCESS_RELOAD_AFTER_ADD_ALIAS="The wpdocker command alias has been add
 readonly STEP_ADDING_WPDOCKER_ALIAS="wpdocker command alias not added to shell yet, adding alias..."
 readonly QUESTION_BACKUP_RESTORE_CONFIRM="Are you sure you want to restore the backup? %s data will be overwritten!"
 readonly QUESTION_BACKUP_RESTORE_DB_CONFIRM="Are you sure you want to restore the database? %s data will be overwritten!"
+readonly INFO_NO_OLD_BACKUPS_FOUND="No old backups found. Skip this step."
+readonly INFO_OLD_BACKUP_FILES_FOUND="Old backups found:"
+readonly CONFIRM_DELETE_OLD_BACKUPS="Are you sure you want to delete these old backups?"
+readonly WARNING_BACKUP_CLEAN_ABORTED="Deletion of old backups canceled."

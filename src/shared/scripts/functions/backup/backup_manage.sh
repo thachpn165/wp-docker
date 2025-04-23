@@ -38,7 +38,7 @@ backup_prompt_backup_manage() {
 backup_logic_manage() {
     local domain="$1"
     local action="$2"
-    local max_age_days="${3:-7}"
+    local max_age_days="$3"
     local backup_dir="$SITES_DIR/$domain/backups"
     _is_valid_domain "$domain" || return 1
     # Ensure backup directory exists
@@ -65,18 +65,35 @@ backup_logic_manage() {
         ;;
 
     clean)
-        max_age_days="$(get_input_or_test_value "$PROMPT_BACKUP_MAX_AGE" "${TEST_MAX_AGE_DAYS:-$max_age_days}")"
-        print_msg success "$(printf "$STEP_SET_MAX_AGE_DAYS" "$max_age_days")"
-        print_msg step "$(printf "$STEP_CLEANING_OLD_BACKUPS" "$max_age_days" "$backup_dir")"
-
-        if [[ "$DEBUG_MODE" == true ]]; then
-            local old_files_count
-            old_files_count=$(find "$backup_dir" -type f \( -name "*.tar.gz" -o -name "*.sql" \) -mtime +$max_age_days | wc -l)
-            debug_log "Found $old_files_count old backup files (>$max_age_days days)"
+        # Chỉ hỏi nếu biến chưa có
+        if [[ -z "$max_age_days" ]]; then
+            max_age_days="$(get_input_or_test_value "$PROMPT_BACKUP_MAX_AGE" "${TEST_MAX_AGE_DAYS:-7}")"
         fi
 
-        find "$backup_dir" -type f \( -name "*.tar.gz" -o -name "*.sql" \) -mtime +$max_age_days -exec rm -f {} \;
-        print_msg success "$SUCCESS_BACKUP_CLEAN"
+
+        print_msg step "$(printf "$STEP_CLEANING_OLD_BACKUPS" "$max_age_days" "$backup_dir")"
+
+        # Tìm danh sách tập tin cần xoá
+        old_files=$(find "$backup_dir" -type f \( -name "*.tar.gz" -o -name "*.sql" \) -mtime +"$max_age_days")
+
+        if [[ -z "$old_files" ]]; then
+            print_msg info "$INFO_NO_OLD_BACKUPS_FOUND"
+            return 0
+        fi
+
+        # Hiển thị danh sách file
+        print_msg info "📄 $INFO_OLD_BACKUP_FILES_FOUND"
+        echo "$old_files" | nl -w2 -s'. '
+
+        # Xác nhận xoá
+        if confirm_action "$CONFIRM_DELETE_OLD_BACKUPS"; then
+            echo "$old_files" | while read -r file; do
+                rm -f "$file"
+            done
+            print_msg success "$SUCCESS_BACKUP_CLEAN"
+        else
+            print_msg warning "$WARNING_BACKUP_CLEAN_ABORTED"
+        fi
         ;;
 
     *)

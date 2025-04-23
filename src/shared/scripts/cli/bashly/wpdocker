@@ -662,6 +662,8 @@ wpdocker_backup_usage() {
   printf "  %s   Backup database only\n" "database"
   printf "  %s   Backup file only\n" "file    "
   printf "  %s   Restore backup for a site\n" "restore "
+  printf "  %s   List all backup files\n" "list    "
+  printf "  %s   clean up backups older than x days\n" "cleanup "
   echo
 
   # :command.long_usage
@@ -681,7 +683,7 @@ wpdocker_backup_website_usage() {
   printf "wpdocker backup website - Backup website source + DB\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker backup website\n"
+  printf "  wpdocker backup website DOMAIN STORAGE [RCLONE_STORAGE]\n"
   printf "  wpdocker backup website --help | -h\n"
   echo
 
@@ -694,6 +696,24 @@ wpdocker_backup_website_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain to be backed up\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "STORAGE"
+    printf "    The storage type that will store the backup (e.g. local, rclone)\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "RCLONE_STORAGE"
+    printf "    The storage name rclone will store this backup data, only declare if\n    STORAGE=rclone is declared\n"
+    echo
+
   fi
 }
 
@@ -702,7 +722,7 @@ wpdocker_backup_database_usage() {
   printf "wpdocker backup database - Backup database only\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker backup database\n"
+  printf "  wpdocker backup database DOMAIN [SAVE_LOCATION]\n"
   printf "  wpdocker backup database --help | -h\n"
   echo
 
@@ -715,6 +735,19 @@ wpdocker_backup_database_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain will perform database backup\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "SAVE_LOCATION"
+    printf "    The full export file path of the backup data (e.g. /tmp/db_export.sql)\n"
+    echo
+
   fi
 }
 
@@ -723,7 +756,7 @@ wpdocker_backup_file_usage() {
   printf "wpdocker backup file - Backup file only\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker backup file\n"
+  printf "  wpdocker backup file DOMAIN\n"
   printf "  wpdocker backup file --help | -h\n"
   echo
 
@@ -734,6 +767,14 @@ wpdocker_backup_file_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain will perform file backup\n"
     echo
 
   fi
@@ -771,7 +812,7 @@ wpdocker_backup_restore_website_usage() {
   printf "wpdocker backup restore website - Restore website source + DB\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker backup restore website\n"
+  printf "  wpdocker backup restore website DOMAIN CODE_BACKUP_FILE DB_BACKUP_FILE\n"
   printf "  wpdocker backup restore website --help | -h\n"
   echo
 
@@ -784,6 +825,24 @@ wpdocker_backup_restore_website_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    The domain will perform full data recovery (including source code and\n    database)\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "CODE_BACKUP_FILE"
+    printf "    The path to the backup file for the site\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "DB_BACKUP_FILE"
+    printf "    The path to the database backup file\n"
+    echo
+
   fi
 }
 
@@ -792,7 +851,7 @@ wpdocker_backup_restore_database_usage() {
   printf "wpdocker backup restore database - Restore database only\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker backup restore database\n"
+  printf "  wpdocker backup restore database DOMAIN DB_BACKUP_FILE\n"
   printf "  wpdocker backup restore database --help | -h\n"
   echo
 
@@ -805,6 +864,19 @@ wpdocker_backup_restore_database_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    The domain will perform database recovery\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "DB_BACKUP_FILE"
+    printf "    The path to the database backup file\n"
+    echo
+
   fi
 }
 
@@ -813,7 +885,7 @@ wpdocker_backup_restore_file_usage() {
   printf "wpdocker backup restore file - Restore file only\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker backup restore file\n"
+  printf "  wpdocker backup restore file DOMAIN CODE_BACKUP_FILE\n"
   printf "  wpdocker backup restore file --help | -h\n"
   echo
 
@@ -824,6 +896,82 @@ wpdocker_backup_restore_file_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    The domain will perform file recovery\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "CODE_BACKUP_FILE"
+    printf "    The path to the backup file for the site\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+wpdocker_backup_list_usage() {
+  printf "wpdocker backup list - List all backup files\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  wpdocker backup list DOMAIN\n"
+  printf "  wpdocker backup list --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n "$long_usage" ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name to list backup files\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+wpdocker_backup_cleanup_usage() {
+  printf "wpdocker backup cleanup - clean up backups older than x days\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  wpdocker backup cleanup DOMAIN MAX_AGE_DAYS\n"
+  printf "  wpdocker backup cleanup --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n "$long_usage" ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain needs to clean up its backup\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "MAX_AGE_DAYS"
+    printf "    Maximum number of days old of backup files allowed to be retained (e.g. 7\n    will delete files older than 7 days)\n"
     echo
 
   fi
@@ -2331,35 +2479,27 @@ wpdocker_php_edit_command() {
 wpdocker_backup_website_command() {
 
   # src/backup_website_command.sh
-  echo "# This file is located at 'src/backup_website_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker backup website' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_backup_website_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/backup_website.sh"
 
+  backup_cli_backup_web --domain="${args[domain]}" --storage="${args[storage]}" --rclone_storage="${args[rclone_storage]}"
 }
 
 # :command.function
 wpdocker_backup_database_command() {
 
   # src/backup_database_command.sh
-  echo "# This file is located at 'src/backup_database_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker backup database' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_backup_database_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/database_actions.sh"
 
+  database_cli_export --domain="${args[domain]}" --save_location="${args[save_location]}"
 }
 
 # :command.function
 wpdocker_backup_file_command() {
 
   # src/backup_file_command.sh
-  echo "# This file is located at 'src/backup_file_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker backup file' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_backup_file_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/backup_website.sh"
+
+  backup_cli_file --domain="${args[domain]}"
 
 }
 
@@ -2367,11 +2507,13 @@ wpdocker_backup_file_command() {
 wpdocker_backup_restore_website_command() {
 
   # src/backup_restore_website_command.sh
-  echo "# This file is located at 'src/backup_restore_website_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker backup restore website' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_backup_restore_website_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/backup_restore.sh"
+
+  backup_cli_restore_web \
+      --domain="${args[domain]}" \
+      --code_backup_file="${args[code_backup_file]}" \
+      --db_backup_file="${args[db_backup_file]}" \
+      --test_mode="${args[test_mode]}"
 
 }
 
@@ -2379,24 +2521,36 @@ wpdocker_backup_restore_website_command() {
 wpdocker_backup_restore_database_command() {
 
   # src/backup_restore_database_command.sh
-  echo "# This file is located at 'src/backup_restore_database_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker backup restore database' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_backup_restore_database_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/backup/backup_restore_functions.sh"
 
+  backup_restore_database "${args[db_backup_file]}" "${args[domain]}" || exit 1
 }
 
 # :command.function
 wpdocker_backup_restore_file_command() {
 
   # src/backup_restore_file_command.sh
-  echo "# This file is located at 'src/backup_restore_file_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker backup restore file' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_backup_restore_file_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/backup/backup_restore_functions.sh"
 
+  backup_restore_files "${args[code_backup_file]}" "$SITES_DIR/${args[domain]}"
+}
+
+# :command.function
+wpdocker_backup_list_command() {
+
+  # src/backup_list_command.sh
+  safe_source "$CLI_DIR/backup_manage.sh"
+
+  backup_cli_manage --domain="${args[domain]}" --action=list || exit 1
+}
+
+# :command.function
+wpdocker_backup_cleanup_command() {
+
+  # src/backup_cleanup_command.sh
+  safe_source "$FUNCTIONS_DIR/backup/backup_manage.sh"
+
+  backup_logic_manage "${args[domain]}" clean "${args[max_age_days]}" || exit 1
 }
 
 # :command.function
@@ -4330,6 +4484,20 @@ wpdocker_backup_parse_requirements() {
       shift $#
       ;;
 
+    list)
+      action="list"
+      shift
+      wpdocker_backup_list_parse_requirements "$@"
+      shift $#
+      ;;
+
+    cleanup)
+      action="cleanup"
+      shift
+      wpdocker_backup_cleanup_parse_requirements "$@"
+      shift $#
+      ;;
+
     # :command.command_fallback
     "")
       wpdocker_backup_usage >&2
@@ -4401,13 +4569,40 @@ wpdocker_backup_website_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['storage']+x} ]]; then
+          args['storage']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['rclone_storage']+x} ]]; then
+          args['rclone_storage']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker backup website DOMAIN STORAGE [RCLONE_STORAGE]\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['storage']+x} ]]; then
+    printf "missing required argument: STORAGE\nusage: wpdocker backup website DOMAIN STORAGE [RCLONE_STORAGE]\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -4446,13 +4641,30 @@ wpdocker_backup_database_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['save_location']+x} ]]; then
+          args['save_location']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker backup database DOMAIN [SAVE_LOCATION]\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -4491,13 +4703,26 @@ wpdocker_backup_file_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker backup file DOMAIN\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -4618,13 +4843,46 @@ wpdocker_backup_restore_website_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['code_backup_file']+x} ]]; then
+          args['code_backup_file']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['db_backup_file']+x} ]]; then
+          args['db_backup_file']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker backup restore website DOMAIN CODE_BACKUP_FILE DB_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['code_backup_file']+x} ]]; then
+    printf "missing required argument: CODE_BACKUP_FILE\nusage: wpdocker backup restore website DOMAIN CODE_BACKUP_FILE DB_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['db_backup_file']+x} ]]; then
+    printf "missing required argument: DB_BACKUP_FILE\nusage: wpdocker backup restore website DOMAIN CODE_BACKUP_FILE DB_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -4663,13 +4921,36 @@ wpdocker_backup_restore_database_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['db_backup_file']+x} ]]; then
+          args['db_backup_file']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker backup restore database DOMAIN DB_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['db_backup_file']+x} ]]; then
+    printf "missing required argument: DB_BACKUP_FILE\nusage: wpdocker backup restore database DOMAIN DB_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -4708,13 +4989,162 @@ wpdocker_backup_restore_file_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['code_backup_file']+x} ]]; then
+          args['code_backup_file']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker backup restore file DOMAIN CODE_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['code_backup_file']+x} ]]; then
+    printf "missing required argument: CODE_BACKUP_FILE\nusage: wpdocker backup restore file DOMAIN CODE_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+wpdocker_backup_list_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      --help | -h)
+        long_usage=yes
+        wpdocker_backup_list_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="backup list"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker backup list DOMAIN\n" >&2
+
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+wpdocker_backup_cleanup_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      --help | -h)
+        long_usage=yes
+        wpdocker_backup_cleanup_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="backup cleanup"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['max_age_days']+x} ]]; then
+          args['max_age_days']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker backup cleanup DOMAIN MAX_AGE_DAYS\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['max_age_days']+x} ]]; then
+    printf "missing required argument: MAX_AGE_DAYS\nusage: wpdocker backup cleanup DOMAIN MAX_AGE_DAYS\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -7702,13 +8132,22 @@ wpdocker_debug_logs_parse_requirements() {
 # :command.user_hooks
 before_hook() {
   # src/before.sh
-  echo "==[ Before Hook Called ]=="
-  inspect_args
+  # check if DEBUG_MODE=true
+  if [[ "$DEBUG_MODE" == "true" ]]; then
+      inspect_args
+      return 0
+  fi
+
 }
 
 after_hook() {
   # src/after.sh
-  echo "==[ After Hook Called ]=="
+  # check if DEBUG_MODE=true
+  if [[ "$DEBUG_MODE" == "true" ]]; then
+      inspect_args
+      return 0
+  fi
+
 }
 
 # :command.initialize
@@ -7773,6 +8212,8 @@ run() {
     "backup restore website") wpdocker_backup_restore_website_command ;;
     "backup restore database") wpdocker_backup_restore_database_command ;;
     "backup restore file") wpdocker_backup_restore_file_command ;;
+    "backup list") wpdocker_backup_list_command ;;
+    "backup cleanup") wpdocker_backup_cleanup_command ;;
     "database") wpdocker_database_command ;;
     "database reset") wpdocker_database_reset_command ;;
     "database import") wpdocker_database_import_command ;;

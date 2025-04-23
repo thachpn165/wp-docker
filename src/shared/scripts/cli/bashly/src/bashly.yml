@@ -136,19 +136,84 @@ commands:
     commands:
       - name: website
         help: Backup website source + DB
+        args:
+          - name: domain
+            help: Domain to be backed up
+            required: true
+          - name: storage
+            help: The storage type that will store the backup (e.g. local, rclone)
+            required: true
+          - name: rclone_storage
+            help: The storage name rclone will store this backup data, only declare if STORAGE=rclone is declared
+            required: false
+      
       - name: database
         help: Backup database only
+        args:
+          - name: domain
+            help: Domain will perform database backup
+            required: true
+          - name: save_location
+            help: The full export file path of the backup data (e.g. /tmp/db_export.sql)
+            required: false
+
       - name: file
         help: Backup file only
+        args:
+          - name: domain
+            help: Domain will perform file backup
+            required: true
+
+
       - name: restore
         help: Restore backup for a site
         commands:
           - name: website
             help: Restore website source + DB
+            args:
+              - name: domain
+                help: The domain will perform full data recovery (including source code and database)
+                required: true
+              - name: code_backup_file
+                help: The path to the backup file for the site
+                required: true
+              - name: db_backup_file
+                help: The path to the database backup file
+                required: true
           - name: database
             help: Restore database only
+            args:
+              - name: domain
+                help: The domain will perform database recovery
+                required: true 
+              - name: db_backup_file
+                help: The path to the database backup file
+                required: true
           - name: file
             help: Restore file only
+            args:
+              - name: domain
+                help: The domain will perform file recovery
+                required: true 
+              - name: code_backup_file
+                help: The path to the backup file for the site
+                required: true
+      - name: list
+        help: List all backup files
+        args:
+          - name: domain
+            help: Domain name to list backup files
+            required: true
+      - name: cleanup
+        help: clean up backups older than x days
+        args:
+          - name: domain
+            help: Domain needs to clean up its backup
+            required: true
+          - name: max_age_days
+            help: Maximum number of days old of backup files allowed to be retained (e.g. 7 will delete files older than 7 days)
+            required: true
+
 
   - name: database
     help: Manage database operations

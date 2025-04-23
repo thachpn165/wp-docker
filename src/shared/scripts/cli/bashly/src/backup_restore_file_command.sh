@@ -1,5 +1,4 @@
-echo "# This file is located at 'src/backup_restore_file_command.sh'."
-echo "# It contains the implementation for the 'wpdocker backup restore file' command."
-echo "# The code you write here will be wrapped by a function named 'wpdocker_backup_restore_file_command()'."
-echo "# Feel free to edit this file; your changes will persist when regenerating."
-inspect_args
+safe_source "$FUNCTIONS_DIR/backup/backup_restore_functions.sh"
+
+
+backup_restore_files "${args[code_backup_file]}" "$SITES_DIR/${args[domain]}"
