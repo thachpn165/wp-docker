@@ -624,7 +624,7 @@ wpdocker_php_edit_usage() {
   printf "wpdocker php edit - Edit PHP configuration for a site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker php edit DOMAIN CONFIG_TYPE\n"
+  printf "  wpdocker php edit CONFIG_TYPE\n"
   printf "  wpdocker php edit --help | -h\n"
   echo
 
@@ -639,11 +639,6 @@ wpdocker_php_edit_usage() {
 
     # :command.usage_args
     printf "%s\n" "Arguments:"
-
-    # :argument.usage
-    printf "  %s\n" "DOMAIN"
-    printf "    Domain name of the site to edit PHP configuration\n"
-    echo
 
     # :argument.usage
     printf "  %s\n" "CONFIG_TYPE"
@@ -2287,24 +2282,18 @@ wpdocker_ssl_check_command() {
 wpdocker_php_change_command() {
 
   # src/php_change_command.sh
-  echo "# This file is located at 'src/php_change_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker php change' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_php_change_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/php_version.sh"
 
+  php_cli_change_version --domain="${args[domain]}" --php_version="${args[version]}" || exit 1
 }
 
 # :command.function
 wpdocker_php_get_command() {
 
   # src/php_get_command.sh
-  echo "# This file is located at 'src/php_get_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker php get' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_php_get_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/php/php_get_version.sh"
 
+  php_get_version
 }
 
 # :command.function
@@ -2323,12 +2312,19 @@ wpdocker_php_rebuild_command() {
 wpdocker_php_edit_command() {
 
   # src/php_edit_command.sh
-  echo "# This file is located at 'src/php_edit_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker php edit' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_php_edit_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/php_loader.sh"
 
+  # Check if ${args[config_type]} is "conf" or "ini"
+  if [[ "${args[config_type]}" == "conf" ]]; then
+      # If it's "conf", use edit_php_fpm_conf
+      edit_php_fpm_conf || exit 1
+  elif [[ "${args[config_type]}" == "ini" ]]; then
+      edit_php_ini || exit 1
+  else
+      # If it's neither, print an error message
+      print_msg error "Invalid config type: ${args[config_type]}. Use 'conf' or 'ini'."
+      exit 1
+  fi
 }
 
 # :command.function
@@ -4259,11 +4255,7 @@ wpdocker_php_edit_parse_requirements() {
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
         # :argument.case
-        if [[ -z ${args['domain']+x} ]]; then
-          args['domain']=$1
-          shift
-        # :argument.case
-        elif [[ -z ${args['config_type']+x} ]]; then
+        if [[ -z ${args['config_type']+x} ]]; then
           args['config_type']=$1
           shift
         else
@@ -4277,14 +4269,8 @@ wpdocker_php_edit_parse_requirements() {
   done
 
   # :command.required_args_filter
-  if [[ -z ${args['domain']+x} ]]; then
-    printf "missing required argument: DOMAIN\nusage: wpdocker php edit DOMAIN CONFIG_TYPE\n" >&2
-
-    exit 1
-  fi
-
   if [[ -z ${args['config_type']+x} ]]; then
-    printf "missing required argument: CONFIG_TYPE\nusage: wpdocker php edit DOMAIN CONFIG_TYPE\n" >&2
+    printf "missing required argument: CONFIG_TYPE\nusage: wpdocker php edit CONFIG_TYPE\n" >&2
 
     exit 1
   fi

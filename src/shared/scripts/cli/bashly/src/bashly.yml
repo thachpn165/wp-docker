@@ -126,12 +126,10 @@ commands:
       - name: edit
         help: Edit PHP configuration for a site
         args:
-          - name: domain
-            help: Domain name of the site to edit PHP configuration
-            required: true
           - name: config_type
             help: Type of PHP configuration to edit (conf, ini)
             required: true 
+          
 
   - name: backup
     help: Manage backups for WordPress sites
