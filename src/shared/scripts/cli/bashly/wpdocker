@@ -987,9 +987,7 @@ wpdocker_database_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Reset site database\n" "reset "
-  printf "  %s   Import a SQL database\n" "import"
-  printf "  %s   Export site database for a site or all sites\n" "export"
+  printf "  %s   Reset site database\n" "reset"
   echo
 
   # :command.long_usage
@@ -1009,97 +1007,8 @@ wpdocker_database_reset_usage() {
   printf "wpdocker database reset - Reset site database\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker database reset\n"
+  printf "  wpdocker database reset DOMAIN\n"
   printf "  wpdocker database reset --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_database_import_usage() {
-  printf "wpdocker database import - Import a SQL database\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker database import\n"
-  printf "  wpdocker database import --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_database_export_usage() {
-  printf "wpdocker database export - Export site database for a site or all sites\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker database export COMMAND\n"
-  printf "  wpdocker database export [COMMAND] --help | -h\n"
-  echo
-  # :command.usage_commands
-  printf "%s\n" "Commands:"
-  printf "  %s   Export database for all sites\n" "all   "
-  printf "  %s   Export database for a specific site\n" "single"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_database_export_all_usage() {
-  printf "wpdocker database export all - Export database for all sites\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker database export all\n"
-  printf "  wpdocker database export all --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_database_export_single_usage() {
-  printf "wpdocker database export single - Export database for a specific site\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker database export single DOMAIN\n"
-  printf "  wpdocker database export single --help | -h\n"
   echo
 
   # :command.long_usage
@@ -1116,7 +1025,7 @@ wpdocker_database_export_single_usage() {
 
     # :argument.usage
     printf "  %s\n" "DOMAIN"
-    printf "    Domain name of the site to export database\n"
+    printf "    Domain name of the site to reset database\n"
     echo
 
   fi
@@ -1132,7 +1041,7 @@ wpdocker_wp_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Run WP-CLI commands inside container\n" "cli     "
+  printf "  %s   Run WP-CLI commands inside container. Usage wpdocker wp cli wpdocker.dev \"<command>\"\n" "cli     "
   printf "  %s   Migrate WordPress site\n" "migrate "
   printf "  %s   Reset features\n" "reset   "
   printf "  %s   Setup caching\n" "cache   "
@@ -1154,7 +1063,7 @@ wpdocker_wp_usage() {
 
 # :command.usage
 wpdocker_wp_cli_usage() {
-  printf "wpdocker wp cli - Run WP-CLI commands inside container\n\n"
+  printf "wpdocker wp cli - Run WP-CLI commands inside container. Usage wpdocker wp cli wpdocker.dev \"<command>\"\n\n"
 
   printf "%s\n" "Usage:"
   printf "  wpdocker wp cli DOMAIN COMMAND\n"
@@ -2557,59 +2466,18 @@ wpdocker_backup_cleanup_command() {
 wpdocker_database_reset_command() {
 
   # src/database_reset_command.sh
-  echo "# This file is located at 'src/database_reset_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker database reset' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_database_reset_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/database_actions.sh"
 
-}
-
-# :command.function
-wpdocker_database_import_command() {
-
-  # src/database_import_command.sh
-  echo "# This file is located at 'src/database_import_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker database import' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_database_import_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_database_export_all_command() {
-
-  # src/database_export_all_command.sh
-  echo "# This file is located at 'src/database_export_all_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker database export all' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_database_export_all_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_database_export_single_command() {
-
-  # src/database_export_single_command.sh
-  echo "# This file is located at 'src/database_export_single_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker database export single' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_database_export_single_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
+  database_cli_reset --domain="${args[domain]}" || exit 1
 }
 
 # :command.function
 wpdocker_wp_cli_command() {
 
   # src/wp_cli_command.sh
-  echo "# This file is located at 'src/wp_cli_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wp cli' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_cli_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/wordpress/wordpress_wp_cli.sh"
+
+  wordpress_wp_cli_logic "${args[domain]}" "${args[command]}" || exit 1
 
 }
 
@@ -5180,20 +5048,6 @@ wpdocker_database_parse_requirements() {
       shift $#
       ;;
 
-    import)
-      action="import"
-      shift
-      wpdocker_database_import_parse_requirements "$@"
-      shift $#
-      ;;
-
-    export)
-      action="export"
-      shift
-      wpdocker_database_export_parse_requirements "$@"
-      shift $#
-      ;;
-
     # :command.command_fallback
     "")
       wpdocker_database_usage >&2
@@ -5265,216 +5119,6 @@ wpdocker_database_reset_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_database_import_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_database_import_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="database import"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_database_export_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_database_export_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action=${1:-}
-
-  case $action in
-    -*) ;;
-
-    all)
-      action="all"
-      shift
-      wpdocker_database_export_all_parse_requirements "$@"
-      shift $#
-      ;;
-
-    single)
-      action="single"
-      shift
-      wpdocker_database_export_single_parse_requirements "$@"
-      shift $#
-      ;;
-
-    # :command.command_fallback
-    "")
-      wpdocker_database_export_usage >&2
-      exit 1
-      ;;
-
-    *)
-      printf "invalid command: %s\n" "$action" >&2
-      exit 1
-      ;;
-
-  esac
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_database_export_all_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_database_export_all_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="database export all"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_database_export_single_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_database_export_single_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="database export single"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
         # :argument.case
         if [[ -z ${args['domain']+x} ]]; then
           args['domain']=$1
@@ -5491,7 +5135,7 @@ wpdocker_database_export_single_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['domain']+x} ]]; then
-    printf "missing required argument: DOMAIN\nusage: wpdocker database export single DOMAIN\n" >&2
+    printf "missing required argument: DOMAIN\nusage: wpdocker database reset DOMAIN\n" >&2
 
     exit 1
   fi
@@ -8216,10 +7860,6 @@ run() {
     "backup cleanup") wpdocker_backup_cleanup_command ;;
     "database") wpdocker_database_command ;;
     "database reset") wpdocker_database_reset_command ;;
-    "database import") wpdocker_database_import_command ;;
-    "database export") wpdocker_database_export_command ;;
-    "database export all") wpdocker_database_export_all_command ;;
-    "database export single") wpdocker_database_export_single_command ;;
     "wp") wpdocker_wp_command ;;
     "wp cli") wpdocker_wp_cli_command ;;
     "wp migrate") wpdocker_wp_migrate_command ;;

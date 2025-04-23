@@ -220,25 +220,17 @@ commands:
     commands:
       - name: reset
         help: Reset site database
-      - name: import
-        help: Import a SQL database
-      - name: export
-        help: Export site database for a site or all sites
-        commands:
-          - name: all
-            help: Export database for all sites
-          - name: single
-            help: Export database for a specific site
-            args:
-              - name: domain
-                help: Domain name of the site to export database
-                required: true
+        args:
+          - name: domain
+            help: Domain name of the site to reset database
+            required: true
+
 
   - name: wp
     help: WordPress tools
     commands:
       - name: cli
-        help: Run WP-CLI commands inside container
+        help: Run WP-CLI commands inside container. Usage wpdocker wp cli wpdocker.dev "<command>" 
         args:
           - name: domain
             help: Domain name of the site to run WP-CLI commands
