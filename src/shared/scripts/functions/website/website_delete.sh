@@ -24,12 +24,7 @@ website_prompt_delete() {
   [[ "$backup_confirm" != "yes" ]] && backup_enabled=false
   debug_log "[DEBUG] Backup before delete: $backup_enabled"
 
-  # Ask for final delete confirmation
-  delete_confirm=$(get_input_or_test_value "❗ $PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
-  if [[ "$delete_confirm" != "yes" ]]; then
-    print_msg warning "$WARNING_ACTION_CANCELLED"
-    exit 0
-  fi
+
 
   # Run deletion logic
   website_cli_delete \
@@ -58,6 +53,13 @@ website_logic_delete() {
   _is_valid_domain "$domain" || return 1
   SITE_DIR="$SITES_DIR/$domain"
 
+  # Ask for final delete confirmation
+  delete_confirm=$(get_input_or_test_value "❗ $PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
+  if [[ "$delete_confirm" != "yes" ]]; then
+    print_msg warning "$WARNING_ACTION_CANCELLED"
+    exit 0
+  fi
+  
   if ! _is_directory_exist "$SITE_DIR"; then
     print_msg warning "$WARNING_WEBSITE_DIR_MISSING: $SITE_DIR"
     print_msg warning "⛔️ Website directory is missing, will proceed to cleanup config and related data only."

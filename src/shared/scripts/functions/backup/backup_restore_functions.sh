@@ -1,3 +1,4 @@
+safe_source "$CLI_DIR/database_actions.sh"
 # ===========================================
 # 📦 backup_restore_files – Restore website source code from .tar.gz backup
 # ===========================================
@@ -23,14 +24,39 @@ backup_restore_files() {
     return 1
   fi
 
+  # Confirm before overwriting
+  if ! confirm_action "$(printf "$QUESTION_BACKUP_RESTORE_CONFIRM" "${YELLOW}$site_dir${NC}")"; then
+    print_and_debug cancel "$MSG_OPERATION_CANCELLED"
+    return 0
+  fi
   local msg_restore
   msg_restore="$(printf "$MSG_BACKUP_RESTORING_FILE" "$backup_file" "$site_dir")"
-  print_and_debug step "$msg_restore"
+  print_msg step "$msg_restore"
 
   # === Extract to wordpress directory ===
-  tar -xzf "$backup_file" -C "$site_dir/wordpress"
+  # Using tar for tar.fz file
+  # Using unzip for zip file
+  case "$backup_file" in
+  *.zip)
+    unzip -o "$backup_file" -d "$site_dir/wordpress"
+    debug_log "[Debug] Unzipped file: $backup_file"
+    ;;
+  *.tar.gz)
+    tar -xzf "$backup_file" -C "$site_dir/wordpress"
+    debug_log "[Debug] Extract with tar: $backup_file"
+    ;;
+  *.gz)
+    gunzip -c "$backup_file" >"${backup_file%.gz}" && mv "${backup_file%.gz}" "$site_dir/wordpress"
+    debug_log "[Debug] Extract with gunzip: $backup_file"
+    ;;
+  *)
+    print_msg error "❌ Unsupported backup file format: $backup_file"
+    return 1
+    ;;
+  esac
+
   if [[ $? -eq 0 ]]; then
-    print_and_debug success "$SUCCESS_BACKUP_RESTORED_FILE"
+    print_msg success "$SUCCESS_BACKUP_RESTORED_FILE"
   else
     print_and_debug error "$ERROR_BACKUP_RESTORE_FAILED"
     return 1
@@ -60,16 +86,22 @@ backup_restore_database() {
     return 1
   fi
 
+  # === Confirm before overwriting ===
+  if ! confirm_action "$(printf "$QUESTION_BACKUP_RESTORE_DB_CONFIRM" "${YELLOW}$site_domain${NC}")"; then
+    print_and_debug cancel "$MSG_OPERATION_CANCELLED"
+    return 0
+  fi
+
   local msg_restore
   msg_restore="$(printf "$MSG_BACKUP_RESTORING_DB" "$db_backup" "$site_domain")"
   print_and_debug step "$msg_restore"
 
   # === Delegate to database import CLI ===
   debug_log "[Debug] Importing database using: database_import.sh --domain=$site_domain"
-  bash "$CLI_DIR/database_import.sh" \
+  database_cli_import \
     --domain="$site_domain" \
     --backup_file="$db_backup" || {
-      print_and_debug error "$ERROR_BACKUP_RESTORE_DB_FAILED"
-      return 1
-    }
+    print_and_debug error "$ERROR_BACKUP_RESTORE_DB_FAILED"
+    return 1
+  }
 }

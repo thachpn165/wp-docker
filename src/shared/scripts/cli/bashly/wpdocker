@@ -302,7 +302,7 @@ wpdocker_website_restore_usage() {
   printf "wpdocker website restore - Restore site from backup\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker website restore\n"
+  printf "  wpdocker website restore DOMAIN CODE_BACKUP_FILE DB_BACKUP_FILE\n"
   printf "  wpdocker website restore --help | -h\n"
   echo
 
@@ -313,6 +313,24 @@ wpdocker_website_restore_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to restore\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "CODE_BACKUP_FILE"
+    printf "    Path to the backup file for the site\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "DB_BACKUP_FILE"
+    printf "    Path to the database backup file\n"
     echo
 
   fi
@@ -2110,7 +2128,7 @@ wpdocker_website_create_command() {
 
   website_cli_create --domain="$domain" \
       --php="$php_version" \
-      --auto_generate="$auto_generate"
+      --auto_generate="$auto_generate" || exit 1
 
 }
 
@@ -2121,7 +2139,7 @@ wpdocker_website_delete_command() {
   safe_source "$CLI_DIR/website_manage.sh"
 
   website_cli_delete --domain="${args[domain]}" \
-      --backup_enabled="${args[backup]}"
+      --backup_enabled="${args[backup]}" || exit 1
 }
 
 # :command.function
@@ -2149,35 +2167,30 @@ wpdocker_website_restart_command() {
 wpdocker_website_logs_command() {
 
   # src/website_logs_command.sh
-  echo "# This file is located at 'src/website_logs_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker website logs' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_website_logs_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/website_manage.sh"
 
+  website_cli_logs --domain="${args[domain]}" --log_type="${args[log_type]}" || exit 1
 }
 
 # :command.function
 wpdocker_website_info_command() {
 
   # src/website_info_command.sh
-  echo "# This file is located at 'src/website_info_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker website info' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_website_info_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/website_manage.sh"
 
+  website_cli_info --domain="${args[domain]}" || exit 1
 }
 
 # :command.function
 wpdocker_website_restore_command() {
 
   # src/website_restore_command.sh
-  echo "# This file is located at 'src/website_restore_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker website restore' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_website_restore_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/backup_restore.sh"
+
+  backup_cli_restore_web --domain="${args[domain]}" \
+      --code_backup_file="${args[code_backup_file]}" \
+      --db_backup_file="${args[db_backup_file]}" \
+      --test_mode="${args[test_mode]}" || exit 1
 
 }
 
@@ -3480,13 +3493,46 @@ wpdocker_website_restore_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['code_backup_file']+x} ]]; then
+          args['code_backup_file']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['db_backup_file']+x} ]]; then
+          args['db_backup_file']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker website restore DOMAIN CODE_BACKUP_FILE DB_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['code_backup_file']+x} ]]; then
+    printf "missing required argument: CODE_BACKUP_FILE\nusage: wpdocker website restore DOMAIN CODE_BACKUP_FILE DB_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['db_backup_file']+x} ]]; then
+    printf "missing required argument: DB_BACKUP_FILE\nusage: wpdocker website restore DOMAIN CODE_BACKUP_FILE DB_BACKUP_FILE\n" >&2
+
+    exit 1
+  fi
 
 }
 

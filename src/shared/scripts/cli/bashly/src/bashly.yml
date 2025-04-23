@@ -57,6 +57,16 @@ commands:
             required: true
       - name: restore
         help: Restore site from backup
+        args: 
+          - name: domain
+            help: Domain name of the site to restore
+            required: true
+          - name: code_backup_file
+            help: Path to the backup file for the site
+            required: true
+          - name: db_backup_file
+            help: Path to the database backup file
+            required: true
       - name: update_template
         help: Update site template
 

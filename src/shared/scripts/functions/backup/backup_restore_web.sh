@@ -23,47 +23,42 @@ backup_prompt_restore_web() {
     fi
     print_msg info "$MSG_WEBSITE_SELECTED: $domain"
 
-    # === Prompt: Restore source code ===
-    confirm_code=$(get_input_or_test_value "$PROMPT_CONFIRM_RESTORE_SOURCE" "${TEST_CONFIRM_RESTORE_SOURCE:-y}" | tr '[:upper:]' '[:lower:]')
-    if [[ "$confirm_code" == "y" ]]; then
-        print_msg info "$INFO_LIST_BACKUP_SOURCE_FILES"
-        find "$SITES_DIR/$domain/backups" -name "*.tar.gz" | while read -r file; do
-            file_time=$(stat -f "%Sm" -t "%d-%m-%Y %H:%M:%S" "$file")
-            echo -e "$(basename "$file")\t$file_time"
-        done | nl -s ". "
+    # === Liệt kê các file backup source code ===
+    print_msg info "$INFO_LIST_BACKUP_SOURCE_FILES"
+    find "$SITES_DIR/$domain/backups" -name "*.tar.gz" | while read -r file; do
+        file_time=$(stat -f "%Sm" -t "%d-%m-%Y %H:%M:%S" "$file")
+        echo -e "$(basename "$file")\t$file_time"
+    done | nl -s ". "
 
-        code_backup_file=$(get_input_or_test_value "$PROMPT_ENTER_BACKUP_FILE" "${TEST_CODE_BACKUP_FILE:-backup.tar.gz}")
-        [[ "$code_backup_file" != /* ]] && code_backup_file="$SITES_DIR/$domain/backups/$code_backup_file"
+    code_backup_file=$(get_input_or_test_value "$PROMPT_ENTER_BACKUP_FILE" "${TEST_CODE_BACKUP_FILE:-backup.tar.gz}")
+    [[ "$code_backup_file" != /* ]] && code_backup_file="$SITES_DIR/$domain/backups/$code_backup_file"
 
-        [[ ! -f "$code_backup_file" ]] && print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND: $code_backup_file" && exit 1
-        print_msg success "$SUCCESS_BACKUP_FILE_FOUND: $code_backup_file"
-    else
-        print_msg info "$INFO_SKIP_SOURCE_RESTORE"
-        code_backup_file=""
+    if [[ ! -f "$code_backup_file" ]]; then
+        print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND: $code_backup_file"
+        exit 1
     fi
+    print_msg success "$SUCCESS_BACKUP_FILE_FOUND: $code_backup_file"
 
-    # === Prompt: Restore database ===
-    confirm_db=$(get_input_or_test_value "$PROMPT_CONFIRM_RESTORE_DB" "${TEST_CONFIRM_RESTORE_DB:-y}" | tr '[:upper:]' '[:lower:]')
-    if [[ "$confirm_db" == "y" ]]; then
-        print_msg info "$INFO_LIST_BACKUP_DB_FILES"
-        find "$SITES_DIR/$domain/backups" -name "*.sql" | while read -r file; do
-            file_time=$(stat -f "%Sm" -t "%d-%m-%Y %H:%M:%S" "$file")
-            echo -e "$(basename "$file")\t$file_time"
-        done | nl -s ". "
+    # === Liệt kê các file backup database ===
+    print_msg info "$INFO_LIST_BACKUP_DB_FILES"
+    find "$SITES_DIR/$domain/backups" -name "*.sql" | while read -r file; do
+        file_time=$(stat -f "%Sm" -t "%d-%m-%Y %H:%M:%S" "$file")
+        echo -e "$(basename "$file")\t$file_time"
+    done | nl -s ". "
 
-        db_backup_file=$(get_input_or_test_value "$PROMPT_ENTER_BACKUP_FILE" "${TEST_DB_BACKUP_FILE:-backup.sql}")
-        [[ "$db_backup_file" != /* ]] && db_backup_file="$SITES_DIR/$domain/backups/$db_backup_file"
+    db_backup_file=$(get_input_or_test_value "$PROMPT_ENTER_BACKUP_FILE" "${TEST_DB_BACKUP_FILE:-backup.sql}")
+    [[ "$db_backup_file" != /* ]] && db_backup_file="$SITES_DIR/$domain/backups/$db_backup_file"
 
-        [[ ! -f "$db_backup_file" ]] && print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND: $db_backup_file" && exit 1
-        print_msg success "$SUCCESS_BACKUP_FILE_FOUND: $db_backup_file"
-    else
-        print_msg info "$INFO_SKIP_DB_RESTORE"
-        db_backup_file=""
+    if [[ ! -f "$db_backup_file" ]]; then
+        print_msg error "$ERROR_BACKUP_FILE_NOT_FOUND: $db_backup_file"
+        exit 1
     fi
+    print_msg success "$SUCCESS_BACKUP_FILE_FOUND: $db_backup_file"
 
-    # === Call restore CLI ===
+    # === Gọi CLI để thực hiện restore ===
     backup_cli_restore_web --domain="$domain" --code_backup_file="$code_backup_file" --db_backup_file="$db_backup_file"
 }
+ 
 # =============================================
 # ♻️ backup_logic_restore_web – Restore WordPress website from backup files
 # ---------------------------------------------

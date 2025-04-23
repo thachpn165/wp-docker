@@ -9,4 +9,4 @@ auto_generate=${args[auto_generate]}
 
 website_cli_create --domain="$domain" \
     --php="$php_version" \
-    --auto_generate="$auto_generate"
+    --auto_generate="$auto_generate" || exit 1
