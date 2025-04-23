@@ -1,5 +1,3 @@
-echo "# This file is located at 'src/ssl_check_command.sh'."
-echo "# It contains the implementation for the 'wpdocker ssl check' command."
-echo "# The code you write here will be wrapped by a function named 'wpdocker_ssl_check_command()'."
-echo "# Feel free to edit this file; your changes will persist when regenerating."
-inspect_args
+safe_source "$CLI_DIR/ssl_check_status.sh"
+
+ssl_cli_check_status --domain="${args[domain]}" || exit 1

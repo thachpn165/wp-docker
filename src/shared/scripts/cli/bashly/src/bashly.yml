@@ -75,17 +75,33 @@ commands:
     commands:
       - name: install
         help: Install SSL certificate
-        args:
-          - name: domain
-            help: Domain name for the SSL certificate
-            required: true
-          - name: type
-            help: Type of SSL certificate (selfsigned, letsencrypt)
-            required: true
+        commands:
+          - name: selfsigned
+            help: Install self-signed SSL certificate
+            args:
+              - name: domain
+                help: Domain name for the self-signed SSL certificate
+                required: true
+          - name: letsencrypt
+            help: Install Let's Encrypt SSL certificate
+            args:
+              - name: domain
+                help: Domain name for the Let's Encrypt SSL certificate
+                required: true
+              - name: email
+                help: Email address for Let's Encrypt registration
+                required: true
+              - name: staging
+                help: Use staging environment for testing
+                required: false
+                default: "false"
       - name: check
         help: Check SSL certificate status
-      - name: edit
-        help: Edit SSL configuration
+        args:
+          - name: domain
+            help: Domain name to check SSL certificate status
+            required: true 
+
 
   - name: php
     help: Manage PHP versions and configuration

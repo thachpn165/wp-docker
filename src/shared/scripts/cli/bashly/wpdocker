@@ -369,7 +369,6 @@ wpdocker_ssl_usage() {
   printf "%s\n" "Commands:"
   printf "  %s   Install SSL certificate\n" "install"
   printf "  %s   Check SSL certificate status\n" "check  "
-  printf "  %s   Edit SSL configuration\n" "edit   "
   echo
 
   # :command.long_usage
@@ -389,8 +388,34 @@ wpdocker_ssl_install_usage() {
   printf "wpdocker ssl install - Install SSL certificate\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker ssl install DOMAIN TYPE\n"
-  printf "  wpdocker ssl install --help | -h\n"
+  printf "  wpdocker ssl install COMMAND\n"
+  printf "  wpdocker ssl install [COMMAND] --help | -h\n"
+  echo
+  # :command.usage_commands
+  printf "%s\n" "Commands:"
+  printf "  %s   Install self-signed SSL certificate\n" "selfsigned "
+  printf "  %s   Install Let's Encrypt SSL certificate\n" "letsencrypt"
+  echo
+
+  # :command.long_usage
+  if [[ -n "$long_usage" ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+wpdocker_ssl_install_selfsigned_usage() {
+  printf "wpdocker ssl install selfsigned - Install self-signed SSL certificate\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  wpdocker ssl install selfsigned DOMAIN\n"
+  printf "  wpdocker ssl install selfsigned --help | -h\n"
   echo
 
   # :command.long_usage
@@ -407,12 +432,47 @@ wpdocker_ssl_install_usage() {
 
     # :argument.usage
     printf "  %s\n" "DOMAIN"
-    printf "    Domain name for the SSL certificate\n"
+    printf "    Domain name for the self-signed SSL certificate\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+wpdocker_ssl_install_letsencrypt_usage() {
+  printf "wpdocker ssl install letsencrypt - Install Let's Encrypt SSL certificate\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  wpdocker ssl install letsencrypt DOMAIN EMAIL [STAGING]\n"
+  printf "  wpdocker ssl install letsencrypt --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n "$long_usage" ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name for the Let's Encrypt SSL certificate\n"
     echo
 
     # :argument.usage
-    printf "  %s\n" "TYPE"
-    printf "    Type of SSL certificate (selfsigned, letsencrypt)\n"
+    printf "  %s\n" "EMAIL"
+    printf "    Email address for Let's Encrypt registration\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "STAGING"
+    printf "    Use staging environment for testing\n"
+    printf "    %s\n" "Default: false"
     echo
 
   fi
@@ -423,7 +483,7 @@ wpdocker_ssl_check_usage() {
   printf "wpdocker ssl check - Check SSL certificate status\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker ssl check\n"
+  printf "  wpdocker ssl check DOMAIN\n"
   printf "  wpdocker ssl check --help | -h\n"
   echo
 
@@ -436,25 +496,12 @@ wpdocker_ssl_check_usage() {
     printf "    Show this help\n"
     echo
 
-  fi
-}
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
 
-# :command.usage
-wpdocker_ssl_edit_usage() {
-  printf "wpdocker ssl edit - Edit SSL configuration\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker ssl edit\n"
-  printf "  wpdocker ssl edit --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name to check SSL certificate status\n"
     echo
 
   fi
@@ -2207,39 +2254,33 @@ wpdocker_website_update_template_command() {
 }
 
 # :command.function
-wpdocker_ssl_install_command() {
+wpdocker_ssl_install_selfsigned_command() {
 
-  # src/ssl_install_command.sh
-  echo "# This file is located at 'src/ssl_install_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker ssl install' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_ssl_install_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  # src/ssl_install_selfsigned_command.sh
+  safe_source "$CLI_DIR/ssl_install.sh"
 
+  ssl_cli_install_selfsigned --domain="${args[domain]}"
+
+}
+
+# :command.function
+wpdocker_ssl_install_letsencrypt_command() {
+
+  # src/ssl_install_letsencrypt_command.sh
+  safe_source "$CLI_DIR/ssl_install.sh"
+
+  ssl_cli_install_letsencrypt --domain="${args[domain]}" \
+                              --email="${args[email]}" \
+                              --staging="${args[staging]}"
 }
 
 # :command.function
 wpdocker_ssl_check_command() {
 
   # src/ssl_check_command.sh
-  echo "# This file is located at 'src/ssl_check_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker ssl check' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_ssl_check_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/ssl_check_status.sh"
 
-}
-
-# :command.function
-wpdocker_ssl_edit_command() {
-
-  # src/ssl_edit_command.sh
-  echo "# This file is located at 'src/ssl_edit_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker ssl edit' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_ssl_edit_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
+  ssl_cli_check_status --domain="${args[domain]}" || exit 1
 }
 
 # :command.function
@@ -3620,13 +3661,6 @@ wpdocker_ssl_parse_requirements() {
       shift $#
       ;;
 
-    edit)
-      action="edit"
-      shift
-      wpdocker_ssl_edit_parse_requirements "$@"
-      shift $#
-      ;;
-
     # :command.command_fallback
     "")
       wpdocker_ssl_usage >&2
@@ -3683,7 +3717,140 @@ wpdocker_ssl_install_parse_requirements() {
   done
 
   # :command.command_filter
-  action="ssl install"
+  action=${1:-}
+
+  case $action in
+    -*) ;;
+
+    selfsigned)
+      action="selfsigned"
+      shift
+      wpdocker_ssl_install_selfsigned_parse_requirements "$@"
+      shift $#
+      ;;
+
+    letsencrypt)
+      action="letsencrypt"
+      shift
+      wpdocker_ssl_install_letsencrypt_parse_requirements "$@"
+      shift $#
+      ;;
+
+    # :command.command_fallback
+    "")
+      wpdocker_ssl_install_usage >&2
+      exit 1
+      ;;
+
+    *)
+      printf "invalid command: %s\n" "$action" >&2
+      exit 1
+      ;;
+
+  esac
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+}
+
+# :command.parse_requirements
+wpdocker_ssl_install_selfsigned_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      --help | -h)
+        long_usage=yes
+        wpdocker_ssl_install_selfsigned_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="ssl install selfsigned"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker ssl install selfsigned DOMAIN\n" >&2
+
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+wpdocker_ssl_install_letsencrypt_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      --help | -h)
+        long_usage=yes
+        wpdocker_ssl_install_letsencrypt_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="ssl install letsencrypt"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -3703,8 +3870,12 @@ wpdocker_ssl_install_parse_requirements() {
           args['domain']=$1
           shift
         # :argument.case
-        elif [[ -z ${args['type']+x} ]]; then
-          args['type']=$1
+        elif [[ -z ${args['email']+x} ]]; then
+          args['email']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['staging']+x} ]]; then
+          args['staging']=$1
           shift
         else
           printf "invalid argument: %s\n" "$key" >&2
@@ -3718,16 +3889,19 @@ wpdocker_ssl_install_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['domain']+x} ]]; then
-    printf "missing required argument: DOMAIN\nusage: wpdocker ssl install DOMAIN TYPE\n" >&2
+    printf "missing required argument: DOMAIN\nusage: wpdocker ssl install letsencrypt DOMAIN EMAIL [STAGING]\n" >&2
 
     exit 1
   fi
 
-  if [[ -z ${args['type']+x} ]]; then
-    printf "missing required argument: TYPE\nusage: wpdocker ssl install DOMAIN TYPE\n" >&2
+  if [[ -z ${args['email']+x} ]]; then
+    printf "missing required argument: EMAIL\nusage: wpdocker ssl install letsencrypt DOMAIN EMAIL [STAGING]\n" >&2
 
     exit 1
   fi
+
+  # :command.default_assignments
+  [[ -n ${args['staging']:-} ]] || args['staging']="false"
 
 }
 
@@ -3766,58 +3940,26 @@ wpdocker_ssl_check_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
 
-}
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker ssl check DOMAIN\n" >&2
 
-# :command.parse_requirements
-wpdocker_ssl_edit_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_ssl_edit_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="ssl edit"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
+    exit 1
+  fi
 
 }
 
@@ -7629,8 +7771,9 @@ run() {
     "website update_template") wpdocker_website_update_template_command ;;
     "ssl") wpdocker_ssl_command ;;
     "ssl install") wpdocker_ssl_install_command ;;
+    "ssl install selfsigned") wpdocker_ssl_install_selfsigned_command ;;
+    "ssl install letsencrypt") wpdocker_ssl_install_letsencrypt_command ;;
     "ssl check") wpdocker_ssl_check_command ;;
-    "ssl edit") wpdocker_ssl_edit_command ;;
     "php") wpdocker_php_command ;;
     "php change") wpdocker_php_change_command ;;
     "php get") wpdocker_php_get_command ;;
