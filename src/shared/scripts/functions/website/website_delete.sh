@@ -1,3 +1,4 @@
+safe_source "$FUNCTIONS_DIR/database_loader.sh"
 # =====================================
 # website_prompt_delete: Prompt user to delete a WordPress site with optional backup
 # Behavior:
@@ -14,7 +15,7 @@ website_prompt_delete() {
   # Select website
   local domain
   if ! website_get_selected domain; then
-    return 1 
+    return 1
   fi
   _is_valid_domain "$domain" || return 1
   # Ask for backup before delete
@@ -58,8 +59,8 @@ website_logic_delete() {
   SITE_DIR="$SITES_DIR/$domain"
 
   if ! _is_directory_exist "$SITE_DIR"; then
-    print_msg error "$ERROR_WEBSITE_NOT_EXIST: $domain"
-    return 1
+    print_msg warning "$WARNING_WEBSITE_DIR_MISSING: $SITE_DIR"
+    print_msg warning "⛔️ Website directory is missing, will proceed to cleanup config and related data only."
   fi
 
   SITE_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$domain.conf"

@@ -2107,6 +2107,7 @@ wpdocker_website_create_command() {
   domain=${args[domain]}
   php_version=${args[php]}
   auto_generate=${args[auto_generate]}
+
   website_cli_create --domain="$domain" \
       --php="$php_version" \
       --auto_generate="$auto_generate"
@@ -2117,24 +2118,19 @@ wpdocker_website_create_command() {
 wpdocker_website_delete_command() {
 
   # src/website_delete_command.sh
-  echo "# This file is located at 'src/website_delete_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker website delete' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_website_delete_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/website_manage.sh"
 
+  website_cli_delete --domain="${args[domain]}" \
+      --backup_enabled="${args[backup]}"
 }
 
 # :command.function
 wpdocker_website_list_command() {
 
   # src/website_list_command.sh
-  echo "# This file is located at 'src/website_list_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker website list' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_website_list_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/website_manage.sh"
 
+  website_cli_list
 }
 
 # :command.function
