@@ -26,19 +26,19 @@ wpdocker_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Show command menu\n" "menu     "
-  printf "  %s   Manage WordPress websites\n" "website  "
-  printf "  %s   SSL certificate management\n" "ssl      "
-  printf "  %s   Manage PHP versions\n" "php      "
-  printf "  %s   Manage backups\n" "backup   "
-  printf "  %s   Manage database operations\n" "database "
-  printf "  %s   WordPress tools\n" "wordpress"
-  printf "  %s   System operations\n" "system   "
-  printf "  %s   Run cron tasks\n" "cron     "
-  printf "  %s   Core management\n" "core     "
-  printf "  %s   NGINX actions\n" "nginx    "
-  printf "  %s   Rclone operations\n" "rclone   "
-  printf "  %s   Debugging tools\n" "debug    "
+  printf "  %s   Show command menu\n" "menu    "
+  printf "  %s   Manage WordPress websites\n" "website "
+  printf "  %s   SSL certificate management\n" "ssl     "
+  printf "  %s   Manage PHP versions and configuration\n" "php     "
+  printf "  %s   Manage backups for WordPress sites\n" "backup  "
+  printf "  %s   Manage database operations\n" "database"
+  printf "  %s   WordPress tools\n" "wp      "
+  printf "  %s   System operations\n" "system  "
+  printf "  %s   Run cron tasks\n" "cron    "
+  printf "  %s   Core management\n" "core    "
+  printf "  %s   NGINX actions\n" "nginx   "
+  printf "  %s   Rclone operations\n" "rclone  "
+  printf "  %s   Debugging tools\n" "debug   "
   echo
 
   # :command.long_usage
@@ -114,7 +114,7 @@ wpdocker_website_create_usage() {
   printf "wpdocker website create - Create a new WordPress site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker website create DOMAIN PHP\n"
+  printf "  wpdocker website create DOMAIN PHP [AUTO_GENERATE]\n"
   printf "  wpdocker website create --help | -h\n"
   echo
 
@@ -140,6 +140,12 @@ wpdocker_website_create_usage() {
     printf "    PHP version for the new site\n"
     echo
 
+    # :argument.usage
+    printf "  %s\n" "AUTO_GENERATE"
+    printf "    Auto-generate secure passwords for the site\n"
+    printf "    %s\n" "Default: true"
+    echo
+
   fi
 }
 
@@ -148,7 +154,7 @@ wpdocker_website_delete_usage() {
   printf "wpdocker website delete - Delete an existing site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker website delete\n"
+  printf "  wpdocker website delete DOMAIN [BACKUP]\n"
   printf "  wpdocker website delete --help | -h\n"
   echo
 
@@ -159,6 +165,20 @@ wpdocker_website_delete_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to delete\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "BACKUP"
+    printf "    Backup before deletion\n"
+    printf "    %s\n" "Default: true"
     echo
 
   fi
@@ -190,7 +210,7 @@ wpdocker_website_restart_usage() {
   printf "wpdocker website restart - Restart a site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker website restart\n"
+  printf "  wpdocker website restart DOMAIN\n"
   printf "  wpdocker website restart --help | -h\n"
   echo
 
@@ -203,6 +223,14 @@ wpdocker_website_restart_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to restart\n"
+    echo
+
   fi
 }
 
@@ -211,7 +239,7 @@ wpdocker_website_logs_usage() {
   printf "wpdocker website logs - Show site logs\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker website logs\n"
+  printf "  wpdocker website logs DOMAIN LOG_TYPE\n"
   printf "  wpdocker website logs --help | -h\n"
   echo
 
@@ -224,6 +252,19 @@ wpdocker_website_logs_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to show logs\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "LOG_TYPE"
+    printf "    Type of logs to show (e.g., access, error, php_slow, php_error)\n"
+    echo
+
   fi
 }
 
@@ -232,7 +273,7 @@ wpdocker_website_info_usage() {
   printf "wpdocker website info - Show site info\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker website info\n"
+  printf "  wpdocker website info DOMAIN\n"
   printf "  wpdocker website info --help | -h\n"
   echo
 
@@ -243,6 +284,14 @@ wpdocker_website_info_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to show info\n"
     echo
 
   fi
@@ -300,10 +349,9 @@ wpdocker_ssl_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Install self-signed SSL\n" "selfsigned "
-  printf "  %s   Install Let's Encrypt SSL\n" "letsencrypt"
-  printf "  %s   Check SSL certificate status\n" "check      "
-  printf "  %s   Edit SSL configuration\n" "edit       "
+  printf "  %s   Install SSL certificate\n" "install"
+  printf "  %s   Check SSL certificate status\n" "check  "
+  printf "  %s   Edit SSL configuration\n" "edit   "
   echo
 
   # :command.long_usage
@@ -319,12 +367,12 @@ wpdocker_ssl_usage() {
 }
 
 # :command.usage
-wpdocker_ssl_selfsigned_usage() {
-  printf "wpdocker ssl selfsigned - Install self-signed SSL\n\n"
+wpdocker_ssl_install_usage() {
+  printf "wpdocker ssl install - Install SSL certificate\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker ssl selfsigned\n"
-  printf "  wpdocker ssl selfsigned --help | -h\n"
+  printf "  wpdocker ssl install DOMAIN TYPE\n"
+  printf "  wpdocker ssl install --help | -h\n"
   echo
 
   # :command.long_usage
@@ -336,25 +384,17 @@ wpdocker_ssl_selfsigned_usage() {
     printf "    Show this help\n"
     echo
 
-  fi
-}
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
 
-# :command.usage
-wpdocker_ssl_letsencrypt_usage() {
-  printf "wpdocker ssl letsencrypt - Install Let's Encrypt SSL\n\n"
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name for the SSL certificate\n"
+    echo
 
-  printf "%s\n" "Usage:"
-  printf "  wpdocker ssl letsencrypt\n"
-  printf "  wpdocker ssl letsencrypt --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
+    # :argument.usage
+    printf "  %s\n" "TYPE"
+    printf "    Type of SSL certificate (selfsigned, letsencrypt)\n"
     echo
 
   fi
@@ -404,7 +444,7 @@ wpdocker_ssl_edit_usage() {
 
 # :command.usage
 wpdocker_php_usage() {
-  printf "wpdocker php - Manage PHP versions\n\n"
+  printf "wpdocker php - Manage PHP versions and configuration\n\n"
 
   printf "%s\n" "Usage:"
   printf "  wpdocker php COMMAND\n"
@@ -412,10 +452,10 @@ wpdocker_php_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Change PHP version\n" "change "
+  printf "  %s   Change PHP version for a site\n" "change "
   printf "  %s   Get PHP version list from Docker Hub\n" "get    "
-  printf "  %s   Rebuild PHP container\n" "rebuild"
-  printf "  %s   Edit PHP configuration\n" "edit   "
+  printf "  %s   Rebuild PHP container for a site\n" "rebuild"
+  printf "  %s   Edit PHP configuration for a site\n" "edit   "
   echo
 
   # :command.long_usage
@@ -432,10 +472,10 @@ wpdocker_php_usage() {
 
 # :command.usage
 wpdocker_php_change_usage() {
-  printf "wpdocker php change - Change PHP version\n\n"
+  printf "wpdocker php change - Change PHP version for a site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker php change\n"
+  printf "  wpdocker php change DOMAIN VERSION\n"
   printf "  wpdocker php change --help | -h\n"
   echo
 
@@ -446,6 +486,19 @@ wpdocker_php_change_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to change PHP version\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "VERSION"
+    printf "    New PHP version for the site\n"
     echo
 
   fi
@@ -474,10 +527,10 @@ wpdocker_php_get_usage() {
 
 # :command.usage
 wpdocker_php_rebuild_usage() {
-  printf "wpdocker php rebuild - Rebuild PHP container\n\n"
+  printf "wpdocker php rebuild - Rebuild PHP container for a site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker php rebuild\n"
+  printf "  wpdocker php rebuild DOMAIN\n"
   printf "  wpdocker php rebuild --help | -h\n"
   echo
 
@@ -490,21 +543,24 @@ wpdocker_php_rebuild_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to rebuild PHP container\n"
+    echo
+
   fi
 }
 
 # :command.usage
 wpdocker_php_edit_usage() {
-  printf "wpdocker php edit - Edit PHP configuration\n\n"
+  printf "wpdocker php edit - Edit PHP configuration for a site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker php edit COMMAND\n"
-  printf "  wpdocker php edit [COMMAND] --help | -h\n"
-  echo
-  # :command.usage_commands
-  printf "%s\n" "Commands:"
-  printf "  %s   Edit PHP-FPM configuration\n" "conf"
-  printf "  %s   Edit php.ini file\n" "ini "
+  printf "  wpdocker php edit DOMAIN CONFIG_TYPE\n"
+  printf "  wpdocker php edit --help | -h\n"
   echo
 
   # :command.long_usage
@@ -516,46 +572,17 @@ wpdocker_php_edit_usage() {
     printf "    Show this help\n"
     echo
 
-  fi
-}
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
 
-# :command.usage
-wpdocker_php_edit_conf_usage() {
-  printf "wpdocker php edit conf - Edit PHP-FPM configuration\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker php edit conf\n"
-  printf "  wpdocker php edit conf --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to edit PHP configuration\n"
     echo
 
-  fi
-}
-
-# :command.usage
-wpdocker_php_edit_ini_usage() {
-  printf "wpdocker php edit ini - Edit php.ini file\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker php edit ini\n"
-  printf "  wpdocker php edit ini --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
+    # :argument.usage
+    printf "  %s\n" "CONFIG_TYPE"
+    printf "    Type of PHP configuration to edit (conf, ini)\n"
     echo
 
   fi
@@ -563,7 +590,7 @@ wpdocker_php_edit_ini_usage() {
 
 # :command.usage
 wpdocker_backup_usage() {
-  printf "wpdocker backup - Manage backups\n\n"
+  printf "wpdocker backup - Manage backups for WordPress sites\n\n"
 
   printf "%s\n" "Usage:"
   printf "  wpdocker backup COMMAND\n"
@@ -574,7 +601,7 @@ wpdocker_backup_usage() {
   printf "  %s   Backup website source + DB\n" "website "
   printf "  %s   Backup database only\n" "database"
   printf "  %s   Backup file only\n" "file    "
-  printf "  %s   Restore backup\n" "restore "
+  printf "  %s   Restore backup for a site\n" "restore "
   echo
 
   # :command.long_usage
@@ -654,7 +681,7 @@ wpdocker_backup_file_usage() {
 
 # :command.usage
 wpdocker_backup_restore_usage() {
-  printf "wpdocker backup restore - Restore backup\n\n"
+  printf "wpdocker backup restore - Restore backup for a site\n\n"
 
   printf "%s\n" "Usage:"
   printf "  wpdocker backup restore COMMAND\n"
@@ -754,7 +781,7 @@ wpdocker_database_usage() {
   printf "%s\n" "Commands:"
   printf "  %s   Reset site database\n" "reset "
   printf "  %s   Import a SQL database\n" "import"
-  printf "  %s   Export site database\n" "export"
+  printf "  %s   Export site database for a site or all sites\n" "export"
   echo
 
   # :command.long_usage
@@ -813,11 +840,16 @@ wpdocker_database_import_usage() {
 
 # :command.usage
 wpdocker_database_export_usage() {
-  printf "wpdocker database export - Export site database\n\n"
+  printf "wpdocker database export - Export site database for a site or all sites\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker database export\n"
-  printf "  wpdocker database export --help | -h\n"
+  printf "  wpdocker database export COMMAND\n"
+  printf "  wpdocker database export [COMMAND] --help | -h\n"
+  echo
+  # :command.usage_commands
+  printf "%s\n" "Commands:"
+  printf "  %s   Export database for all sites\n" "all   "
+  printf "  %s   Export database for a specific site\n" "single"
   echo
 
   # :command.long_usage
@@ -833,12 +865,62 @@ wpdocker_database_export_usage() {
 }
 
 # :command.usage
-wpdocker_wordpress_usage() {
-  printf "wpdocker wordpress - WordPress tools\n\n"
+wpdocker_database_export_all_usage() {
+  printf "wpdocker database export all - Export database for all sites\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress COMMAND\n"
-  printf "  wpdocker wordpress [COMMAND] --help | -h\n"
+  printf "  wpdocker database export all\n"
+  printf "  wpdocker database export all --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n "$long_usage" ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+wpdocker_database_export_single_usage() {
+  printf "wpdocker database export single - Export database for a specific site\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  wpdocker database export single DOMAIN\n"
+  printf "  wpdocker database export single --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n "$long_usage" ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to export database\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+wpdocker_wp_usage() {
+  printf "wpdocker wp - WordPress tools\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  wpdocker wp COMMAND\n"
+  printf "  wpdocker wp [COMMAND] --help | -h\n"
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
@@ -863,12 +945,46 @@ wpdocker_wordpress_usage() {
 }
 
 # :command.usage
-wpdocker_wordpress_cli_usage() {
-  printf "wpdocker wordpress cli - Run WP-CLI commands inside container\n\n"
+wpdocker_wp_cli_usage() {
+  printf "wpdocker wp cli - Run WP-CLI commands inside container\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress cli\n"
-  printf "  wpdocker wordpress cli --help | -h\n"
+  printf "  wpdocker wp cli DOMAIN COMMAND\n"
+  printf "  wpdocker wp cli --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n "$long_usage" ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to run WP-CLI commands\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "COMMAND"
+    printf "    WP-CLI command to run\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+wpdocker_wp_migrate_usage() {
+  printf "wpdocker wp migrate - Migrate WordPress site\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  wpdocker wp migrate\n"
+  printf "  wpdocker wp migrate --help | -h\n"
   echo
 
   # :command.long_usage
@@ -884,33 +1000,12 @@ wpdocker_wordpress_cli_usage() {
 }
 
 # :command.usage
-wpdocker_wordpress_migrate_usage() {
-  printf "wpdocker wordpress migrate - Migrate WordPress site\n\n"
+wpdocker_wp_reset_usage() {
+  printf "wpdocker wp reset - Reset features\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress migrate\n"
-  printf "  wpdocker wordpress migrate --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_wordpress_reset_usage() {
-  printf "wpdocker wordpress reset - Reset features\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress reset COMMAND\n"
-  printf "  wpdocker wordpress reset [COMMAND] --help | -h\n"
+  printf "  wpdocker wp reset COMMAND\n"
+  printf "  wpdocker wp reset [COMMAND] --help | -h\n"
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
@@ -931,12 +1026,12 @@ wpdocker_wordpress_reset_usage() {
 }
 
 # :command.usage
-wpdocker_wordpress_reset_password_usage() {
-  printf "wpdocker wordpress reset password - Reset admin password\n\n"
+wpdocker_wp_reset_password_usage() {
+  printf "wpdocker wp reset password - Reset admin password\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress reset password\n"
-  printf "  wpdocker wordpress reset password --help | -h\n"
+  printf "  wpdocker wp reset password DOMAIN [NEW_PASSWORD]\n"
+  printf "  wpdocker wp reset password --help | -h\n"
   echo
 
   # :command.long_usage
@@ -948,16 +1043,29 @@ wpdocker_wordpress_reset_password_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to reset password\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "NEW_PASSWORD"
+    printf "    New password for the admin user (optinal)\n"
+    echo
+
   fi
 }
 
 # :command.usage
-wpdocker_wordpress_reset_role_usage() {
-  printf "wpdocker wordpress reset role - Reset user roles\n\n"
+wpdocker_wp_reset_role_usage() {
+  printf "wpdocker wp reset role - Reset user roles\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress reset role\n"
-  printf "  wpdocker wordpress reset role --help | -h\n"
+  printf "  wpdocker wp reset role DOMAIN [ROLE]\n"
+  printf "  wpdocker wp reset role --help | -h\n"
   echo
 
   # :command.long_usage
@@ -969,16 +1077,29 @@ wpdocker_wordpress_reset_role_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to reset user roles\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "ROLE"
+    printf "    New role for the user (optinal)\n"
+    echo
+
   fi
 }
 
 # :command.usage
-wpdocker_wordpress_cache_usage() {
-  printf "wpdocker wordpress cache - Setup caching\n\n"
+wpdocker_wp_cache_usage() {
+  printf "wpdocker wp cache - Setup caching\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress cache\n"
-  printf "  wpdocker wordpress cache --help | -h\n"
+  printf "  wpdocker wp cache DOMAIN CACHE_TYPE\n"
+  printf "  wpdocker wp cache --help | -h\n"
   echo
 
   # :command.long_usage
@@ -990,16 +1111,29 @@ wpdocker_wordpress_cache_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to setup caching\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "CACHE_TYPE"
+    printf "    Type of caching to setup (wp-super-cache, fastcgi-cache, w3-total-cache,\n    wp-fastest-cache, no-cache)\n"
+    echo
+
   fi
 }
 
 # :command.usage
-wpdocker_wordpress_plugin_usage() {
-  printf "wpdocker wordpress plugin - Plugin tools\n\n"
+wpdocker_wp_plugin_usage() {
+  printf "wpdocker wp plugin - Plugin tools\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress plugin COMMAND\n"
-  printf "  wpdocker wordpress plugin [COMMAND] --help | -h\n"
+  printf "  wpdocker wp plugin COMMAND\n"
+  printf "  wpdocker wp plugin [COMMAND] --help | -h\n"
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
@@ -1019,12 +1153,12 @@ wpdocker_wordpress_plugin_usage() {
 }
 
 # :command.usage
-wpdocker_wordpress_plugin_auto_update_usage() {
-  printf "wpdocker wordpress plugin auto-update - Enable plugin auto update\n\n"
+wpdocker_wp_plugin_auto_update_usage() {
+  printf "wpdocker wp plugin auto-update - Enable plugin auto update\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress plugin auto-update\n"
-  printf "  wpdocker wordpress plugin auto-update --help | -h\n"
+  printf "  wpdocker wp plugin auto-update DOMAIN\n"
+  printf "  wpdocker wp plugin auto-update --help | -h\n"
   echo
 
   # :command.long_usage
@@ -1036,20 +1170,28 @@ wpdocker_wordpress_plugin_auto_update_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to enable plugin auto update\n"
+    echo
+
   fi
 }
 
 # :command.usage
-wpdocker_wordpress_security_usage() {
-  printf "wpdocker wordpress security - Security enhancements\n\n"
+wpdocker_wp_security_usage() {
+  printf "wpdocker wp security - Security enhancements\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress security COMMAND\n"
-  printf "  wpdocker wordpress security [COMMAND] --help | -h\n"
+  printf "  wpdocker wp security COMMAND\n"
+  printf "  wpdocker wp security [COMMAND] --help | -h\n"
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Protect wp-login.php\n" "wplogin"
+  printf "  %s   Protect wp-login.php for a site\n" "login"
   echo
 
   # :command.long_usage
@@ -1065,12 +1207,12 @@ wpdocker_wordpress_security_usage() {
 }
 
 # :command.usage
-wpdocker_wordpress_security_wplogin_usage() {
-  printf "wpdocker wordpress security wplogin - Protect wp-login.php\n\n"
+wpdocker_wp_security_login_usage() {
+  printf "wpdocker wp security login - Protect wp-login.php for a site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wordpress security wplogin\n"
-  printf "  wpdocker wordpress security wplogin --help | -h\n"
+  printf "  wpdocker wp security login DOMAIN\n"
+  printf "  wpdocker wp security login --help | -h\n"
   echo
 
   # :command.long_usage
@@ -1080,6 +1222,14 @@ wpdocker_wordpress_security_wplogin_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "    Domain name of the site to protect wp-login.php\n"
     echo
 
   fi
@@ -1095,7 +1245,7 @@ wpdocker_system_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Check system resources\n" "check  "
+  printf "  %s   Sytem checking utilities\n" "check  "
   printf "  %s   Manage Docker containers\n" "manage "
   printf "  %s   Cleanup unused Docker resources\n" "cleanup"
   echo
@@ -1114,7 +1264,7 @@ wpdocker_system_usage() {
 
 # :command.usage
 wpdocker_system_check_usage() {
-  printf "wpdocker system check - Check system resources\n\n"
+  printf "wpdocker system check - Sytem checking utilities\n\n"
 
   printf "%s\n" "Usage:"
   printf "  wpdocker system check COMMAND\n"
@@ -1185,7 +1335,7 @@ wpdocker_system_manage_usage() {
   printf "wpdocker system manage - Manage Docker containers\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker system manage\n"
+  printf "  wpdocker system manage CONTAINER_NAME ACTION\n"
   printf "  wpdocker system manage --help | -h\n"
   echo
 
@@ -1196,6 +1346,19 @@ wpdocker_system_manage_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "CONTAINER_NAME"
+    printf "    Name of the Docker container to manage\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "ACTION"
+    printf "    Action to perform on Docker containers (start, stop, restart, remove)\n"
     echo
 
   fi
@@ -1232,8 +1395,7 @@ wpdocker_cron_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Cron related to Let's Encrypt\n" "letsencrypt"
-  printf "  %s   Run all scheduled crons\n" "all        "
+  printf "  %s   Run a specific cron task\n" "run"
   echo
 
   # :command.long_usage
@@ -1249,16 +1411,12 @@ wpdocker_cron_usage() {
 }
 
 # :command.usage
-wpdocker_cron_letsencrypt_usage() {
-  printf "wpdocker cron letsencrypt - Cron related to Let's Encrypt\n\n"
+wpdocker_cron_run_usage() {
+  printf "wpdocker cron run - Run a specific cron task\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker cron letsencrypt COMMAND\n"
-  printf "  wpdocker cron letsencrypt [COMMAND] --help | -h\n"
-  echo
-  # :command.usage_commands
-  printf "%s\n" "Commands:"
-  printf "  %s   Renew Let's Encrypt SSL\n" "renew"
+  printf "  wpdocker cron run TASK\n"
+  printf "  wpdocker cron run --help | -h\n"
   echo
 
   # :command.long_usage
@@ -1270,46 +1428,12 @@ wpdocker_cron_letsencrypt_usage() {
     printf "    Show this help\n"
     echo
 
-  fi
-}
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
 
-# :command.usage
-wpdocker_cron_letsencrypt_renew_usage() {
-  printf "wpdocker cron letsencrypt renew - Renew Let's Encrypt SSL\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker cron letsencrypt renew\n"
-  printf "  wpdocker cron letsencrypt renew --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_cron_all_usage() {
-  printf "wpdocker cron all - Run all scheduled crons\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker cron all\n"
-  printf "  wpdocker cron all --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
+    # :argument.usage
+    printf "  %s\n" "TASK"
+    printf "    Name of the cron task to run (backup, letsencrypt_renew, php_get_version,\n    all)\n"
     echo
 
   fi
@@ -1460,7 +1584,7 @@ wpdocker_core_channel_change_usage() {
   printf "wpdocker core channel change - Change release channel\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker core channel change\n"
+  printf "  wpdocker core channel change CHANNEL\n"
   printf "  wpdocker core channel change --help | -h\n"
   echo
 
@@ -1471,6 +1595,14 @@ wpdocker_core_channel_change_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "CHANNEL"
+    printf "    Release channel to switch to (official, nightly, dev)\n"
     echo
 
   fi
@@ -1529,7 +1661,7 @@ wpdocker_core_lang_change_usage() {
   printf "wpdocker core lang change - Change CLI language\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker core lang change\n"
+  printf "  wpdocker core lang change LANG\n"
   printf "  wpdocker core lang change --help | -h\n"
   echo
 
@@ -1540,6 +1672,14 @@ wpdocker_core_lang_change_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "LANG"
+    printf "    Language code to switch to (e.g., en, fr, de)\n"
     echo
 
   fi
@@ -1959,11 +2099,17 @@ wpdocker_menu_command() {
 wpdocker_website_create_command() {
 
   # src/website_create_command.sh
-  echo "# This file is located at 'src/website_create_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker website create' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_website_create_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/website_create.sh"
+
+  # =====================================
+  # 🏗 website_create_command – Create a new website with WordPress
+  # ======================================
+  domain=${args[domain]}
+  php_version=${args[php]}
+  auto_generate=${args[auto_generate]}
+  website_cli_create --domain="$domain" \
+      --php="$php_version" \
+      --auto_generate="$auto_generate"
 
 }
 
@@ -2052,24 +2198,12 @@ wpdocker_website_update_template_command() {
 }
 
 # :command.function
-wpdocker_ssl_selfsigned_command() {
+wpdocker_ssl_install_command() {
 
-  # src/ssl_selfsigned_command.sh
-  echo "# This file is located at 'src/ssl_selfsigned_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker ssl selfsigned' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_ssl_selfsigned_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_ssl_letsencrypt_command() {
-
-  # src/ssl_letsencrypt_command.sh
-  echo "# This file is located at 'src/ssl_letsencrypt_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker ssl letsencrypt' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_ssl_letsencrypt_command()'."
+  # src/ssl_install_command.sh
+  echo "# This file is located at 'src/ssl_install_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker ssl install' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_ssl_install_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
@@ -2136,24 +2270,12 @@ wpdocker_php_rebuild_command() {
 }
 
 # :command.function
-wpdocker_php_edit_conf_command() {
+wpdocker_php_edit_command() {
 
-  # src/php_edit_conf_command.sh
-  echo "# This file is located at 'src/php_edit_conf_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker php edit conf' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_php_edit_conf_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_php_edit_ini_command() {
-
-  # src/php_edit_ini_command.sh
-  echo "# This file is located at 'src/php_edit_ini_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker php edit ini' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_php_edit_ini_command()'."
+  # src/php_edit_command.sh
+  echo "# This file is located at 'src/php_edit_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker php edit' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_php_edit_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
@@ -2256,96 +2378,108 @@ wpdocker_database_import_command() {
 }
 
 # :command.function
-wpdocker_database_export_command() {
+wpdocker_database_export_all_command() {
 
-  # src/database_export_command.sh
-  echo "# This file is located at 'src/database_export_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker database export' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_database_export_command()'."
+  # src/database_export_all_command.sh
+  echo "# This file is located at 'src/database_export_all_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker database export all' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_database_export_all_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
 }
 
 # :command.function
-wpdocker_wordpress_cli_command() {
+wpdocker_database_export_single_command() {
 
-  # src/wordpress_cli_command.sh
-  echo "# This file is located at 'src/wordpress_cli_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wordpress cli' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wordpress_cli_command()'."
+  # src/database_export_single_command.sh
+  echo "# This file is located at 'src/database_export_single_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker database export single' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_database_export_single_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
 }
 
 # :command.function
-wpdocker_wordpress_migrate_command() {
+wpdocker_wp_cli_command() {
 
-  # src/wordpress_migrate_command.sh
-  echo "# This file is located at 'src/wordpress_migrate_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wordpress migrate' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wordpress_migrate_command()'."
+  # src/wp_cli_command.sh
+  echo "# This file is located at 'src/wp_cli_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker wp cli' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_cli_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
 }
 
 # :command.function
-wpdocker_wordpress_reset_password_command() {
+wpdocker_wp_migrate_command() {
 
-  # src/wordpress_reset_password_command.sh
-  echo "# This file is located at 'src/wordpress_reset_password_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wordpress reset password' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wordpress_reset_password_command()'."
+  # src/wp_migrate_command.sh
+  echo "# This file is located at 'src/wp_migrate_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker wp migrate' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_migrate_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
 }
 
 # :command.function
-wpdocker_wordpress_reset_role_command() {
+wpdocker_wp_reset_password_command() {
 
-  # src/wordpress_reset_role_command.sh
-  echo "# This file is located at 'src/wordpress_reset_role_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wordpress reset role' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wordpress_reset_role_command()'."
+  # src/wp_reset_password_command.sh
+  echo "# This file is located at 'src/wp_reset_password_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker wp reset password' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_reset_password_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
 }
 
 # :command.function
-wpdocker_wordpress_cache_command() {
+wpdocker_wp_reset_role_command() {
 
-  # src/wordpress_cache_command.sh
-  echo "# This file is located at 'src/wordpress_cache_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wordpress cache' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wordpress_cache_command()'."
+  # src/wp_reset_role_command.sh
+  echo "# This file is located at 'src/wp_reset_role_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker wp reset role' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_reset_role_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
 }
 
 # :command.function
-wpdocker_wordpress_plugin_auto_update_command() {
+wpdocker_wp_cache_command() {
 
-  # src/wordpress_plugin_auto_update_command.sh
-  echo "# This file is located at 'src/wordpress_plugin_auto_update_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wordpress plugin auto-update' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wordpress_plugin_auto_update_command()'."
+  # src/wp_cache_command.sh
+  echo "# This file is located at 'src/wp_cache_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker wp cache' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_cache_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
 }
 
 # :command.function
-wpdocker_wordpress_security_wplogin_command() {
+wpdocker_wp_plugin_auto_update_command() {
 
-  # src/wordpress_security_wplogin_command.sh
-  echo "# This file is located at 'src/wordpress_security_wplogin_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wordpress security wplogin' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wordpress_security_wplogin_command()'."
+  # src/wp_plugin_auto_update_command.sh
+  echo "# This file is located at 'src/wp_plugin_auto_update_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker wp plugin auto-update' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_plugin_auto_update_command()'."
+  echo "# Feel free to edit this file; your changes will persist when regenerating."
+  inspect_args
+
+}
+
+# :command.function
+wpdocker_wp_security_login_command() {
+
+  # src/wp_security_login_command.sh
+  echo "# This file is located at 'src/wp_security_login_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker wp security login' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_security_login_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
@@ -2400,24 +2534,12 @@ wpdocker_system_cleanup_command() {
 }
 
 # :command.function
-wpdocker_cron_letsencrypt_renew_command() {
+wpdocker_cron_run_command() {
 
-  # src/cron_letsencrypt_renew_command.sh
-  echo "# This file is located at 'src/cron_letsencrypt_renew_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker cron letsencrypt renew' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_cron_letsencrypt_renew_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_cron_all_command() {
-
-  # src/cron_all_command.sh
-  echo "# This file is located at 'src/cron_all_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker cron all' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_cron_all_command()'."
+  # src/cron_run_command.sh
+  echo "# This file is located at 'src/cron_run_command.sh'."
+  echo "# It contains the implementation for the 'wpdocker cron run' command."
+  echo "# The code you write here will be wrapped by a function named 'wpdocker_cron_run_command()'."
   echo "# Feel free to edit this file; your changes will persist when regenerating."
   inspect_args
 
@@ -2711,10 +2833,10 @@ parse_requirements() {
       shift $#
       ;;
 
-    wordpress)
-      action="wordpress"
+    wp)
+      action="wp"
       shift
-      wpdocker_wordpress_parse_requirements "$@"
+      wpdocker_wp_parse_requirements "$@"
       shift $#
       ;;
 
@@ -3001,6 +3123,10 @@ wpdocker_website_create_parse_requirements() {
         elif [[ -z ${args['php']+x} ]]; then
           args['php']=$1
           shift
+        # :argument.case
+        elif [[ -z ${args['auto_generate']+x} ]]; then
+          args['auto_generate']=$1
+          shift
         else
           printf "invalid argument: %s\n" "$key" >&2
           exit 1
@@ -3013,16 +3139,19 @@ wpdocker_website_create_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['domain']+x} ]]; then
-    printf "missing required argument: DOMAIN\nusage: wpdocker website create DOMAIN PHP\n" >&2
+    printf "missing required argument: DOMAIN\nusage: wpdocker website create DOMAIN PHP [AUTO_GENERATE]\n" >&2
 
     exit 1
   fi
 
   if [[ -z ${args['php']+x} ]]; then
-    printf "missing required argument: PHP\nusage: wpdocker website create DOMAIN PHP\n" >&2
+    printf "missing required argument: PHP\nusage: wpdocker website create DOMAIN PHP [AUTO_GENERATE]\n" >&2
 
     exit 1
   fi
+
+  # :command.default_assignments
+  [[ -n ${args['auto_generate']:-} ]] || args['auto_generate']="true"
 
 }
 
@@ -3061,13 +3190,33 @@ wpdocker_website_delete_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['backup']+x} ]]; then
+          args['backup']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker website delete DOMAIN [BACKUP]\n" >&2
+
+    exit 1
+  fi
+
+  # :command.default_assignments
+  [[ -n ${args['backup']:-} ]] || args['backup']="true"
 
 }
 
@@ -3151,13 +3300,26 @@ wpdocker_website_restart_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker website restart DOMAIN\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -3196,13 +3358,36 @@ wpdocker_website_logs_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['log_type']+x} ]]; then
+          args['log_type']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker website logs DOMAIN LOG_TYPE\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['log_type']+x} ]]; then
+    printf "missing required argument: LOG_TYPE\nusage: wpdocker website logs DOMAIN LOG_TYPE\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -3241,13 +3426,26 @@ wpdocker_website_info_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker website info DOMAIN\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -3366,17 +3564,10 @@ wpdocker_ssl_parse_requirements() {
   case $action in
     -*) ;;
 
-    selfsigned)
-      action="selfsigned"
+    install)
+      action="install"
       shift
-      wpdocker_ssl_selfsigned_parse_requirements "$@"
-      shift $#
-      ;;
-
-    letsencrypt)
-      action="letsencrypt"
-      shift
-      wpdocker_ssl_letsencrypt_parse_requirements "$@"
+      wpdocker_ssl_install_parse_requirements "$@"
       shift $#
       ;;
 
@@ -3431,14 +3622,14 @@ wpdocker_ssl_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_ssl_selfsigned_parse_requirements() {
+wpdocker_ssl_install_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_ssl_selfsigned_usage
+        wpdocker_ssl_install_usage
         exit
         ;;
 
@@ -3450,7 +3641,7 @@ wpdocker_ssl_selfsigned_parse_requirements() {
   done
 
   # :command.command_filter
-  action="ssl selfsigned"
+  action="ssl install"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -3465,58 +3656,36 @@ wpdocker_ssl_selfsigned_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['type']+x} ]]; then
+          args['type']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
 
-}
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker ssl install DOMAIN TYPE\n" >&2
 
-# :command.parse_requirements
-wpdocker_ssl_letsencrypt_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_ssl_letsencrypt_usage
-        exit
-        ;;
+    exit 1
+  fi
 
-      *)
-        break
-        ;;
+  if [[ -z ${args['type']+x} ]]; then
+    printf "missing required argument: TYPE\nusage: wpdocker ssl install DOMAIN TYPE\n" >&2
 
-    esac
-  done
-
-  # :command.command_filter
-  action="ssl letsencrypt"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
+    exit 1
+  fi
 
 }
 
@@ -3734,13 +3903,36 @@ wpdocker_php_change_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['version']+x} ]]; then
+          args['version']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker php change DOMAIN VERSION\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['version']+x} ]]; then
+    printf "missing required argument: VERSION\nusage: wpdocker php change DOMAIN VERSION\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -3824,13 +4016,26 @@ wpdocker_php_rebuild_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker php rebuild DOMAIN\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -3854,37 +4059,7 @@ wpdocker_php_edit_parse_requirements() {
   done
 
   # :command.command_filter
-  action=${1:-}
-
-  case $action in
-    -*) ;;
-
-    conf)
-      action="conf"
-      shift
-      wpdocker_php_edit_conf_parse_requirements "$@"
-      shift $#
-      ;;
-
-    ini)
-      action="ini"
-      shift
-      wpdocker_php_edit_ini_parse_requirements "$@"
-      shift $#
-      ;;
-
-    # :command.command_fallback
-    "")
-      wpdocker_php_edit_usage >&2
-      exit 1
-      ;;
-
-    *)
-      printf "invalid command: %s\n" "$action" >&2
-      exit 1
-      ;;
-
-  esac
+  action="php edit"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -3899,103 +4074,36 @@ wpdocker_php_edit_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['config_type']+x} ]]; then
+          args['config_type']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
 
-}
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker php edit DOMAIN CONFIG_TYPE\n" >&2
 
-# :command.parse_requirements
-wpdocker_php_edit_conf_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_php_edit_conf_usage
-        exit
-        ;;
+    exit 1
+  fi
 
-      *)
-        break
-        ;;
+  if [[ -z ${args['config_type']+x} ]]; then
+    printf "missing required argument: CONFIG_TYPE\nusage: wpdocker php edit DOMAIN CONFIG_TYPE\n" >&2
 
-    esac
-  done
-
-  # :command.command_filter
-  action="php edit conf"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_php_edit_ini_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_php_edit_ini_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="php edit ini"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
+    exit 1
+  fi
 
 }
 
@@ -4632,7 +4740,37 @@ wpdocker_database_export_parse_requirements() {
   done
 
   # :command.command_filter
-  action="database export"
+  action=${1:-}
+
+  case $action in
+    -*) ;;
+
+    all)
+      action="all"
+      shift
+      wpdocker_database_export_all_parse_requirements "$@"
+      shift $#
+      ;;
+
+    single)
+      action="single"
+      shift
+      wpdocker_database_export_single_parse_requirements "$@"
+      shift $#
+      ;;
+
+    # :command.command_fallback
+    "")
+      wpdocker_database_export_usage >&2
+      exit 1
+      ;;
+
+    *)
+      printf "invalid command: %s\n" "$action" >&2
+      exit 1
+      ;;
+
+  esac
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -4658,14 +4796,117 @@ wpdocker_database_export_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_parse_requirements() {
+wpdocker_database_export_all_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_usage
+        wpdocker_database_export_all_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="database export all"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+}
+
+# :command.parse_requirements
+wpdocker_database_export_single_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      --help | -h)
+        long_usage=yes
+        wpdocker_database_export_single_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="database export single"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker database export single DOMAIN\n" >&2
+
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+wpdocker_wp_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      --help | -h)
+        long_usage=yes
+        wpdocker_wp_usage
         exit
         ;;
 
@@ -4685,48 +4926,48 @@ wpdocker_wordpress_parse_requirements() {
     cli)
       action="cli"
       shift
-      wpdocker_wordpress_cli_parse_requirements "$@"
+      wpdocker_wp_cli_parse_requirements "$@"
       shift $#
       ;;
 
     migrate)
       action="migrate"
       shift
-      wpdocker_wordpress_migrate_parse_requirements "$@"
+      wpdocker_wp_migrate_parse_requirements "$@"
       shift $#
       ;;
 
     reset)
       action="reset"
       shift
-      wpdocker_wordpress_reset_parse_requirements "$@"
+      wpdocker_wp_reset_parse_requirements "$@"
       shift $#
       ;;
 
     cache)
       action="cache"
       shift
-      wpdocker_wordpress_cache_parse_requirements "$@"
+      wpdocker_wp_cache_parse_requirements "$@"
       shift $#
       ;;
 
     plugin)
       action="plugin"
       shift
-      wpdocker_wordpress_plugin_parse_requirements "$@"
+      wpdocker_wp_plugin_parse_requirements "$@"
       shift $#
       ;;
 
     security)
       action="security"
       shift
-      wpdocker_wordpress_security_parse_requirements "$@"
+      wpdocker_wp_security_parse_requirements "$@"
       shift $#
       ;;
 
     # :command.command_fallback
     "")
-      wpdocker_wordpress_usage >&2
+      wpdocker_wp_usage >&2
       exit 1
       ;;
 
@@ -4761,14 +5002,14 @@ wpdocker_wordpress_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_cli_parse_requirements() {
+wpdocker_wp_cli_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_cli_usage
+        wpdocker_wp_cli_usage
         exit
         ;;
 
@@ -4780,7 +5021,75 @@ wpdocker_wordpress_cli_parse_requirements() {
   done
 
   # :command.command_filter
-  action="wordpress cli"
+  action="wp cli"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['command']+x} ]]; then
+          args['command']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp cli DOMAIN COMMAND\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['command']+x} ]]; then
+    printf "missing required argument: COMMAND\nusage: wpdocker wp cli DOMAIN COMMAND\n" >&2
+
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+wpdocker_wp_migrate_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      --help | -h)
+        long_usage=yes
+        wpdocker_wp_migrate_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="wp migrate"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -4806,59 +5115,14 @@ wpdocker_wordpress_cli_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_migrate_parse_requirements() {
+wpdocker_wp_reset_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_migrate_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="wordpress migrate"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_wordpress_reset_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_wordpress_reset_usage
+        wpdocker_wp_reset_usage
         exit
         ;;
 
@@ -4878,20 +5142,20 @@ wpdocker_wordpress_reset_parse_requirements() {
     password)
       action="password"
       shift
-      wpdocker_wordpress_reset_password_parse_requirements "$@"
+      wpdocker_wp_reset_password_parse_requirements "$@"
       shift $#
       ;;
 
     role)
       action="role"
       shift
-      wpdocker_wordpress_reset_role_parse_requirements "$@"
+      wpdocker_wp_reset_role_parse_requirements "$@"
       shift $#
       ;;
 
     # :command.command_fallback
     "")
-      wpdocker_wordpress_reset_usage >&2
+      wpdocker_wp_reset_usage >&2
       exit 1
       ;;
 
@@ -4926,14 +5190,14 @@ wpdocker_wordpress_reset_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_reset_password_parse_requirements() {
+wpdocker_wp_reset_password_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_reset_password_usage
+        wpdocker_wp_reset_password_usage
         exit
         ;;
 
@@ -4945,7 +5209,7 @@ wpdocker_wordpress_reset_password_parse_requirements() {
   done
 
   # :command.command_filter
-  action="wordpress reset password"
+  action="wp reset password"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -4960,25 +5224,42 @@ wpdocker_wordpress_reset_password_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['new_password']+x} ]]; then
+          args['new_password']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
 
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp reset password DOMAIN [NEW_PASSWORD]\n" >&2
+
+    exit 1
+  fi
+
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_reset_role_parse_requirements() {
+wpdocker_wp_reset_role_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_reset_role_usage
+        wpdocker_wp_reset_role_usage
         exit
         ;;
 
@@ -4990,7 +5271,7 @@ wpdocker_wordpress_reset_role_parse_requirements() {
   done
 
   # :command.command_filter
-  action="wordpress reset role"
+  action="wp reset role"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -5005,25 +5286,42 @@ wpdocker_wordpress_reset_role_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['role']+x} ]]; then
+          args['role']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
 
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp reset role DOMAIN [ROLE]\n" >&2
+
+    exit 1
+  fi
+
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_cache_parse_requirements() {
+wpdocker_wp_cache_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_cache_usage
+        wpdocker_wp_cache_usage
         exit
         ;;
 
@@ -5035,7 +5333,7 @@ wpdocker_wordpress_cache_parse_requirements() {
   done
 
   # :command.command_filter
-  action="wordpress cache"
+  action="wp cache"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -5050,25 +5348,48 @@ wpdocker_wordpress_cache_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['cache_type']+x} ]]; then
+          args['cache_type']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
 
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp cache DOMAIN CACHE_TYPE\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['cache_type']+x} ]]; then
+    printf "missing required argument: CACHE_TYPE\nusage: wpdocker wp cache DOMAIN CACHE_TYPE\n" >&2
+
+    exit 1
+  fi
+
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_plugin_parse_requirements() {
+wpdocker_wp_plugin_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_plugin_usage
+        wpdocker_wp_plugin_usage
         exit
         ;;
 
@@ -5088,13 +5409,13 @@ wpdocker_wordpress_plugin_parse_requirements() {
     auto-update)
       action="auto-update"
       shift
-      wpdocker_wordpress_plugin_auto_update_parse_requirements "$@"
+      wpdocker_wp_plugin_auto_update_parse_requirements "$@"
       shift $#
       ;;
 
     # :command.command_fallback
     "")
-      wpdocker_wordpress_plugin_usage >&2
+      wpdocker_wp_plugin_usage >&2
       exit 1
       ;;
 
@@ -5129,14 +5450,14 @@ wpdocker_wordpress_plugin_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_plugin_auto_update_parse_requirements() {
+wpdocker_wp_plugin_auto_update_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_plugin_auto_update_usage
+        wpdocker_wp_plugin_auto_update_usage
         exit
         ;;
 
@@ -5148,7 +5469,7 @@ wpdocker_wordpress_plugin_auto_update_parse_requirements() {
   done
 
   # :command.command_filter
-  action="wordpress plugin auto-update"
+  action="wp plugin auto-update"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -5163,25 +5484,38 @@ wpdocker_wordpress_plugin_auto_update_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
 
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp plugin auto-update DOMAIN\n" >&2
+
+    exit 1
+  fi
+
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_security_parse_requirements() {
+wpdocker_wp_security_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_security_usage
+        wpdocker_wp_security_usage
         exit
         ;;
 
@@ -5198,16 +5532,16 @@ wpdocker_wordpress_security_parse_requirements() {
   case $action in
     -*) ;;
 
-    wplogin)
-      action="wplogin"
+    login)
+      action="login"
       shift
-      wpdocker_wordpress_security_wplogin_parse_requirements "$@"
+      wpdocker_wp_security_login_parse_requirements "$@"
       shift $#
       ;;
 
     # :command.command_fallback
     "")
-      wpdocker_wordpress_security_usage >&2
+      wpdocker_wp_security_usage >&2
       exit 1
       ;;
 
@@ -5242,14 +5576,14 @@ wpdocker_wordpress_security_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_wordpress_security_wplogin_parse_requirements() {
+wpdocker_wp_security_login_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_wordpress_security_wplogin_usage
+        wpdocker_wp_security_login_usage
         exit
         ;;
 
@@ -5261,7 +5595,7 @@ wpdocker_wordpress_security_wplogin_parse_requirements() {
   done
 
   # :command.command_filter
-  action="wordpress security wplogin"
+  action="wp security login"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -5276,13 +5610,26 @@ wpdocker_wordpress_security_wplogin_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['domain']+x} ]]; then
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp security login DOMAIN\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -5568,13 +5915,36 @@ wpdocker_system_manage_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['container_name']+x} ]]; then
+          args['container_name']=$1
+          shift
+        # :argument.case
+        elif [[ -z ${args['action']+x} ]]; then
+          args['action']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['container_name']+x} ]]; then
+    printf "missing required argument: CONTAINER_NAME\nusage: wpdocker system manage CONTAINER_NAME ACTION\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['action']+x} ]]; then
+    printf "missing required argument: ACTION\nusage: wpdocker system manage CONTAINER_NAME ACTION\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -5648,17 +6018,10 @@ wpdocker_cron_parse_requirements() {
   case $action in
     -*) ;;
 
-    letsencrypt)
-      action="letsencrypt"
+    run)
+      action="run"
       shift
-      wpdocker_cron_letsencrypt_parse_requirements "$@"
-      shift $#
-      ;;
-
-    all)
-      action="all"
-      shift
-      wpdocker_cron_all_parse_requirements "$@"
+      wpdocker_cron_run_parse_requirements "$@"
       shift $#
       ;;
 
@@ -5699,14 +6062,14 @@ wpdocker_cron_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_cron_letsencrypt_parse_requirements() {
+wpdocker_cron_run_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_cron_letsencrypt_usage
+        wpdocker_cron_run_usage
         exit
         ;;
 
@@ -5718,30 +6081,7 @@ wpdocker_cron_letsencrypt_parse_requirements() {
   done
 
   # :command.command_filter
-  action=${1:-}
-
-  case $action in
-    -*) ;;
-
-    renew)
-      action="renew"
-      shift
-      wpdocker_cron_letsencrypt_renew_parse_requirements "$@"
-      shift $#
-      ;;
-
-    # :command.command_fallback
-    "")
-      wpdocker_cron_letsencrypt_usage >&2
-      exit 1
-      ;;
-
-    *)
-      printf "invalid command: %s\n" "$action" >&2
-      exit 1
-      ;;
-
-  esac
+  action="cron run"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -5756,103 +6096,26 @@ wpdocker_cron_letsencrypt_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['task']+x} ]]; then
+          args['task']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
 
-}
+  # :command.required_args_filter
+  if [[ -z ${args['task']+x} ]]; then
+    printf "missing required argument: TASK\nusage: wpdocker cron run TASK\n" >&2
 
-# :command.parse_requirements
-wpdocker_cron_letsencrypt_renew_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_cron_letsencrypt_renew_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="cron letsencrypt renew"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_cron_all_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_cron_all_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="cron all"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
+    exit 1
+  fi
 
 }
 
@@ -6249,13 +6512,26 @@ wpdocker_core_channel_change_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['channel']+x} ]]; then
+          args['channel']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['channel']+x} ]]; then
+    printf "missing required argument: CHANNEL\nusage: wpdocker core channel change CHANNEL\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -6421,13 +6697,26 @@ wpdocker_core_lang_change_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['lang']+x} ]]; then
+          args['lang']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['lang']+x} ]]; then
+    printf "missing required argument: LANG\nusage: wpdocker core lang change LANG\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -7297,8 +7586,7 @@ run() {
     "website restore") wpdocker_website_restore_command ;;
     "website update_template") wpdocker_website_update_template_command ;;
     "ssl") wpdocker_ssl_command ;;
-    "ssl selfsigned") wpdocker_ssl_selfsigned_command ;;
-    "ssl letsencrypt") wpdocker_ssl_letsencrypt_command ;;
+    "ssl install") wpdocker_ssl_install_command ;;
     "ssl check") wpdocker_ssl_check_command ;;
     "ssl edit") wpdocker_ssl_edit_command ;;
     "php") wpdocker_php_command ;;
@@ -7306,8 +7594,6 @@ run() {
     "php get") wpdocker_php_get_command ;;
     "php rebuild") wpdocker_php_rebuild_command ;;
     "php edit") wpdocker_php_edit_command ;;
-    "php edit conf") wpdocker_php_edit_conf_command ;;
-    "php edit ini") wpdocker_php_edit_ini_command ;;
     "backup") wpdocker_backup_command ;;
     "backup website") wpdocker_backup_website_command ;;
     "backup database") wpdocker_backup_database_command ;;
@@ -7320,17 +7606,19 @@ run() {
     "database reset") wpdocker_database_reset_command ;;
     "database import") wpdocker_database_import_command ;;
     "database export") wpdocker_database_export_command ;;
-    "wordpress") wpdocker_wordpress_command ;;
-    "wordpress cli") wpdocker_wordpress_cli_command ;;
-    "wordpress migrate") wpdocker_wordpress_migrate_command ;;
-    "wordpress reset") wpdocker_wordpress_reset_command ;;
-    "wordpress reset password") wpdocker_wordpress_reset_password_command ;;
-    "wordpress reset role") wpdocker_wordpress_reset_role_command ;;
-    "wordpress cache") wpdocker_wordpress_cache_command ;;
-    "wordpress plugin") wpdocker_wordpress_plugin_command ;;
-    "wordpress plugin auto-update") wpdocker_wordpress_plugin_auto_update_command ;;
-    "wordpress security") wpdocker_wordpress_security_command ;;
-    "wordpress security wplogin") wpdocker_wordpress_security_wplogin_command ;;
+    "database export all") wpdocker_database_export_all_command ;;
+    "database export single") wpdocker_database_export_single_command ;;
+    "wp") wpdocker_wp_command ;;
+    "wp cli") wpdocker_wp_cli_command ;;
+    "wp migrate") wpdocker_wp_migrate_command ;;
+    "wp reset") wpdocker_wp_reset_command ;;
+    "wp reset password") wpdocker_wp_reset_password_command ;;
+    "wp reset role") wpdocker_wp_reset_role_command ;;
+    "wp cache") wpdocker_wp_cache_command ;;
+    "wp plugin") wpdocker_wp_plugin_command ;;
+    "wp plugin auto-update") wpdocker_wp_plugin_auto_update_command ;;
+    "wp security") wpdocker_wp_security_command ;;
+    "wp security login") wpdocker_wp_security_login_command ;;
     "system") wpdocker_system_command ;;
     "system check") wpdocker_system_check_command ;;
     "system check resources") wpdocker_system_check_resources_command ;;
@@ -7338,9 +7626,7 @@ run() {
     "system manage") wpdocker_system_manage_command ;;
     "system cleanup") wpdocker_system_cleanup_command ;;
     "cron") wpdocker_cron_command ;;
-    "cron letsencrypt") wpdocker_cron_letsencrypt_command ;;
-    "cron letsencrypt renew") wpdocker_cron_letsencrypt_renew_command ;;
-    "cron all") wpdocker_cron_all_command ;;
+    "cron run") wpdocker_cron_run_command ;;
     "core") wpdocker_core_command ;;
     "core version") wpdocker_core_version_command ;;
     "core update") wpdocker_core_update_command ;;

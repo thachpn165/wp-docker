@@ -46,3 +46,4 @@ website_cli_create() {
   debug_log "[website_cli_create] Auto-generate: $auto_generate"
   debug_log "[website_cli_create] Website creation completed"
 }
+

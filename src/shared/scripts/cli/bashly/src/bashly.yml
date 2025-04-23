@@ -18,16 +18,43 @@ commands:
           - name: php
             help: PHP version for the new site
             required: true
+          - name: auto_generate
+            help: Auto-generate secure passwords for the site
+            required: false
+            default: "true"
       - name: delete
         help: Delete an existing site
+        args:
+          - name: domain
+            help: Domain name of the site to delete
+            required: true
+          - name: backup
+            help: Backup before deletion
+            required: false
+            default: "true"
       - name: list
         help: List all WordPress sites
       - name: restart
         help: Restart a site
+        args: 
+          - name: domain
+            help: Domain name of the site to restart
+            required: true
       - name: logs
         help: Show site logs
+        args:
+          - name: domain
+            help: Domain name of the site to show logs
+            required: true
+          - name: log_type
+            help: Type of logs to show (e.g., access, error, php_slow, php_error)
+            required: true
       - name: info
         help: Show site info
+        args:
+          - name: domain
+            help: Domain name of the site to show info
+            required: true
       - name: restore
         help: Restore site from backup
       - name: update_template
@@ -36,34 +63,52 @@ commands:
   - name: ssl
     help: SSL certificate management
     commands:
-      - name: selfsigned
-        help: Install self-signed SSL
-      - name: letsencrypt
-        help: Install Let's Encrypt SSL
+      - name: install
+        help: Install SSL certificate
+        args:
+          - name: domain
+            help: Domain name for the SSL certificate
+            required: true
+          - name: type
+            help: Type of SSL certificate (selfsigned, letsencrypt)
+            required: true
       - name: check
         help: Check SSL certificate status
       - name: edit
         help: Edit SSL configuration
 
   - name: php
-    help: Manage PHP versions
+    help: Manage PHP versions and configuration
     commands:
       - name: change
-        help: Change PHP version
+        help: Change PHP version for a site
+        args: 
+          - name: domain
+            help: Domain name of the site to change PHP version
+            required: true
+          - name: version
+            help: New PHP version for the site
+            required: true
       - name: get
         help: Get PHP version list from Docker Hub
       - name: rebuild
-        help: Rebuild PHP container
+        help: Rebuild PHP container for a site
+        args:
+          - name: domain
+            help: Domain name of the site to rebuild PHP container
+            required: true
       - name: edit
-        help: Edit PHP configuration
-        commands:
-          - name: conf
-            help: Edit PHP-FPM configuration
-          - name: ini
-            help: Edit php.ini file
+        help: Edit PHP configuration for a site
+        args:
+          - name: domain
+            help: Domain name of the site to edit PHP configuration
+            required: true
+          - name: config_type
+            help: Type of PHP configuration to edit (conf, ini)
+            required: true 
 
   - name: backup
-    help: Manage backups
+    help: Manage backups for WordPress sites
     commands:
       - name: website
         help: Backup website source + DB
@@ -72,7 +117,7 @@ commands:
       - name: file
         help: Backup file only
       - name: restore
-        help: Restore backup
+        help: Restore backup for a site
         commands:
           - name: website
             help: Restore website source + DB
@@ -89,13 +134,29 @@ commands:
       - name: import
         help: Import a SQL database
       - name: export
-        help: Export site database
+        help: Export site database for a site or all sites
+        commands:
+          - name: all
+            help: Export database for all sites
+          - name: single
+            help: Export database for a specific site
+            args:
+              - name: domain
+                help: Domain name of the site to export database
+                required: true
 
-  - name: wordpress
+  - name: wp
     help: WordPress tools
     commands:
       - name: cli
         help: Run WP-CLI commands inside container
+        args:
+          - name: domain
+            help: Domain name of the site to run WP-CLI commands
+            required: true
+          - name: command
+            help: WP-CLI command to run
+            required: true
       - name: migrate
         help: Migrate WordPress site
       - name: reset
@@ -103,26 +164,54 @@ commands:
         commands:
           - name: password
             help: Reset admin password
+            args:
+              - name: domain
+                help: Domain name of the site to reset password
+                required: true
+              - name: new_password
+                help: New password for the admin user (optinal)
+                required: false
           - name: role
             help: Reset user roles
+            args:
+              - name: domain
+                help: Domain name of the site to reset user roles
+                required: true
+              - name: role
+                help: New role for the user (optinal)
+                required: false
       - name: cache
         help: Setup caching
+        args: 
+          - name: domain
+            help: Domain name of the site to setup caching
+            required: true
+          - name: cache_type
+            help: Type of caching to setup (wp-super-cache, fastcgi-cache, w3-total-cache, wp-fastest-cache, no-cache)
+            required: true
       - name: plugin
         help: Plugin tools
         commands:
           - name: auto-update
             help: Enable plugin auto update
+            args:
+              - name: domain
+                help: Domain name of the site to enable plugin auto update
+                required: true
       - name: security
         help: Security enhancements
         commands:
-          - name: wplogin
-            help: Protect wp-login.php
-
+          - name: login
+            help: Protect wp-login.php for a site
+            args:
+              - name: domain
+                help: Domain name of the site to protect wp-login.php
+                required: true
   - name: system
     help: System operations
     commands:
       - name: check
-        help: Check system resources
+        help: Sytem checking utilities
         commands:
           - name: resources
             help: Check system resources of Docker
@@ -130,19 +219,25 @@ commands:
             help: Check disk space usage of WP Docker
       - name: manage
         help: Manage Docker containers
+        args:
+          - name: container_name
+            help: Name of the Docker container to manage
+            required: true
+          - name: action
+            help: Action to perform on Docker containers (start, stop, restart, remove)
+            required: true
       - name: cleanup
         help: Cleanup unused Docker resources
   
   - name: cron
     help: Run cron tasks
     commands:
-      - name: letsencrypt
-        help: Cron related to Let's Encrypt
-        commands:
-          - name: renew
-            help: Renew Let's Encrypt SSL 
-      - name: all
-        help: Run all scheduled crons
+      - name: run
+        help: Run a specific cron task
+        args:
+          - name: task
+            help: Name of the cron task to run (backup, letsencrypt_renew, php_get_version, all)
+            required: true 
 
   - name: core
     help: Core management
@@ -160,6 +255,10 @@ commands:
         commands:
           - name: change
             help: Change release channel
+            args:
+              - name: channel
+                help: Release channel to switch to (official, nightly, dev) 
+                required: true
           - name: check
             help: Show current channel
       - name: lang
@@ -167,6 +266,10 @@ commands:
         commands:
           - name: change
             help: Change CLI language
+            args: 
+              - name: lang
+                help: Language code to switch to (e.g., en, fr, de)
+                required: true
           - name: check
             help: Show current language
           - name: list
