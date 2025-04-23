@@ -3,11 +3,21 @@ help: Manage WordPress Docker environments easily
 version: 1.2.0
 
 commands:
+  - name: menu
+    help: Show command menu
+    
   - name: website
     help: Manage WordPress websites
     commands:
       - name: create
         help: Create a new WordPress site
+        args:
+          - name: domain
+            help: Domain name for the new site
+            required: true
+          - name: php
+            help: PHP version for the new site
+            required: true
       - name: delete
         help: Delete an existing site
       - name: list
@@ -32,6 +42,8 @@ commands:
         help: Install Let's Encrypt SSL
       - name: check
         help: Check SSL certificate status
+      - name: edit
+        help: Edit SSL configuration
 
   - name: php
     help: Manage PHP versions
@@ -39,7 +51,7 @@ commands:
       - name: change
         help: Change PHP version
       - name: get
-        help: Get current PHP version
+        help: Get PHP version list from Docker Hub
       - name: rebuild
         help: Rebuild PHP container
       - name: edit
@@ -59,6 +71,15 @@ commands:
         help: Backup database only
       - name: file
         help: Backup file only
+      - name: restore
+        help: Restore backup
+        commands:
+          - name: website
+            help: Restore website source + DB
+          - name: database
+            help: Restore database only
+          - name: file
+            help: Restore file only
 
   - name: database
     help: Manage database operations
@@ -71,7 +92,7 @@ commands:
         help: Export site database
 
   - name: wordpress
-    help: WordPress features
+    help: WordPress tools
     commands:
       - name: cli
         help: Run WP-CLI commands inside container
@@ -102,25 +123,24 @@ commands:
     commands:
       - name: check
         help: Check system resources
+        commands:
+          - name: resources
+            help: Check system resources of Docker
+          - name: disk
+            help: Check disk space usage of WP Docker
       - name: manage
         help: Manage Docker containers
       - name: cleanup
         help: Cleanup unused Docker resources
-      - name: nginx
-        help: NGINX actions
-        commands:
-          - name: rebuild
-            help: Rebuild NGINX proxy
-          - name: restart
-            help: Restart NGINX proxy
-          - name: reload
-            help: Reload NGINX configuration
-
+  
   - name: cron
     help: Run cron tasks
     commands:
-      - name: le_renew
-        help: Renew Let's Encrypt certificates
+      - name: letsencrypt
+        help: Cron related to Let's Encrypt
+        commands:
+          - name: renew
+            help: Renew Let's Encrypt SSL 
       - name: all
         help: Run all scheduled crons
 
@@ -130,7 +150,9 @@ commands:
       - name: version
         help: Show current and latest version
       - name: update
-        help: Update core system
+        help: Update core system to the latest version
+      - name: upgrade
+        help: Run the upgrade scripts 
       - name: uninstall
         help: Uninstall WP Docker
       - name: channel
@@ -149,3 +171,37 @@ commands:
             help: Show current language
           - name: list
             help: List supported languages
+  
+  - name: nginx
+    help: NGINX actions
+    commands:
+      - name: rebuild
+        help: Rebuild NGINX proxy
+      - name: restart
+        help: Restart NGINX proxy
+      - name: reload
+        help: Reload NGINX configuration
+
+  - name: rclone
+    help: Rclone operations
+    commands:
+      - name: config
+        help: Rclone configuration
+      - name: upload
+        help: Upload files to remote storage
+        commands:
+          - name: backup
+            help: Upload backup files
+      - name: delete
+        help: delete storage config
+      - name: list
+        help: List storage in config
+  
+  - name: debug
+    help: Debugging tools
+    commands:
+      - name: mode
+        help: Enable and disable debug mode
+      - name: logs
+        help: Show debug logs
+
