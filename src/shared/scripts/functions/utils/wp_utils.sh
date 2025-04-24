@@ -158,3 +158,29 @@ check_and_update_wp_cli() {
   new_version=$("$wp_cli_path" --version 2>/dev/null | awk '{print $2}')
   print_msg success "$(printf "$SUCCESS_WPCLI_UPDATED" "$new_version")"
 }
+
+wp_cli_install() {
+  wp_cli_path="$BASE_DIR/shared/bin/wp"
+  tmp_cli_path="/tmp/wp-cli.phar"
+
+  if [[ ! -f "$wp_cli_path" ]]; then
+    echo -e "$WARNING_WPCLI_NOT_FOUND"
+
+    # Tải về thư mục tạm
+    curl -fsSL -o "$tmp_cli_path" https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar ||
+      exit_if_error 1 "$ERROR_WPCLI_DOWNLOAD_FAILED"
+
+    chmod +x "$tmp_cli_path"
+
+    # Đảm bảo thư mục đích tồn tại
+    mkdir -p "$(dirname "$wp_cli_path")" ||
+      exit_if_error 1 "$(printf "$ERROR_CREATE_DIR_FAILED" "$(dirname "$wp_cli_path")")"
+
+    mv "$tmp_cli_path" "$wp_cli_path" ||
+      exit_if_error 1 "$ERROR_WPCLI_MOVE_FAILED"
+
+    echo -e "$SUCCESS_WPCLI_INSTALLED"
+  else
+    echo -e "$(printf "$SUCCESS_WPCLI_EXISTS" "$wp_cli_path")"
+  fi
+}

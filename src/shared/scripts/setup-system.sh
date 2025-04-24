@@ -47,16 +47,7 @@ check_docker_group
 # =============================================
 # ⚡ Install WP-CLI if missing
 # =============================================
-WP_CLI_PATH="$BASE_DIR/shared/bin/wp"
-if [[ ! -f "$WP_CLI_PATH" ]]; then
-  echo -e "$WARNING_WPCLI_NOT_FOUND"
-  curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar || exit_if_error 1 "$ERROR_WPCLI_DOWNLOAD_FAILED"
-  chmod +x wp-cli.phar
-  mv wp-cli.phar "$WP_CLI_PATH" || exit_if_error 1 "$ERROR_WPCLI_MOVE_FAILED"
-  echo -e "$SUCCESS_WPCLI_INSTALLED"
-else
-  echo -e "$(printf "$SUCCESS_WPCLI_EXISTS" "$WP_CLI_PATH")"
-fi
+wp_cli_install
 
 # =============================================
 # ✅ Verify required commands are available
