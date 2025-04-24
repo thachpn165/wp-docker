@@ -333,10 +333,6 @@ commands:
         commands:
           - name: change
             help: Change release channel
-            args:
-              - name: channel
-                help: Release channel to switch to (official, nightly, dev) 
-                required: true
           - name: check
             help: Show current channel
       - name: lang
@@ -356,33 +352,21 @@ commands:
   - name: nginx
     help: NGINX actions
     commands:
-      - name: rebuild
-        help: Rebuild NGINX proxy
       - name: restart
         help: Restart NGINX proxy
       - name: reload
         help: Reload NGINX configuration
 
-  - name: rclone
-    help: Rclone operations
-    commands:
-      - name: config
-        help: Rclone configuration
-      - name: upload
-        help: Upload files to remote storage
-        commands:
-          - name: backup
-            help: Upload backup files
-      - name: delete
-        help: delete storage config
-      - name: list
-        help: List storage in config
   
   - name: debug
     help: Debugging tools
     commands:
-      - name: mode
+      - name: set
         help: Enable and disable debug mode
+        args:
+          - name: action
+            help: Action to perform (enable, disable)
+            required: true
       - name: logs
         help: Show debug logs
 

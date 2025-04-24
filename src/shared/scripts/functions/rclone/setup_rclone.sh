@@ -67,7 +67,7 @@ rclone_setup() {
   print_msg run "$INFO_RCLONE_SETUP_START"
 
   # === Ensure config file exists ===
-  if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
+if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
     print_msg info "$(printf "$INFO_RCLONE_CREATING_CONF" "$RCLONE_CONFIG_FILE")"
     touch "$RCLONE_CONFIG_FILE" || {
       print_and_debug error "$(printf "$ERROR_RCLONE_CREATE_CONF_FAILED" "$RCLONE_CONFIG_FILE")"

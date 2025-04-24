@@ -1,5 +1,6 @@
-echo "# This file is located at 'src/core_channel_check_command.sh'."
-echo "# It contains the implementation for the 'wpdocker core channel check' command."
-echo "# The code you write here will be wrapped by a function named 'wpdocker_core_channel_check_command()'."
-echo "# Feel free to edit this file; your changes will persist when regenerating."
-inspect_args
+safe_source "$FUNCTIONS_DIR/core/core_version_management.sh"
+
+
+current_channel=$(core_channel_get)
+
+print_msg info "Current channel: $current_channel"

@@ -1,5 +1,4 @@
-echo "# This file is located at 'src/debug_logs_command.sh'."
-echo "# It contains the implementation for the 'wpdocker debug logs' command."
-echo "# The code you write here will be wrapped by a function named 'wpdocker_debug_logs_command()'."
-echo "# Feel free to edit this file; your changes will persist when regenerating."
-inspect_args
+print_msg step "Waching for debug logs..."
+# # =============================================
+# Cat only last 50 lines of the log file
+tail -n 50 "$DEBUG_LOG" 

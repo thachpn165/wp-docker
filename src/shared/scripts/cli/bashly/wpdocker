@@ -36,7 +36,6 @@ wpdocker_usage() {
   printf "  %s   System operations\n" "system  "
   printf "  %s   Core management\n" "core    "
   printf "  %s   NGINX actions\n" "nginx   "
-  printf "  %s   Rclone operations\n" "rclone  "
   printf "  %s   Debugging tools\n" "debug   "
   echo
 
@@ -1614,7 +1613,7 @@ wpdocker_core_channel_change_usage() {
   printf "wpdocker core channel change - Change release channel\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker core channel change CHANNEL\n"
+  printf "  wpdocker core channel change\n"
   printf "  wpdocker core channel change --help | -h\n"
   echo
 
@@ -1625,14 +1624,6 @@ wpdocker_core_channel_change_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
-    echo
-
-    # :command.usage_args
-    printf "%s\n" "Arguments:"
-
-    # :argument.usage
-    printf "  %s\n" "CHANNEL"
-    printf "    Release channel to switch to (official, nightly, dev)\n"
     echo
 
   fi
@@ -1767,30 +1758,8 @@ wpdocker_nginx_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Rebuild NGINX proxy\n" "rebuild"
   printf "  %s   Restart NGINX proxy\n" "restart"
   printf "  %s   Reload NGINX configuration\n" "reload "
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_nginx_rebuild_usage() {
-  printf "wpdocker nginx rebuild - Rebuild NGINX proxy\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker nginx rebuild\n"
-  printf "  wpdocker nginx rebuild --help | -h\n"
   echo
 
   # :command.long_usage
@@ -1848,143 +1817,6 @@ wpdocker_nginx_reload_usage() {
 }
 
 # :command.usage
-wpdocker_rclone_usage() {
-  printf "wpdocker rclone - Rclone operations\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker rclone COMMAND\n"
-  printf "  wpdocker rclone [COMMAND] --help | -h\n"
-  echo
-  # :command.usage_commands
-  printf "%s\n" "Commands:"
-  printf "  %s   Rclone configuration\n" "config"
-  printf "  %s   Upload files to remote storage\n" "upload"
-  printf "  %s   delete storage config\n" "delete"
-  printf "  %s   List storage in config\n" "list  "
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_rclone_config_usage() {
-  printf "wpdocker rclone config - Rclone configuration\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker rclone config\n"
-  printf "  wpdocker rclone config --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_rclone_upload_usage() {
-  printf "wpdocker rclone upload - Upload files to remote storage\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker rclone upload COMMAND\n"
-  printf "  wpdocker rclone upload [COMMAND] --help | -h\n"
-  echo
-  # :command.usage_commands
-  printf "%s\n" "Commands:"
-  printf "  %s   Upload backup files\n" "backup"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_rclone_upload_backup_usage() {
-  printf "wpdocker rclone upload backup - Upload backup files\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker rclone upload backup\n"
-  printf "  wpdocker rclone upload backup --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_rclone_delete_usage() {
-  printf "wpdocker rclone delete - delete storage config\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker rclone delete\n"
-  printf "  wpdocker rclone delete --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_rclone_list_usage() {
-  printf "wpdocker rclone list - List storage in config\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker rclone list\n"
-  printf "  wpdocker rclone list --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
 wpdocker_debug_usage() {
   printf "wpdocker debug - Debugging tools\n\n"
 
@@ -1994,7 +1826,7 @@ wpdocker_debug_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Enable and disable debug mode\n" "mode"
+  printf "  %s   Enable and disable debug mode\n" "set "
   printf "  %s   Show debug logs\n" "logs"
   echo
 
@@ -2011,12 +1843,12 @@ wpdocker_debug_usage() {
 }
 
 # :command.usage
-wpdocker_debug_mode_usage() {
-  printf "wpdocker debug mode - Enable and disable debug mode\n\n"
+wpdocker_debug_set_usage() {
+  printf "wpdocker debug set - Enable and disable debug mode\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker debug mode\n"
-  printf "  wpdocker debug mode --help | -h\n"
+  printf "  wpdocker debug set ACTION\n"
+  printf "  wpdocker debug set --help | -h\n"
   echo
 
   # :command.long_usage
@@ -2026,6 +1858,14 @@ wpdocker_debug_mode_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "ACTION"
+    printf "    Action to perform (enable, disable)\n"
     echo
 
   fi
@@ -2504,47 +2344,34 @@ wpdocker_core_update_command() {
 wpdocker_core_upgrade_command() {
 
   # src/core_upgrade_command.sh
-  echo "# This file is located at 'src/core_upgrade_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core upgrade' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_upgrade_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
+  echo "Coming soon"
 }
 
 # :command.function
 wpdocker_core_uninstall_command() {
 
   # src/core_uninstall_command.sh
-  echo "# This file is located at 'src/core_uninstall_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core uninstall' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_uninstall_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
+  bash "$BASE_DIR/uninstall.sh"
 }
 
 # :command.function
 wpdocker_core_channel_change_command() {
 
   # src/core_channel_change_command.sh
-  echo "# This file is located at 'src/core_channel_change_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core channel change' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_channel_change_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/core/core_channel.sh"
 
+  core_channel_switch_prompt
 }
 
 # :command.function
 wpdocker_core_channel_check_command() {
 
   # src/core_channel_check_command.sh
-  echo "# This file is located at 'src/core_channel_check_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core channel check' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_channel_check_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/core/core_version_management.sh"
+
+  current_channel=$(core_channel_get)
+
+  print_msg info "Current channel: $current_channel"
 
 }
 
@@ -2552,143 +2379,98 @@ wpdocker_core_channel_check_command() {
 wpdocker_core_lang_change_command() {
 
   # src/core_lang_change_command.sh
-  echo "# This file is located at 'src/core_lang_change_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core lang change' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_lang_change_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/core_lang.sh"
 
+  core_lang_cli_change --lang="${args[lang]}" || exit 1
 }
 
 # :command.function
 wpdocker_core_lang_check_command() {
 
   # src/core_lang_check_command.sh
-  echo "# This file is located at 'src/core_lang_check_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core lang check' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_lang_check_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/core_lang.sh"
 
+  core_lang_cli_get
 }
 
 # :command.function
 wpdocker_core_lang_list_command() {
 
   # src/core_lang_list_command.sh
-  echo "# This file is located at 'src/core_lang_list_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core lang list' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_lang_list_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/core_lang.sh"
 
-}
-
-# :command.function
-wpdocker_nginx_rebuild_command() {
-
-  # src/nginx_rebuild_command.sh
-  echo "# This file is located at 'src/nginx_rebuild_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker nginx rebuild' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_nginx_rebuild_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
+  core_lang_cli_list
 }
 
 # :command.function
 wpdocker_nginx_restart_command() {
 
   # src/nginx_restart_command.sh
-  echo "# This file is located at 'src/nginx_restart_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker nginx restart' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_nginx_restart_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CORE_LIB_DIR/nginx_utils.sh"
 
+  nginx_restart || exit 1
 }
 
 # :command.function
 wpdocker_nginx_reload_command() {
 
   # src/nginx_reload_command.sh
-  echo "# This file is located at 'src/nginx_reload_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker nginx reload' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_nginx_reload_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CORE_LIB_DIR/nginx_utils.sh"
 
+  nginx_reload
 }
 
 # :command.function
-wpdocker_rclone_config_command() {
+wpdocker_debug_set_command() {
 
-  # src/rclone_config_command.sh
-  echo "# This file is located at 'src/rclone_config_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker rclone config' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_rclone_config_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  # src/debug_set_command.sh
+  #!/bin/bash
 
-}
+  # Check if required variables are set
+  if [[ -z "${args[action]}" || -z "$WPDOCKER_CONFIG_FILE" ]]; then
+      echo "Error: Missing required arguments or configuration file."
+      exit 1
+  fi
 
-# :command.function
-wpdocker_rclone_upload_backup_command() {
+  # Ensure the configuration file exists
+  if [[ ! -f "$WPDOCKER_CONFIG_FILE" ]]; then
+      echo "Error: Configuration file '$WPDOCKER_CONFIG_FILE' not found."
+      exit 1
+  fi
 
-  # src/rclone_upload_backup_command.sh
-  echo "# This file is located at 'src/rclone_upload_backup_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker rclone upload backup' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_rclone_upload_backup_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_rclone_delete_command() {
-
-  # src/rclone_delete_command.sh
-  echo "# This file is located at 'src/rclone_delete_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker rclone delete' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_rclone_delete_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_rclone_list_command() {
-
-  # src/rclone_list_command.sh
-  echo "# This file is located at 'src/rclone_list_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker rclone list' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_rclone_list_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_debug_mode_command() {
-
-  # src/debug_mode_command.sh
-  echo "# This file is located at 'src/debug_mode_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker debug mode' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_debug_mode_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
+  # Perform action based on ${args[action]}
+  case "${args[action]}" in
+      enable)
+          if grep -q 'DEBUG_MODE="true"' "$WPDOCKER_CONFIG_FILE"; then
+              echo "DEBUG_MODE is already enabled."
+          else
+              sed -i '' 's/DEBUG_MODE="false"/DEBUG_MODE="true"/' "$WPDOCKER_CONFIG_FILE"
+              echo "DEBUG_MODE has been enabled."
+          fi
+          ;;
+      disable)
+          if grep -q 'DEBUG_MODE="false"' "$WPDOCKER_CONFIG_FILE"; then
+              echo "DEBUG_MODE is already disabled."
+          else
+              sed -i '' 's/DEBUG_MODE="true"/DEBUG_MODE="false"/' "$WPDOCKER_CONFIG_FILE"
+              echo "DEBUG_MODE has been disabled."
+          fi
+          ;;
+      *)
+          echo "Error: Invalid action '${args[action]}'. Use 'enable' or 'disable'."
+          exit 1
+          ;;
+  esac
 }
 
 # :command.function
 wpdocker_debug_logs_command() {
 
   # src/debug_logs_command.sh
-  echo "# This file is located at 'src/debug_logs_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker debug logs' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_debug_logs_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  print_msg step "Waching for debug logs..."
+  # # =============================================
+  # Cat only last 50 lines of the log file
+  tail -n 50 "$DEBUG_LOG"
 
 }
 
@@ -2789,13 +2571,6 @@ parse_requirements() {
       action="nginx"
       shift
       wpdocker_nginx_parse_requirements "$@"
-      shift $#
-      ;;
-
-    rclone)
-      action="rclone"
-      shift
-      wpdocker_rclone_parse_requirements "$@"
       shift $#
       ;;
 
@@ -6401,26 +6176,13 @@ wpdocker_core_channel_change_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        # :argument.case
-        if [[ -z ${args['channel']+x} ]]; then
-          args['channel']=$1
-          shift
-        else
-          printf "invalid argument: %s\n" "$key" >&2
-          exit 1
-        fi
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
 
         ;;
 
     esac
   done
-
-  # :command.required_args_filter
-  if [[ -z ${args['channel']+x} ]]; then
-    printf "missing required argument: CHANNEL\nusage: wpdocker core channel change CHANNEL\n" >&2
-
-    exit 1
-  fi
 
 }
 
@@ -6724,13 +6486,6 @@ wpdocker_nginx_parse_requirements() {
   case $action in
     -*) ;;
 
-    rebuild)
-      action="rebuild"
-      shift
-      wpdocker_nginx_rebuild_parse_requirements "$@"
-      shift $#
-      ;;
-
     restart)
       action="restart"
       shift
@@ -6757,51 +6512,6 @@ wpdocker_nginx_parse_requirements() {
       ;;
 
   esac
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_nginx_rebuild_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_nginx_rebuild_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="nginx rebuild"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -6917,343 +6627,6 @@ wpdocker_nginx_reload_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_rclone_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_rclone_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action=${1:-}
-
-  case $action in
-    -*) ;;
-
-    config)
-      action="config"
-      shift
-      wpdocker_rclone_config_parse_requirements "$@"
-      shift $#
-      ;;
-
-    upload)
-      action="upload"
-      shift
-      wpdocker_rclone_upload_parse_requirements "$@"
-      shift $#
-      ;;
-
-    delete)
-      action="delete"
-      shift
-      wpdocker_rclone_delete_parse_requirements "$@"
-      shift $#
-      ;;
-
-    list)
-      action="list"
-      shift
-      wpdocker_rclone_list_parse_requirements "$@"
-      shift $#
-      ;;
-
-    # :command.command_fallback
-    "")
-      wpdocker_rclone_usage >&2
-      exit 1
-      ;;
-
-    *)
-      printf "invalid command: %s\n" "$action" >&2
-      exit 1
-      ;;
-
-  esac
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_rclone_config_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_rclone_config_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="rclone config"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_rclone_upload_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_rclone_upload_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action=${1:-}
-
-  case $action in
-    -*) ;;
-
-    backup)
-      action="backup"
-      shift
-      wpdocker_rclone_upload_backup_parse_requirements "$@"
-      shift $#
-      ;;
-
-    # :command.command_fallback
-    "")
-      wpdocker_rclone_upload_usage >&2
-      exit 1
-      ;;
-
-    *)
-      printf "invalid command: %s\n" "$action" >&2
-      exit 1
-      ;;
-
-  esac
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_rclone_upload_backup_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_rclone_upload_backup_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="rclone upload backup"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_rclone_delete_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_rclone_delete_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="rclone delete"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_rclone_list_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_rclone_list_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="rclone list"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
 wpdocker_debug_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
@@ -7278,10 +6651,10 @@ wpdocker_debug_parse_requirements() {
   case $action in
     -*) ;;
 
-    mode)
-      action="mode"
+    set)
+      action="set"
       shift
-      wpdocker_debug_mode_parse_requirements "$@"
+      wpdocker_debug_set_parse_requirements "$@"
       shift $#
       ;;
 
@@ -7329,14 +6702,14 @@ wpdocker_debug_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_debug_mode_parse_requirements() {
+wpdocker_debug_set_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
       --help | -h)
         long_usage=yes
-        wpdocker_debug_mode_usage
+        wpdocker_debug_set_usage
         exit
         ;;
 
@@ -7348,7 +6721,7 @@ wpdocker_debug_mode_parse_requirements() {
   done
 
   # :command.command_filter
-  action="debug mode"
+  action="debug set"
 
   # :command.parse_requirements_while
   while [[ $# -gt 0 ]]; do
@@ -7363,13 +6736,26 @@ wpdocker_debug_mode_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['action']+x} ]]; then
+          args['action']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
     esac
   done
+
+  # :command.required_args_filter
+  if [[ -z ${args['action']+x} ]]; then
+    printf "missing required argument: ACTION\nusage: wpdocker debug set ACTION\n" >&2
+
+    exit 1
+  fi
 
 }
 
@@ -7533,17 +6919,10 @@ run() {
     "core lang check") wpdocker_core_lang_check_command ;;
     "core lang list") wpdocker_core_lang_list_command ;;
     "nginx") wpdocker_nginx_command ;;
-    "nginx rebuild") wpdocker_nginx_rebuild_command ;;
     "nginx restart") wpdocker_nginx_restart_command ;;
     "nginx reload") wpdocker_nginx_reload_command ;;
-    "rclone") wpdocker_rclone_command ;;
-    "rclone config") wpdocker_rclone_config_command ;;
-    "rclone upload") wpdocker_rclone_upload_command ;;
-    "rclone upload backup") wpdocker_rclone_upload_backup_command ;;
-    "rclone delete") wpdocker_rclone_delete_command ;;
-    "rclone list") wpdocker_rclone_list_command ;;
     "debug") wpdocker_debug_command ;;
-    "debug mode") wpdocker_debug_mode_command ;;
+    "debug set") wpdocker_debug_set_command ;;
     "debug logs") wpdocker_debug_logs_command ;;
   esac
 

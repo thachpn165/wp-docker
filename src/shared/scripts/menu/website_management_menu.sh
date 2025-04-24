@@ -6,7 +6,7 @@
 # Load website management functions
 safe_source "$FUNCTIONS_DIR/website_loader.sh"
 safe_source "$CLI_DIR/website_create.sh"
-
+safe_source "$CLI_DIR/website_manage.sh"
 # Display website management menu
 website_management_menu() {
   while true; do
