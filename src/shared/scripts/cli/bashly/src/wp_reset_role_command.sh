@@ -1,5 +1,3 @@
-echo "# This file is located at 'src/wp_reset_role_command.sh'."
-echo "# It contains the implementation for the 'wpdocker wp reset role' command."
-echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_reset_role_command()'."
-echo "# Feel free to edit this file; your changes will persist when regenerating."
-inspect_args
+safe_source "$CLI_DIR/wordpress_reset_user_role.sh"
+
+wordpress_cli_reset_roles --domain="${args[domain]}" || exit 1

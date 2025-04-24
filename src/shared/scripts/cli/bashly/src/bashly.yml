@@ -270,9 +270,13 @@ commands:
           - name: domain
             help: Domain name of the site to setup caching
             required: true
-          - name: cache_type
-            help: Type of caching to setup (wp-super-cache, fastcgi-cache, w3-total-cache, wp-fastest-cache, no-cache)
-            required: true
+        flags:
+            - long: --type
+              short: -t
+              help: Type of caching to setup (e.g., fastcgi-cache, wp-super-cache, w3-total-cache, no-cache)
+              required: true
+              arg: type
+
       - name: plugin
         help: Plugin tools
         commands:
@@ -282,6 +286,9 @@ commands:
               - name: domain
                 help: Domain name of the site to enable plugin auto update
                 required: true
+              - name: action
+                help: Action to perform (enable, disable)
+                required: true
       - name: security
         help: Security enhancements
         commands:
@@ -290,6 +297,9 @@ commands:
             args:
               - name: domain
                 help: Domain name of the site to protect wp-login.php
+                required: true
+              - name: action
+                help: Action to perform (enable, disable)
                 required: true
   - name: system
     help: System operations

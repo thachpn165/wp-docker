@@ -1,5 +1,3 @@
-echo "# This file is located at 'src/wp_security_login_command.sh'."
-echo "# It contains the implementation for the 'wpdocker wp security login' command."
-echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_security_login_command()'."
-echo "# Feel free to edit this file; your changes will persist when regenerating."
-inspect_args
+safe_source "$CLI_DIR/wordpress_protect_wp_login.sh"
+
+wordpress_cli_protect_wplogin --domain="${args[domain]}" --action="${args[action]}" || exit 1

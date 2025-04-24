@@ -1223,13 +1223,19 @@ wpdocker_wp_cache_usage() {
   printf "wpdocker wp cache - Setup caching\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wp cache DOMAIN CACHE_TYPE\n"
+  printf "  wpdocker wp cache DOMAIN [OPTIONS]\n"
   printf "  wpdocker wp cache --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n "$long_usage" ]]; then
     printf "%s\n" "Options:"
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--type, -t TYPE (required)"
+    printf "    Type of caching to setup (e.g., fastcgi-cache, wp-super-cache,\n    w3-total-cache, no-cache)\n"
+    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -1242,11 +1248,6 @@ wpdocker_wp_cache_usage() {
     # :argument.usage
     printf "  %s\n" "DOMAIN"
     printf "    Domain name of the site to setup caching\n"
-    echo
-
-    # :argument.usage
-    printf "  %s\n" "CACHE_TYPE"
-    printf "    Type of caching to setup (wp-super-cache, fastcgi-cache, w3-total-cache,\n    wp-fastest-cache, no-cache)\n"
     echo
 
   fi
@@ -1282,7 +1283,7 @@ wpdocker_wp_plugin_auto_update_usage() {
   printf "wpdocker wp plugin auto-update - Enable plugin auto update\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wp plugin auto-update DOMAIN\n"
+  printf "  wpdocker wp plugin auto-update DOMAIN ACTION\n"
   printf "  wpdocker wp plugin auto-update --help | -h\n"
   echo
 
@@ -1301,6 +1302,11 @@ wpdocker_wp_plugin_auto_update_usage() {
     # :argument.usage
     printf "  %s\n" "DOMAIN"
     printf "    Domain name of the site to enable plugin auto update\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "ACTION"
+    printf "    Action to perform (enable, disable)\n"
     echo
 
   fi
@@ -1336,7 +1342,7 @@ wpdocker_wp_security_login_usage() {
   printf "wpdocker wp security login - Protect wp-login.php for a site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wp security login DOMAIN\n"
+  printf "  wpdocker wp security login DOMAIN ACTION\n"
   printf "  wpdocker wp security login --help | -h\n"
   echo
 
@@ -1355,6 +1361,11 @@ wpdocker_wp_security_login_usage() {
     # :argument.usage
     printf "  %s\n" "DOMAIN"
     printf "    Domain name of the site to protect wp-login.php\n"
+    echo
+
+    # :argument.usage
+    printf "  %s\n" "ACTION"
+    printf "    Action to perform (enable, disable)\n"
     echo
 
   fi
@@ -2521,60 +2532,46 @@ wpdocker_wp_reset_password_command() {
 wpdocker_wp_reset_role_command() {
 
   # src/wp_reset_role_command.sh
-  echo "# This file is located at 'src/wp_reset_role_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wp reset role' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_reset_role_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/wordpress_reset_user_role.sh"
 
+  wordpress_cli_reset_roles --domain="${args[domain]}" || exit 1
 }
 
 # :command.function
 wpdocker_wp_cache_command() {
 
   # src/wp_cache_command.sh
-  echo "# This file is located at 'src/wp_cache_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wp cache' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_cache_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/wordpress_cache_setup.sh"
 
+  wordpress_cli_cache_setup --domain="${args[domain]}" --cache_type="${args[--type]}" || exit 1
 }
 
 # :command.function
 wpdocker_wp_plugin_auto_update_command() {
 
   # src/wp_plugin_auto_update_command.sh
-  echo "# This file is located at 'src/wp_plugin_auto_update_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wp plugin auto-update' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_plugin_auto_update_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/wordpress_auto_update_plugin.sh"
 
+  wordpress_cli_auto_update_plugin --domain="${args[domain]}" --action="${args[action]}" || exit 1
 }
 
 # :command.function
 wpdocker_wp_security_login_command() {
 
   # src/wp_security_login_command.sh
-  echo "# This file is located at 'src/wp_security_login_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wp security login' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_security_login_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/wordpress_protect_wp_login.sh"
 
+  wordpress_cli_protect_wplogin --domain="${args[domain]}" --action="${args[action]}" || exit 1
 }
 
 # :command.function
 wpdocker_system_check_resources_command() {
 
   # src/system_check_resources_command.sh
-  echo "# This file is located at 'src/system_check_resources_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker system check resources' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_system_check_resources_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/system-tools/system_check_resources.sh"
 
+  check_resources_output=$(system_logic_check_resources)
+  echo "$check_resources_output"
 }
 
 # :command.function
@@ -5601,6 +5598,19 @@ wpdocker_wp_cache_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
+      # :flag.case
+      --type | -t)
+
+        # :flag.case_arg
+        if [[ -n ${2+x} ]]; then
+          args['--type']="$2"
+          shift
+          shift
+        else
+          printf "%s\n" "--type requires an argument: --type, -t TYPE" >&2
+          exit 1
+        fi
+        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -5614,10 +5624,6 @@ wpdocker_wp_cache_parse_requirements() {
         if [[ -z ${args['domain']+x} ]]; then
           args['domain']=$1
           shift
-        # :argument.case
-        elif [[ -z ${args['cache_type']+x} ]]; then
-          args['cache_type']=$1
-          shift
         else
           printf "invalid argument: %s\n" "$key" >&2
           exit 1
@@ -5630,14 +5636,14 @@ wpdocker_wp_cache_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['domain']+x} ]]; then
-    printf "missing required argument: DOMAIN\nusage: wpdocker wp cache DOMAIN CACHE_TYPE\n" >&2
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp cache DOMAIN [OPTIONS]\n" >&2
 
     exit 1
   fi
 
-  if [[ -z ${args['cache_type']+x} ]]; then
-    printf "missing required argument: CACHE_TYPE\nusage: wpdocker wp cache DOMAIN CACHE_TYPE\n" >&2
-
+  # :command.required_flags_filter
+  if [[ -z ${args['--type']+x} ]]; then
+    printf "missing required flag: --type, -t TYPE\n" >&2
     exit 1
   fi
 
@@ -5750,6 +5756,10 @@ wpdocker_wp_plugin_auto_update_parse_requirements() {
         if [[ -z ${args['domain']+x} ]]; then
           args['domain']=$1
           shift
+        # :argument.case
+        elif [[ -z ${args['action']+x} ]]; then
+          args['action']=$1
+          shift
         else
           printf "invalid argument: %s\n" "$key" >&2
           exit 1
@@ -5762,7 +5772,13 @@ wpdocker_wp_plugin_auto_update_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['domain']+x} ]]; then
-    printf "missing required argument: DOMAIN\nusage: wpdocker wp plugin auto-update DOMAIN\n" >&2
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp plugin auto-update DOMAIN ACTION\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['action']+x} ]]; then
+    printf "missing required argument: ACTION\nusage: wpdocker wp plugin auto-update DOMAIN ACTION\n" >&2
 
     exit 1
   fi
@@ -5876,6 +5892,10 @@ wpdocker_wp_security_login_parse_requirements() {
         if [[ -z ${args['domain']+x} ]]; then
           args['domain']=$1
           shift
+        # :argument.case
+        elif [[ -z ${args['action']+x} ]]; then
+          args['action']=$1
+          shift
         else
           printf "invalid argument: %s\n" "$key" >&2
           exit 1
@@ -5888,7 +5908,13 @@ wpdocker_wp_security_login_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['domain']+x} ]]; then
-    printf "missing required argument: DOMAIN\nusage: wpdocker wp security login DOMAIN\n" >&2
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp security login DOMAIN ACTION\n" >&2
+
+    exit 1
+  fi
+
+  if [[ -z ${args['action']+x} ]]; then
+    printf "missing required argument: ACTION\nusage: wpdocker wp security login DOMAIN ACTION\n" >&2
 
     exit 1
   fi
