@@ -51,7 +51,7 @@ wordpress_protect_wp_login_logic() {
         print_msg error "$ERROR_MISSING_PARAM: --domain, --action"
         exit 1
     fi
-    _id_valid_domain "$domain" || return 1
+    _is_valid_domain "$domain" || return 1
     if ! json_key_exists ".site[\"$domain\"]"; then
         print_msg error "$ERROR_SITE_NOT_EXIST: $domain"
         return 1

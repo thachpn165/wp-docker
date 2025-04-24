@@ -48,7 +48,7 @@ src/sites/*/logs/
 src/core/webserver/nginx/ssl/*
 !src/core/webserver/nginx/ssl/.gitkeep
 !src/sites/**/nginx/ssl/.gitkeep
-
+.certbot
 # ========================================
 # 🐳 Docker Compose & Containers
 # ========================================

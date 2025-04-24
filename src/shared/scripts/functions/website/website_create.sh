@@ -1,4 +1,5 @@
 # shellcheck disable=SC2317
+safe_source "$FUNCTIONS_DIR/ssl_loader.sh"
 # =====================================
 # website_prompt_create: Prompt user for domain and PHP version, then call website_cli_create
 # Behavior:

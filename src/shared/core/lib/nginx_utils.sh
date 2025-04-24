@@ -1,57 +1,53 @@
-nginx_init() {
+# =============================================
+# 🔧 Function: nginx_init_docker_compose
+# Description: Generate docker-compose.yml from template if not exists
+# =============================================
+nginx_init_docker_compose() {
     local compose_file="$NGINX_PROXY_DIR/docker-compose.yml"
     local template_file="$TEMPLATES_DIR/nginx-docker-compose.yml.template"
 
-    # Đảm bảo thư mục tồn tại
+    debug_log "[nginx_init_docker_compose] Checking template: $template_file"
+    debug_log "[nginx_init_docker_compose] Target file: $compose_file"
+
+    if [[ ! -f "$template_file" ]]; then
+        print_msg error "❌ Missing template: $template_file"
+        return 1
+    fi
+
+    cp "$template_file" "$compose_file.tmp"
+    sedi "s|\${nginx_container_name}|$NGINX_PROXY_CONTAINER|g" "$compose_file.tmp"
+    sedi "s|\${docker_network}|$DOCKER_NETWORK|g" "$compose_file.tmp"
+    mv "$compose_file.tmp" "$compose_file"
+    print_msg success "$SUCCESS_NGINX_COMPOSE_GENERATED: $compose_file"
+}
+
+# =============================================
+# 🚀 Function: nginx_init
+# Description: Initialize and ensure NGINX proxy is correctly set up
+# =============================================
+nginx_init() {
     _is_directory_exist "$NGINX_PROXY_DIR" true
 
     print_msg step "$MSG_CHECKING_CONTAINER: $NGINX_PROXY_CONTAINER"
 
-    # Nếu container đang chạy nhưng file docker-compose.yml bị mất → tạo lại file
     if _is_container_running "$NGINX_PROXY_CONTAINER"; then
         debug_log "[nginx_init] ✅ Container $NGINX_PROXY_CONTAINER is running"
-        if [[ ! -f "$compose_file" ]]; then
-            print_msg warning "⚠️ Container is running but $compose_file is missing. Recreating it..."
-            if [[ -f "$template_file" ]]; then
-                cp "$template_file" "$compose_file.tmp"
-                sedi "s|\${nginx_container_name}|$NGINX_PROXY_CONTAINER|g" "$compose_file.tmp"
-                sedi "s|\${docker_network}|$DOCKER_NETWORK|g" "$compose_file.tmp"
-                mv "$compose_file.tmp" "$compose_file"
-                print_msg success "$SUCCESS_NGINX_COMPOSE_GENERATED: $compose_file"
-            else
-                print_msg error "❌ Missing template: $template_file"
-                return 1
-            fi
-        fi
+        [[ ! -f "$NGINX_PROXY_DIR/docker-compose.yml" ]] && nginx_init_docker_compose
         return 0
     fi
 
-    # Nếu container tồn tại (but not running) và không có compose → remove container
-    if [[ ! -f "$compose_file" ]] && docker ps -a --format '{{.Names}}' | grep -q "^${NGINX_PROXY_CONTAINER}$"; then
-        print_msg warning "⚠️ $compose_file not found but container $NGINX_PROXY_CONTAINER exists. Removing container..."
+    if [[ ! -f "$NGINX_PROXY_DIR/docker-compose.yml" ]] && docker ps -a --format '{{.Names}}' | grep -q "^${NGINX_PROXY_CONTAINER}$"; then
+        print_msg warning "⚠️ docker-compose.yml not found but container $NGINX_PROXY_CONTAINER exists. Removing container..."
         docker rm -f "$NGINX_PROXY_CONTAINER"
     fi
 
-    # Nếu chưa có file thì tạo từ template
-    if [[ ! -f "$compose_file" ]]; then
-        debug_log "[nginx_init] 🛠 docker-compose.yml not found, generating from template..."
-        if [[ ! -f "$template_file" ]]; then
-            print_msg error "❌ Missing template: $template_file"
-            return 1
-        fi
+    [[ ! -f "$NGINX_PROXY_DIR/docker-compose.yml" ]] && nginx_init_docker_compose
 
-        cp "$template_file" "$compose_file.tmp"
-        sedi "s|\${nginx_container_name}|$NGINX_PROXY_CONTAINER|g" "$compose_file.tmp"
-        sedi "s|\${docker_network}|$DOCKER_NETWORK|g" "$compose_file.tmp"
-        mv "$compose_file.tmp" "$compose_file"
-        print_msg success "$SUCCESS_NGINX_COMPOSE_GENERATED: $compose_file"
-    fi
-
-    # Khởi động lại nếu chưa chạy
     docker volume create wpdocker_fastcgi_cache_data >/dev/null
-    docker compose -f "$compose_file" up -d --force-recreate
+    docker compose -f "$NGINX_PROXY_DIR/docker-compose.yml" up -d --force-recreate
     print_msg success "$MSG_CONTAINER_READY: $NGINX_PROXY_CONTAINER"
 }
+
 # =====================================
 # nginx_add_mount_docker: Add volume mount to docker-compose.override.yml for a domain
 # Parameters:
@@ -160,6 +156,8 @@ nginx_restart() {
         return 1
     fi
 
+    nginx_remove_orphaned_site_conf || return 1
+    
     cd "$NGINX_PROXY_DIR" || {
         print_msg error "$MSG_NOT_FOUND: $NGINX_PROXY_DIR"
         return 1
@@ -195,6 +193,9 @@ nginx_restart() {
 # =====================================
 nginx_reload() {
     start_loading "$INFO_DOCKER_NGINX_RELOADING"
+
+    run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -t"
+    exit_if_error $? "$ERROR_DOCKER_NGINX_TEST_CONFIG"
     run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"
     if [[ $? -ne 0 ]]; then
         print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"

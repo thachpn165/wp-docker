@@ -3,7 +3,7 @@
 # ========================================
 # ⚙️ setup-system.sh – Initialize WP Docker system
 # ========================================
-
+# 
 # === Load config.sh from anywhere using universal loader ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 while [[ "$SCRIPT_PATH" != "/" ]]; do
@@ -24,10 +24,7 @@ safe_source "$FUNCTIONS_DIR/setup-aliases.sh"
 # 🔧 Initialize config (.config.json with language, channel,...)
 # =============================================
 core_init_config
-
-clear
 setup_timezone
-check_and_add_alias
 
 # =============================================
 # ⚙️ Check & install Docker and Docker Compose
@@ -114,4 +111,5 @@ nginx_remove_orphaned_site_conf
 # =============================================
 nginx_init
 wait_for_nginx_container || exit 1
+check_and_add_alias
 echo -e "$SUCCESS_SYSTEM_READY"

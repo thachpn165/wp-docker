@@ -252,3 +252,36 @@ safe_curl() {
   # ✅ Dùng URL đã chuẩn hóa
   curl --fail --silent --show-error --location --max-time 30 "$validated_url"
 }
+
+# Hàm chuyển đổi đơn vị sang byte
+parse_size_to_bytes() {
+  local size_str="$1"
+  local num unit
+  num=$(echo "$size_str" | grep -Eo '^[0-9.]+')
+  unit=$(echo "$size_str" | grep -Eo '[A-Z]+$')
+
+  case "$unit" in
+    B) echo "$num" | awk '{printf "%d", $1}' ;;
+    KB) echo "$num" | awk '{printf "%d", $1 * 1024}' ;;
+    MB) echo "$num" | awk '{printf "%d", $1 * 1024 * 1024}' ;;
+    GB) echo "$num" | awk '{printf "%d", $1 * 1024 * 1024 * 1024}' ;;
+    TB) echo "$num" | awk '{printf "%d", $1 * 1024 * 1024 * 1024 * 1024}' ;;
+    *) echo 0 ;;
+  esac
+}
+
+# Hàm định dạng lại byte sang đơn vị đọc được
+format_bytes() {
+  num=$1
+  if (( num >= 1099511627776 )); then
+    awk -v n=$num 'BEGIN { printf "%.2f TB", n / 1099511627776 }'
+  elif (( num >= 1073741824 )); then
+    awk -v n=$num 'BEGIN { printf "%.2f GB", n / 1073741824 }'
+  elif (( num >= 1048576 )); then
+    awk -v n=$num 'BEGIN { printf "%.2f MB", n / 1048576 }'
+  elif (( num >= 1024 )); then
+    awk -v n=$num 'BEGIN { printf "%.2f KB", n / 1024 }'
+  else
+    echo "$num B"
+  fi
+}
