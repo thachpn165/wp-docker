@@ -73,6 +73,11 @@ core_mysql_start
 # Start Redis if not running
 # =============================================
 redis_start
+
+# =============================================
+# Initialize $SITES_DIR
+# =============================================
+mkdir -p "$SITES_DIR" || exit_if_error 1 "$ERROR_SITES_DIR_CREATE_FAILED"
 # =============================================
 # 🚀 Start all existing websites
 # =============================================

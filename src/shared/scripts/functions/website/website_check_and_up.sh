@@ -6,7 +6,7 @@ website_check_and_up() {
 
     mapfile -t domains < <(website_list)
     if [[ ${#domains[@]} -eq 0 ]]; then
-        print_msg warning "⚠️ No valid websites found in $SITES_DIR"
+        debug_log "No website found $SITES_DIR to check and start."
         return 0
     fi
 
