@@ -101,6 +101,7 @@ EOF
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
+        nginx_restart
     else
         print_msg skip "$SKIP_DOCKER_NGINX_MOUNT_VOLUME_EXIST: $MOUNT_LOGS"
     fi
@@ -195,7 +196,6 @@ nginx_reload() {
     start_loading "$INFO_DOCKER_NGINX_RELOADING"
 
     run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -t"
-    exit_if_error $? "$ERROR_DOCKER_NGINX_TEST_CONFIG"
     run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"
     if [[ $? -ne 0 ]]; then
         print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
