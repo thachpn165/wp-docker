@@ -176,14 +176,16 @@ core_mysql_start() {
     # ============================================
 
     local compose_file="$MYSQL_DIR/docker-compose.yml"
+
+    core_mysql_apply_config
+    core_mysql_generate_compose
+
     if core_mysql_check_running; then
         print_msg success "$SUCCESS_MYSQL_CONTAINER_RUNNING: $MYSQL_CONTAINER_NAME"
         return 0
     fi
 
     print_msg step "$INFO_MYSQL_STARTING_CONTAINER: $MYSQL_CONTAINER_NAME"
-    core_mysql_apply_config
-    core_mysql_generate_compose
 
     docker compose -f "$compose_file" up -d
 
