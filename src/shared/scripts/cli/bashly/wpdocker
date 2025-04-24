@@ -1100,7 +1100,7 @@ wpdocker_wp_migrate_usage() {
   printf "wpdocker wp migrate - Migrate WordPress site\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wp migrate\n"
+  printf "  wpdocker wp migrate [DOMAIN]\n"
   printf "  wpdocker wp migrate --help | -h\n"
   echo
 
@@ -1111,6 +1111,14 @@ wpdocker_wp_migrate_usage() {
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DOMAIN"
+    printf "\n"
     echo
 
   fi
@@ -1147,7 +1155,7 @@ wpdocker_wp_reset_password_usage() {
   printf "wpdocker wp reset password - Reset admin password\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker wp reset password DOMAIN [NEW_PASSWORD]\n"
+  printf "  wpdocker wp reset password DOMAIN [USER_ID]\n"
   printf "  wpdocker wp reset password --help | -h\n"
   echo
 
@@ -1169,8 +1177,8 @@ wpdocker_wp_reset_password_usage() {
     echo
 
     # :argument.usage
-    printf "  %s\n" "NEW_PASSWORD"
-    printf "    New password for the admin user (optinal)\n"
+    printf "  %s\n" "USER_ID"
+    printf "    User ID of the admin user to reset password\n"
     echo
 
   fi
@@ -2485,23 +2493,27 @@ wpdocker_wp_cli_command() {
 wpdocker_wp_migrate_command() {
 
   # src/wp_migrate_command.sh
-  echo "# This file is located at 'src/wp_migrate_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wp migrate' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_migrate_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/wordpress_migration.sh"
 
+  wordpress_cli_migration --domain="${args[domain]}" || exit 1
 }
 
 # :command.function
 wpdocker_wp_reset_password_command() {
 
   # src/wp_reset_password_command.sh
-  echo "# This file is located at 'src/wp_reset_password_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker wp reset password' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_wp_reset_password_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$CLI_DIR/wordpress_reset_admin_passwd.sh"
+
+  user_id="${args[user_id]}"
+  domain="${args[domain]}"
+  if [[ -z "$user_id" ]]; then
+      print_msg info "$INFO_WORDPRESS_LIST_ADMINS"
+      bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- user list --role=administrator --fields=ID,user_login --format=table
+      echo ""
+      user_id=$(get_input_or_test_value "$PROMPT_WORDPRESS_ENTER_USER_ID" "${TEST_USER_ID:-0}")
+  fi
+
+  wordpress_cli_reset_admin_passwd --domain="$domain" --user_id="$user_id" || exit 1
 
 }
 
@@ -5348,8 +5360,14 @@ wpdocker_wp_migrate_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['domain']+x} ]]; then
+          args['domain']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
@@ -5473,8 +5491,8 @@ wpdocker_wp_reset_password_parse_requirements() {
           args['domain']=$1
           shift
         # :argument.case
-        elif [[ -z ${args['new_password']+x} ]]; then
-          args['new_password']=$1
+        elif [[ -z ${args['user_id']+x} ]]; then
+          args['user_id']=$1
           shift
         else
           printf "invalid argument: %s\n" "$key" >&2
@@ -5488,7 +5506,7 @@ wpdocker_wp_reset_password_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['domain']+x} ]]; then
-    printf "missing required argument: DOMAIN\nusage: wpdocker wp reset password DOMAIN [NEW_PASSWORD]\n" >&2
+    printf "missing required argument: DOMAIN\nusage: wpdocker wp reset password DOMAIN [USER_ID]\n" >&2
 
     exit 1
   fi

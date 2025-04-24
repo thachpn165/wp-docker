@@ -240,6 +240,8 @@ commands:
             required: true
       - name: migrate
         help: Migrate WordPress site
+        args:
+          - name: domain
       - name: reset
         help: Reset features
         commands:
@@ -249,9 +251,10 @@ commands:
               - name: domain
                 help: Domain name of the site to reset password
                 required: true
-              - name: new_password
-                help: New password for the admin user (optinal)
+              - name: user_id
+                help: User ID of the admin user to reset password
                 required: false
+
           - name: role
             help: Reset user roles
             args:
