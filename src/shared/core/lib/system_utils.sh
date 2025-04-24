@@ -309,7 +309,7 @@ uninstall_required_commands() {
 check_and_add_alias() {
   local shell_config cli_dir_abs alias_line
 
-  cli_dir_abs=$(realpath "$INSTALL_DIR/shared/bin")
+  cli_dir_abs=$(realpath "$CLI_DIR/bashly")
   alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
 
   if [[ "$SHELL" == *"zsh"* ]]; then
