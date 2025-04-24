@@ -321,3 +321,64 @@ docker_volume_check_fastcgicache() {
     print_msg success "✅ Docker volume '$volume_name' has been created."
   fi
 }
+
+# This script calculates and displays disk usage statistics for the host system and Docker engine.
+#
+# It performs the following tasks:
+# 1. Determines the operating system type (macOS or Linux) and retrieves disk usage information:
+#    - For macOS: Uses `df -k` and `awk` to extract used and total disk space in kilobytes.
+#    - For Linux: Uses `df -k --output=used,size` to extract used and total disk space in kilobytes.
+# 2. Converts the used and total disk space from kilobytes to bytes.
+# 3. Analyzes Docker disk usage by parsing the output of `docker system df` in JSON format:
+#    - Extracts the size and reclaimable space for Docker resources.
+#    - Converts these values to bytes and calculates the total Docker usage and reclaimable space.
+# 4. Displays a summary of the disk usage:
+#    - Host disk usage (used and total).
+#    - Docker engine disk usage.
+#    - Reclaimable space via Docker.
+#
+# Dependencies:
+# - `docker`: Required to retrieve Docker disk usage information.
+# - `jq`: Used to parse JSON output from `docker system df`.
+# - `awk`: Used for text processing and extracting specific fields.
+#
+# Functions (not included in this snippet but required for execution):
+# - `parse_size_to_bytes`: Converts human-readable size strings (e.g., "10MB") to bytes.
+# - `format_bytes`: Formats byte values into human-readable strings (e.g., "10 MB").
+docker_check_disk_usage() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    disk_line=$(df -k / | awk 'NR==2')
+    used_kb=$(echo "$disk_line" | awk '{print $3}')
+    total_kb=$(echo "$disk_line" | awk '{print $2}')
+  else
+    # Linux
+    disk_line=$(df -k --output=used,size / | tail -n1)
+    used_kb=$(echo "$disk_line" | awk '{print $1}')
+    total_kb=$(echo "$disk_line" | awk '{print $2}')
+  fi
+
+  used_bytes=$((used_kb * 1024))
+  total_bytes=$((total_kb * 1024))
+
+  # ======= Phân tích dung lượng Docker bằng JSON =======
+  docker_data=$(docker system df --format '{{json .}}')
+
+  total_docker_bytes=0
+  total_reclaimable_bytes=0
+
+  while read -r line; do
+    size=$(jq -r '.Size' <<<"$line")
+    reclaimable=$(jq -r '.Reclaimable' <<<"$line" | awk '{print $1}')
+
+    total_docker_bytes=$((total_docker_bytes + $(parse_size_to_bytes "$size")))
+    total_reclaimable_bytes=$((total_reclaimable_bytes + $(parse_size_to_bytes "$reclaimable")))
+  done <<<"$docker_data"
+
+  # ======= Hiển thị kết quả =======
+  print_msg title "WP Docker Disk Summary"
+  echo "💻 Host Disk: Used $(format_bytes "$used_bytes") / Total $(format_bytes "$total_bytes")"
+  echo "🐳 Docker Engine Usage: $(format_bytes "$total_docker_bytes")"
+  echo "♻️  Reclaimable via Docker: $(format_bytes "$total_reclaimable_bytes")"
+
+}

@@ -34,7 +34,6 @@ wpdocker_usage() {
   printf "  %s   Manage database operations\n" "database"
   printf "  %s   WordPress tools\n" "wp      "
   printf "  %s   System operations\n" "system  "
-  printf "  %s   Run cron tasks\n" "cron    "
   printf "  %s   Core management\n" "core    "
   printf "  %s   NGINX actions\n" "nginx   "
   printf "  %s   Rclone operations\n" "rclone  "
@@ -1381,9 +1380,7 @@ wpdocker_system_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Sytem checking utilities\n" "check  "
-  printf "  %s   Manage Docker containers\n" "manage "
-  printf "  %s   Cleanup unused Docker resources\n" "cleanup"
+  printf "  %s   Sytem checking utilities\n" "check"
   echo
 
   # :command.long_usage
@@ -1467,115 +1464,6 @@ wpdocker_system_check_disk_usage() {
 }
 
 # :command.usage
-wpdocker_system_manage_usage() {
-  printf "wpdocker system manage - Manage Docker containers\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker system manage CONTAINER_NAME ACTION\n"
-  printf "  wpdocker system manage --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-    # :command.usage_args
-    printf "%s\n" "Arguments:"
-
-    # :argument.usage
-    printf "  %s\n" "CONTAINER_NAME"
-    printf "    Name of the Docker container to manage\n"
-    echo
-
-    # :argument.usage
-    printf "  %s\n" "ACTION"
-    printf "    Action to perform on Docker containers (start, stop, restart, remove)\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_system_cleanup_usage() {
-  printf "wpdocker system cleanup - Cleanup unused Docker resources\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker system cleanup\n"
-  printf "  wpdocker system cleanup --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_cron_usage() {
-  printf "wpdocker cron - Run cron tasks\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker cron COMMAND\n"
-  printf "  wpdocker cron [COMMAND] --help | -h\n"
-  echo
-  # :command.usage_commands
-  printf "%s\n" "Commands:"
-  printf "  %s   Run a specific cron task\n" "run"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-wpdocker_cron_run_usage() {
-  printf "wpdocker cron run - Run a specific cron task\n\n"
-
-  printf "%s\n" "Usage:"
-  printf "  wpdocker cron run TASK\n"
-  printf "  wpdocker cron run --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n "$long_usage" ]]; then
-    printf "%s\n" "Options:"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-    # :command.usage_args
-    printf "%s\n" "Arguments:"
-
-    # :argument.usage
-    printf "  %s\n" "TASK"
-    printf "    Name of the cron task to run (backup, letsencrypt_renew, php_get_version,\n    all)\n"
-    echo
-
-  fi
-}
-
-# :command.usage
 wpdocker_core_usage() {
   printf "wpdocker core - Core management\n\n"
 
@@ -1631,13 +1519,19 @@ wpdocker_core_update_usage() {
   printf "wpdocker core update - Update core system to the latest version\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  wpdocker core update\n"
+  printf "  wpdocker core update [OPTIONS]\n"
   printf "  wpdocker core update --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n "$long_usage" ]]; then
     printf "%s\n" "Options:"
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--force, -f"
+    printf "    Force update even if already up to date\n"
+    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -2578,71 +2472,31 @@ wpdocker_system_check_resources_command() {
 wpdocker_system_check_disk_command() {
 
   # src/system_check_disk_command.sh
-  echo "# This file is located at 'src/system_check_disk_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker system check disk' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_system_check_disk_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_system_manage_command() {
-
-  # src/system_manage_command.sh
-  echo "# This file is located at 'src/system_manage_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker system manage' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_system_manage_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_system_cleanup_command() {
-
-  # src/system_cleanup_command.sh
-  echo "# This file is located at 'src/system_cleanup_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker system cleanup' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_system_cleanup_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
-}
-
-# :command.function
-wpdocker_cron_run_command() {
-
-  # src/cron_run_command.sh
-  echo "# This file is located at 'src/cron_run_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker cron run' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_cron_run_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
-
+  docker_check_disk_usage
 }
 
 # :command.function
 wpdocker_core_version_command() {
 
   # src/core_version_command.sh
-  echo "# This file is located at 'src/core_version_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core version' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_version_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/core/core_version_management.sh"
 
+  core_version_display
 }
 
 # :command.function
 wpdocker_core_update_command() {
 
   # src/core_update_command.sh
-  echo "# This file is located at 'src/core_update_command.sh'."
-  echo "# It contains the implementation for the 'wpdocker core update' command."
-  echo "# The code you write here will be wrapped by a function named 'wpdocker_core_update_command()'."
-  echo "# Feel free to edit this file; your changes will persist when regenerating."
-  inspect_args
+  safe_source "$FUNCTIONS_DIR/core/core_version_management.sh"
+
+  safe_source "$FUNCTIONS_DIR/core/core_version_management.sh"
+
+  if [[ "${args[--force]}" == "1" ]]; then
+      core_version_update_latest --force=1
+  else
+      core_version_update_latest
+  fi
 
 }
 
@@ -2921,13 +2775,6 @@ parse_requirements() {
       action="system"
       shift
       wpdocker_system_parse_requirements "$@"
-      shift $#
-      ;;
-
-    cron)
-      action="cron"
-      shift
-      wpdocker_cron_parse_requirements "$@"
       shift $#
       ;;
 
@@ -5953,20 +5800,6 @@ wpdocker_system_parse_requirements() {
       shift $#
       ;;
 
-    manage)
-      action="manage"
-      shift
-      wpdocker_system_manage_parse_requirements "$@"
-      shift $#
-      ;;
-
-    cleanup)
-      action="cleanup"
-      shift
-      wpdocker_system_cleanup_parse_requirements "$@"
-      shift $#
-      ;;
-
     # :command.command_fallback
     "")
       wpdocker_system_usage >&2
@@ -6169,245 +6002,6 @@ wpdocker_system_check_disk_parse_requirements() {
 }
 
 # :command.parse_requirements
-wpdocker_system_manage_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_system_manage_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="system manage"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        # :argument.case
-        if [[ -z ${args['container_name']+x} ]]; then
-          args['container_name']=$1
-          shift
-        # :argument.case
-        elif [[ -z ${args['action']+x} ]]; then
-          args['action']=$1
-          shift
-        else
-          printf "invalid argument: %s\n" "$key" >&2
-          exit 1
-        fi
-
-        ;;
-
-    esac
-  done
-
-  # :command.required_args_filter
-  if [[ -z ${args['container_name']+x} ]]; then
-    printf "missing required argument: CONTAINER_NAME\nusage: wpdocker system manage CONTAINER_NAME ACTION\n" >&2
-
-    exit 1
-  fi
-
-  if [[ -z ${args['action']+x} ]]; then
-    printf "missing required argument: ACTION\nusage: wpdocker system manage CONTAINER_NAME ACTION\n" >&2
-
-    exit 1
-  fi
-
-}
-
-# :command.parse_requirements
-wpdocker_system_cleanup_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_system_cleanup_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="system cleanup"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_cron_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_cron_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action=${1:-}
-
-  case $action in
-    -*) ;;
-
-    run)
-      action="run"
-      shift
-      wpdocker_cron_run_parse_requirements "$@"
-      shift $#
-      ;;
-
-    # :command.command_fallback
-    "")
-      wpdocker_cron_usage >&2
-      exit 1
-      ;;
-
-    *)
-      printf "invalid command: %s\n" "$action" >&2
-      exit 1
-      ;;
-
-  esac
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
-wpdocker_cron_run_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-      --help | -h)
-        long_usage=yes
-        wpdocker_cron_run_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="cron run"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        # :argument.case
-        if [[ -z ${args['task']+x} ]]; then
-          args['task']=$1
-          shift
-        else
-          printf "invalid argument: %s\n" "$key" >&2
-          exit 1
-        fi
-
-        ;;
-
-    esac
-  done
-
-  # :command.required_args_filter
-  if [[ -z ${args['task']+x} ]]; then
-    printf "missing required argument: TASK\nusage: wpdocker cron run TASK\n" >&2
-
-    exit 1
-  fi
-
-}
-
-# :command.parse_requirements
 wpdocker_core_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
@@ -6581,6 +6175,13 @@ wpdocker_core_update_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
+      # :flag.case
+      --force | -f)
+
+        # :flag.case_no_arg
+        args['--force']=1
+        shift
+        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -7919,10 +7520,6 @@ run() {
     "system check") wpdocker_system_check_command ;;
     "system check resources") wpdocker_system_check_resources_command ;;
     "system check disk") wpdocker_system_check_disk_command ;;
-    "system manage") wpdocker_system_manage_command ;;
-    "system cleanup") wpdocker_system_cleanup_command ;;
-    "cron") wpdocker_cron_command ;;
-    "cron run") wpdocker_cron_run_command ;;
     "core") wpdocker_core_command ;;
     "core version") wpdocker_core_version_command ;;
     "core update") wpdocker_core_update_command ;;

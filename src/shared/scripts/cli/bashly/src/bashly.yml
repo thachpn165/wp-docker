@@ -311,27 +311,6 @@ commands:
             help: Check system resources of Docker
           - name: disk
             help: Check disk space usage of WP Docker
-      - name: manage
-        help: Manage Docker containers
-        args:
-          - name: container_name
-            help: Name of the Docker container to manage
-            required: true
-          - name: action
-            help: Action to perform on Docker containers (start, stop, restart, remove)
-            required: true
-      - name: cleanup
-        help: Cleanup unused Docker resources
-  
-  - name: cron
-    help: Run cron tasks
-    commands:
-      - name: run
-        help: Run a specific cron task
-        args:
-          - name: task
-            help: Name of the cron task to run (backup, letsencrypt_renew, php_get_version, all)
-            required: true 
 
   - name: core
     help: Core management
@@ -340,6 +319,11 @@ commands:
         help: Show current and latest version
       - name: update
         help: Update core system to the latest version
+        flags: 
+          - long: --force
+            short: -f
+            help: Force update even if already up to date
+
       - name: upgrade
         help: Run the upgrade scripts 
       - name: uninstall

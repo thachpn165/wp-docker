@@ -208,3 +208,30 @@ _is_missing_var() {
     fi
     return 0
 }
+
+# =============================================
+# 🔍 _has_flag: Check if a flag (e.g. --force) is present in arguments
+# =============================================
+# Usage:
+#   if _has_flag "--force" "$@"; then
+#     echo "Force flag is present!"
+#   fi
+#
+# Arguments:
+#   $1 - Flag name to check (e.g., "--force")
+#   $@ - Full argument list (usually "$@")
+#
+# Returns:
+#   0 (true) if flag is present, 1 (false) otherwise
+# =============================================
+_has_flag() {
+    local flag="$1"
+    shift
+
+    for arg in "$@"; do
+        if [[ "$arg" == "$flag" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
