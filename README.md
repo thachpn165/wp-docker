@@ -1,3 +1,5 @@
+**Note**: Version `v1.1.9-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
+
 # WP Docker
 
 [![Version](https://img.shields.io/badge/version-v1.1.9--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
@@ -6,7 +8,6 @@
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker)](./LICENSE)
 
-> **Note**: Version `v1.1.9-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
 ---
 
 ![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
