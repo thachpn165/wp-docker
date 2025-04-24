@@ -207,7 +207,7 @@ print_msg success "$SUCCESS_WPDOCKER_INSTALLED: $INSTALL_DIR"
 print_msg important "$IMPORTANT_LOGOUT_AFTER_INSTALL"
 echo ""
 print_msg info "$INFO_START_USING"
-echo "  wpdocker"
+echo "  wpdocker menu"
 echo ""
 
 # =========================
@@ -231,5 +231,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   echo ""
 fi
 
-exit_after_10s
-
+if [[ "$SHELL" == *"zsh"* ]]; then
+  exec zsh
+elif [[ "$SHELL" == *"bash"* ]]; then
+  exec bash
+else
+  echo "${CROSSMARK} Unsupported shell: $SHELL. Please reload manually."
+fi

@@ -155,7 +155,7 @@ remove_symlink() {
 # =====================================
 remove_cronjobs() {
   print_msg info "$INFO_REMOVING_CRONJOBS"
-  crontab -l 2>/dev/null | grep -v "backup_runner.sh" | crontab - || true
+  crontab -l 2>/dev/null | grep -v "cron_loader.sh" | crontab - || true
 }
 
 # =====================================
