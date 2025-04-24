@@ -1,7 +1,0 @@
-[mysqld]
-max_connections = 9216
-query_cache_size = 32M
-innodb_buffer_pool_size = 18432M
-innodb_log_file_size = 3072M
-table_open_cache = 294912
-thread_cache_size = 112
