@@ -148,25 +148,25 @@ php_install_extension_ioncube_loader() {
         return 1
     fi
 
-    # ✅ Append to php.ini if not present
+    # ✅ Validate php.ini exists
     if [[ ! -f "$site_php_ini" ]]; then
         print_and_debug error "$MSG_NOT_FOUND: $site_php_ini"
         return 1
     fi
 
-    if ! grep -q "$loader_file" "$site_php_ini"; then
-        printf "\nzend_extension=%s\n" "$loader_path" >>"$site_php_ini"
-        print_msg success "$SUCCESS_PHP_IONCUBE_INI"
-    else
-        print_msg info "$WARNING_PHP_IONCUBE_ALREADY_INI"
-    fi
+    # ✅ Remove any old ioncube loader line
+    sedi '/^zend_extension=.*ioncube_loader_lin.*$/d' "$site_php_ini"
+
+    # ✅ Add correct loader
+    printf "\nzend_extension=%s\n" "$loader_path" >>"$site_php_ini"
+    print_msg success "$SUCCESS_PHP_IONCUBE_INI"
 
     # ✅ Restart container
-    docker restart "$php_container" >/dev/null
+    docker restart "$php_container"
     local formatted_success_restart
     formatted_success_restart=$(printf "$SUCCESS_CONTAINER_RESTARTED" "$php_container")
     print_msg success "$formatted_success_restart"
-    docker_exec_php docker_exec "$php_container" php -v
+    docker_exec_php "$php_container" php -v
 }
 
 php_restore_enabled_extensions() {
