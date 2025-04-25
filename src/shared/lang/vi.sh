@@ -998,3 +998,7 @@ readonly WARNING_PHP_IONCUBE_NOT_COMPATIBLE="Không tìm thấy file Ioncube Loa
 readonly ERROR_PHP_IONCUBE_LODER_NOT_FOUND="Không tìm thấy file %s sau khi cài đặt."
 readonly SUCCESS_PHP_IONCUBE_INI="Đã thêm cấu hình vào php.ini"
 readonly WARNING_PHP_IONCUBE_ALREADY_INI="Đã có cấu hình ionCube trong php.ini. Bỏ qua bước này."
+readonly STEP_PHP_REINSTALLING_EXTENSIONS="Đang cài đặt lại các extension đã được kích hoạt trước đó..."
+readonly INFO_PHP_EXTENSION_REINSTALLING="Đang cài đặt lại extension: %s"
+readonly WARNING_PHP_EXTENSION_NOT_MANAGED="Extension '%s' không được quản lý bởi hệ thống. Đã bỏ qua."
+readonly WARNING_PHP_INI_NOT_FOUND="Không thể tìm thấy php.ini cho site này."

@@ -1009,3 +1009,7 @@ readonly WARNING_PHP_IONCUBE_NOT_COMPATIBLE="Could not find suitable IonCube Loa
 readonly ERROR_PHP_IONCUBE_LODER_NOT_FOUND="File %s not found after installation."
 readonly SUCCESS_PHP_IONCUBE_INI="Configuration added to php.ini"
 readonly WARNING_PHP_IONCUBE_ALREADY_INI="IonCube configuration already exists in php.ini. Skipping this step."
+readonly STEP_PHP_REINSTALLING_EXTENSIONS="Re-installing previously enabled extensions..."
+readonly INFO_PHP_EXTENSION_REINSTALLING="Re-installing extension: %s"
+readonly WARNING_PHP_EXTENSION_NOT_MANAGED="Extension '%s' is not managed by the system. Skipped."
+readonly WARNING_PHP_INI_NOT_FOUND="Cannot find php.ini for this site."

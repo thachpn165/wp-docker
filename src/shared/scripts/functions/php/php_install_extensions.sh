@@ -162,3 +162,38 @@ php_install_extension_ioncube_loader() {
     formatted_success_restart=$(printf "$SUCCESS_CONTAINER_RESTARTED" "$php_container")
     print_msg success "$formatted_success_restart"
 }
+
+php_restore_enabled_extensions() {
+    local domain="$1"
+    _is_valid_domain "$domain" || return 1
+
+    local php_ini="$SITES_DIR/$domain/php/php.ini"
+    local active_extensions=()
+    local extensions_to_restore=()
+
+    print_msg step "$STEP_PHP_REINSTALLING_EXTENSIONS"
+
+    if [[ ! -f "$php_ini" ]]; then
+        print_msg warning "$WARNING_PHP_INI_NOT_FOUND"
+        return 0
+    fi
+
+    # Extract all *.so from php.ini
+    mapfile -t active_extensions < <(grep -E '^(zend_)?extension=' "$php_ini" | awk -F'=' '{print $2}' | xargs -n1 basename)
+
+    for ext in "${active_extensions[@]}"; do
+        [[ "$ext" == "imagick.so" ]] && continue
+
+        # Convert .so name to extension ID
+        local ext_id
+        ext_id=$(echo "$ext" | sed -E 's/(ioncube_loader).*\.so/\1/' | tr -d '\r')
+
+        # Only reinstall if supported
+        if jq -e --arg key "$ext_id" 'has($key)' <<<"$PHP_LIST_AVAILABLE_EXTENSIONS" >/dev/null; then
+            print_msg info "$(printf "$INFO_PHP_EXTENSION_REINSTALLING" "$ext_id")"
+            php_logic_install_extension "$domain" "$ext_id"
+        else
+            print_msg warning "$(printf "$WARNING_PHP_EXTENSION_NOT_MANAGED" "$ext_id")"
+        fi
+    done
+}

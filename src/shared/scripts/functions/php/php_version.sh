@@ -169,5 +169,7 @@ php_logic_change_version() {
   run_in_dir "$site_dir" docker compose up -d php
 
   print_msg success "$(printf "$SUCCESS_PHP_CHANGED" "$domain" "$php_version")"
+  php_restore_enabled_extensions "$domain"
   docker_exec_php "$domain" "php -v"
+
 }
