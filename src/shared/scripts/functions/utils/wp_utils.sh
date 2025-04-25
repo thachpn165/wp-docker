@@ -45,7 +45,7 @@ if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos(\$_SERVER['HTTP_X_FORWA
     \$_SERVER['HTTPS'] = 'on';
 }
 EOF
-  "
+  " >/dev/null 2>&1
 
   if [[ $? -eq 0 ]]; then
     print_msg success "$SUCCESS_WP_CONFIG_DONE"
@@ -77,7 +77,7 @@ wp_install() {
   print_msg info "$INFO_WP_INSTALLING"
   bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- core install \
     --url="$site_url" --title="$title" \
-    --admin_user="$admin_user" --admin_password="$admin_pass" --admin_email="$admin_email" --skip-email
+    --admin_user="$admin_user" --admin_password="$admin_pass" --admin_email="$admin_email" --skip-email >/dev/null 2>&1
   exit_if_error "$?" "$ERROR_WP_INSTALL_FAILED"
   print_msg success "$SUCCESS_WP_INSTALLED"
 }
@@ -94,7 +94,7 @@ wp_set_permalinks() {
     return 1
   fi
 
-  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update permalink_structure '/%postname%/'
+  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update permalink_structure '/%postname%/' >/dev/null 2>&1
   exit_if_error "$?" "$ERROR_WP_PERMALINK_FAILED"
 }
 
@@ -111,7 +111,7 @@ wp_plugin_install_security_plugin() {
     return 1
   fi
 
-  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install limit-login-attempts-reloaded --activate
+  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install limit-login-attempts-reloaded --activate >/dev/null 2>&1
   exit_if_error "$?" "$ERROR_WP_SECURITY_PLUGIN"
   print_msg success "$SUCCESS_WP_SECURITY_PLUGIN"
 }
@@ -129,7 +129,7 @@ wp_plugin_install_performance_lab() {
     return 1
   fi
 
-  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install performance-lab --activate
+  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install performance-lab --activate >/dev/null 2>&1
   exit_if_error "$?" "$ERROR_WP_PERFORMANCE_PLUGIN"
   print_msg success "$SUCCESS_WP_PERFORMANCE_PLUGIN"
 }

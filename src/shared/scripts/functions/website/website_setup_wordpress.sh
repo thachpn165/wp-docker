@@ -102,11 +102,7 @@ website_setup_wordpress_logic() {
   fi
 
   # ✨ Install WordPress
-  print_msg info "$INFO_START_WP_INSTALL $domain"
-  print_msg progress "$INFO_WAITING_PHP_CONTAINER $php_container"
-
-  stop_loading
-
+  print_msg step "$INFO_DOWNLOADING_WP"
   # 📆 Download WordPress if not already present
   if [[ ! -f "$site_dir/wordpress/index.php" ]]; then
     local wp_url="https://wordpress.org/latest.tar.gz"
@@ -114,7 +110,7 @@ website_setup_wordpress_logic() {
       print_msg error "$ERROR_WP_SOURCE_URL_NOT_REACHABLE: $wp_url"
       return 1
     fi
-    print_msg step "$INFO_DOWNLOADING_WP"
+
     docker_exec_php "$domain" "chown -R nobody:nogroup /var/www/"
     debug_log "\n➤ chown -R nobody:nogroup /var/www/: domain=$domain"
     local wp_download_cmd
@@ -122,7 +118,7 @@ website_setup_wordpress_logic() {
   tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && \
   rm /var/www/html/wordpress.tar.gz"
 
-    docker_exec_php "$domain" "$wp_download_cmd"
+    docker_exec_php "$domain" "$wp_download_cmd" >/dev/null 2>&1
     exit_if_error $? "failed to download WordPress"
     print_msg success "$SUCCESS_WP_SOURCE_DOWNLOADED"
   else
@@ -133,9 +129,9 @@ website_setup_wordpress_logic() {
   debug_log "[wp_setup] container=$(php_get_container "$domain")"
 
   # ⚙️ Configure wp-config
-  print_msg step "$STEP_WEBSITE_SETUP_WORDPRESS: $domain"
-  wp_set_wpconfig "$php_container" "$db_name" "$db_user" "$db_pass"
-  wp_install "$domain" "https://$domain" "$domain" "$admin_user" "$admin_password" "$admin_email"
+  wp_set_wpconfig "$php_container" "$db_name" "$db_user" "$db_pass" >/dev/null 2>&1
+
+  wp_install "$domain" "https://$domain" "$domain" "$admin_user" "$admin_password" "$admin_email" >/dev/null 2>&1
 
   print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
   if [[ "$php_ready_ok" == true ]]; then
@@ -146,7 +142,6 @@ website_setup_wordpress_logic() {
   fi
 
   # 🔁 Configure permalinks
-  print_msg step "$STEP_WEBSITE_SETUP_ESSENTIALS: $domain"
   wp_set_permalinks "$domain"
   website_wordpress_print "$domain" "$admin_user" "$admin_password" "$admin_email"
   print_msg completed "$SUCCESS_WP_INSTALL_DONE"

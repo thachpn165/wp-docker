@@ -196,16 +196,14 @@ nginx_restart() {
 nginx_reload() {
     print_msg step "$INFO_DOCKER_NGINX_RELOADING"
 
-    docker exec "$NGINX_PROXY_CONTAINER" nginx -t
+    run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -t"
     exit_if_error $? "$ERROR_DOCKER_NGINX_TEST_FAILED"
     run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"
     if [[ $? -ne 0 ]]; then
         print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
         run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-        stop_loading
         return 1
     fi
-    stop_loading
     print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
 }
 
