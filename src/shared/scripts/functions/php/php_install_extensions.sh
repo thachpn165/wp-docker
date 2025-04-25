@@ -111,31 +111,36 @@ php_install_extension_ioncube_loader() {
     formatted_check_compatible=$(printf "$STEP_PHP_IONCUBE_CHECK_COMPATIBILITY" "$loader_file")
     print_msg step "$formatted_check_compatible"
 
-    # ✅ Download and unpack ioncube loader
-    docker exec -u root -i "$php_container" bash -c "
-    mkdir -p /tmp/ioncube &&
-    curl -sSL -o /tmp/ioncube.tar.gz https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz &&
-    tar -xzf /tmp/ioncube.tar.gz -C /tmp/ioncube &&
-    tar -tzf /tmp/ioncube.tar.gz > /tmp/ioncube/filelist.txt
-  "
+    # ✅ Nếu file loader chưa tồn tại, tải lại
+    if ! docker exec -i "$php_container" test -f "$loader_path"; then
+        print_msg info "📦 Ioncube loader not found. Downloading and installing..."
 
-    # ✅ Validate loader exists in the archive
-    if ! docker exec -i "$php_container" grep -q "ioncube/${loader_file}" /tmp/ioncube/filelist.txt; then
-        local formatted_error_loader_not_found
-        formatted_error_loader_not_found=$(printf "$WARNING_PHP_IONCUBE_NOT_COMPATIBLE" "$loader_file", "$php_version", "$zts_suffix")
-        print_msg error "$formatted_error_loader_not_found"
-        docker exec -u root -i "$php_container" rm -rf /tmp/ioncube /tmp/ioncube.tar.gz
-        return 0
+        docker exec -u root -i "$php_container" bash -c "
+          mkdir -p /tmp/ioncube &&
+          curl -sSL -o /tmp/ioncube.tar.gz https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz &&
+          tar -xzf /tmp/ioncube.tar.gz -C /tmp/ioncube &&
+          tar -tzf /tmp/ioncube.tar.gz > /tmp/ioncube/filelist.txt
+        "
+
+        # ✅ Validate loader exists in archive
+        if ! docker exec -i "$php_container" grep -q "ioncube/${loader_file}" /tmp/ioncube/filelist.txt; then
+            local formatted_error_loader_not_found
+            formatted_error_loader_not_found=$(printf "$WARNING_PHP_IONCUBE_NOT_COMPATIBLE" "$loader_file" "$php_version" "$zts_suffix")
+            print_msg error "$formatted_error_loader_not_found"
+            docker exec -u root -i "$php_container" rm -rf /tmp/ioncube /tmp/ioncube.tar.gz
+            return 0
+        fi
+
+        docker exec -u root -i "$php_container" bash -c "
+          cp /tmp/ioncube/ioncube/${loader_file} $loader_path &&
+          chmod 755 $loader_path &&
+          rm -rf /tmp/ioncube /tmp/ioncube.tar.gz
+        "
+    else
+        print_msg info "✅ Ioncube loader already exists: $loader_path"
     fi
 
-    # ✅ Copy and set permissions
-    docker exec -u root -i "$php_container" bash -c "
-    cp /tmp/ioncube/ioncube/${loader_file} $loader_path &&
-    chmod 755 $loader_path &&
-    rm -rf /tmp/ioncube /tmp/ioncube.tar.gz
-  "
-
-    # ✅ Confirm loader file exists after copy
+    # ✅ Confirm loader file really exists
     if ! docker exec -i "$php_container" test -f "$loader_path"; then
         local formatted_error_loader_not_found
         formatted_error_loader_not_found=$(printf "$ERROR_PHP_IONCUBE_LODER_NOT_FOUND" "$loader_path")
@@ -143,7 +148,7 @@ php_install_extension_ioncube_loader() {
         return 1
     fi
 
-    # ✅ Append to php.ini if missing
+    # ✅ Append to php.ini if not present
     if [[ ! -f "$site_php_ini" ]]; then
         print_and_debug error "$MSG_NOT_FOUND: $site_php_ini"
         return 1
