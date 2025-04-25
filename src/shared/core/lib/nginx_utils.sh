@@ -89,6 +89,7 @@ EOF
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
+        nginx_restart
     else
         print_msg skip "$SKIP_DOCKER_NGINX_MOUNT_VOLUME_EXIST: $MOUNT_ENTRY"
     fi
@@ -158,7 +159,7 @@ nginx_restart() {
     fi
 
     nginx_remove_orphaned_site_conf || return 1
-    
+
     cd "$NGINX_PROXY_DIR" || {
         print_msg error "$MSG_NOT_FOUND: $NGINX_PROXY_DIR"
         return 1
@@ -193,9 +194,10 @@ nginx_restart() {
 #   - Shows success or error message
 # =====================================
 nginx_reload() {
-    start_loading "$INFO_DOCKER_NGINX_RELOADING"
+    print_msg step "$INFO_DOCKER_NGINX_RELOADING"
 
-    run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -t"
+    docker exec "$NGINX_PROXY_CONTAINER" nginx -t
+    exit_if_error $? "$ERROR_DOCKER_NGINX_TEST_FAILED"
     run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"
     if [[ $? -ne 0 ]]; then
         print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
