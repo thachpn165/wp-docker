@@ -77,7 +77,7 @@ wp_install() {
   print_msg info "$INFO_WP_INSTALLING"
   bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- core install \
     --url="$site_url" --title="$title" \
-    --admin_user="$admin_user" --admin_password="$admin_pass" --admin_email="$admin_email"
+    --admin_user="$admin_user" --admin_password="$admin_pass" --admin_email="$admin_email" --skip-email
   exit_if_error "$?" "$ERROR_WP_INSTALL_FAILED"
   print_msg success "$SUCCESS_WP_INSTALLED"
 }
