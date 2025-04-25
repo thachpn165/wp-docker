@@ -83,31 +83,49 @@ You can also use WP Docker through the `wpdocker` command. For more information,
 
 ## Latest Release - v1.2.0-beta
 
-Release date: 2025-04-16
+Release date: 2025-04-25
 
 ### 🚀 Added
 
-- New command: `wpdocker core uninstall` for full removal flow
-- Centralized MariaDB container with dynamic database/user creation
-- Slowlog file: `logs/php_slow.log` per site (linked via `php-fpm.conf`)
-- PHP error log: `logs/php_error.log` with dynamic injection into `php.ini`
-- Auto-tracking of cache type into `.config.json`
-- Resource-aware PHP-FPM tuning: `pm.max_children`, server tier detection
-- Shared FastCGI cache volume across PHP and NGINX containers
-- Added slowlog + timeout settings into `php-fpm.conf`
+- **PHP Extension Management**  
+  - Added `php_install_extensions.sh` to support installing PHP extensions (e.g., Ioncube Loader).
+  - Enabled `imagick` by default in PHP config.
+  - New menu and CLI interface to handle extension installation.
 
-### ♻️ Changed
+- **New Bashly CLI**  
+  - Introduced Bashly-powered `wpdocker` CLI with structured commands and auto-completion.
+  - Deprecated individual `*.sh` wrappers.
 
-- Moved system-level scripts into `shared/core/` structure
-- Removed `db_utils.sh` and legacy per-site DB containers
-- Changed default `$DOCKER_NETWORK` to `wpdocker-network`
-- All docker-compose files now use `${docker_network}` instead of hardcoded names
+- **WordPress Backup Scheduler**  
+  - Created backup cron system with cleaner interface and upload support via Rclone.
+
+- **OpenResty Upgrade**  
+  - Switched to `thachpn165/wpdocker-openresty` Docker image.
+  - Added Brotli and `ngx_cache_purge` support.
+
+- **SSL Auto-Renewal**  
+  - Integrated certbot renewal using Docker container and cron runner.
+  - Renewal logs saved per site.
+
+- **Domain Validation + Safe Curl**  
+  - Added `_is_missing_param`, `safe_curl`, and domain validation logic.
+  - Improved parameter checking across scripts.
+
+- **Cache Management Enhancements**  
+  - Improved NGINX rules and compatibility with WP Fastest Cache + Redis.
+  - Auto-detects optimal cache settings per site.
 
 ### 🐞 Fixed
 
-- Ensured MySQL volume and container names are consistent across installs
-- Fixed error when writing `php.ini` and `php-fpm.conf` when paths are missing
-- Made uninstall script safely ignore `.git/` and preserve archives
+- Rclone setup prompt translation (vi).
+- Refined error messages and exit handling in scripts.
+- Consistent use of `print_msg`, `debug_log`, and `get_input_or_test_value`.
+
+### ♻️ Changed
+
+- Refactored all CLI menus to support i18n.
+- Updated php.ini template logic for extension inclusion.
+- Centralized site configurations under `.config.json`.
 
 *For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
 
