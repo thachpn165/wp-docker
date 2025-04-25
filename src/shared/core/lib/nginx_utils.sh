@@ -89,7 +89,6 @@ EOF
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
-        nginx_restart
     else
         print_msg skip "$SKIP_DOCKER_NGINX_MOUNT_VOLUME_EXIST: $MOUNT_ENTRY"
     fi
@@ -102,10 +101,11 @@ EOF
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
-        nginx_restart
+
     else
         print_msg skip "$SKIP_DOCKER_NGINX_MOUNT_VOLUME_EXIST: $MOUNT_LOGS"
     fi
+    nginx_restart >/dev/null 2>&1
 }
 
 # =====================================
@@ -249,7 +249,7 @@ nginx_remove_orphaned_site_conf() {
         domain=$(basename "$conf_file" .conf)
 
         if ! json_key_exists ".site[\"$domain\"]" "$JSON_CONFIG_FILE"; then
-            print_msg warning "⚠️ Orphaned config found: $conf_file → removing"
+            print_and_debug warning "⚠️ Orphaned config found: $conf_file → removing"
             remove_file "$conf_file"
             ((deleted_count++))
         fi
@@ -257,8 +257,8 @@ nginx_remove_orphaned_site_conf() {
     shopt -u nullglob
 
     if ((deleted_count == 0)); then
-        print_msg success "✅ No orphaned NGINX site configs found."
+        print_msg success "No orphaned NGINX site configs found." >/dev/null 2>&1
     else
-        print_msg success "🧹 Removed $deleted_count broken NGINX config(s)."
+        print_msg success "Removed $deleted_count broken NGINX config(s)."
     fi
 }
