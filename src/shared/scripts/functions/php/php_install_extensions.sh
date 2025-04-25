@@ -166,7 +166,7 @@ php_install_extension_ioncube_loader() {
     local formatted_success_restart
     formatted_success_restart=$(printf "$SUCCESS_CONTAINER_RESTARTED" "$php_container")
     print_msg success "$formatted_success_restart"
-    docker_exec_php "$php_container" php -v
+
 }
 
 php_restore_enabled_extensions() {
