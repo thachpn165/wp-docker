@@ -197,7 +197,7 @@ core_version_update_latest() {
 
   # Sync source to INSTALL_DIR
   print_msg progress "$STEP_EXTRACT_AND_UPDATE"
-  rsync -a --exclude='sites/' --exclude='archives/' --exclude='logs/' "$temp_dir/" "$INSTALL_DIR/"
+  rsync -a --no-perms --delete --exclude='sites/' --exclude='archives/' --exclude='logs/' "$temp_dir/" "$INSTALL_DIR/"
   if [[ $? -ne 0 ]]; then
     print_msg error "$ERROR_SYNC_FAILED"
     stop_loading
