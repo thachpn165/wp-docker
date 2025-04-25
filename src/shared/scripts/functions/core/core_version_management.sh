@@ -69,7 +69,6 @@ core_version_get_latest() {
   echo "$latest_version"
 }
 
-# === Compare versions: returns 0 if equal, 1 if v1 > v2, 2 if v1 < v2
 core_version_compare() {
   local v1="${1#v}"
   local v2="${2#v}"
@@ -78,20 +77,25 @@ core_version_compare() {
   v1="${v1%%+*}"
   v2="${v2%%+*}"
 
-  # Detect pre-release (contains -) and add "-stable" if không có
+  # Detect pre-release (contains -), add "-stable" if missing
   [[ "$v1" != *-* ]] && v1="${v1}-stable"
   [[ "$v2" != *-* ]] && v2="${v2}-stable"
 
-  if [[ "$v1" == "$v2" ]]; then return 0; fi
+  if [[ "$v1" == "$v2" ]]; then
+    echo "equal"
+    return 0
+  fi
 
   local sorted
   sorted=$(printf "%s\n%s" "$v1" "$v2" | sort -V | head -n1)
 
   if [[ "$sorted" == "$v1" ]]; then
-    return 2 # $1 < $2
+    echo "older" # nghĩa là $v1 < $v2
   else
-    return 1 # $1 > $2
+    echo "newer" # nghĩa là $v1 > $v2
   fi
+
+  return 0
 }
 
 # === Get download URL based on channel (main/dev)
@@ -244,11 +248,9 @@ core_version_display() {
   print_msg sub-label "$INFO_CORE_VERSION_CURRENT: $version_local"
   print_msg sub-label "$INFO_CORE_VERSION_LATEST: $version_remote"
   echo ""
-  # Kiểm tra phiên bản và cảnh báo nếu có phiên bản mới
-  core_version_compare "$version_local" "$version_remote"
-  local result=$?
+  compare_result=$(core_version_compare "$version_local" "$version_remote")
 
-  if [[ "$result" -eq 2 ]]; then
+  if [[ "$compare_result" == "older" ]]; then
     print_msg warning "$(printf "$WARNING_CORE_VERSION_NEW_AVAILABLE" "$version_local" "$version_remote")"
   else
     print_msg success "$SUCCESS_CORE_IS_LATEST"
