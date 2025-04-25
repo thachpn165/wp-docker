@@ -113,7 +113,7 @@ php_install_extension_ioncube_loader() {
     fi
 
     if ! grep -q "$loader_file" "$site_php_ini"; then
-        echo "zend_extension=$loader_path" >>"$site_php_ini"
+        printf "\nzend_extension=%s\n" "$loader_path" >>"$site_php_ini"
         print_msg success "✅ Đã thêm cấu hình Ioncube vào php.ini"
     else
         print_msg info "ℹ️ Cấu hình Ioncube đã tồn tại trong php.ini"
