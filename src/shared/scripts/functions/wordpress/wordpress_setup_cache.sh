@@ -108,12 +108,18 @@ wordpress_cache_setup_logic() {
     local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
     local php_container
     php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
+    
     _is_valid_domain "$domain" || return 1
+    
     if [[ ! -d "$site_dir" ]]; then
         print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$site_dir")"
         return 1
     fi
-
+    
+    if ! jq -e --arg ct "$cache_type" 'has($ct)' <<<"$WP_CACHE_PLUGIN_JSON" >/dev/null; then
+        print_and_debug error "$(printf "$ERROR_INVALID_CACHE_TYPE" "$cache_type")"
+        return 1
+    fi
     local plugin_slug
     plugin_slug=$(jq -r --arg type "$cache_type" '.[$type].plugin' <<<"$WP_CACHE_PLUGIN_JSON")
 

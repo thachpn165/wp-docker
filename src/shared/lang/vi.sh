@@ -986,3 +986,4 @@ readonly CONFIRM_DELETE_OLD_BACKUPS="Bạn có chắc chắn muốn xóa các b�
 readonly WARNING_BACKUP_CLEAN_ABORTED="Đã hủy bỏ việc xóa bản sao lưu cũ."
 readonly TIP_CORE_ALREADY_UP_TO_DATE="Phiên bản hiện tại đã là mới nhất. Nếu bạn vẫn muốn cập nhật, hãy chạy lệnh: wpdocker core update --force"
 readonly ERROR_DOCKER_NGINX_TEST_CONFIG="Không thể kiểm tra cấu hình NGINX. Vui lòng kiểm tra lại."
+readonly ERROR_INVALID_CACHE_TYPE="Cache type không hợp lệ: %s. Vui lòng sử dụng một giá trị hợp lệ như: fastcgi-cache, wp-super-cache, w3-total-cache, wp-fastest-cache, no-cache."

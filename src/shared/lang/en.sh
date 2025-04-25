@@ -996,3 +996,4 @@ readonly CONFIRM_DELETE_OLD_BACKUPS="Are you sure you want to delete these old b
 readonly WARNING_BACKUP_CLEAN_ABORTED="Deletion of old backups canceled."
 readonly TIP_CORE_ALREADY_UP_TO_DATE="You are already running the latest version. Still want to update? Run command: wpdocker core update --force"
 readonly ERROR_DOCKER_NGINX_TEST_CONFIG="NGINX test configuration failed. Please check the NGINX configuration file."
+readonly ERROR_INVALID_CACHE_TYPE="Invalid cache type: %s. Please use a valid value such as: fastcgi-cache, wp-super-cache, w3-total-cache, wp-fastest-cache, no-cache."
