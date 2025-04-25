@@ -8,14 +8,13 @@ safe_source "$CLI_DIR/database_actions.sh"
 #   - Global variable TEST_BACKUP_FILE (optional)
 # =====================================
 database_prompt_import() {
+    local domain
     print_msg info "$PROMPT_DATABASE_IMPORT_WEBSITE"
-    select_website || exit 1
 
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_SITE_NOT_SELECTED"
-        exit 1
+    if ! website_get_selected domain; then
+        return 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     # Prompt user to input the SQL backup file path
     backup_file=$(get_input_or_test_value "$PROMPT_DATABASE_ENTER_SQLFILE" "${TEST_BACKUP_FILE:-backup.sql}")
 
@@ -49,12 +48,7 @@ database_import_logic() {
         return 1
     fi
 
-    # Validate the domain name
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
-        return 1
-    fi
-
+    _is_valid_domain "$domain" || return 1
     # Validate the SQL file existence
     if [[ ! -f "$backup_file" ]]; then
         print_msg error "$MSG_NOT_FOUND: $backup_file"

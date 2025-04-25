@@ -1,5 +1,6 @@
 #!/bin/bash
 safe_source "$FUNCTIONS_DIR/system_loader.sh"
+safe_source "$CLI_DIR/system_tools.sh"
 
 
 print_system_tools_menu_header() {
@@ -36,10 +37,10 @@ system_tools_menu() {
                     system_cli_nginx_rebuild; read -p "$MSG_PRESS_ENTER_CONTINUE"
                     ;;
                 5)
-                    core_lang_change_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    core_lang_change_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"; exit 0
                     ;;
                 6)
-                    core_channel_switch_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"
+                    core_channel_switch_prompt; read -p "$MSG_PRESS_ENTER_CONTINUE"; exit 0
                     ;;
                 7)
                     break

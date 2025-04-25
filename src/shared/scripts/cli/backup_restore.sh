@@ -33,12 +33,10 @@ backup_cli_restore_web() {
   db_backup_file=$(_parse_params "--db_backup_file" "$@")
   test_mode=$(_parse_optional_params "--test_mode" "$@")
 
-  # Validate required parameters
-  if [[ -z "$domain" || -z "$code_backup_file" || -z "$db_backup_file" ]]; then
-    print_msg error "$ERROR_MISSING_PARAM: --domain, --code_backup_file, --db_backup_file"
-    return 1
-  fi
-
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$code_backup_file" "--code_backup_file" || return 1
+  _is_missing_param "$db_backup_file" "--db_backup_file" || return 1
+  _is_valid_domain "$domain" || return 1
   # 🔁 Call restore logic
   backup_logic_restore_web "$domain" "$code_backup_file" "$db_backup_file" "$test_mode"
 }

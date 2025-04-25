@@ -18,3 +18,6 @@ opcache.memory_consumption=256
 opcache.max_accelerated_files=10000
 opcache.validate_timestamps=1
 opcache.revalidate_freq=60
+
+; Enable extensions for Bitnami images
+extension=imagick.so

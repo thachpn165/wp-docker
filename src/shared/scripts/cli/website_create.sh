@@ -32,11 +32,9 @@ website_cli_create() {
   php_version=$(_parse_params "--php" "$@")
   auto_generate=$(_parse_params "--auto_generate" "$@")
 
-  if [[ -z "$domain" || -z "$php_version" ]]; then
-    print_msg error "$ERROR_MISSING_PARAM: --domain & --php"
-    print_msg info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld --php=8.1"
-    exit 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$php_version" "--php" || return 1
+  _is_valid_domain "$domain" || return 1
 
   # === Execute creation logic ===
   website_logic_create "$domain" "$php_version"
@@ -48,3 +46,4 @@ website_cli_create() {
   debug_log "[website_cli_create] Auto-generate: $auto_generate"
   debug_log "[website_cli_create] Website creation completed"
 }
+

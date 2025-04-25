@@ -1,13 +1,14 @@
 #!/bin/bash
 
 wordpress_prompt_reset_admin_passwd() {
+    local domain 
     # 📋 Chọn website
-    select_website
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
         exit 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     # 📋 Hiển thị danh sách admin
     print_msg info "$INFO_WORDPRESS_LIST_ADMINS"
     bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- user list --role=administrator --fields=ID,user_login --format=table
@@ -41,7 +42,7 @@ reset_admin_password_logic() {
         print_msg error "$ERROR_MISSING_PARAM: domain or user_id"
         exit 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     # 🔐 Generate a random 18-character alphanumeric password (no special characters)
     new_password=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 18)
 

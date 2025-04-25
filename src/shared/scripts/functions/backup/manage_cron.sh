@@ -1,144 +1,51 @@
 #!/bin/bash
-# =============================================
-# 🔤 convert_weekday – Convert weekday number to label
-# =============================================
-# Description:
-#   - Maps a weekday number (0–6) to its corresponding label (Sunday–Saturday).
-#
-# Parameters:
-#   $1 - weekday number (0–6)
-#
-# Globals:
-#   LABEL_SUNDAY, LABEL_MONDAY, ..., LABEL_SATURDAY
-#
-# Returns:
-#   - Echoes the corresponding weekday label
-# =============================================
-convert_weekday() {
-    case $1 in
-        0) echo "$LABEL_SUNDAY" ;;
-        1) echo "$LABEL_MONDAY" ;;
-        2) echo "$LABEL_TUESDAY" ;;
-        3) echo "$LABEL_WEDNESDAY" ;;
-        4) echo "$LABEL_THURSDAY" ;;
-        5) echo "$LABEL_FRIDAY" ;;
-        6) echo "$LABEL_SATURDAY" ;;
-        *) echo "Unknown" ;;
-    esac
-}
 
-# =============================================
-# ⏰ cron_translate – Convert cron expression to human-readable text
-# =============================================
-# Description:
-#   - Translates a cron expression into a readable string using defined labels.
-#
-# Parameters:
-#   $1 - cron expression string (5-part)
-#
-# Globals:
-#   LABEL_EVERYDAY, LABEL_EVERY_WEEK, LABEL_EVERY_MONTH,
-#   LABEL_TIME_AT, LABEL_DATE_ON, LABEL_CUSTOM_SCHEDULE
-#
-# Returns:
-#   - Echoes a formatted string describing the schedule
-# =============================================
-cron_translate() {
-    local cron_exp="$1"
+backup_prompt_list_schedule() {
+    print_msg title "$TITLE_BACKUP_SCHEDULE_LIST"
 
-    # Split cron fields
-    local minute
-    minute=$(echo "$cron_exp" | awk '{print $1}')
-    local hour
-    hour=$(echo "$cron_exp" | awk '{print $2}')
-    local day
-    day=$(echo "$cron_exp" | awk '{print $3}')
-    local month
-    month=$(echo "$cron_exp" | awk '{print $4}')
-    local weekday
-    weekday=$(echo "$cron_exp" | awk '{print $5}')
+    local has_schedule=false
+    local now_ts
+    now_ts=$(date +%s)
 
-    # Determine time
-    local time="$hour:$minute"
+    mapfile -t sites < <(website_list)
 
-    # Determine frequency
-    if [[ "$day" == "*" && "$month" == "*" && "$weekday" == "*" ]]; then
-        schedule="$LABEL_EVERYDAY $LABEL_TIME_AT $time"
-    elif [[ "$day" == "*" && "$month" == "*" && "$weekday" != "*" ]]; then
-        schedule="$LABEL_EVERY_WEEK $LABEL_TIME_AT $time $LABEL_DATE_ON $(convert_weekday "$weekday")"
-    elif [[ "$day" != "*" && "$month" == "*" ]]; then
-        schedule="$LABEL_EVERY_MONTH $LABEL_TIME_AT $time, $LABEL_DATE_ON $day"
-    else
-        schedule="$LABEL_CUSTOM_SCHEDULE: $cron_exp"
-    fi
-
-    echo "$schedule"
-}
-
-# =============================================
-# 📋 schedule_backup_list – List scheduled backup cron jobs per website
-# =============================================
-# Description:
-#   - Displays all websites with active backup cron jobs and lets the user view their details.
-#
-# Globals:
-#   PROMPT_BACKUP_SELECT_WEB_VIEW_SCHEDULE, INFO_BACKUP_SCHEDULE_WEBSITE_LIST,
-#   INFO_BACKUP_VIEW_SCHEDULED_WEBSITE, INFO_BACKUP_SCHEDULE_LIST_FOR_WEBSITE,
-#   ERROR_BACKUP_NO_WEBSITE_SCHENDULED, ERROR_BACKUP_NOT_SCHEDULED_FOR_WEBSITE,
-#   ERROR_SELECT_OPTION_INVALID, BACKUP_RUNNER
-#
-# Returns:
-#   - Displays formatted table of schedules
-#   - Returns 1 if no scheduled websites are found
-# =============================================
-schedule_backup_list() {
-
-    print_msg info "$INFO_BACKUP_SCHEDULE_WEBSITE_LIST"
-
-    # Get website list from crontab
-    mapfile -t websites < <(crontab -l 2>/dev/null | grep "backup_website.sh" | awk -F '--domain=' '{print $2}' | awk '{print $1}' | sort -u)
-
-    if [[ ${#websites[@]} -eq 0 ]]; then
-        print_msg error "$ERROR_BACKUP_NO_WEBSITE_SCHENDULED"
+    if [[ ${#sites[@]} -eq 0 ]]; then
+        print_msg warning "$WARNING_NO_WEBSITE_FOUND"
         return 1
     fi
 
-    # Display website list
-    print_msg label "$PROMPT_BACKUP_SELECT_WEB_VIEW_SCHEDULE"
-    select SITE_DOMAIN in "${websites[@]}"; do
-        if [[ -n "$domain" ]]; then
-            print_msg info "$INFO_BACKUP_VIEW_SCHEDULED_WEBSITE: $domain"
-            break
-        else
-            print_msg error "$ERROR_SELECT_OPTION_INVALID"
+    for domain in "${sites[@]}"; do
+        local enabled interval storage rclone_storage
+        enabled=$(json_get_site_value "$domain" "backup_schedule.enabled")
+        interval=$(json_get_site_value "$domain" "backup_schedule.interval_days")
+        storage=$(json_get_site_value "$domain" "backup_schedule.storage")
+        rclone_storage=$(json_get_site_value "$domain" "backup_schedule.rclone_storage")
+
+        if [[ "$enabled" == "true" ]]; then
+            has_schedule=true
+
+            # Tính thời gian backup tiếp theo
+            local next_ts next_date
+            next_ts=$((now_ts + (interval * 86400)))
+            next_date=$(date -d "@$next_ts" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || gdate -d "@$next_ts" "+%Y-%m-%d %H:%M:%S")
+
+            local schedule_text="⏰ $LABEL_BACKUP_EVERY ${interval:-1} $LABEL_BACKUP_DAYS"
+            local next_text="🕒 $LABEL_BACKUP_NEXT_RUN: $next_date"
+            local storage_text="📦 $storage"
+            [[ "$storage" == "cloud" && -n "$rclone_storage" ]] && storage_text+=" → $rclone_storage"
+
+            echo -e "${YELLOW}• ${CYAN}$domain${NC}"
+            echo -e "   $schedule_text"
+            echo -e "   $next_text"
+            echo -e "   $storage_text"
+            echo ""
         fi
     done
 
-    # Fetch cron jobs related to the selected website
-    cron_jobs=$(crontab -l 2>/dev/null | grep "backup_website.sh --domain=$domain")
-
-    if [[ -z "$cron_jobs" ]]; then
-        print_msg error "$ERROR_BACKUP_NOT_SCHEDULED_FOR_WEBSITE: $domain"
-        return 1
-    else
-        print_msg info "$INFO_BACKUP_SCHEDULE_LIST_FOR_WEBSITE: $domain"
-        echo -e "${YELLOW}Frequency | Website | Log Path${NC}"
-        echo -e "${MAGENTA}------------------------------------------------------${NC}"
-        
-        # Translate cron time and display full details
-        while IFS= read -r line; do
-            cron_exp=$(echo "$line" | awk '{print $1, $2, $3, $4, $5}')
-            schedule=$(cron_translate "$cron_exp")
-            website=$(echo "$line" | awk -F '--domain=' '{print $2}' | awk '{print $1}')   # Get exact website name
-            log_path=$(echo "$line" | awk -F '>> ' '{print $2}' | awk '{print $1}')               # Get exact log path
-            
-            echo -e "⏰ $schedule | 🌐 $website | 📝 $log_path"
-        done <<< "$cron_jobs"
-
-        echo -e "${MAGENTA}------------------------------------------------------${NC}"
+    if [[ "$has_schedule" == false ]]; then
+        print_msg info "$INFO_BACKUP_NO_WEBSITE_SCHEDULED"
     fi
 }
-
 # =============================================
 # ❌ schedule_backup_remove – Remove backup cron job for a website
 # =============================================
@@ -152,19 +59,48 @@ schedule_backup_list() {
 #   - None
 # =============================================
 schedule_backup_remove() {
-    select_website || return
+    print_msg title "$TITLE_BACKUP_REMOVE_SCHEDULE"
 
-    local temp_cron
-    temp_cron=$(mktemp)
-    crontab -l 2>/dev/null | grep -v "$BACKUP_RUNNER $domain" > "$temp_cron"
-    crontab "$temp_cron"
-    rm -f "$temp_cron"
+    local domain
+    website_get_selected domain || return 1
+    _is_valid_domain "$domain" || return 1
 
-    print_msg 
+    local enabled
+    enabled=$(json_get_site_value "$domain" "backup_schedule.enabled")
+
+    if [[ "$enabled" != "true" ]]; then
+        print_msg error "$ERROR_BACKUP_NO_SCHEDULE_FOUND_FOR_SITE: $domain)"
+        return 1
+    fi
+
+    # Hiển thị chi tiết lịch backup hiện tại
+    local interval storage rclone_storage
+    interval=$(json_get_site_value "$domain" "backup_schedule.interval_days")
+    storage=$(json_get_site_value "$domain" "backup_schedule.storage")
+    rclone_storage=$(json_get_site_value "$domain" "backup_schedule.rclone_storage")
+
+    print_msg info "$INFO_BACKUP_CURRENT_SCHEDULE: ${CYAN}$domain${NC}:"
+    echo -e "   ⏰ $LABEL_BACKUP_EVERY ${interval:-1} $LABEL_BACKUP_DAYS"
+    if [[ "$storage" == "local" ]]; then
+        echo -e "   📦 Storage: Local"
+    elif [[ "$storage" == "cloud" ]]; then
+        echo -e "   ☁️ Storage: Cloud → ${YELLOW}$rclone_storage${NC}"
+    fi
+    echo ""
+
+    # Hỏi xác nhận trước khi xoá
+    confirm_action "$QUESTION_BACKUP_CONFIRM_REMOVE_SCHEDULE: $domain"
+    if [[ $? -ne 0 ]]; then
+        print_msg info "$MSG_BACKUP_REMOVE_CANCELLED"
+        return 0
+    fi
+
+    json_delete_site_key "$domain" "backup_schedule"
+    print_msg success "$SUCCESS_BACKUP_SCHEDULE_REMOVED: $domain"
 }
 
 # =============================================
-# 📅 manage_cron_menu – Interactive cron job management menu
+# 📅 backup_schedule_menu – Interactive cron job management menu
 # =============================================
 # Description:
 #   - Displays a CLI menu for listing or removing scheduled backups via cron.
@@ -177,7 +113,7 @@ schedule_backup_remove() {
 # Returns:
 #   - None
 # =============================================
-manage_cron_menu() {
+backup_schedule_menu() {
     while true; do
         echo -e "${BLUE}============================${NC}"
         echo -e "${BLUE}   $TITLE_MENU_BACKUP_SCHEDULE_MANAGEMENT (CRON)   ${NC}"
@@ -185,18 +121,17 @@ manage_cron_menu() {
         print_msg label "${GREEN}1)${NC} $LABEL_MENU_BACKUP_SCHEDULE_VIEW"
         print_msg label "${GREEN}2)${NC} $LABEL_MENU_BACKUP_SCHEDULE_REMOVE"
         print_msg label "${GREEN}3)${NC} $MSG_BACK"
-        echo -e "  ${GREEN}[3]${NC} 🔙 Back"
         echo -e "${BLUE}============================${NC}"
 
         choice=$(get_input_or_test_value "$PROMPT_SELECT_OPTION" "${TEST_CHOICE:-3}")
         case "$choice" in
-            1) schedule_backup_list ;;
-            2) schedule_backup_remove ;;
-            3) break ;;
-            *)
-                print_msg error "$ERROR_SELECT_OPTION_INVALID"
-                sleep 1
-                ;;
+        1) backup_prompt_list_schedule ;;
+        2) schedule_backup_remove ;;
+        3) break ;;
+        *)
+            print_msg error "$ERROR_SELECT_OPTION_INVALID"
+            sleep 1
+            ;;
         esac
     done
 }

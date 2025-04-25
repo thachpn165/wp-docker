@@ -1,19 +1,18 @@
 #!/bin/bash
 
 website_check_and_up() {
-    local site_dir domain
-    local php_container mariadb_container
+    local domain php_container
     local started_any=false
 
-    for site_dir in "$SITES_DIR"*/; do
-        [[ -d "$site_dir" ]] || continue
+    mapfile -t domains < <(website_list)
+    if [[ ${#domains[@]} -eq 0 ]]; then
+        debug_log "No website found $SITES_DIR to check and start."
+        return 0
+    fi
 
-        domain=$(basename "$site_dir")
+    for domain in "${domains[@]}"; do
         php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
-        mariadb_container=$(json_get_site_value "$domain" "CONTAINER_DB")
-
         _check_and_start_container "$php_container" "$domain"
-        _check_and_start_container "$mariadb_container" "$domain"
     done
 
     if [[ "$started_any" == true ]]; then
@@ -27,6 +26,9 @@ _check_and_start_container() {
     local domain="$2"
     local is_running
 
+    _is_missing_param "$container_name" "--container_name" || return 1
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
     if [[ -z "$container_name" ]]; then
         print_and_debug warning "⚠️  Skipped empty container for domain: $domain"
         return

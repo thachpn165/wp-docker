@@ -10,14 +10,23 @@ rclone_storage_list() {
 
   debug_log "[RCLONE] Config path: $rclone_config"
 
-  # Check if rclone config file exists
-  if ! is_file_exist "$rclone_config"; then
+  if ! _is_file_exist "$rclone_config"; then
     print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi
 
-  # Extract section names from config (storage names)
-  sed -n 's/^\[\(.*\)\]$/\1/p' "$rclone_config"
+  # Đọc từng storage và in theo định dạng: 📦 thachdrive (drive)
+  awk '
+    /^\[/ {
+      gsub(/[\[\]]/, "", $0)
+      current = $0
+    }
+    /^type[ \t]*=/ {
+      gsub(/^[ \t]*type[ \t]*=[ \t]*/, "", $0)
+      type = $0
+      printf("📦 %s (%s)\n", current, type)
+    }
+  ' "$rclone_config"
 }
 
 # =====================================
@@ -32,7 +41,7 @@ rclone_storage_delete() {
   debug_log "[RCLONE] Loading config: $rclone_config"
 
   # Check if rclone config file exists
-  if ! is_file_exist "$rclone_config"; then
+  if ! _is_file_exist "$rclone_config"; then
     print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi
@@ -42,19 +51,21 @@ rclone_storage_delete() {
   mapfile -t storages < <(grep '^\[' "$rclone_config" | tr -d '[]')
   debug_log "[RCLONE] Found storages: ${storages[*]}"
 
-  # Show warning if no storage found
   if [[ ${#storages[@]} -eq 0 ]]; then
     print_and_debug warning "$WARNING_RCLONE_NO_STORAGE_CONFIGURED"
     return 1
   fi
 
-  # Show storage deletion menu
   print_msg title "$LABEL_MENU_RCLONE_DELETE_STORAGE"
 
   select storage in "${storages[@]}"; do
     if [[ -n "$storage" ]]; then
       debug_log "[RCLONE] Deleting storage: $storage"
-      sed -i "/^\[$storage\]/,/^$/d" "$rclone_config"
+
+      # Xóa từ dòng chứa [$storage] đến dòng trắng kế tiếp
+      # Đây là đoạn dùng sed tương thích macOS + Linux
+      sedi "/^\[$storage\]/,/^\s*$/d" "$rclone_config"
+
       print_msg success "$(printf "$SUCCESS_RCLONE_STORAGE_REMOVED" "$storage")"
       break
     else

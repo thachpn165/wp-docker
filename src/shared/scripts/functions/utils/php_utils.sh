@@ -107,8 +107,8 @@ create_optimized_php_fpm_config() {
   local php_fpm_conf_path="$SITES_DIR/$domain/php/php-fpm.conf"
 
   if [[ -d "$php_fpm_conf_path" ]]; then
-    print_msg warning "$(printf "$WARNING_PHP_FPM_REMOVE_DIR" "$php_fpm_conf_path")"
-    rm -rf "$php_fpm_conf_path"
+    print_msg warning "$(printf "$WARNING_PHP_FPM_REMOVE_FILE" "$php_fpm_conf_path")"
+    remove_file "$php_fpm_conf_path"
   fi
 
   if [[ ! -f "$php_fpm_conf_path" ]]; then

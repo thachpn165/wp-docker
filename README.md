@@ -1,69 +1,46 @@
-**Note**: Version `v1.1.9-beta` is currently undergoing final refinements and may be subject to modifications prior to the official stable release.
+<h1 align="center">WP Docker</h1>
+<p align="center">Lightweight, Flexibility & Freedom</p>
 
-# WP Docker
+> Welcome to v1.2.0-beta, the final beta version before the release of our first official stable version, v1.2.0. The launch date for v1.2.0 is May 5, 2025.
 
-[![Version](https://img.shields.io/badge/version-v1.1.9--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
+[![Version](https://img.shields.io/badge/version-v1.2.0--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
 [![macOS](https://img.shields.io/badge/macOS-supported-blue?logo=apple)](https://github.com/thachpn165/wp-docker)
 [![Linux](https://img.shields.io/badge/Linux-supported-success?logo=linux)](https://github.com/thachpn165/wp-docker)
+[![Language Support](https://img.shields.io/badge/language-Việt%20%7C%20English-blueviolet)](#)
 [![License](https://img.shields.io/github/license/thachpn165/wp-docker)](./LICENSE)
+
 
 ---
 
 ![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
 
-## Introduction
 
-**WP Docker** is a specialized containerization platform designed for WordPress environments, offering an intuitive, terminal-based interface for developers and system administrators.
+- 📝 [**Documentation**](https://wpdocker.vn) (*Coming soon: Support for Vietnamese and English languages*)
+- 🦠 [**Report a bug**](https://github.com/thachpn165/wp-docker/issues/new?labels=bug)
+- 💡 [**Feature request**](https://github.com/thachpn165/wp-docker/issues/new?labels=bug)
 
-This enterprise-grade toolkit provides a security-hardened, performance-optimized infrastructure with key features such as:
+## Introduction to WP Docker!
 
-- Auto-calculate PHP-FPM and MySQL configurations based on host resources (CPU, RAM)
-- Automated WordPress provisioning
-- Automated WordPress cache provisioning in NGINX (and other web servers later), currently supporting configurations for FastCGI Cache, Redis, WP Super Cache, W3 Total Cache, and WP Fastest Cache
-- SSL certificate management (including Let's Encrypt and custom certs)
-- Modular backup orchestration with local and cloud (Rclone) support
-- Full WP-CLI integration
-- Seamless cloud synchronization
+**WP Docker** makes WordPress development a breeze with its easy-to-use container platform that works right from your terminal.
 
-The platform adopts a modular architecture supporting interchangeable web servers such as OpenResty (NGINX + Lua), Caddy Server (coming soon), and OpenLiteSpeed. This flexibility allows seamless switching between stacks with automatic configuration adaptation.
+Designed for both beginners and pros, it gives you everything you need to run WordPress smoothly:
 
-Unlike conventional WordPress setups, WP Docker embraces infrastructure-as-code (IaC) principles to eliminate vendor lock-in. Its isolated containerized environment—combining Linux, PHP, and database services—ensures maximum portability, scalability, and operational consistency.
+- Currently supports OpenResty (NGINX with Lua), MariaDB, and PHP-FPM
+- Smart resource management: Automatically configures PHP-FPM and MySQL based on your computer's capabilities
+- Quick setup: Gets WordPress running with just a few commands
+- Built-in caching tools: Automatically configures WordPress caching with ready-to-use setups for FastCGI Cache, Redis, WP Super Cache, WP Fastest Cache, and more
+- WP-CLI ready: Run `wpdocker wp cli example.ltd <command>` to execute any WP-CLI command directly inside your container
+- Enjoy flexible usage through a friendly terminal interface or the convenient `wpdocker` command line—whichever works best for you!
+- Safe and secure, as WP Docker uses only official Docker images that are regularly updated (except for OpenResty, which uses my custom-built image to support Brotli compression and the `ngx_cache_purge` module)
 
+*Soon* you'll be able to switch between different web servers like OpenResty or Caddy without changing your workflow. This exciting feature is coming in a future update, with the system automatically handling all configuration changes for you.
 
-Crafted with **simplicity, user-friendliness, and extensibility** at its core, this solution runs seamlessly on both **macOS and Linux** environments.
+WP Docker adopts infrastructure-as-code principles to give you complete freedom, so you're never locked into one provider. Your entire WordPress setup—including Linux, PHP, and database—runs in containers that you can move anywhere. In the near future, WP Docker will introduce a powerful migration feature that lets you transfer your complete setup to a different server quickly and automatically—giving you true portability and freedom to host your WordPress sites wherever you want!
 
----
+As an open-source project released under the MIT license, you're free to use, modify, and distribute WP Docker for any purpose, whether personal or commercial.
 
-## Latest Release - v1.1.9-beta
-
-Release date: 2025-04-16
-
-### 🚀 Added
-
-- New command: `wpdocker core uninstall` for full removal flow
-- Centralized MariaDB container with dynamic database/user creation
-- Slowlog file: `logs/php_slow.log` per site (linked via `php-fpm.conf`)
-- PHP error log: `logs/php_error.log` with dynamic injection into `php.ini`
-- Auto-tracking of cache type into `.config.json`
-- Resource-aware PHP-FPM tuning: `pm.max_children`, server tier detection
-- Shared FastCGI cache volume across PHP and NGINX containers
-- Added slowlog + timeout settings into `php-fpm.conf`
-
-### ♻️ Changed
-
-- Moved system-level scripts into `shared/core/` structure
-- Removed `db_utils.sh` and legacy per-site DB containers
-- Changed default `$DOCKER_NETWORK` to `wpdocker-network`
-- All docker-compose files now use `${docker_network}` instead of hardcoded names
-
-### 🐞 Fixed
-
-- Ensured MySQL volume and container names are consistent across installs
-- Fixed error when writing `php.ini` and `php-fpm.conf` when paths are missing
-- Made uninstall script safely ignore `.git/` and preserve archives
-
-*For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
+Built to be **simple, friendly, and flexible**, WP Docker works perfectly on both **Mac and Linux** computers. Why not give it a try?
 
 ---
 
@@ -71,14 +48,14 @@ Release date: 2025-04-16
 
 ### System Requirements
 
-- Docker and Docker Compose installed
+- It is recommended to have Docker and the Docker Compose plugin installed before install WP Docker
 - Git (for installation and updates)
 - Bash 3.0+ (pre-installed on most Linux distributions and macOS), but Bash 4.0 or later is recommended.
 - At least 1GB of RAM per WordPress site (recommended)
 
 ### macOS-Specific Requirements
 
-Docker on macOS **cannot mount any folder** outside of the shared file system list.
+Docker on macOS **cannot access folders outside** the shared file system list.
 
 After installation, you **must add `/opt`** to Docker → Settings → Resources → File Sharing:
 
@@ -97,39 +74,88 @@ curl -fsSL https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/mai
 Once installed, simply run:
 
 ```bash
-wpdocker
+wpdocker menu
 ```
 
 This command opens the interactive terminal menu for managing your WordPress sites.
+
+You can also use WP Docker through the `wpdocker` command. For more information, refer to the instructions with the `wpdocker --help` command.
+
+## Latest Release - v1.2.0-beta
+
+Release date: 2025-04-25
+
+### 🚀 Added
+
+- **PHP Extension Management**  
+  - Added `php_install_extensions.sh` to support installing PHP extensions (e.g., Ioncube Loader).
+  - Enabled `imagick` by default in PHP config.
+  - New menu and CLI interface to handle extension installation.
+
+- **New Bashly CLI**  
+  - Introduced Bashly-powered `wpdocker` CLI with structured commands and auto-completion.
+  - Deprecated individual `*.sh` wrappers.
+
+- **WordPress Backup Scheduler**  
+  - Created backup cron system with cleaner interface and upload support via Rclone.
+
+- **OpenResty Upgrade**  
+  - Switched to `thachpn165/wpdocker-openresty` Docker image.
+  - Added Brotli and `ngx_cache_purge` support.
+
+- **SSL Auto-Renewal**  
+  - Integrated certbot renewal using Docker container and cron runner.
+  - Renewal logs saved per site.
+
+- **Domain Validation + Safe Curl**  
+  - Added `_is_missing_param`, `safe_curl`, and domain validation logic.
+  - Improved parameter checking across scripts.
+
+- **Cache Management Enhancements**  
+  - Improved NGINX rules and compatibility with WP Fastest Cache + Redis.
+  - Auto-detects optimal cache settings per site.
+
+### 🐞 Fixed
+
+- Rclone setup prompt translation (vi).
+- Refined error messages and exit handling in scripts.
+- Consistent use of `print_msg`, `debug_log`, and `get_input_or_test_value`.
+
+### ♻️ Changed
+
+- Refactored all CLI menus to support i18n.
+- Updated php.ini template logic for extension inclusion.
+- Centralized site configurations under `.config.json`.
+
+*For complete changelog history, please see [CHANGELOG.md](./CHANGELOG.md)*
+
+---
 
 ## Key Features
 
 ### WordPress Site Management
 
 - Create and manage multiple WordPress installations simultaneously
-- Configure independent PHP versions for individual sites
+- Configure PHP versions and its configurations for individual sites
 - Restore WordPress source code and database from backup interactively
 
 ### Security Features
 
 - Automatic SSL certificate deployment (Let's Encrypt, custom, or self-signed)
 - Isolated container environments for enhanced security
-- Advanced firewall configurations through NGINX
+- Intergrated firewall configurations through NGINX
 
 ### Backup and Recovery
 
 - Execute comprehensive backup solutions with cloud integration (via Rclone)
 - Schedule automated periodic backups through cron functionality
-- Human-readable cron schedule descriptions when setting backups
-- Restore sites from previous backup points with file and database recovery
+- Easy to restore website data from backup
 
-### Configuration and Monitoring
+### Configuration
 
 - Directly modify configuration files including `php.ini` and `php-fpm.conf`
-- Monitor site health through SSL verification and log analysis
 - Performance optimization tools for NGINX and PHP-FPM
-- **Switch system language dynamically from the System Tools menu**
-- **Full multilingual support (i18n) for CLI prompts and messages**
+- Full multilingual support (i18n) for CLI prompts and messages
 
 ### System Administration
 
@@ -137,7 +163,7 @@ This command opens the interactive terminal menu for managing your WordPress sit
 - Update Docker images and system components
 - Access container shells for advanced troubleshooting
 - Enable global Debug Mode to show internal commands and logs
-- Enable Dev Mode to preview unreleased or under-development features
+- Enable Dev Mode to preview unreleased, under-development features
 
 ## Advanced Configuration
 
@@ -151,7 +177,7 @@ After modifying configuration files, restart the affected services through the s
 
 ## 🚀 WP Docker Roadmap (2025)
 
-### ✅ Current Version: `v1.1.9` (Beta)
+### ✅ Current Version: `v1.2.0` (Beta)
 
 - Planned release of the first stable version (v1.2.0-stable): 2025-05-05
 
@@ -163,7 +189,7 @@ After modifying configuration files, restart the affected services through the s
 - Backup system (local + Rclone support)
 - Scheduled automated backups
 - Website restoration (source + database)
-- Integrated WAF (OpenResty + Lua-based rules)
+- Integrated firewall configurations through NGINX
 - Auto-update WP-CLI and system version checker
 - Clean command-line interface optimized for macOS and Linux
 - Automatic WordPress Migration (restore data from existing WordPress website in "one-shot")
@@ -173,38 +199,22 @@ After modifying configuration files, restart the affected services through the s
 
 ### 🗓️ Upcoming Milestones
 
-#### v1.3.0
+#### From v1.2.0 to v1.9.0
 
-- Refactor to support multiple web servers (OpenResty, Caddy, OpenLiteSpeed, LiteSpeed Enterprise, etc.)
-- Integrate Caddy Server with WordPress using Caddy Route Cache.
+- Focus on stabilizing core feature functionalities
+- Add new features: Telegram notification, Fail2ban integration
+- Support configuration for WordPress Multisite
 
-#### v1.4.0
+#### v2.0.0
 
-- ~Add command-line support for common tasks such as site creation, enabling/disabling cache configuration, and updating WP Docker.~ (Added in v1.1.5-beta)
-- Integrate Fail2Ban for server security.
-- Integrate Telegram notifications for events like backups, Fail2Ban triggers, DDoS detection, updates, SSL expiration, and health checks.
+- Refactor to support multiple web servers
+- Integrate additional web servers: Caddy Server, OpenLiteSpeed
 
-#### v1.5.0
+#### v3.0.0
 
-- ~Full CLI support for all available features~ (Added in v1.1.5-beta)
-- IP blocking for DDoS attacks based on access_log analysis (using Lua for OpenResty and Go for Caddy).
-
-#### v1.6.0
-
-- Add Webhook support to receive similar notifications.
-
-#### v1.7.0
-
-- Isolated sFTP/SSH access per website
-- Automatically transfer site data to another server proactively
+- Cluster support using Docker Swarm
 
 ---
-
-## Acknowledgments
-
-I would like to extend my sincere appreciation to **[@sonpython](https://github.com/sonpython)** for his valuable contributions to this project. My heartfelt thanks also go to my colleagues at **[AZDIGI](https://azdigi.com)**: **[@dotrungquan](https://github.com/dotrungquan)** , **[@BamBo355](https://github.com/BamBo355)** , **[@phongdh262](https://github.com/phongdh262)**, and **[@RakunFatalis](https://github.com/RakunFatalis)** for their unwavering support throughout the development process.
-
-Furthermore, I am grateful for the innovative AI tools **ChatGPT** and **Cursor**, which significantly enhanced the efficiency and quality of this project.
 
 ## Contributing
 
@@ -222,12 +232,20 @@ Furthermore, I am grateful for the innovative AI tools **ChatGPT** and **Cursor*
 
 ---
 
-## Documentation
-
-Coming soon
-
----
-
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
+
+---
+
+## Credits
+- [DannyBen/bashly](https://github.com/DannyBen/bashly) (MIT license)
+- [rclone](https://github.com/rclone/rclone) (MIT license)
+
+---
+
+## Acknowledgments
+
+I would like to extend my sincere appreciation to **[@sonpython](https://github.com/sonpython)** for his valuable contributions to this project. My heartfelt thanks also go to my colleagues at **[AZDIGI](https://azdigi.com)**: **[@dotrungquan](https://github.com/dotrungquan)** , **[@BamBo355](https://github.com/BamBo355)** , **[@phongdh262](https://github.com/phongdh262)**, and **[@RakunFatalis](https://github.com/RakunFatalis)** for their unwavering support throughout the development process.
+
+Furthermore, I am grateful for the innovative AI tools **ChatGPT** and **Cursor**, which significantly enhanced the efficiency and quality of this project.

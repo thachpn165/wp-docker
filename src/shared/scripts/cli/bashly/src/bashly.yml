@@ -1,0 +1,372 @@
+name: wpdocker
+help: Manage WordPress Docker environments easily
+version: 1.2.0
+
+commands:
+  - name: menu
+    help: Show command menu
+    
+  - name: website
+    help: Manage WordPress websites
+    commands:
+      - name: create
+        help: Create a new WordPress site
+        args:
+          - name: domain
+            help: Domain name for the new site
+            required: true
+          - name: php
+            help: PHP version for the new site
+            required: true
+          - name: auto_generate
+            help: Auto-generate secure passwords for the site
+            required: false
+            default: "true"
+      - name: delete
+        help: Delete an existing site
+        args:
+          - name: domain
+            help: Domain name of the site to delete
+            required: true
+          - name: backup
+            help: Backup before deletion
+            required: false
+            default: "true"
+      - name: list
+        help: List all WordPress sites
+      - name: restart
+        help: Restart a site
+        args: 
+          - name: domain
+            help: Domain name of the site to restart
+            required: true
+      - name: logs
+        help: Show site logs
+        args:
+          - name: domain
+            help: Domain name of the site to show logs
+            required: true
+          - name: log_type
+            help: Type of logs to show (e.g., access, error, php_slow, php_error)
+            required: true
+      - name: info
+        help: Show site info
+        args:
+          - name: domain
+            help: Domain name of the site to show info
+            required: true
+      - name: restore
+        help: Restore site from backup
+        args: 
+          - name: domain
+            help: Domain name of the site to restore
+            required: true
+          - name: code_backup_file
+            help: Path to the backup file for the site
+            required: true
+          - name: db_backup_file
+            help: Path to the database backup file
+            required: true
+      - name: update_template
+        help: Update site template
+
+  - name: ssl
+    help: SSL certificate management
+    commands:
+      - name: install
+        help: Install SSL certificate
+        commands:
+          - name: selfsigned
+            help: Install self-signed SSL certificate
+            args:
+              - name: domain
+                help: Domain name for the self-signed SSL certificate
+                required: true
+          - name: letsencrypt
+            help: Install Let's Encrypt SSL certificate
+            args:
+              - name: domain
+                help: Domain name for the Let's Encrypt SSL certificate
+                required: true
+              - name: email
+                help: Email address for Let's Encrypt registration
+                required: true
+              - name: staging
+                help: Use staging environment for testing
+                required: false
+                default: "false"
+      - name: check
+        help: Check SSL certificate status
+        args:
+          - name: domain
+            help: Domain name to check SSL certificate status
+            required: true 
+
+
+  - name: php
+    help: Manage PHP versions and configuration
+    commands:
+      - name: change
+        help: Change PHP version for a site
+        args: 
+          - name: domain
+            help: Domain name of the site to change PHP version
+            required: true
+          - name: version
+            help: New PHP version for the site
+            required: true
+      - name: get
+        help: Get PHP version list from Docker Hub
+      - name: rebuild
+        help: Rebuild PHP container for a site
+        args:
+          - name: domain
+            help: Domain name of the site to rebuild PHP container
+            required: true
+      - name: edit
+        help: Edit PHP configuration for a site
+        args:
+          - name: config_type
+            help: Type of PHP configuration to edit (conf, ini)
+            required: true 
+          
+
+  - name: backup
+    help: Manage backups for WordPress sites
+    commands:
+      - name: website
+        help: Backup website source + DB
+        args:
+          - name: domain
+            help: Domain to be backed up
+            required: true
+          - name: storage
+            help: The storage type that will store the backup (e.g. local, rclone)
+            required: true
+          - name: rclone_storage
+            help: The storage name rclone will store this backup data, only declare if STORAGE=rclone is declared
+            required: false
+      
+      - name: database
+        help: Backup database only
+        args:
+          - name: domain
+            help: Domain will perform database backup
+            required: true
+          - name: save_location
+            help: The full export file path of the backup data (e.g. /tmp/db_export.sql)
+            required: false
+
+      - name: file
+        help: Backup file only
+        args:
+          - name: domain
+            help: Domain will perform file backup
+            required: true
+
+
+      - name: restore
+        help: Restore backup for a site
+        commands:
+          - name: website
+            help: Restore website source + DB
+            args:
+              - name: domain
+                help: The domain will perform full data recovery (including source code and database)
+                required: true
+              - name: code_backup_file
+                help: The path to the backup file for the site
+                required: true
+              - name: db_backup_file
+                help: The path to the database backup file
+                required: true
+          - name: database
+            help: Restore database only
+            args:
+              - name: domain
+                help: The domain will perform database recovery
+                required: true 
+              - name: db_backup_file
+                help: The path to the database backup file
+                required: true
+          - name: file
+            help: Restore file only
+            args:
+              - name: domain
+                help: The domain will perform file recovery
+                required: true 
+              - name: code_backup_file
+                help: The path to the backup file for the site
+                required: true
+      - name: list
+        help: List all backup files
+        args:
+          - name: domain
+            help: Domain name to list backup files
+            required: true
+      - name: cleanup
+        help: clean up backups older than x days
+        args:
+          - name: domain
+            help: Domain needs to clean up its backup
+            required: true
+          - name: max_age_days
+            help: Maximum number of days old of backup files allowed to be retained (e.g. 7 will delete files older than 7 days)
+            required: true
+
+
+  - name: database
+    help: Manage database operations
+    commands:
+      - name: reset
+        help: Reset site database
+        args:
+          - name: domain
+            help: Domain name of the site to reset database
+            required: true
+
+
+  - name: wp
+    help: WordPress tools
+    commands:
+      - name: cli
+        help: Run WP-CLI commands inside container. Usage wpdocker wp cli wpdocker.dev "<command>" 
+        args:
+          - name: domain
+            help: Domain name of the site to run WP-CLI commands
+            required: true
+          - name: command
+            help: WP-CLI command to run
+            required: true
+      - name: migrate
+        help: Migrate WordPress site
+        args:
+          - name: domain
+      - name: reset
+        help: Reset features
+        commands:
+          - name: password
+            help: Reset admin password
+            args:
+              - name: domain
+                help: Domain name of the site to reset password
+                required: true
+              - name: user_id
+                help: User ID of the admin user to reset password
+                required: false
+
+          - name: role
+            help: Reset user roles
+            args:
+              - name: domain
+                help: Domain name of the site to reset user roles
+                required: true
+              - name: role
+                help: New role for the user (optinal)
+                required: false
+      - name: cache
+        help: Setup caching
+        args: 
+          - name: domain
+            help: Domain name of the site to setup caching
+            required: true
+        flags:
+            - long: --type
+              short: -t
+              help: Type of caching to setup (e.g., fastcgi-cache, wp-super-cache, w3-total-cache, no-cache)
+              required: true
+              arg: type
+
+      - name: plugin
+        help: Plugin tools
+        commands:
+          - name: auto-update
+            help: Enable plugin auto update
+            args:
+              - name: domain
+                help: Domain name of the site to enable plugin auto update
+                required: true
+              - name: action
+                help: Action to perform (enable, disable)
+                required: true
+      - name: security
+        help: Security enhancements
+        commands:
+          - name: login
+            help: Protect wp-login.php for a site
+            args:
+              - name: domain
+                help: Domain name of the site to protect wp-login.php
+                required: true
+              - name: action
+                help: Action to perform (enable, disable)
+                required: true
+  - name: system
+    help: System operations
+    commands:
+      - name: check
+        help: Sytem checking utilities
+        commands:
+          - name: resources
+            help: Check system resources of Docker
+          - name: disk
+            help: Check disk space usage of WP Docker
+
+  - name: core
+    help: Core management
+    commands:
+      - name: version
+        help: Show current and latest version
+      - name: update
+        help: Update core system to the latest version
+        flags: 
+          - long: --force
+            short: -f
+            help: Force update even if already up to date
+
+      - name: upgrade
+        help: Run the upgrade scripts 
+      - name: uninstall
+        help: Uninstall WP Docker
+      - name: channel
+        help: Update channel options
+        commands:
+          - name: change
+            help: Change release channel
+          - name: check
+            help: Show current channel
+      - name: lang
+        help: Language options
+        commands:
+          - name: change
+            help: Change CLI language
+            args: 
+              - name: lang
+                help: Language code to switch to (e.g., en, fr, de)
+                required: true
+          - name: check
+            help: Show current language
+          - name: list
+            help: List supported languages
+  
+  - name: nginx
+    help: NGINX actions
+    commands:
+      - name: restart
+        help: Restart NGINX proxy
+      - name: reload
+        help: Reload NGINX configuration
+
+  
+  - name: debug
+    help: Debugging tools
+    commands:
+      - name: set
+        help: Enable and disable debug mode
+        args:
+          - name: action
+            help: Action to perform (enable, disable)
+            required: true
+      - name: logs
+        help: Show debug logs
+

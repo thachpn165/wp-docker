@@ -13,12 +13,6 @@ ssl_logic_check_cert() {
   ssl_dir=$SSL_DIR
   local cert_path="$ssl_dir/$domain.crt"
 
-  # Validate domain
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
-    return 1
-  fi
-
   # Check if certificate file exists
   if [[ ! -f "$cert_path" ]]; then
     print_msg error "$ERROR_SSL_CERT_NOT_FOUND: $cert_path"
@@ -40,16 +34,20 @@ ssl_logic_check_cert() {
   end_ts=$(date -d "$end_date" +%s 2>/dev/null || gdate -d "$end_date" +%s)
   now_ts=$(date +%s)
 
-  local remaining_days=$(( (end_ts - now_ts) / 86400 ))
+  local remaining_days=$(((end_ts - now_ts) / 86400))
   local status=""
 
   # Determine certificate status
-  if (( now_ts > end_ts )); then
+  if ((now_ts > end_ts)); then
     status="${RED}❌ EXPIRED${NC}"
-  elif (( remaining_days <= 7 )); then
-    status="${YELLOW}⚠️  Expiring soon ($remaining_days days remaining)${NC}"
+  elif ((remaining_days <= 7)); then
+    local formatted_expiration_warning
+    formatted_expiration_warning="$(printf "$WARNING_SSL_EXPIRING_SOON" "$remaining_days")"
+    status=$(print_msg warning "$formatted_expiration_warning")
   else
-    status="${GREEN}✅ Valid ($remaining_days days remaining)${NC}"
+    local formatted_valid_ssl
+    formatted_valid_ssl="$(printf "$SUCCESS_SSL_VALID" "$remaining_days")"
+    status=$(print_msg success "$formatted_valid_ssl")
   fi
 
   # Display certificate details

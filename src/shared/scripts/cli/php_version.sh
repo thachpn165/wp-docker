@@ -26,10 +26,9 @@ php_cli_change_version() {
   domain=$(_parse_params "--domain" "$@")
   php_version=$(_parse_params "--php_version" "$@")
 
-  if [[ -z "$domain" || -z "$php_version" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain, --php_version"
-    exit 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$php_version" "--php_version" || return 1
+  _is_valid_domain "$domain" || return 1
 
   php_logic_change_version "$domain" "$php_version"
 }

@@ -1,3 +1,4 @@
+safe_source "$FUNCTIONS_DIR/database_loader.sh"
 # =====================================
 # website_prompt_delete: Prompt user to delete a WordPress site with optional backup
 # Behavior:
@@ -13,24 +14,17 @@ website_prompt_delete() {
 
   # Select website
   local domain
-  select_website
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
-    exit 1
+  if ! website_get_selected domain; then
+    return 1
   fi
-
+  _is_valid_domain "$domain" || return 1
   # Ask for backup before delete
   backup_enabled=true # default
-  backup_confirm=$(get_input_or_test_value "$PROMPT_BACKUP_BEFORE_DELETE $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "yes")
+  backup_confirm=$(get_input_or_test_value "💾 $PROMPT_BACKUP_BEFORE_DELETE $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "yes")
   [[ "$backup_confirm" != "yes" ]] && backup_enabled=false
   debug_log "[DEBUG] Backup before delete: $backup_enabled"
 
-  # Ask for final delete confirmation
-  delete_confirm=$(get_input_or_test_value "$PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
-  if [[ "$delete_confirm" != "yes" ]]; then
-    print_msg warning "$WARNING_ACTION_CANCELLED"
-    exit 0
-  fi
+
 
   # Run deletion logic
   website_cli_delete \
@@ -56,17 +50,19 @@ website_logic_delete() {
   if [[ -z "$domain" ]]; then
     website_prompt_delete
   fi
-
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
-  #shellcheck disable=SC2153
+  _is_valid_domain "$domain" || return 1
   SITE_DIR="$SITES_DIR/$domain"
 
-  if ! is_directory_exist "$SITE_DIR"; then
-    print_msg error "$ERROR_WEBSITE_NOT_EXIST: $domain"
-    return 1
+  # Ask for final delete confirmation
+  delete_confirm=$(get_input_or_test_value "❗ $PROMPT_WEBSITE_DELETE_CONFIRM $domain (${YELLOW}yes${NC}/${RED}no${NC}) " "no")
+  if [[ "$delete_confirm" != "yes" ]]; then
+    print_msg warning "$WARNING_ACTION_CANCELLED"
+    exit 0
+  fi
+  
+  if ! _is_directory_exist "$SITE_DIR"; then
+    print_msg warning "$WARNING_WEBSITE_DIR_MISSING: $SITE_DIR"
+    print_msg warning "⛔️ Website directory is missing, will proceed to cleanup config and related data only."
   fi
 
   SITE_CONF_FILE="$NGINX_PROXY_DIR/conf.d/$domain.conf"
@@ -82,7 +78,7 @@ website_logic_delete() {
     local archive_file old_web_dir
     old_web_dir="$ARCHIVES_DIR/old_website/$domain"
     archive_file="$ARCHIVES_DIR/old_website/${domain}-$(date +%Y%m%d-%H%M%S)_${domain}_db.sql"
-    is_directory_exist "$old_web_dir" || mkdir -p "$old_web_dir"
+    _is_directory_exist "$old_web_dir" || mkdir -p "$old_web_dir"
     print_msg step "$MSG_WEBSITE_BACKING_UP_DB: $domain"
     database_cli_export --domain="$domain" --save_location="$archive_file"
 
@@ -115,19 +111,17 @@ website_logic_delete() {
   fi
 
   print_msg step "$MSG_WEBSITE_DELETING_DIRECTORY: $SITE_DIR"
-  run_cmd "rm -rf \"$SITE_DIR\"" true
+  remove_directory "$SITE_DIR"
   print_msg success "$SUCCESS_DIRECTORY_REMOVE: $SITE_DIR"
 
   print_msg step "$MSG_WEBSITE_DELETING_SSL: $domain"
-  run_cmd "rm -rf \"$SSL_DIR/$domain.crt\"" true
-  run_cmd "rm -rf \"$SSL_DIR/$domain.key\"" true
+  remove_file "$SSL_DIR/$domain.crt"
+  remove_file "$SSL_DIR/$domain.key"
   print_msg success "$SUCCESS_SSL_CERTIFICATE_REMOVED: $domain"
 
-  if is_file_exist "$SITE_CONF_FILE"; then
-    print_msg step "$MSG_WEBSITE_DELETING_NGINX_CONF: $SITE_CONF_FILE"
-    remove_file "$SITE_CONF_FILE"
-    print_msg success "$SUCCESS_FILE_REMOVED: $SITE_CONF_FILE"
-  fi
+  print_msg step "$MSG_WEBSITE_DELETING_NGINX_CONF: $SITE_CONF_FILE"
+  remove_file "$SITE_CONF_FILE"
+  print_msg success "$SUCCESS_FILE_REMOVED: $SITE_CONF_FILE"
 
   if crontab -l 2>/dev/null | grep -q "$domain"; then
     tmp_cron=$(mktemp)

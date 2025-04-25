@@ -36,11 +36,8 @@ system_cli_manage_docker() {
     container_name=$(_parse_params "--container_name" "$@")
     container_action=$(_parse_params "--action" "$@")
 
-    if [[ -z "$container_name" || -z "$container_action" ]]; then
-        print_and_debug error "$ERROR_CONTAINER_NAME_OR_ACTION_REQUIRED"
-        print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --container_name=nginx\n  --action=1|2"
-        exit 1
-    fi
+    _is_missing_param "$container_name" "--container_name" || return 1
+    _is_missing_param "$container_action" "--action" || return 1
 
     system_logic_manage_docker "$container_name" "$container_action"
 }

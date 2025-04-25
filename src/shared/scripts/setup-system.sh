@@ -3,7 +3,7 @@
 # ========================================
 # ⚙️ setup-system.sh – Initialize WP Docker system
 # ========================================
-
+# 
 # === Load config.sh from anywhere using universal loader ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 while [[ "$SCRIPT_PATH" != "/" ]]; do
@@ -24,24 +24,19 @@ safe_source "$FUNCTIONS_DIR/setup-aliases.sh"
 # 🔧 Initialize config (.config.json with language, channel,...)
 # =============================================
 core_init_config
-
-clear
 setup_timezone
-check_and_add_alias
 
 # =============================================
 # ⚙️ Check & install Docker and Docker Compose
 # =============================================
+
 install_docker
-# =============================================
-# 🔁 Setup CRON for PHP version refresh
-# =============================================
-if ! crontab -l | grep -q "$CLI_DIR/php_get_version.sh"; then
-  echo "0 2 * * * bash $CLI_DIR/php_get_version.sh" | crontab -
-  echo -e "$SUCCESS_CRON_PHP_VERSION_SET"
-else
-  echo -e "$WARNING_CRON_PHP_VERSION_EXISTS"
-fi
+
+# ==============================================
+# cron_loader.sh
+# ==============================================
+# Check if the cron job is already set
+cron_register_loader_if_needed
 
 # =============================================
 # 🐳 Start Docker if not running & check group
@@ -52,21 +47,8 @@ check_docker_group
 # =============================================
 # ⚡ Install WP-CLI if missing
 # =============================================
-WP_CLI_PATH="$BASE_DIR/shared/bin/wp"
-if [[ ! -f "$WP_CLI_PATH" ]]; then
-  echo -e "$WARNING_WPCLI_NOT_FOUND"
-  curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar || exit_if_error 1 "$ERROR_WPCLI_DOWNLOAD_FAILED"
-  chmod +x wp-cli.phar
-  mv wp-cli.phar "$WP_CLI_PATH" || exit_if_error 1 "$ERROR_WPCLI_MOVE_FAILED"
-  echo -e "$SUCCESS_WPCLI_INSTALLED"
-else
-  echo -e "$(printf "$SUCCESS_WPCLI_EXISTS" "$WP_CLI_PATH")"
-fi
+wp_cli_install
 
-# =============================================
-# 🌐 Start NGINX Proxy if not running
-# =============================================
-nginx_init
 # =============================================
 # ✅ Verify required commands are available
 # =============================================
@@ -91,6 +73,11 @@ core_mysql_start
 # Start Redis if not running
 # =============================================
 redis_start
+
+# =============================================
+# Initialize $SITES_DIR
+# =============================================
+mkdir -p "$SITES_DIR" || exit_if_error 1 "$ERROR_SITES_DIR_CREATE_FAILED"
 # =============================================
 # 🚀 Start all existing websites
 # =============================================
@@ -106,7 +93,19 @@ if [[ ! -d "$LOGS_DIR" ]]; then
 else
   echo -e "$(printf "$SUCCESS_LOGS_DIR_EXISTS" "$LOGS_DIR")"
 fi
+
+# =============================================
+# Clean orphaned site config in NGINX
+# =============================================
+nginx_remove_orphaned_site_conf
+
 # =============================================
 # 🎉 System ready
 # =============================================
+# =============================================
+# 🌐 Start NGINX Proxy if not running
+# =============================================
+nginx_init
+wait_for_nginx_container || exit 1
+check_and_add_alias
 echo -e "$SUCCESS_SYSTEM_READY"

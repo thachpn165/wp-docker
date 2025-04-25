@@ -16,20 +16,20 @@ core_lang_convert() {
   local lang_name
 
   case "$lang_code" in
-    "en") lang_name="$LABEL_LANG_EN" ;;
-    "vi") lang_name="$LABEL_LANG_VI" ;;
-    "ja") lang_name="$LABEL_LANG_JA" ;;
-    "zh") lang_name="$LABEL_LANG_ZH" ;;
-    "ko") lang_name="$LABEL_LANG_KO" ;;
-    "es") lang_name="$LABEL_LANG_ES" ;;
-    "de") lang_name="$LABEL_LANG_DE" ;;
-    "fr") lang_name="$LABEL_LANG_FR" ;;
-    "ru") lang_name="$LABEL_LANG_RU" ;;
-    "id") lang_name="$LABEL_LANG_ID" ;;
-    "th") lang_name="$LABEL_LANG_TH" ;;
-    "my") lang_name="$LABEL_LANG_MY" ;;
-    "tw") lang_name="$LABEL_LANG_TW" ;;
-    *)    lang_name="Unknown" ;;
+  "en") lang_name="$LABEL_LANG_EN" ;;
+  "vi") lang_name="$LABEL_LANG_VI" ;;
+  "ja") lang_name="$LABEL_LANG_JA" ;;
+  "zh") lang_name="$LABEL_LANG_ZH" ;;
+  "ko") lang_name="$LABEL_LANG_KO" ;;
+  "es") lang_name="$LABEL_LANG_ES" ;;
+  "de") lang_name="$LABEL_LANG_DE" ;;
+  "fr") lang_name="$LABEL_LANG_FR" ;;
+  "ru") lang_name="$LABEL_LANG_RU" ;;
+  "id") lang_name="$LABEL_LANG_ID" ;;
+  "th") lang_name="$LABEL_LANG_TH" ;;
+  "my") lang_name="$LABEL_LANG_MY" ;;
+  "tw") lang_name="$LABEL_LANG_TW" ;;
+  *) lang_name="Unknown" ;;
   esac
 
   echo "$lang_name"
@@ -72,6 +72,7 @@ core_lang_change_logic() {
 
   if [[ "$valid" == true ]]; then
     json_set_value '.core.lang' "$lang_code"
+
     print_msg success "$SUCCESS_LANG_CODE_UPDATED: $lang_code"
   else
     print_and_debug error "$ERROR_LANG_SET_FAILED: $lang_code"

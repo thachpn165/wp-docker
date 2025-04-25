@@ -6,9 +6,12 @@
 # =====================================
 php_prompt_rebuild_container() {
   safe_source "$CLI_DIR/php_rebuild_container.sh"
+  local domain
+  if ! website_get_selected domain; then
+    return 1
+  fi
 
-  select_website || exit 1 # Use the existing select_website function to allow user to select a site
-
+  _is_valid_domain "$domain" || return 1
   # === Confirm rebuild of PHP container ===
   echo -e "${YELLOW}🔁 Rebuild the PHP container for site: $domain${NC}"
   read -p "Are you sure you want to rebuild the PHP container for this site? (y/n): " confirm_rebuild
@@ -34,18 +37,11 @@ php_prompt_rebuild_container() {
 # =====================================
 php_rebuild_container_logic() {
   local domain="$1"
-
-  # Validate required domain parameter
-  if [[ -z "$domain" ]]; then
-    print_msg error "$ERROR_NO_WEBSITE_SELECTED"
-    return 1
-  fi
-
-  print_msg step "$(printf "$STEP_WEBSITE_RESTARTING" "$domain")"
-
   local compose_file="$SITES_DIR/$domain/docker-compose.yml"
   local php_container
+  
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
+  print_msg step "$(printf "$STEP_WEBSITE_RESTARTING" "$domain")"
 
   # Stop PHP container if running
   if docker ps -q -f name="$php_container" &>/dev/null; then

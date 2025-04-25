@@ -129,33 +129,34 @@ remove_all_except_backup() {
   for item in "$BASE_DIR"/*; do
     [[ "$item" == "$MOVED_BACKUP_DIR" ]] && continue
     [[ "$item" == "$BASE_DIR/.git" || "$item" == "$BASE_DIR/.github" ]] && continue
+
     if [[ -e "$item" ]]; then
-      remove_file "$item" || {
-        print_and_debug error "$(printf "$ERROR_REMOVE_FAILED_LINE" 104)"
-        exit 1
-      }
+      if [[ -f "$item" ]]; then
+        remove_file "$item" || {
+          print_and_debug error "$(printf "$ERROR_REMOVE_FAILED_LINE" "${LINENO}")"
+          exit 1
+        }
+      elif [[ -d "$item" ]]; then
+        remove_directory "$item" || {
+          print_and_debug error "$(printf "$ERROR_REMOVE_FAILED_LINE" "${LINENO}")"
+          exit 1
+        }
+      else
+        debug_log "[remove_all_except_backup] Skipping: $item (not file or directory)"
+      fi
     else
       debug_log "[remove_all_except_backup] Skipping non-existent: $item"
     fi
   done
 }
 
-# =====================================
-# 🔗 Remove symlink wpdocker if exists
-# =====================================
-remove_symlink() {
-  if [[ -L "/usr/local/bin/wpdocker" ]]; then
-    print_msg info "$INFO_REMOVING_SYMLINK"
-    rm -f /usr/local/bin/wpdocker
-  fi
-}
 
 # =====================================
 # ⏰ Remove backup-related cronjobs
 # =====================================
 remove_cronjobs() {
   print_msg info "$INFO_REMOVING_CRONJOBS"
-  crontab -l 2>/dev/null | grep -v "backup_runner.sh" | crontab - || true
+  crontab -l 2>/dev/null | grep -v "cron_loader.sh" | crontab - || true
 }
 
 # =====================================
