@@ -88,8 +88,7 @@ ssl_logic_install_selfsigned() {
 
     if [[ $? -eq 0 ]]; then
         print_msg success "$(printf "$SUCCESS_SSL_SELF_SIGNED_GENERATED" "$domain")"
-        print_msg step "$STEP_NGINX_RELOADING"
-        nginx_reload
+        nginx_reload || nginx_restart
         print_msg success "$SUCCESS_NGINX_RELOADED"
         print_msg info "$(printf "$INFO_SSL_CERT_PATH" "$cert_path")"
         print_msg info "$(printf "$INFO_SSL_KEY_PATH" "$key_path")"
@@ -160,7 +159,7 @@ ssl_logic_install_letsencrypt() {
     debug_log "[SSL] Certificate copied successfully: $ssl_dir/$domain.crt and $ssl_dir/$domain.key"
 
     print_msg step "$STEP_NGINX_RELOADING"
-    nginx_restart
+    nginx_reload || nginx_restart
     print_msg success "$(printf "$SUCCESS_SSL_INSTALLED" "$domain")"
 }
 
