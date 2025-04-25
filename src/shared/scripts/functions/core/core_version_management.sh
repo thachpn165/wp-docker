@@ -200,10 +200,8 @@ core_version_update_latest() {
   rsync -a --exclude='sites/' --exclude='archives/' --exclude='logs/' "$temp_dir/" "$INSTALL_DIR/"
   if [[ $? -ne 0 ]]; then
     print_msg error "$ERROR_SYNC_FAILED"
-    stop_loading
     return 1
   fi
-  stop_loading
 
   # Clean up temp files
   remove_directory "$temp_dir"
