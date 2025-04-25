@@ -60,7 +60,7 @@ core_mysql_apply_config() {
     # ============================================
 
     if [[ -f "$MYSQL_CONFIG_FILE" ]]; then
-        print_and_debug warning "$WARNING_MYSQL_CONFIG_EXISTS: $MYSQL_CONFIG_FILE"
+        print_and_debug info "$WARNING_MYSQL_CONFIG_EXISTS: $MYSQL_CONFIG_FILE"
         return 0
     fi
 
