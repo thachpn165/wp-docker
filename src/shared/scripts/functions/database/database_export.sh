@@ -6,19 +6,21 @@ safe_source "$CLI_DIR/database_actions.sh"
 # Requires: select_website function, global variable $save_location
 # =====================================
 database_prompt_export() {
-    # Prompt user to select a website
-    echo "🔧 Choose the website for backup:"
-    select_website || exit 1
+    local domain
+    local save_location
+    local timestamp
+    timestamp="$(date +%s)"
 
-    # Validate domain selection
-    if [[ -z "$domain" ]]; then
-        echo "${CROSSMARK} Site name is not set. Exiting..."
-        exit 1
+    if ! website_get_selected domain; then
+        return 1
     fi
+    _is_valid_domain "$domain" || return 1
+    print_msg info "$INFO_BACKUP_SAVE_LOCATION: $save_location"
 
-    echo "💾 Backup will be saved to: $save_location"
-
+    save_location="${SITES_DIR}/$domain/backups/${domain}-backup-$(date +%F)-$timestamp.sql"
     # Call CLI export command
+    debug_log "[DB EXPORT] domain=$domain"
+    debug_log "[DB EXPORT] save_location=$save_location"
     database_cli_export --domain="$domain" --save_location="$save_location"
 }
 
@@ -29,12 +31,15 @@ database_prompt_export() {
 #   $2 - save_location: Destination path for the backup file
 # Requires:
 #   - json_get_site_value to extract DB info
+#   - User root user for export
 #   - is_mariadb_running to check DB container
 #   - print_msg for i18n logging
 # =====================================
 database_export_logic() {
     local domain="$1"
     local save_location="$2"
+    local backup_dir
+    backup_dir="$(dirname "$save_location")"
 
     # Check if the sites directory is set
     if [[ -z "$SITES_DIR" ]]; then
@@ -42,16 +47,9 @@ database_export_logic() {
         return 1
     fi
 
-    # Validate required parameter: domain/mysqldump
-
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_PARAM_SITE_NAME_REQUIRED"
-        return 1
-    fi
+    _is_valid_domain "$domain" || return 1
 
     # Ensure backup directory exists
-    local backup_dir
-    backup_dir="$(dirname "$save_location")"
     if [[ ! -d "$backup_dir" ]]; then
         print_msg warning "$(printf "$WARNING_BACKUP_DIR_NOT_EXIST_CREATE" "$backup_dir")"
         mkdir -p "$backup_dir" || {
@@ -61,10 +59,12 @@ database_export_logic() {
     fi
 
     # Retrieve database credentials from JSON config
+    # Use `root` user for export
     local db_name db_user db_password
     db_name="$(json_get_site_value "$domain" "db_name")"
-    db_user="$(json_get_site_value "$domain" "db_user")"
-    db_password="$(json_get_site_value "$domain" "db_pass")"
+    db_user="root"
+    db_password=$(json_get_value '.mysql.root_password' "$JSON_CONFIG_FILE")
+    
     debug_log "[DB EXPORT] db_name=$db_name, db_user=$db_user"
     debug_log "[DB EXPORT] save_location=$save_location"
     debug_log "[DB EXPORT] domain=$domain"

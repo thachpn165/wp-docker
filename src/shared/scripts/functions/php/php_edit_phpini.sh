@@ -7,7 +7,11 @@
 # =====================================
 edit_php_ini() {
   local domain
-  select_website || return
+
+  if ! website_get_selected domain; then
+    return 1
+  fi
+  _is_valid_domain "$domain" || return 1
   ini_file="$SITES_DIR/$domain/php/php.ini"
 
   # Check if the php.ini file exists

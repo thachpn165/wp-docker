@@ -11,7 +11,7 @@ DEV_MODE=${DEV_MODE:-false}
 # 📌 Version Selection
 # ========================
 echo "❓ What version would you like to install?"
-echo "1) Official"
+echo "1) Official (Default)"
 echo "2) Nightly (Testing Only)"
 echo "3) Dev Mode (Clone source code from GitHub)"
 read -rp "Please select an option (1, 2 or 3, default is 1): " version_choice
@@ -63,7 +63,6 @@ else
     rm -rf "$INSTALL_DIR"
   fi
 fi
-
 check_and_install_zip_unzip() {
   local cmds=("zip" "unzip")
   local missing=()
@@ -179,9 +178,8 @@ if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
   bash "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"
 fi
 
+core_system_update
 check_required_commands
-
-
 json_create_if_not_exists
 
 # ========================
@@ -209,7 +207,7 @@ print_msg success "$SUCCESS_WPDOCKER_INSTALLED: $INSTALL_DIR"
 print_msg important "$IMPORTANT_LOGOUT_AFTER_INSTALL"
 echo ""
 print_msg info "$INFO_START_USING"
-echo "  wpdocker"
+echo "  wpdocker menu"
 echo ""
 
 # =========================
@@ -233,7 +231,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   echo ""
 fi
 
-
-# Logout after install
-sleep 2
-kill -9 $$
+if [[ "$SHELL" == *"zsh"* ]]; then
+  exec zsh
+elif [[ "$SHELL" == *"bash"* ]]; then
+  exec bash
+else
+  echo "${CROSSMARK} Unsupported shell: $SHELL. Please reload manually."
+fi

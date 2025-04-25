@@ -28,7 +28,7 @@ core_version_get_current() {
   else
     print_msg warning "$WARNING_VERSION_NOT_FOUND"
     local latest_version
-    latest_version="$(core_version_get_latest 2>/dev/null)"  # tránh lỗi màu hóa
+    latest_version="$(core_version_get_latest 2>/dev/null)" # tránh lỗi màu hóa
     if [[ -n "$latest_version" ]]; then
       core_set_installed_version "$latest_version"
       print_msg info "$INFO_VERSION_FILE_RESTORED"
@@ -69,7 +69,6 @@ core_version_get_latest() {
   echo "$latest_version"
 }
 
-# === Compare versions: returns 0 if equal, 1 if v1 > v2, 2 if v1 < v2
 core_version_compare() {
   local v1="${1#v}"
   local v2="${2#v}"
@@ -78,20 +77,25 @@ core_version_compare() {
   v1="${v1%%+*}"
   v2="${v2%%+*}"
 
-  # Detect pre-release (contains -) and add "-stable" if không có
+  # Detect pre-release (contains -), add "-stable" if missing
   [[ "$v1" != *-* ]] && v1="${v1}-stable"
   [[ "$v2" != *-* ]] && v2="${v2}-stable"
 
-  if [[ "$v1" == "$v2" ]]; then return 0; fi
+  if [[ "$v1" == "$v2" ]]; then
+    echo "equal"
+    return 0
+  fi
 
   local sorted
   sorted=$(printf "%s\n%s" "$v1" "$v2" | sort -V | head -n1)
 
   if [[ "$sorted" == "$v1" ]]; then
-    return 2  # $1 < $2
+    echo "older" # nghĩa là $v1 < $v2
   else
-    return 1  # $1 > $2
+    echo "newer" # nghĩa là $v1 > $v2
   fi
+
+  return 0
 }
 
 # === Get download URL based on channel (main/dev)
@@ -118,70 +122,111 @@ core_get_download_url() {
   echo "$zip_url"
 }
 
-# === Update to latest version
+# =============================================
+# 🚀 core_version_update_latest: Update WP Docker to the latest version
+# =============================================
+# Behavior:
+#   - Check for a new version (except when --force is passed)
+#   - Prompt user to confirm update
+#   - Download and extract the latest release
+#   - Sync updated files (excluding: sites/, archives/, logs/)
+#   - Execute upgrade script if exists
+#   - Show success message after update
+#
+# Usage:
+#   core_version_update_latest [--force]
+# =============================================
 core_version_update_latest() {
-  local latest_version
-  local channel
+  local latest_version installed_version channel upgrade_script
+  local force force_update
+  force=$(_parse_params "--force" "$@")
 
-  # Lấy giá trị channel từ config
+  if [[ "$force" == "1" ]]; then
+    force_update="true"
+  else
+    force_update="false"
+  fi
+
+  # Get current release channel
   channel="$(core_channel_get)"
 
-  # Hiển thị phiên bản mới nhất thông qua core_version_get_latest
+  # Get latest and current installed version
   latest_version=$(core_version_get_latest)
-  print_msg info "$INFO_CORE_VERSION_LATEST: $latest_version"
+  installed_version=$(core_version_get_current)
 
-  # Yêu cầu người dùng xác nhận có muốn cập nhật phiên bản mới không
+  debug_log "Installed version: $installed_version"
+  debug_log "Latest version: $latest_version"
+  debug_log "Channel: $channel"
+  debug_log "Force update: $force_update"
+
+  if [[ "$force_update" != "true" && "$latest_version" == "$installed_version" ]]; then
+    print_msg info "$INFO_CORE_VERSION_LATEST: $installed_version"
+    print_msg tip "$TIP_CORE_ALREADY_UP_TO_DATE"
+    return 0
+  fi
+
+  # Prompt user to confirm update
   print_msg step "$INFO_UPDATE_PROMPT: $latest_version"
   local confirm_update
   confirm_update=$(get_input_or_test_value "$PROMPT_UPDATE_CONFIRMATION ($latest_version) (yes/no): " "no")
 
   if [[ "$confirm_update" != "yes" ]]; then
-    print_msg warning "$WARNING_DEV_MODE_NO_UPDATE"
+    print_msg cancel "$CANCEL_CORE_UPDATE"
     return 0
   fi
 
-  # Gọi hàm để tải phiên bản mới nhất về
+  # Download the latest release zip file
   core_version_download_latest
 
-  # Đường dẫn tạm lưu file zip
   local temp_zip="/tmp/wp-docker.zip"
-  
-  # Kiểm tra nếu file zip tồn tại
+  local temp_dir="/tmp/wp-docker"
+
+  # Verify zip exists
   if [[ ! -f "$temp_zip" ]]; then
     print_msg error "$MSG_NOT_FOUND : $temp_zip"
     return 1
   fi
 
-  # Tạo thư mục tạm để giải nén
-  local temp_dir="/tmp/wp-docker"
+  # Extract the zip file
   mkdir -p "$temp_dir"
-
-  # Giải nén tập tin zip vào thư mục tạm
   print_msg step "$INFO_UNPACKING_ZIP"
   unzip -q "$temp_zip" -d "$temp_dir" || {
     print_msg error "$ERROR_UNPACK_FAILED"
     return 1
   }
 
-  # Đồng bộ mã nguồn vào INSTALL_DIR (thư mục cài đặt)
-  print_msg progress "$STEP_EXTRACT_AND_UPDATE"
+  # Sync source to INSTALL_DIR
+  print_msg step "$STEP_EXTRACT_AND_UPDATE"
   rsync -a --exclude='sites/' --exclude='archives/' --exclude='logs/' "$temp_dir/" "$INSTALL_DIR/"
   if [[ $? -ne 0 ]]; then
     print_msg error "$ERROR_SYNC_FAILED"
-    stop_loading
     return 1
   fi
-  stop_loading
 
-  # Sau khi đồng bộ, xóa tập tin zip và thư mục tạm
-  rm -rf "$temp_dir"
-  rm -f "$temp_zip"
+  # Clean up temp files
+  remove_directory "$temp_dir"
+  remove_file "$temp_zip"
 
-  # Cập nhật lại phiên bản đã cài đặt trong config
+  # Save new installed version
   core_set_installed_version "$latest_version"
 
-  # In thông báo thành công
+  # Run upgrade script if available
+  if [[ "$channel" == "dev" ]]; then
+    upgrade_script="$BASE_DIR/upgrade/dev-upgrade.sh"
+  else
+    upgrade_script="$BASE_DIR/upgrade/${latest_version}.sh"
+  fi
+
+  if [[ -f "$upgrade_script" && -x "$upgrade_script" ]]; then
+    print_msg step "🚀 Running upgrade script: $(basename "$upgrade_script")"
+    bash "$upgrade_script" || print_msg warning "⚠️ Upgrade script exited with non-zero status."
+  else
+    debug_log "No upgrade script found for version: $latest_version"
+  fi
+
+  # Final message
   print_msg success "$SUCCESS_CORE_UPDATED"
+
 }
 
 # ============================================
@@ -196,16 +241,14 @@ core_version_display() {
   # Lấy phiên bản mới nhất từ GitHub
   local version_remote
   version_remote=$(core_version_get_latest)
-
+  echo ""
   # Hiển thị phiên bản hiện tại và mới nhất
-  print_msg info "$INFO_CORE_VERSION_CURRENT: $version_local"
-  print_msg info "$INFO_CORE_VERSION_LATEST: $version_remote"
+  print_msg sub-label "$INFO_CORE_VERSION_CURRENT: $version_local"
+  print_msg sub-label "$INFO_CORE_VERSION_LATEST: $version_remote"
+  echo ""
+  compare_result=$(core_version_compare "$version_local" "$version_remote")
 
-  # Kiểm tra phiên bản và cảnh báo nếu có phiên bản mới
-  core_version_compare "$version_local" "$version_remote"
-  local result=$?
-
-  if [[ "$result" -eq 2 ]]; then
+  if [[ "$compare_result" == "older" ]]; then
     print_msg warning "$(printf "$WARNING_CORE_VERSION_NEW_AVAILABLE" "$version_local" "$version_remote")"
   else
     print_msg success "$SUCCESS_CORE_IS_LATEST"
@@ -237,6 +280,10 @@ core_version_download_latest() {
 
   # Tải về file zip tương ứng với channel vào thư mục /tmp/
   local temp_zip="/tmp/wp-docker.zip"
+  if ! network_check_http "$zip_url"; then
+    print_msg error "$ERROR_CORE_ZIP_URL_NOT_REACHABLE: $zip_url"
+    return 1
+  fi
   curl -fsSL "$zip_url" -o "$temp_zip"
   if [[ $? -ne 0 ]]; then
     print_msg error "$ERROR_DOWNLOAD_FAILED"

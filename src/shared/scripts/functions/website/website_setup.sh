@@ -16,7 +16,7 @@ website_set_config() {
     print_msg info "Usage: website_set_config <domain> <php_version>"
     return 1
   fi
-
+  _is_valid_domain "$domain" || return 1
   # ✅ Save config to .config.json using json_set_site_value
   json_set_site_value "$domain" "DOMAIN" "$domain"
   json_set_site_value "$domain" "PHP_VERSION" "$php_version"
@@ -39,7 +39,7 @@ website_set_config() {
   debug_log "[website_set_config] CONTAINER_PHP=${domain}${PHP_CONTAINER_SUFFIX}" 
   debug_log "[website_set_config] DOMAIN=$domain"
   debug_log "[website_set_config] PHP_VERSION=$php_version"
-  print_msg success "✅ Website config saved to .config.json under site[\"$domain\"]"
+  print_msg success "Website config saved to .config.json for $domain"
 }
 
 # =====================================
@@ -62,22 +62,22 @@ website_setup_nginx() {
   NGINX_CONF="$NGINX_CONF_DIR/$domain.conf"
 
   # === Check if target directory exists ===
-  is_directory_exist "$NGINX_CONF_DIR"
+  _is_directory_exist "$NGINX_CONF_DIR"
 
   # === Remove existing config file if exists ===
-  if is_file_exist "$NGINX_CONF"; then
+  if _is_file_exist "$NGINX_CONF"; then
     print_and_debug warning "$WARNING_REMOVE_OLD_NGINX_CONF: $NGINX_CONF"
     rm -f "$NGINX_CONF"
   fi
 
   # === Check and copy template ===
-  if is_file_exist "$NGINX_TEMPLATE"; then
+  if _is_file_exist "$NGINX_TEMPLATE"; then
     if [[ ! -d "$(dirname "$NGINX_TEMPLATE")" ]]; then
       print_and_debug error "$ERROR_NGINX_TEMPLATE_DIR_MISSING: $(dirname "$NGINX_TEMPLATE")"
       exit 1
     fi
 
-    cp "$NGINX_TEMPLATE" "$NGINX_CONF"
+    copy_file "$NGINX_TEMPLATE" "$NGINX_CONF"
     sedi "s|\\\${DOMAIN}|$domain|g" "$NGINX_CONF"
     php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
     sedi "s|\\\${PHP_CONTAINER}|$php_container|g" "$NGINX_CONF"

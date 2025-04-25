@@ -36,7 +36,7 @@ system_logic_nginx_rebuild() {
   # Wait up to 30 seconds for container to become active
   for i in {1..30}; do
     debug_log "[NGINX REBUILD] Attempt $i to check if container is running"
-    if is_container_running "$NGINX_PROXY_CONTAINER"; then
+    if _is_container_running "$NGINX_PROXY_CONTAINER"; then
       print_msg success "$SUCCESS_NGINX_CONTAINER_STARTED"
       return 0
     fi

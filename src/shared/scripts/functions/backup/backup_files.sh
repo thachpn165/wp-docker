@@ -20,12 +20,7 @@
 backup_file_logic() {
     local domain="$1"
 
-    # === Validate input ===
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        return 1
-    fi
-
+    _is_valid_domain "$domain" || return 1
     local web_root="$SITES_DIR/${domain}/wordpress"
     local backup_dir="$SITES_DIR/${domain}/backups"
     local log_dir="$SITES_DIR/${domain}/logs"
@@ -33,9 +28,9 @@ backup_file_logic() {
     backup_file="${backup_dir}/files-${domain}-$(date +%Y%m%d-%H%M%S).tar.gz"
 
     # === Ensure necessary directories exist ===
-    is_directory_exist "$web_root"
-    is_directory_exist "$backup_dir"
-    is_directory_exist "$log_dir"
+    _is_directory_exist "$web_root"
+    _is_directory_exist "$backup_dir" true
+    _is_directory_exist "$log_dir" true
 
     # === Start backup process ===
     print_and_debug info "$MSG_WEBSITE_BACKING_UP_FILES: $domain"

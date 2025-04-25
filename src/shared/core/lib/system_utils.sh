@@ -206,7 +206,6 @@ core_system_update() {
 #   WARNING_HOMEBREW_MISSING
 check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
-  core_system_update
 
   # Loại bỏ "docker compose" khỏi danh sách vì sẽ được cài đặt riêng
   required_cmds=(nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
@@ -310,7 +309,7 @@ uninstall_required_commands() {
 check_and_add_alias() {
   local shell_config cli_dir_abs alias_line
 
-  cli_dir_abs=$(realpath "$INSTALL_DIR/shared/bin")
+  cli_dir_abs=$(realpath "$CLI_DIR/bashly")
   alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
 
   if [[ "$SHELL" == *"zsh"* ]]; then
@@ -335,5 +334,36 @@ check_and_add_alias() {
     source "$HOME/.bashrc"
   else
     echo "⚠️ Unsupported shell. Please reload shell config manually."
+  fi
+}
+
+
+# ============================================
+# 🕒 exit_after_10s – Exit script after 10 second
+# ============================================
+exit_after_10s() {
+  local seconds=10
+
+  echo ""
+  local formatted_exit_msg
+  formatted_exit_msg=$(printf "$IMPORTANT_EXIT_AFTER_SECS" "$seconds")
+  print_msg important "$formatted_exit_msg"
+
+  for ((i = seconds; i > 0; i--)); do
+    echo -ne "⏳ Exiting after $i seconds...   \r"
+    sleep 1
+  done
+
+  echo -e "\n🚪 Exiting..."
+
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    exit 0
+  else
+    # Nếu là login shell (có thể logout), thì dùng logout
+    if shopt -q login_shell; then
+      logout
+    else
+      exit 0
+    fi
   fi
 }

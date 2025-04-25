@@ -1,49 +1,50 @@
 # ============================================
-# 📅 backup_prompt_create_schedule – Schedule automatic backups using cron
+# 📅 backup_prompt_create_schedule – Schedule automatic backups per site
 # ============================================
 # Description:
-#   - Allows the user to select a website, choose a schedule (cron format), 
+#   - Allows the user to select a website, choose a backup interval (in days),
 #     and specify local or cloud storage for automated backups.
-#   - Configures a cron job that will trigger the backup with selected settings.
+#   - Saves the configuration to .config.json under `.site[domain].backup_schedule`
+#   - This information will be used by cron_loader.sh to run backups accordingly.
 #
 # Globals:
-#   SITES_DIR, CLI_DIR, RCLONE_CONFIG_FILE
-#   INFO_SELECT_BACKUP_SCHEDULE, PROMPT_SELECT_OPTION, PROMPT_ENTER_CUSTOM_CRON
+#   SITES_DIR, BASE_DIR
+#   INFO_SELECT_BACKUP_SCHEDULE, PROMPT_SELECT_OPTION, PROMPT_ENTER_CUSTOM_INTERVAL_DAYS
+#   LABEL_CUSTOM_INTERVAL, LABEL_DAY_LOWERCASE, LABEL_DAYS_LOWERCASE
 #   INFO_SELECT_STORAGE_LOCATION, LABEL_BACKUP_LOCAL, LABEL_BACKUP_CLOUD
 #   PROMPT_SELECT_STORAGE_OPTION, INFO_RCLONE_READING_STORAGE_LIST
 #   LABEL_MENU_RCLONE_AVAILABLE_STORAGE, PROMPT_ENTER_STORAGE_NAME
 #   ERROR_SELECT_OPTION_INVALID, SUCCESS_CRON_JOB_CREATED, TITLE_CRON_SUMMARY
-#   LABEL_CRON_DOMAIN, LABEL_CRON_SCHEDULE, LABEL_CRON_STORAGE, LABEL_CRON_LOG
-#   LABEL_CRON_LINE
+#   LABEL_CRON_DOMAIN, LABEL_CRON_INTERVAL, LABEL_CRON_STORAGE
 #
 # Parameters:
 #   None
 #
 # Returns:
-#   - Creates a cron job entry
+#   - Saves backup_schedule block into .config.json for the selected domain
+#   - Displays a summary of the saved schedule
 # ============================================
 backup_prompt_create_schedule() {
-    # === Select website ===
-    select_website
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_SITE_NOT_SELECTED"
-        exit 1
+    local domain
+    if ! website_get_selected domain; then
+        return 1
     fi
-
-    # === Choose schedule time (Cron format) ===
+    _is_valid_domain "$domain" || exit 1
+    # === Prompt for interval_days ===
     print_msg info "$INFO_SELECT_BACKUP_SCHEDULE"
-    echo "1. $LABEL_CRON_EVERY_DAY_3AM"
-    echo "2. $LABEL_CRON_EVERY_SUNDAY_2AM"
-    echo "3. $LABEL_CRON_EVERY_MONDAY_1AM"
-    echo "4. $LABEL_CUSTOM_SCHEDULE"
+    echo "1. 1 $LABEL_DAY_LOWERCASE"
+    echo "2. 3 $LABEL_DAYS_LOWERCASE"
+    echo "3. 7 $LABEL_DAYS_LOWERCASE"
+    echo "4. $LABEL_CUSTOM_INTERVAL"
 
+    local interval_days
     schedule_choice=$(get_input_or_test_value "$PROMPT_SELECT_OPTION" "${TEST_SCHEDULE_CHOICE:-1}")
     case "$schedule_choice" in
-    1) schedule_time="0 3 * * *" ;;
-    2) schedule_time="0 2 * * 0" ;;
-    3) schedule_time="0 1 * * 1" ;;
+    1) interval_days=1 ;;
+    2) interval_days=3 ;;
+    3) interval_days=7 ;;
     4)
-        schedule_time=$(get_input_or_test_value "$PROMPT_ENTER_CUSTOM_CRON" "${TEST_CUSTOM_CRON:-0 3 * * *}")
+        interval_days=$(get_input_or_test_value "$PROMPT_ENTER_CUSTOM_INTERVAL_DAYS" "${TEST_CUSTOM_INTERVAL_DAYS:-1}")
         ;;
     *)
         print_msg warning "$WARNING_INPUT_INVALID"
@@ -85,30 +86,15 @@ backup_prompt_create_schedule() {
         storage="cloud"
     fi
 
-    # === Set log file path ===
-    local backup_log_file="$SITES_DIR/$domain/logs/backup_schedule.logs"
-
-    # === Compose command for cron job ===
-    local backup_command="bash $CLI_DIR/backup_website.sh --domain=$domain --storage=$storage"
-    [[ "$storage" == "cloud" ]] && backup_command+=" --rclone_storage=$rclone_storage"
-
-    # Add to crontab
-    (
-        crontab -l 2>/dev/null
-        echo "$schedule_time $backup_command >> $backup_log_file 2>&1"
-    ) | crontab -
-
-    local readable_schedule
-    readable_schedule=$(cron_translate "$schedule_time")
+    # === Save schedule to config ===
+    backup_logic_create_schedule "$domain" "$interval_days" "$storage" "$rclone_storage"
 
     print_msg success "$SUCCESS_CRON_JOB_CREATED"
     echo -e "${CYAN}📅 $TITLE_CRON_SUMMARY${NC}"
-    echo ""
+    echo
     echo -e "${GREEN}$LABEL_CRON_DOMAIN    :${NC} $domain"
-    echo -e "${GREEN}$LABEL_CRON_SCHEDULE  :${NC} $readable_schedule"
+    echo -e "${GREEN}$LABEL_CRON_INTERVAL  :${NC} $interval_days $LABEL_DAYS_LOWERCASE"
     echo -e "${GREEN}$LABEL_CRON_STORAGE   :${NC} $storage${rclone_storage:+ → $rclone_storage}"
-    echo -e "${GREEN}$LABEL_CRON_LOG       :${NC} $backup_log_file"
-    echo -e "${GREEN}$LABEL_CRON_LINE      :${NC} $schedule_time $backup_command"
     echo
 }
 
@@ -133,13 +119,12 @@ backup_prompt_create_schedule() {
 #   - Invokes backup process via `backup_logic_website`
 # ============================================
 backup_prompt_backup_web() {
-    # 📋 Hiển thị danh sách website để chọn (dùng select_website)
-    select_website
-    if [[ -z "$domain" ]]; then
-        print_msg error "$ERROR_NO_WEBSITE_SELECTED"
-        exit 1
-    fi
+    local domain
 
+    if ! website_get_selected domain; then
+        return 1
+    fi
+    _is_valid_domain "$domain" || exit 1
     # === Choose storage: local or cloud ===
     print_msg info "$PROMPT_BACKUP_CHOOSE_STORAGE"
     select storage_choice in "local" "cloud"; do
@@ -193,6 +178,30 @@ backup_prompt_backup_web() {
 
 }
 
+backup_logic_create_schedule() {
+    local domain="$1"
+    local interval_days="$2"
+    local storage="$3"
+    local rclone_storage="$4"
+
+    if ! [[ "$interval_days" =~ ^[0-9]+$ ]] || [[ "$interval_days" -lt 1 ]]; then
+        print_and_debug error "[backup_logic_create_schedule] Invalid interval_days: $interval_days"
+        return 1
+    fi
+    _is_valid_domain "$domain" || return 1
+    json_set_site_value "$domain" "backup_schedule.enabled" "true"
+    json_set_site_value "$domain" "backup_schedule.interval_days" "$interval_days"
+    json_set_site_value "$domain" "backup_schedule.storage" "$storage"
+
+    if [[ "$storage" == "cloud" && -n "$rclone_storage" ]]; then
+        json_set_site_value "$domain" "backup_schedule.rclone_storage" "$rclone_storage"
+    else
+        json_delete_site_field "$domain" "backup_schedule.rclone_storage"
+    fi
+
+    debug_log "[backup_logic_create_schedule] Created schedule for $domain: every $interval_days day(s), storage=$storage"
+}
+
 # ============================================
 # 🛠 backup_logic_website – Execute the backup process for a website
 # ============================================
@@ -234,18 +243,13 @@ backup_logic_website() {
     log_file="$log_dir/wp-backup.log"
     safe_source "$CLI_DIR/backup_website.sh"
     safe_source "$CLI_DIR/database_actions.sh"
-    # Kiểm tra nếu domain hoặc storage không có giá trị, thoát hàm ngay lập tức
-    if [[ -z "$domain" || -z "$storage" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain and --storage must be provided"
-        return 1
-    fi
-
+    _is_valid_domain "$domain" || return 1
     backup_dir="$(realpath "$SITES_DIR/$domain/backups")"
     log_dir="$(realpath "$SITES_DIR/$domain/logs")"
 
     # Ensure backup and logs directories exist
-    is_directory_exist "$backup_dir"
-    is_directory_exist "$log_dir"
+    _is_directory_exist "$backup_dir"
+    _is_directory_exist "$log_dir"
 
     # Log start of backup process
     print_msg step "$STEP_BACKUP_START: $domain"

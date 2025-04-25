@@ -30,7 +30,7 @@ ssl_menu() {
                 [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             3)
-                ssl_prompt_general "ssl_logic_install_letsencrypt"
+                ssl_prompt_letsencrypt
                 [[ "$TEST_MODE" != true ]] && read -p "$MSG_PRESS_ENTER_CONTINUE"
                 ;;
             4)

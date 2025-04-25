@@ -37,11 +37,9 @@ wordpress_cli_protect_wplogin () {
   action=$(_parse_params "--action" "$@")
 
   # === Validate required parameters ===
-  if [[ -z "$domain" || -z "$action" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain, --action"
-    print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --domain=example.tld --action=enable|disable"
-    exit 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_missing_param "$action" "action" || return 1
+  _is_valid_domain "$domain" || return 1
 
   # === Execute logic ===
   wordpress_protect_wp_login_logic "$domain" "$action"

@@ -8,15 +8,13 @@ safe_source "$CLI_DIR/database_actions.sh"
 #   - Global variable $domain set by user selection
 # =====================================
 database_prompt_reset() {
-    # Prompt user to select a website
-    select_website || exit 1
-
-    # Ensure domain was selected
+    local domain 
+    website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1
     fi
-
+    _is_valid_domain "$domain" || return 1
     # Trigger the reset logic via CLI wrapper
     database_cli_reset --domain="$domain"
 }
@@ -33,12 +31,8 @@ database_prompt_reset() {
 database_logic_reset() {
     local domain="$1"
 
-    # Ensure domain is provided
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        return 1
-    fi
 
+    _is_valid_domain "$domain" || return 1
     # Retrieve DB credentials and container info
     local db_name db_user db_password db_container
     db_name="$(json_get_site_value "$domain" "db_name")"

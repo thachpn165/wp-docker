@@ -11,13 +11,9 @@ ssl_prompt_general() {
     local callback_function="$1"
     local domain
 
-    # Select website
-    select_website || {
-        print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
+    if ! website_get_selected domain; then
         return 1
-    }
-    domain="$SELECTED_WEBSITE"
-
+    fi
     # Validate callback function existence
     if [[ "$(type -t "$callback_function")" != "function" ]]; then
         print_and_debug error "Error: Function $callback_function does not exist"
@@ -29,6 +25,21 @@ ssl_prompt_general() {
     return $?
 }
 
+ssl_prompt_letsencrypt() {
+    local domain email staging
+    if ! website_get_selected domain; then
+        return 1
+    fi
+
+    # Prompt for email
+    email=$(get_input_or_test_value "$PROMPT_ENTER_EMAIL" "test@local")
+    if [[ -z "$email" ]]; then
+        print_and_debug error "$ERROR_MISSING_EMAIL"
+        email=$(get_input_or_test_value "$PROMPT_ENTER_EMAIL" "test@local")
+    fi
+    # Send command to install SSL
+    ssl_cli_install_letsencrypt --domain="$domain" --email="$email"
+}
 # ===========================================
 # SSL INSTALLATION LOGIC
 # ===========================================
@@ -40,11 +51,6 @@ ssl_prompt_general() {
 # =====================================
 ssl_logic_install_selfsigned() {
     local domain="$1"
-
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_SITE_NOT_SELECTED"
-        return 1
-    fi
 
     local ssl_dir
     ssl_dir="${TEST_MODE:+/tmp/test_ssl_directory}"
@@ -65,7 +71,7 @@ ssl_logic_install_selfsigned() {
     fi
 
     # Ensure SSL directory exists
-    is_directory_exist "$ssl_dir" || {
+    _is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
         debug_log "[SSL] Not found and created: $ssl_dir"
@@ -105,58 +111,39 @@ ssl_logic_install_letsencrypt() {
     local email="$2"
     local staging="$3"
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-        return 1
-    fi
+    _is_valid_domain "$domain" || return 1
+    _is_valid_email "$email" || return 1
 
     print_msg info "$(printf "$INFO_DOMAIN_SELECTED" "$domain")"
 
     local ssl_dir=${SSL_DIR:-"$NGINX_PROXY_DIR/ssl"}
     local webroot="$SITES_DIR/$domain/wordpress"
+    local certbot_data="$BASE_DIR/.certbot"
 
     if [[ ! -d "$webroot" ]]; then
         print_and_debug error "$ERROR_DIRECTORY_NOT_FOUND: $webroot"
         return 1
     fi
 
-    is_directory_exist "$ssl_dir" || {
-        print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
-        mkdir -p "$ssl_dir"
-        debug_log "[SSL] Not found and created: $ssl_dir"
-        return 1
-    }
-
-    # Install certbot if missing
-    if ! command -v certbot &>/dev/null; then
-        print_msg warning "$WARNING_CERTBOT_NOT_INSTALLED"
-        if [[ "$(uname -s)" == "Linux" ]]; then
-            if [[ -f /etc/debian_version ]]; then
-                apt update && apt install -y certbot
-            elif [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
-                yum install epel-release -y && yum install -y certbot
-            else
-                debug_log "⚠️ Unsupported Linux distribution: $(cat /etc/*release 2>/dev/null || echo 'unknown')"
-                print_and_debug error "$ERROR_CERTBOT_INSTALL_UNSUPPORTED_OS"
-                return 1
-            fi
-        else
-            debug_log "⚠️ Unsupported OS: $(uname -s)"
-            print_and_debug error "$ERROR_CERTBOT_INSTALL_MAC"
-            return 1
-        fi
-    fi
+    _is_directory_exist "$ssl_dir" || mkdir -p "$ssl_dir"
+    mkdir -p "$certbot_data"
 
     print_msg step "$STEP_REQUEST_CERT_WEBROOT"
-    debug_log "[SSL] Running certbot for domain: $domain with webroot: $webroot"
+    debug_log "[SSL] Running certbot container for domain: $domain with webroot: $webroot"
 
-    local certbot_cmd="certbot certonly --webroot -w $webroot -d $domain --non-interactive --agree-tos -m $email"
-    [[ "$staging" == "true" ]] && certbot_cmd="$certbot_cmd --staging"
+    local certbot_args=(
+        certonly --webroot -w /var/www/html -d "$domain"
+        --non-interactive --agree-tos -m "$email"
+    )
+    [[ "$staging" == "true" ]] && certbot_args+=(--staging)
 
-    eval "$certbot_cmd"
+    docker run --rm \
+        -v "$webroot:/var/www/html" \
+        -v "$certbot_data:/etc/letsencrypt" \
+        certbot/certbot "${certbot_args[@]}"
 
-    local CERT_PATH="/etc/letsencrypt/live/$domain/fullchain.pem"
-    local KEY_PATH="/etc/letsencrypt/live/$domain/privkey.pem"
+    local CERT_PATH="$certbot_data/live/$domain/fullchain.pem"
+    local KEY_PATH="$certbot_data/live/$domain/privkey.pem"
 
     if [[ ! -f "$CERT_PATH" || ! -f "$KEY_PATH" ]]; then
         print_and_debug error "$(printf "$ERROR_SSL_CERT_NOT_FOUND" "$domain")"
@@ -166,13 +153,6 @@ ssl_logic_install_letsencrypt() {
     print_msg success "$SUCCESS_SSL_LETS_ENCRYPT_ISSUED: $domain"
     debug_log "[SSL] Copying certificate to directory: $ssl_dir"
 
-    is_directory_exist "$ssl_dir" || {
-        print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
-        mkdir -p "$ssl_dir"
-        debug_log "[SSL] Not found and created: $ssl_dir"
-        return 1
-    }
-
     run_cmd "sudo chown -R $USER:$USER $ssl_dir"
     copy_file "$CERT_PATH" "$ssl_dir/$domain.crt"
     copy_file "$KEY_PATH" "$ssl_dir/$domain.key"
@@ -180,7 +160,7 @@ ssl_logic_install_letsencrypt() {
     debug_log "[SSL] Certificate copied successfully: $ssl_dir/$domain.crt and $ssl_dir/$domain.key"
 
     print_msg step "$STEP_NGINX_RELOADING"
-    nginx_reload
+    nginx_restart
     print_msg success "$(printf "$SUCCESS_SSL_INSTALLED" "$domain")"
 }
 
@@ -192,14 +172,11 @@ ssl_logic_install_letsencrypt() {
 # =====================================
 ssl_logic_install_manual() {
     local domain="$1"
-    local SSL_DIR="$2"
+    local ssl_dir
+    ssl_dir="$SSL_DIR"
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_SITE_NOT_SELECTED"
-        return 1
-    fi
-
-    is_directory_exist "$ssl_dir" || {
+    _is_valid_domain "$domain" || return 1
+    _is_directory_exist "$ssl_dir" || {
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
         debug_log "[SSL] Not found and created: $ssl_dir"
@@ -208,15 +185,23 @@ ssl_logic_install_manual() {
 
     local target_crt="$SSL_DIR/$domain.crt"
     local target_key="$SSL_DIR/$domain.key"
+    if [[ ! -f "$target_crt" || ! -f "$target_key" ]]; then
+        touch "$target_crt" "$target_key"
+    fi
 
     debug_log "[SSL INSTALL MANUAL] Domain: $domain"
     debug_log "[SSL INSTALL MANUAL] CRT path: $target_crt"
     debug_log "[SSL INSTALL MANUAL] KEY path: $target_key"
 
-    if [[ ! -s "$target_crt" || ! -s "$target_key" ]]; then
-        print_and_debug error "$ERROR_SSL_FILE_EMPTY_OR_MISSING"
-        return 1
-    fi
+    print_msg step "$INFO_SSL_PASTE_CRT: $domain"
+    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
+    echo ""
+    cat >"$target_crt"
+
+    print_msg step "$INFO_SSL_PASTE_KEY: $domain"
+    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
+    echo ""
+    cat >"$target_key"
 
     print_msg success "$SUCCESS_SSL_MANUAL_SAVED"
 
@@ -233,11 +218,6 @@ ssl_logic_install_manual() {
 ssl_logic_edit_cert() {
     local domain="$1"
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "$ERROR_NO_WEBSITE_SELECTED"
-        return 1
-    fi
-
     local target_crt="$SSL_DIR/$domain.crt"
     local target_key="$SSL_DIR/$domain.key"
 
@@ -249,10 +229,12 @@ ssl_logic_edit_cert() {
     print_msg info "$(printf "$INFO_SSL_EDITING_FOR_DOMAIN" "$domain")"
 
     print_msg question "$(printf "$PROMPT_SSL_ENTER_NEW_CRT" "$domain")"
+    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
     read -r new_cert
     new_cert=$(get_input_or_test_value "$new_cert" "$PROMPT_SSL_ENTER_NEW_CRT" "$domain")
 
     print_msg question "$(printf "$PROMPT_SSL_ENTER_NEW_KEY" "$domain")"
+    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
     new_key=$(get_input_or_test_value "$new_key" "$PROMPT_SSL_ENTER_NEW_KEY" "$domain")
 
     echo "$new_cert" >"$target_crt"

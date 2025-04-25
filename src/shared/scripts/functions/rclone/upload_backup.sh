@@ -24,11 +24,11 @@ select_backup_files() {
   local backup_dir="$1"
   local choice_list=()
   local selected_files=()
-
+  _is_missing_param "$backup_dir" "backup_dir" || return 1
   debug_log "[UPLOAD] Selecting backup files from: $backup_dir"
 
   # Check if backup directory exists
-  if ! is_directory_exist "$backup_dir"; then
+  if ! _is_directory_exist "$backup_dir"; then
     print_and_debug error "$ERROR_NOT_EXIST: $backup_dir"
     return 1
   fi
@@ -40,12 +40,10 @@ select_backup_files() {
     return 1
   fi
 
-  # Prepare dialog checklist
   for file in "${backup_files[@]}"; do
     choice_list+=("$file" "$file" "off")
   done
 
-  # Show dialog for selection
   local selected_raw
   selected_raw=$(dialog --stdout --separate-output --checklist "$PROMPT_SELECT_BACKUP_FILES" 15 60 10 "${choice_list[@]}")
 
@@ -138,7 +136,7 @@ upload_backup() {
   done
 
   # Validate rclone config exists
-  if ! is_file_exist "$RCLONE_CONFIG_FILE"; then
+  if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
     print_and_debug error "$ERROR_RCLONE_CONFIG_NOT_FOUND"
     return 1
   fi

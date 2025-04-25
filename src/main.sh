@@ -17,6 +17,7 @@ SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 while [[ "$SCRIPT_PATH" != "/" ]]; do
   if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
     source "$SCRIPT_PATH/shared/config/load_config.sh"
+    load_config_file
     break
   fi
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
@@ -63,8 +64,10 @@ print_header() {
     print_msg sub-label "- ${STRONG}$LABEL_DISK${NC}: ${DISK_USAGE}"
     print_msg sub-label "- ${STRONG}$LABEL_IPADDR${NC}: ${IP_ADDRESS}"
     echo ""
+
     #print_msg label "${STRONG}$LABEL_VERSION_CHANNEL${NC}: ${YELLOW}${CORE_CHANNEL}${NC}"
     core_version_display
+    
     echo -e "${MAGENTA}==============================================${NC}"
 }
 

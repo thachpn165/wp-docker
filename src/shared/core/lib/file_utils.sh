@@ -1,25 +1,13 @@
 #!/bin/bash
 
 # =====================================
-# is_file_exist: Check if a file exists
-# Parameters:
-#   $1 - file_path
-# Returns:
-#   0 if exists, 1 if not
-# =====================================
-is_file_exist() {
-  local file_path="$1"
-  [[ -f "$file_path" ]]
-}
-
-# =====================================
 # remove_file: Remove a file if it exists
 # Parameters:
 #   $1 - file_path
 # =====================================
 remove_file() {
   local file_path="$1"
-  if is_file_exist "$file_path"; then
+  if _is_file_exist "$file_path"; then
     print_msg info "$(printf "$INFO_FILE_REMOVING" "$file_path")"
     rm -f "$file_path"
   fi
@@ -30,11 +18,11 @@ remove_file() {
 # Parameters:
 #   $1 - dir_path
 # Requires:
-#   is_directory_exist must be defined
+#   _is_directory_exist must be defined
 # =====================================
 remove_directory() {
   local dir_path="$1"
-  if is_directory_exist "$dir_path"; then
+  if _is_directory_exist "$dir_path"; then
     print_msg info "$(printf "$INFO_DIR_REMOVING" "$dir_path")"
     rm -rf "$dir_path"
   fi
@@ -50,7 +38,7 @@ remove_directory() {
 copy_file() {
   local src="$1"
   local dest="$2"
-  if is_file_exist "$src"; then
+  if _is_file_exist "$src"; then
     print_msg info "$(printf "$INFO_FILE_COPYING" "$src" "$dest")"
     cp "$src" "$dest"
   else
@@ -59,28 +47,6 @@ copy_file() {
   fi
 }
 
-# =====================================
-# is_directory_exist: Check if a directory exists
-# Parameters:
-#   $1 - dir: Directory path
-#   $2 - create_if_missing (optional): If not "false", directory will be created
-# Returns:
-#   0 if directory exists or is created, 1 otherwise
-# =====================================
-is_directory_exist() {
-  local dir="$1"
-  local create_if_missing="$2"
-
-  if [[ ! -d "$dir" ]]; then
-    if [[ "$create_if_missing" == "true" ]]; then
-      debug_log "[is_directory_exist] Directory not exist, creating: $dir"
-      print_msg debug "$MSG_NOT_FOUND : $dir"
-      mkdir -p "$dir"
-    else
-      return 1
-    fi
-  fi
-}
 
 # =====================================
 # confirm_action: Ask user to confirm a (y/n) prompt
@@ -93,7 +59,7 @@ confirm_action() {
   local message="$1"
   local answer
 
-  answer=$(get_input_or_test_value "$message (y/n)")
+  answer=$(get_input_or_test_value "$message (y/n) ")
   case "$answer" in
     [yY][eE][sS]|[yY]) return 0 ;;
     *) return 1 ;;

@@ -60,7 +60,7 @@ core_mysql_apply_config() {
     # ============================================
 
     if [[ -f "$MYSQL_CONFIG_FILE" ]]; then
-        print_and_debug warning "$WARNING_MYSQL_CONFIG_EXISTS: $MYSQL_CONFIG_FILE"
+        print_and_debug info "$WARNING_MYSQL_CONFIG_EXISTS: $MYSQL_CONFIG_FILE"
         return 0
     fi
 
@@ -72,8 +72,7 @@ core_mysql_apply_config() {
     IFS=',' read -r max_connections query_cache_size innodb_buffer_pool_size \
         innodb_log_file_size table_open_cache thread_cache_size <<<"$config_values"
 
-    is_directory_exist "$(dirname "$MYSQL_CONFIG_FILE")" true
-
+    _is_directory_exist "$(dirname "$MYSQL_CONFIG_FILE")" true
     cat >"$MYSQL_CONFIG_FILE" <<EOF
 [mysqld]
 max_connections = $max_connections
@@ -140,7 +139,7 @@ core_mysql_generate_compose() {
     local mysql_root_pass
     mysql_root_pass=$(json_get_value '.mysql.root_password' "$JSON_CONFIG_FILE")
     mkdir -p "$(dirname "$compose_file")"
-    is_directory_exist "$(dirname "$compose_file")" true
+    _is_directory_exist "$(dirname "$compose_file")" true
     print_msg step "$INFO_MYSQL_GENERATING_DOCKER_COMPOSE"
 
     cp "$template_file" "$compose_file.tmp"
@@ -177,14 +176,16 @@ core_mysql_start() {
     # ============================================
 
     local compose_file="$MYSQL_DIR/docker-compose.yml"
+
+    core_mysql_apply_config
+    core_mysql_generate_compose
+
     if core_mysql_check_running; then
         print_msg success "$SUCCESS_MYSQL_CONTAINER_RUNNING: $MYSQL_CONTAINER_NAME"
         return 0
     fi
 
     print_msg step "$INFO_MYSQL_STARTING_CONTAINER: $MYSQL_CONTAINER_NAME"
-    core_mysql_apply_config
-    core_mysql_generate_compose
 
     docker compose -f "$compose_file" up -d
 

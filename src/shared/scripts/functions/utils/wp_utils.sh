@@ -21,6 +21,18 @@ wp_set_wpconfig() {
 
   print_msg info "$INFO_WP_CONFIGURING"
 
+  # ✅ Kiểm tra container có đang chạy
+  if ! _is_container_running "$container_php"; then
+    print_and_debug error "$(printf "$ERROR_DOCKER_CONTAINER_NOT_RUNNING" "$container_php")"
+    return 1
+  fi
+
+  # ✅ Kiểm tra file wp-config-sample.php có tồn tại không
+  if ! docker exec "$container_php" test -f /var/www/html/wp-config-sample.php; then
+    print_and_debug error "$MSG_NOT_FOUND: /var/www/html/wp-config-sample.php"
+    return 1
+  fi
+
   docker exec -i "$container_php" sh -c "
     cp /var/www/html/wp-config-sample.php /var/www/html/wp-config.php && \
     sed -i 's/database_name_here/$db_name/' /var/www/html/wp-config.php && \
@@ -39,7 +51,7 @@ EOF
     print_msg success "$SUCCESS_WP_CONFIG_DONE"
   else
     print_and_debug error "$ERROR_WP_CONFIG_FAILED"
-    exit 1
+    return 1
   fi
 }
 
@@ -60,7 +72,8 @@ wp_install() {
   local admin_user="$4"
   local admin_pass="$5"
   local admin_email="$6"
-
+  _is_valid_domain "$domain" || return 1
+  _is_valid_email "$admin_email" || return 1
   print_msg info "$INFO_WP_INSTALLING"
   bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- core install \
     --url="$site_url" --title="$title" \
@@ -144,4 +157,30 @@ check_and_update_wp_cli() {
 
   new_version=$("$wp_cli_path" --version 2>/dev/null | awk '{print $2}')
   print_msg success "$(printf "$SUCCESS_WPCLI_UPDATED" "$new_version")"
+}
+
+wp_cli_install() {
+  wp_cli_path="$BASE_DIR/shared/bin/wp"
+  tmp_cli_path="/tmp/wp-cli.phar"
+
+  if [[ ! -f "$wp_cli_path" ]]; then
+    echo -e "$WARNING_WPCLI_NOT_FOUND"
+
+    # Tải về thư mục tạm
+    curl -fsSL -o "$tmp_cli_path" https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar ||
+      exit_if_error 1 "$ERROR_WPCLI_DOWNLOAD_FAILED"
+
+    chmod +x "$tmp_cli_path"
+
+    # Đảm bảo thư mục đích tồn tại
+    mkdir -p "$(dirname "$wp_cli_path")" ||
+      exit_if_error 1 "$(printf "$ERROR_CREATE_DIR_FAILED" "$(dirname "$wp_cli_path")")"
+
+    mv "$tmp_cli_path" "$wp_cli_path" ||
+      exit_if_error 1 "$ERROR_WPCLI_MOVE_FAILED"
+
+    echo -e "$SUCCESS_WPCLI_INSTALLED"
+  else
+    echo -e "$(printf "$SUCCESS_WPCLI_EXISTS" "$wp_cli_path")"
+  fi
 }

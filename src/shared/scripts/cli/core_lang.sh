@@ -25,11 +25,7 @@ core_lang_cli_change() {
     local lang_code
     lang_code=$(_parse_params "--lang" "$@")
 
-    if [[ -z "$lang_code" ]]; then
-        print_and_debug error "$ERROR_MISSING_PARAM: --lang"
-        print_and_debug info "$INFO_PARAM_EXAMPLE:\n  --lang=en"
-        exit 1
-    fi
+    _is_missing_param "$lang_code" "--lang" || return 1
 
     core_lang_change_logic "$lang_code"
 }

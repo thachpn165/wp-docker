@@ -38,10 +38,8 @@ website_setup_wordpress_logic() {
   local domain="$1"
   local auto_generate="${2:-true}"
 
-  if [[ -z "$domain" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain"
-    return 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
   local db_name db_user db_pass php_container
 
   # 🌍 Load variables from .config.json
@@ -62,36 +60,40 @@ website_setup_wordpress_logic() {
 
   if [[ "$auto_generate" == true ]]; then
     admin_user="admin-$(openssl rand -base64 6 | tr -dc 'a-zA-Z0-9' | head -c 8)"
-    admin_password="$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 16)"
+    admin_password=$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9' | head -c 16)
     admin_email="admin@$domain"
   else
-    # Get the username entered by the user, if empty will use the default value
-    admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
-    debug_log "Admin username entered: $admin_user" # Added debug line here
-
-    while [[ -z "$admin_user" ]]; do
-      print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
+    # === Username ===
+    while true; do
       admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
-      debug_log "Admin username entered (again): $admin_user" # Added debug line here
+      debug_log "[wordpress] Admin username: $admin_user"
+      [[ -n "$admin_user" ]] && break
+      print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
     done
 
-    # Get the password entered by the user
-    admin_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
-    confirm_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
+    # === Password (with confirmation) ===
+    while true; do
+      echo -ne "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: "
+      read -rs admin_password
+      echo
+      echo -ne "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: "
+      read -rs confirm_password
+      echo
 
-    while [[ "$admin_password" != "$confirm_password" || -z "$admin_password" ]]; do
+      if [[ -n "$admin_password" && "$admin_password" == "$confirm_password" ]]; then
+        break
+      fi
+
       print_msg warning "$WARNING_ADMIN_PASSWORD_MISMATCH"
-      admin_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: " "${TEST_ADMIN_PASSWORD:-testpass}")
-      confirm_password=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD_CONFIRM: " "${TEST_ADMIN_PASSWORD:-testpass}")
     done
 
-    # Get the email entered by the user
-    admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL: " "${admin_email:-admin@$domain}")
+    # === Email ===
+    admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL: " "${TEST_ADMIN_EMAIL:-admin@$domain}")
   fi
 
   # 🐳 Check if PHP container is running
   local php_ready_ok=false
-  if is_container_running "$php_container"; then
+  if _is_container_running "$php_container"; then
     php_ready_ok=true
   fi
   if [[ "$php_ready_ok" == false ]]; then
@@ -107,13 +109,18 @@ website_setup_wordpress_logic() {
 
   # 📆 Download WordPress if not already present
   if [[ ! -f "$site_dir/wordpress/index.php" ]]; then
+    local wp_url="https://wordpress.org/latest.tar.gz"
+    if ! network_check_http "$wp_url"; then
+      print_msg error "$ERROR_WP_SOURCE_URL_NOT_REACHABLE: $wp_url"
+      return 1
+    fi
     print_msg step "$INFO_DOWNLOADING_WP"
     docker_exec_php "$domain" "chown -R nobody:nogroup /var/www/"
     debug_log "\n➤ chown -R nobody:nogroup /var/www/: domain=$domain"
     local wp_download_cmd
-    wp_download_cmd='curl -o /var/www/html/wordpress.tar.gz -L https://wordpress.org/latest.tar.gz && \
-      tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && \
-      rm /var/www/html/wordpress.tar.gz'
+    wp_download_cmd="curl -o /var/www/html/wordpress.tar.gz -L $wp_url && \
+  tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && \
+  rm /var/www/html/wordpress.tar.gz"
 
     docker_exec_php "$domain" "$wp_download_cmd"
     exit_if_error $? "failed to download WordPress"
@@ -146,6 +153,6 @@ website_setup_wordpress_logic() {
 
   # set .site.$domain.cache value to `no-cache`
   json_set_site_value "$domain" "cache" "no-cache"
-  # 🐳 Restart NGINX to apply new configuration 
+  # 🐳 Restart NGINX to apply new configuration
   nginx_restart
 }

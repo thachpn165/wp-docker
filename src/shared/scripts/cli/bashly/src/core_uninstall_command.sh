@@ -1,0 +1,1 @@
+bash "$BASE_DIR/uninstall.sh"
