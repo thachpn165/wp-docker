@@ -23,8 +23,13 @@ log_with_time() {
 
   # Output to terminal as STDERR to avoid interfering with stdout
   echo -e "$formatted_time" >&2
+
   # Write to log file if set
   if [[ -n "$DEBUG_LOG" ]]; then
+    # Create log file if not exist
+    mkdir -p "$(dirname "$DEBUG_LOG")"
+    touch "$DEBUG_LOG" 2>/dev/null
+
     echo -e "$formatted_time" >> "$DEBUG_LOG"
   fi
 }

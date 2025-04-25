@@ -189,7 +189,7 @@ _is_directory_exist() {
 }
 
 # =============================================
-# 🧪 _is_missing_var – Check if a variable is unset or empty
+# 🧪 /is_is_missing_var – Check if a variable is unset or empty
 # ---------------------------------------------
 # Usage:
 #   _is_missing_var "$VAR" "VAR_NAME" || return 1
