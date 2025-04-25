@@ -48,6 +48,8 @@ Thumbs.db
 *.swp
 *.swo
 __MACOSX
+*.code-workspace
+.certbot/
 
 # ⛔ NODE & DEPENDENCIES ⛔
 node_modules/
@@ -66,10 +68,10 @@ tmp/
 latest_version.txt
 .cursorignore
 tests.yml.bak
-
+.cron/
 # ☁️ RCLONE CONFIG
 src/shared/config/rclone/rclone.conf
-
+rclone.conf.bak
 # 🌐 NGINX GLOBAL CONFIG - không commit theo site
 src/shared/core/webserver/nginx/globals/wp-login*
 src/shared/core/webserver/nginx/conf.d/*.conf
