@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Check if required variables are set
 if [[ -z "${args[action]}" || -z "$WPDOCKER_CONFIG_FILE" ]]; then
     echo "Error: Missing required arguments or configuration file."
@@ -19,6 +17,7 @@ enable)
         echo "DEBUG_MODE is already enabled."
     else
         sedi 's/DEBUG_MODE="false"/DEBUG_MODE="true"/' "$WPDOCKER_CONFIG_FILE"
+        
         echo "DEBUG_MODE has been enabled."
     fi
     ;;
