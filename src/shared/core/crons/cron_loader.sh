@@ -44,7 +44,7 @@ cron_run_general() {
     local now_ts
     now_ts=$(date +%s)
 
-    if ! is_directory_exist "$BASE_DIR/.cron"; then
+    if ! _is_directory_exist "$BASE_DIR/.cron"; then
         print_msg info "📂 Creating cron directory: $BASE_DIR/.cron"
         mkdir -p "$BASE_DIR/.cron" || {
             print_msg error "❌ Failed to create cron directory: $BASE_DIR/.cron"
