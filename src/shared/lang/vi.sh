@@ -1002,3 +1002,5 @@ readonly STEP_PHP_REINSTALLING_EXTENSIONS="Đang cài đặt lại các extensio
 readonly INFO_PHP_EXTENSION_REINSTALLING="Đang cài đặt lại extension: %s"
 readonly WARNING_PHP_EXTENSION_NOT_MANAGED="Extension '%s' không được quản lý bởi hệ thống. Đã bỏ qua."
 readonly WARNING_PHP_INI_NOT_FOUND="Không thể tìm thấy php.ini cho site này."
+readonly LABEL_MENU_PHP_INSTALL_EXTENSION="Cài đặt extension PHP (Ioncube)"
+readonly INFO_PHP_IONCUBE_LOADER_NOT_FOUND="Không tìm thấy Ioncube Loader. Đang tải về..."

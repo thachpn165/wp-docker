@@ -11,7 +11,7 @@ php_menu() {
     print_msg label "${GREEN}2)${NC} $LABEL_MENU_PHP_REBUILD"
     print_msg label "${GREEN}3)${NC} $LABEL_MENU_PHP_EDIT_CONF"
     print_msg label "${GREEN}4)${NC} $LABEL_MENU_PHP_EDIT_INI"
-    print_msg label "${GREEN}5)${NC} Install PHP Extensions"
+    print_msg label "${GREEN}5)${NC} $LABEL_MENU_PHP_INSTALL_EXTENSION"
     print_msg label "${GREEN}6)${NC} $MSG_BACK"
     echo ""
 

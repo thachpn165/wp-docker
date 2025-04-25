@@ -1013,3 +1013,5 @@ readonly STEP_PHP_REINSTALLING_EXTENSIONS="Re-installing previously enabled exte
 readonly INFO_PHP_EXTENSION_REINSTALLING="Re-installing extension: %s"
 readonly WARNING_PHP_EXTENSION_NOT_MANAGED="Extension '%s' is not managed by the system. Skipped."
 readonly WARNING_PHP_INI_NOT_FOUND="Cannot find php.ini for this site."
+readonly LABEL_MENU_PHP_INSTALL_EXTENSION="Install PHP extension (Ioncube)"
+readonly INFO_PHP_IONCUBE_LOADER_NOT_FOUND="Ioncube loader not found. Reinstalling..."

@@ -111,9 +111,9 @@ php_install_extension_ioncube_loader() {
     formatted_check_compatible=$(printf "$STEP_PHP_IONCUBE_CHECK_COMPATIBILITY" "$loader_file")
     print_msg step "$formatted_check_compatible"
 
-    # ✅ Nếu file loader chưa tồn tại, tải lại
+    # ✅ Check if loader file exists
     if ! docker exec -i "$php_container" test -f "$loader_path"; then
-        print_msg info "📦 Ioncube loader not found. Downloading and installing..."
+        print_msg info "$INFO_PHP_IONCUBE_LOADER_NOT_FOUND"
 
         docker exec -u root -i "$php_container" bash -c "
           mkdir -p /tmp/ioncube &&
