@@ -235,6 +235,6 @@ ssl_logic_edit_cert() {
     print_msg success "$(printf "$SUCCESS_SSL_UPDATED_FOR_DOMAIN" "$domain")"
 
     print_msg step "$STEP_NGINX_RELOADING"
-    nginx_reload
+    nginx_reload || nginx_restart
     print_msg success "$SUCCESS_NGINX_RELOADED"
 }
