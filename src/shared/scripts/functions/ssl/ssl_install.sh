@@ -172,44 +172,37 @@ ssl_logic_install_letsencrypt() {
 # =====================================
 ssl_logic_install_manual() {
     local domain="$1"
-    local ssl_dir
-    ssl_dir="$SSL_DIR"
+    local ssl_dir="$SSL_DIR"
+    local target_crt="$ssl_dir/$domain.crt"
+    local target_key="$ssl_dir/$domain.key"
 
     _is_valid_domain "$domain" || return 1
-    _is_directory_exist "$ssl_dir" || {
+
+    if ! _is_directory_exist "$ssl_dir"; then
         print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
         mkdir -p "$ssl_dir"
         debug_log "[SSL] Not found and created: $ssl_dir"
-        return 1
-    }
-
-    local target_crt="$SSL_DIR/$domain.crt"
-    local target_key="$SSL_DIR/$domain.key"
-    if [[ ! -f "$target_crt" || ! -f "$target_key" ]]; then
-        touch "$target_crt" "$target_key"
     fi
 
     debug_log "[SSL INSTALL MANUAL] Domain: $domain"
     debug_log "[SSL INSTALL MANUAL] CRT path: $target_crt"
     debug_log "[SSL INSTALL MANUAL] KEY path: $target_key"
 
-    print_msg step "$INFO_SSL_PASTE_CRT: $domain"
-    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
-    echo ""
-    cat >"$target_crt"
+    # ✅ Tạo file rỗng nếu chưa tồn tại
+    [[ ! -f "$target_crt" ]] && touch "$target_crt"
+    [[ ! -f "$target_key" ]] && touch "$target_key"
 
-    print_msg step "$INFO_SSL_PASTE_KEY: $domain"
-    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
-    echo ""
-    cat >"$target_key"
+    # ✅ Gọi trình chọn editor
+    choose_editor || return
+
+    "$EDITOR_CMD" "$target_crt"
+    "$EDITOR_CMD" "$target_key"
 
     print_msg success "$SUCCESS_SSL_MANUAL_SAVED"
 
-    print_msg step "$STEP_NGINX_RELOADING"
-    nginx_reload
-    print_msg success "$SUCCESS_NGINX_RELOADED"
-}
+    nginx_restart
 
+}
 # =====================================
 # ssl_logic_edit_cert: Replace current SSL certificate with new pasted content
 # Parameters:
