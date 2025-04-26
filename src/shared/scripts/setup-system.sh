@@ -52,7 +52,7 @@ wp_cli_install
 # =============================================
 # ✅ Verify required commands are available
 # =============================================
-check_required_commands
+core_system_check_required_commands
 
 # =============================================
 # 🕸 Create Docker network if missing

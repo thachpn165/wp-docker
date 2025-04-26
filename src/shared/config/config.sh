@@ -117,7 +117,44 @@ export TEMPLATE_CHANGELOG_FILE="$BASE_DIR/shared/templates/TEMPLATE_CHANGELOG.md
 TEST_MODE="false"
 TEST_ALWAYS_READY="false"
 
-# ==== 15. Load all helper utils ====
+# ==== 15. Required Commands List ====
+CORE_REQUIRED_COMMANDS='{
+  "rsync": {
+    "uninstall": false
+  },
+  "jq": {
+    "uninstall": true
+  },
+  "dialog": {
+    "uninstall": true
+  },
+  "git": {
+    "uninstall": false
+  },
+  "curl": {
+    "uninstall": true
+  },
+  "nano": {
+    "uninstall": true
+  },
+  "tar": {
+    "uninstall": false
+  },
+  "gzip": {
+    "uninstall": false
+  },
+  "unzip": {
+    "uninstall": false
+  },
+  "openssl": {
+    "uninstall": false
+  },
+  "crontab": {
+    "uninstall": false
+  }
+
+}'
+# ==== 16. Load all helper utils ====
 safe_source "$CORE_LIB_DIR/mysql_utils.sh"
 safe_source "$CORE_LIB_DIR/nginx_utils.sh"
 safe_source "$CORE_LIB_DIR/docker_utils.sh"

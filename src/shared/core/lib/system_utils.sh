@@ -138,13 +138,13 @@ choose_editor() {
 }
 
 # =====================================
-# core_system_update: Update system packages based on OS type
+# core_system_update_os_packages: Update system packages based on OS type
 # No parameters
 # Behavior:
 #   - Detects OS type and runs appropriate update commands
 #   - Uses --nogpgcheck for CentOS/AlmaLinux 8
 # =====================================
-core_system_update() {
+core_system_update_os_packages() {
   echo "🔄 Updating system packages..."
 
   # Detect OS
@@ -191,31 +191,22 @@ core_system_update() {
 }
 
 # ============================================
-# 🧪 check_required_commands – Ensure required commands are installed
+# 🧪 core_system_check_required_commands – Ensure required commands are installed
 # ============================================
 # Description:
 #   - Verifies availability of CLI tools like docker, jq, curl, unzip, etc.
 #   - Installs missing ones depending on OS.
-#
-# Globals:
-#   OSTYPE
-#   WARNING_COMMAND_NOT_FOUND
-#   SUCCESS_COMMAND_AVAILABLE
-#   ERROR_INSTALL_COMMAND_NOT_SUPPORTED
-#   ERROR_OS_NOT_SUPPORTED
-#   WARNING_HOMEBREW_MISSING
-check_required_commands() {
+core_system_check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
 
-  # Loại bỏ "docker compose" khỏi danh sách vì sẽ được cài đặt riêng
-  required_cmds=(nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
+  local cmd
 
-  for cmd in "${required_cmds[@]}"; do
-    if ! command -v "$(echo "$cmd" | awk '{print $1}')" &>/dev/null; then
+  # ✅ Duyệt toàn bộ key từ JSON
+  for cmd in $(echo "$CORE_REQUIRED_COMMANDS" | jq -r 'keys[]'); do
+    if ! command -v "$cmd" &>/dev/null; then
       print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
 
       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Xác định phiên bản hệ điều hành
         local is_alma_centos8=false
         if [[ -f /etc/redhat-release ]]; then
           if (grep -q "AlmaLinux" /etc/redhat-release || grep -q "CentOS" /etc/redhat-release) && grep -q "8\." /etc/redhat-release; then
@@ -224,18 +215,18 @@ check_required_commands() {
         fi
 
         if command -v apt &>/dev/null; then
-          apt update -y && apt install -y "$(echo "$cmd" | awk '{print $1}')"
+          apt update -y && apt install -y "$cmd"
         elif command -v dnf &>/dev/null; then
           if [[ "$is_alma_centos8" == "true" ]]; then
-            dnf install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
+            dnf install -y --nogpgcheck "$cmd"
           else
-            dnf install -y "$(echo "$cmd" | awk '{print $1}')"
+            dnf install -y "$cmd"
           fi
         elif command -v yum &>/dev/null; then
           if [[ "$is_alma_centos8" == "true" ]]; then
-            yum install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
+            yum install -y --nogpgcheck "$cmd"
           else
-            yum install -y "$(echo "$cmd" | awk '{print $1}')"
+            yum install -y "$cmd"
           fi
         else
           print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
@@ -245,55 +236,58 @@ check_required_commands() {
           print_msg warning "$WARNING_HOMEBREW_MISSING"
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         fi
-        brew install "$(echo "$cmd" | awk '{print $1}')"
+        brew install "$cmd"
       else
         print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
       fi
     else
       print_msg success "$SUCCESS_COMMAND_AVAILABLE: $cmd"
-
     fi
   done
-  
 }
 
-uninstall_required_commands() {
-  print_msg info "🧹 Uninstalling required commands..."
+core_system_uninstall_required_commands() {
+  print_msg info "$INFO_UNINSTALLING_COMMANDS"
 
-  required_cmds=(jq dialog)
+  local cmd uninstall_flag
 
-  for cmd in "${required_cmds[@]}"; do
-    cmd_name="$(echo "$cmd" | awk '{print $1}')"
+  for cmd in $(echo "$CORE_REQUIRED_COMMANDS" | jq -r 'keys[]'); do
+    uninstall_flag=$(echo "$CORE_REQUIRED_COMMANDS" | jq -r --arg cmd "$cmd" '.[$cmd].uninstall')
 
-    if ! command -v "$cmd_name" &>/dev/null; then
-      print_msg skip "⏩ Command not installed: $cmd_name"
+    if [[ "$uninstall_flag" != "true" ]]; then
+      debug_log "[UNINSTALL] Skip $cmd (uninstall=false)"
       continue
     fi
 
-    print_msg warning "⚠️ Attempting to uninstall: $cmd_name"
+    if ! command -v "$cmd" &>/dev/null; then
+      print_msg skip "⏩ Command not installed: $cmd"
+      continue
+    fi
+
+    print_msg warning "⚠️ Attempting to uninstall: $cmd"
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
       if command -v apt &>/dev/null; then
-        apt remove -y "$cmd_name"
-      elif command -v yum &>/dev/null; then
-        yum remove -y "$cmd_name"
+        apt remove -y "$cmd"
       elif command -v dnf &>/dev/null; then
-        dnf remove -y "$cmd_name"
+        dnf remove -y "$cmd"
+      elif command -v yum &>/dev/null; then
+        yum remove -y "$cmd"
       else
-        print_msg error "❌ Unsupported package manager for: $cmd_name"
+        print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
       fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
       if command -v brew &>/dev/null; then
-        brew uninstall "$cmd_name"
+        brew uninstall "$cmd"
       else
-        print_msg error "❌ Homebrew not found. Cannot uninstall: $cmd_name"
+        print_msg error "$ERROR_HOMEBREW_MISSING"
       fi
     else
-      print_msg error "❌ Unsupported OS: $OSTYPE"
+      print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
     fi
   done
 
-  print_msg success "✅ Uninstall process completed."
+  print_msg success "$SUCCESS_COMMANDS_UNINSTALL_DONE"
 }
 
 # ============================================
