@@ -126,9 +126,9 @@ choose_editor() {
     EDITOR_CMD="${AVAILABLE_EDITORS[$((editor_index - 1))]}"
   fi
 
-  print_msg info "$(printf "$INFO_EDITOR_USAGE_GUIDE" "$EDITOR_CMD")"
+  print_msg info "$(printf "$INFO_EDITOR_USAGE_GUIDE " "$EDITOR_CMD")"
 
-  confirm=$(get_input_or_test_value "$PROMPT_CONFIRM_EDITOR" "${TEST_CONFIRM_EDITOR:-y}")
+  confirm=$(get_input_or_test_value "$PROMPT_CONFIRM_EDITOR " "${TEST_CONFIRM_EDITOR:-y}")
   if [[ "$confirm" =~ ^[Nn]$ ]]; then
     print_msg warning "$WARNING_EDITOR_CANCELLED"
     return 1

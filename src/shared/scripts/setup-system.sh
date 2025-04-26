@@ -57,12 +57,12 @@ check_required_commands
 # =============================================
 # 🕸 Create Docker network if missing
 # =============================================
-create_docker_network "$DOCKER_NETWORK"
+create_docker_network "$DOCKER_NETWORK" >/dev/null 2>&1
 
 # =============================================
 # Check docker volumes and create if missing
 # =============================================
-docker_volume_check_fastcgicache
+docker_volume_check_fastcgicache >/dev/null 2>&1
 
 # =============================================
 # Start MySQL if not running

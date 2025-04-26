@@ -54,6 +54,6 @@ network_check_http() {
   fi
 
   # ✅ Echo URL back for use by caller
-  echo "$url"
+  echo "$url" >/dev/null 2>&1
   return 0
 }
