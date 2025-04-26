@@ -1,7 +1,21 @@
 # =====================================
-# debug_log: Display debug message if DEBUG_MODE is enabled
-# Parameters: $1 - message to log
+# File: log_utils.sh
+# Description: This script provides utility functions for logging and debugging in bash scripts.
+# Functions:
+#   - debug_log: Display debug message if DEBUG_MODE is enabled
+#       Parameters: $1 - message to log
+#   - log_with_time: Log a message with timestamp to stderr and log file
+#       Parameters: $1 - message to log
+#   - print_and_debug: Print a message and log it if DEBUG_MODE is enabled
+#       Parameters:
+#         $1 - message type (info, error, warning, etc.)
+#         $2 - message content
+#   - run_cmd: Run a command or function with optional debug and error handling
+#       Parameters:
+#         $1 - command or function call string
+#         $2 - exit_on_fail (true/false, default: false)
 # =====================================
+
 debug_log() {
   local message="$1"
   if [[ "$DEBUG_MODE" == "true" ]]; then
@@ -12,21 +26,14 @@ debug_log() {
   fi
 }
 
-# =====================================
-# log_with_time: Log a message with timestamp to stderr and log file
-# Parameters: $1 - message to log
-# =====================================
 log_with_time() {
   local message="$1"
   local formatted_time
   formatted_time="$(date '+%Y-%m-%d %H:%M:%S') - $message"
 
-  # Output to terminal as STDERR to avoid interfering with stdout
   echo -e "$formatted_time" >&2
 
-  # Write to log file if set
   if [[ -n "$DEBUG_LOG" ]]; then
-    # Create log file if not exist
     mkdir -p "$(dirname "$DEBUG_LOG")"
     touch "$DEBUG_LOG" 2>/dev/null
 
@@ -34,14 +41,8 @@ log_with_time() {
   fi
 }
 
-# =====================================
-# print_and_debug: Print a message and log it if DEBUG_MODE is enabled
-# Parameters:
-#   $1 - message type (info, error, warning, etc.)
-#   $2 - message content
-# =====================================
 print_and_debug() {
-  local type="$1"       # info, error, warning,...
+  local type="$1"
   local message="$2"
 
   print_msg "$type" "$message"
@@ -54,12 +55,6 @@ print_and_debug() {
   fi
 }
 
-# =====================================
-# run_cmd: Run a command or function with optional debug and error handling
-# Parameters:
-#   $1 - command or function call string
-#   $2 - exit_on_fail (true/false, default: false)
-# =====================================
 run_cmd() {
     ensure_safe_cwd
     local cmd="$1"
@@ -74,7 +69,6 @@ run_cmd() {
         return 1
     fi
 
-    # Detect if it's a bash function
     local is_function=false
     if declare -f "${cmd%% *}" >/dev/null 2>&1; then
         is_function=true
@@ -85,10 +79,8 @@ run_cmd() {
     fi
 
     if [[ "$is_function" == "true" ]]; then
-        # Call function directly with arguments
         eval "$cmd"
     else
-        # Execute as bash command
         if [[ "$DEBUG_MODE" == "true" ]]; then
             bash -c "$cmd" 2>&1 | tee -a "$DEBUG_LOG"
         else

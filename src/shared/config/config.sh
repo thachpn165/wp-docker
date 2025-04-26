@@ -22,7 +22,7 @@ else
 fi
 PROJECT_DIR="$BASE_DIR"
 
-DEBUG_MODE="false"
+DEBUG_MODE="true"
 WPDOCKER_CONFIG_FILE="$BASE_DIR/shared/config/config.sh"
 JSON_CONFIG_FILE="$BASE_DIR/.config.json"
 

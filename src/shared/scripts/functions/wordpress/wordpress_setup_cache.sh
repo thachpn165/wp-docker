@@ -1,40 +1,22 @@
-# =============================================
-# WordPress Cache Plugin Mapping (JSON format)
-# =============================================
-readonly WP_CACHE_PLUGIN_JSON='{
-  "wp-super-cache": {
-    "name": "WP Super Cache",
-    "plugin": "wp-super-cache"
-  },
-  "fastcgi-cache": {
-    "name": "FastCGI Cache (Nginx Helper + Redis)",
-    "plugin": "nginx-helper"
-  },
-  "w3-total-cache": {
-    "name": "W3 Total Cache",
-    "plugin": "w3-total-cache"
-  },
-  "wp-fastest-cache": {
-    "name": "WP Fastest Cache",
-    "plugin": "wp-fastest-cache"
-  },
-  "no-cache": {
-    "name": "No Cache",
-    "plugin": ""
-  }
-}'
+#!/bin/bash
+# ==================================================
+# File: wordpress_setup_cache.sh
+# Description: Functions to manage caching configurations for WordPress websites, including:
+#              - Prompting the user to select and configure a cache plugin.
+#              - Setting up or removing caching configurations for a WordPress site.
+# Functions:
+#   - wordpress_prompt_cache_setup: Prompt user to select and configure a cache plugin.
+#       Parameters: None.
+#   - wordpress_cache_setup_logic: Set up or remove caching configuration for a WordPress site.
+#       Parameters:
+#           $1 - domain: Domain name of the website.
+#           $2 - cache_type: Cache type to configure (e.g., wp-super-cache, fastcgi-cache, w3-total-cache, no-cache).
+# ==================================================
 
-# =====================================
-# wordpress_prompt_cache_setup: Prompt user to sel thachpn165/wpdocker-openrestyect and configure cache plugin
-# Parameters:
-#   None (interactive)
-# Behavior:
-#   - Displays a list of available cache types (from WP_CACHE_PLUGIN_JSON)
-#   - Lets the user choose one type (e.g., WP Super Cache, FastCGI Cache...)
-#   - Updates .config.json with selected cache type
-#   - Calls the CLI function to apply the caching configuration
-# =====================================
 wordpress_prompt_cache_setup() {
+    # Prompt user to select and configure a cache plugin.
+    # Parameters: None.
+
     local domain cache_type plugin_slug
     safe_source "$CLI_DIR/wordpress_cache_setup.sh"
 
@@ -46,7 +28,7 @@ wordpress_prompt_cache_setup() {
 
     current_cache=$(json_get_site_value "$domain" "cache")
 
-    # === Load cache type list from JSON ===
+    # Load cache type list from JSON
     print_msg title "$LABEL_MENU_MAIN_WORDPRESS_CACHE"
 
     mapfile -t cache_types < <(jq -r 'keys[] | select(. != "no-cache")' <<<"$WP_CACHE_PLUGIN_JSON" | sort)
@@ -64,7 +46,7 @@ wordpress_prompt_cache_setup() {
         print_msg info "  ${GREEN}[$((i + 1))]${NC} $label"
     done
 
-    # Yêu cầu nhập từ người dùng
+    # Prompt user input
     local cache_type_index
     cache_type_index=$(get_input_or_test_value "$PROMPT_WORDPRESS_CHOOSE_CACHE")
 
@@ -77,30 +59,15 @@ wordpress_prompt_cache_setup() {
     plugin_slug=$(jq -r --arg type "$cache_type" '.[$type].plugin' <<<"$WP_CACHE_PLUGIN_JSON")
 
     print_msg success "$SUCCESS_WORDPRESS_CHOOSE_CACHE: $cache_type"
-    #json_set_site_value "$domain" "cache" "$cache_type"
-    debug_log "domain: $domain"
-    debug_log "cache_type: $cache_type"
-    # Gọi logic để cài cache
     wordpress_cli_cache_setup --domain="$domain" --cache_type="$cache_type"
 }
 
-# =====================================
-# wordpress_cache_setup_logic: Setup or remove caching configuration for a WordPress site
-# Parameters:
-#   $1 - domain
-#   $2 - cache_type (e.g. wp-super-cache, fastcgi-cache, w3-total-cache, no-cache)
-# Behavior:
-#   - Reads plugin slug from WP_CACHE_PLUGIN_JSON
-#   - Deactivates all known cache-related plugins (also from JSON)
-#   - If cache_type is 'no-cache', deletes plugins, disables WP_CACHE, and updates nginx config
-#   - Otherwise:
-#       - Installs and activates selected plugin
-#       - Updates nginx config to include proper cache .conf file
-#       - Optionally configures fastcgi cache path and Redis if required by cache_type
-#   - Reloads NGINX and updates permissions
-#   - Displays tip message (if available) from JSON config
-# =====================================
 wordpress_cache_setup_logic() {
+    # Set up or remove caching configuration for a WordPress site.
+    # Parameters:
+    #   $1 - domain: Domain name of the website.
+    #   $2 - cache_type: Cache type to configure (e.g., wp-super-cache, fastcgi-cache, w3-total-cache, no-cache).
+
     local domain="$1"
     local cache_type="$2"
     local site_dir="$SITES_DIR/$domain"
@@ -108,18 +75,19 @@ wordpress_cache_setup_logic() {
     local nginx_conf_file="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
     local php_container
     php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
-    
+
     _is_valid_domain "$domain" || return 1
-    
+
     if [[ ! -d "$site_dir" ]]; then
         print_and_debug error "$(printf "$ERROR_DIRECTORY_NOT_FOUND" "$site_dir")"
         return 1
     fi
-    
+
     if ! jq -e --arg ct "$cache_type" 'has($ct)' <<<"$WP_CACHE_PLUGIN_JSON" >/dev/null; then
         print_and_debug error "$(printf "$ERROR_INVALID_CACHE_TYPE" "$cache_type")"
         return 1
     fi
+
     local plugin_slug
     plugin_slug=$(jq -r --arg type "$cache_type" '.[$type].plugin' <<<"$WP_CACHE_PLUGIN_JSON")
 
@@ -199,8 +167,6 @@ fastcgi_cache_path /usr/local/openresty/nginx/fastcgi_cache levels=1:2 keys_zone
             exit_if_error $? "$ERROR_ADD_FASTCGI_PATH"
             print_msg success "$SUCCESS_FASTCGI_PATH_ADDED"
         fi
-
-        exit_if_error $? "$ERROR_UPDATE_NGINX_HELPER"
     fi
 
     if [[ "$cache_type" == "fastcgi-cache" ]]; then
@@ -220,9 +186,6 @@ define('RT_WP_NGINX_HELPER_CACHE_PATH','/var/cache/nginx');" "$wp_config_file"
 
         wordpress_wp_cli_logic "$domain" redis update-dropin
         exit_if_error $? "$ERROR_REDIS_UPDATE_DROPIN"
-
-        wordpress_wp_cli_logic "$domain" option update redis-cache
-        exit_if_error $? "$ERROR_REDIS_UPDATE_OPTIONS"
 
         wordpress_wp_cli_logic "$domain" redis enable
         exit_if_error $? "$ERROR_REDIS_ENABLE"

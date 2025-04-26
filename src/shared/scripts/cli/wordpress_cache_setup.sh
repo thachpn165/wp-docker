@@ -1,11 +1,14 @@
 #!/bin/bash
-
-# =====================================
-# 🚀 wordpress_cache_cli.sh – CLI wrapper to configure WordPress cache
-# Parameters:
-#   --domain=<domain>
-#   --cache_type=<fastcgi-cache|wp-super-cache|no-cache|...>
-# =====================================
+# ==================================================
+# File: wordpress_cache_setup.sh
+# Description: CLI wrapper to configure WordPress cache for a specific domain.
+# Functions:
+#   - wordpress_cli_cache_setup: Configure the cache type for a WordPress site.
+#       Parameters:
+#           --domain=<domain>: The domain name of the WordPress site.
+#           --cache_type=<type>: The cache type to configure (e.g., fastcgi-cache, wp-super-cache, no-cache).
+#       Returns: None.
+# ==================================================
 
 # === Auto-detect BASE_DIR and load configuration ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -23,8 +26,7 @@ done
 safe_source "$FUNCTIONS_DIR/wordpress_loader.sh"
 
 wordpress_cli_cache_setup() {
-  local domain="$1"
-  local cache_type="$2"
+  local domain cache_type
 
   # Parse parameters
   domain=$(_parse_params "--domain" "$@")

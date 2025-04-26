@@ -1,10 +1,15 @@
-# =====================================
-# rclone_storage_list: List all configured Rclone storages from config file
-# Requires:
-#   - $RCLONE_CONFIG_FILE to be defined and exist
-# Outputs:
-#   - Echoes storage names (sections in rclone.conf)
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: manage_rclone.sh
+# Description: Functions to manage Rclone storages, including listing configured storages 
+#              and deleting selected storages from the configuration file.
+# Functions:
+#   - rclone_storage_list: List all configured Rclone storages from the config file.
+#       Parameters: None.
+#   - rclone_storage_delete: Prompt the user to select and delete an Rclone storage.
+#       Parameters: None.
+# ==================================================
+
 rclone_storage_list() {
   local rclone_config="$RCLONE_CONFIG_FILE"
 
@@ -15,7 +20,7 @@ rclone_storage_list() {
     return 1
   fi
 
-  # Đọc từng storage và in theo định dạng: 📦 thachdrive (drive)
+  # Read each storage and print in the format: 📦 storage_name (type)
   awk '
     /^\[/ {
       gsub(/[\[\]]/, "", $0)
@@ -29,12 +34,6 @@ rclone_storage_list() {
   ' "$rclone_config"
 }
 
-# =====================================
-# rclone_storage_delete: Prompt user to select and delete an Rclone storage
-# Requires:
-#   - $RCLONE_CONFIG_FILE must exist
-#   - sed to delete storage block from config file
-# =====================================
 rclone_storage_delete() {
   local rclone_config="$RCLONE_CONFIG_FILE"
 
@@ -62,8 +61,8 @@ rclone_storage_delete() {
     if [[ -n "$storage" ]]; then
       debug_log "[RCLONE] Deleting storage: $storage"
 
-      # Xóa từ dòng chứa [$storage] đến dòng trắng kế tiếp
-      # Đây là đoạn dùng sed tương thích macOS + Linux
+      # Delete from the line containing [$storage] to the next blank line
+      # Compatible with both macOS and Linux sed
       sedi "/^\[$storage\]/,/^\s*$/d" "$rclone_config"
 
       print_msg success "$(printf "$SUCCESS_RCLONE_STORAGE_REMOVED" "$storage")"

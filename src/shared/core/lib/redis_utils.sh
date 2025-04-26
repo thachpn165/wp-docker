@@ -1,48 +1,30 @@
 # ============================================
-# 🔧 redis_utils.sh – Redis container utilities
-# ============================================
-# Description:
-#   Utility functions to check Redis container status and start it if not running.
-#
-# Globals:
-#   REDIS_CONTAINER
-#   CORE_DIR
+# File: redis_utils.sh
+# Description: Utility functions to manage Redis containers in a Docker environment.
+# Functions:
+#   - redis_check_running: Check if the Redis container is running.
+#       Parameters:
+#           None
+#       Globals:
+#           REDIS_CONTAINER
+#       Returns:
+#           0 if running, non-zero if not.
+#   - core_redis_start: Start the Redis container if not running.
+#       Parameters:
+#           None
+#       Globals:
+#           REDIS_CONTAINER
+#           DOCKER_NETWORK
+#           CORE_DIR
+#           TEMPLATES_DIR
+#       Dependencies:
+#           redis_check_running, print_msg, sedi
 # ============================================
 
-# ============================================
-# ✅ redis_check_running – Check if Redis container is running
-# ============================================
-# Description:
-#   Returns 0 if the Redis container is currently running, 1 otherwise.
-#
-# Globals:
-#   REDIS_CONTAINER
-#
-# Returns:
-#   0 if running, non-zero if not
-# ============================================
 redis_check_running() {
     docker inspect -f '{{.State.Running}}' "$REDIS_CONTAINER" 2>/dev/null | grep -q true
 }
 
-# ============================================
-# 🔁 core_redis_start – Start Redis container if not running
-# ============================================
-# Description:
-#   - Starts the Redis container if not already running.
-#   - If docker-compose.yml is missing, generates it from a template and replaces placeholders.
-#
-# Globals:
-#   REDIS_CONTAINER       - Name of the Redis container
-#   DOCKER_NETWORK        - Docker network to attach
-#   CORE_DIR              - Core directory containing redis/
-#   TEMPLATES_DIR         - Directory containing redis-docker-compose.yml.template
-#
-# Dependencies:
-#   - redis_check_running
-#   - print_msg
-#   - sedi
-# ============================================
 core_redis_start() {
     if redis_check_running; then
         print_msg success "$SUCCESS_REDIS_RUNNING: $REDIS_CONTAINER"
@@ -77,5 +59,5 @@ core_redis_start() {
     fi
 
     docker compose -f "$compose_file" up -d
-    print_msg success "$" 
+    print_msg success "$SUCCESS_CORE_REDIS_STARTED: $REDIS_CONTAINER"
 }

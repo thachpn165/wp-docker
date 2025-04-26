@@ -1,3 +1,27 @@
+# This script handles the scheduled backup process for websites.
+# It determines whether a backup should be triggered based on the configuration
+# and the last backup timestamp. Backups can be stored locally or in the cloud.
+
+# Function: _cron_run_backup_trigger
+# Description:
+#   Triggers the backup process for a specific domain and storage type.
+# Parameters:
+#   $1 - domain (string): The domain name of the website to back up.
+#   $2 - storage (string): The type of storage for the backup (e.g., "local" or "cloud").
+#   $3 - rclone_storage (string, optional): The rclone storage configuration for cloud backups.
+# Returns:
+#   1 if required parameters are missing, otherwise triggers the backup process.
+
+# Function: cron_run_backup
+# Description:
+#   Manages the scheduled backup process for a specific site. It checks the backup
+#   configuration, calculates the interval since the last backup, and triggers a new
+#   backup if the interval has elapsed.
+# Parameters:
+#   $1 - site (string): The identifier of the site to back up.
+# Returns:
+#   1 if the backup is not enabled or required parameters are missing.
+#   0 if a backup is successfully triggered.
 safe_source "$CLI_DIR/backup_website.sh"
 
 _cron_run_backup_trigger() {

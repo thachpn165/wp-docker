@@ -1,11 +1,13 @@
-# =====================================
-# php_get_version: Fetch and cache latest PHP-FPM versions from Docker Hub
-# Save to $BASE_DIR/php_versions.txt
-# Requires:
-#   - curl for API requests
-#   - Sorts and filters versions into a cached file for reuse
-#   - Uses caching mechanism to reduce external API calls (7 days default)
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: php_get_version.sh
+# Description: Fetch and cache the latest PHP-FPM versions from Docker Hub. 
+#              Saves the versions to a cached file for reuse and reduces API calls.
+# Functions:
+#   - php_get_version: Fetch and cache PHP-FPM versions from Docker Hub.
+#       Parameters: None.
+# ==================================================
+
 php_get_version() {
     local output_file="$BASE_DIR/php_versions.txt"
     local max_age_hours=168 # 7 days

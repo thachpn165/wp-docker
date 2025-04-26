@@ -1,16 +1,23 @@
-# =============================================
-# 🌐 core_lang_convert – Convert language code to human-readable label
-# =============================================
-# Description:
-#   Converts a short language code (e.g., "en", "vi") to its full language label,
-#   using corresponding LABEL_LANG_* constants defined in the language file.
-#
-# Parameters:
-#   $1 - lang_code (e.g., en, vi, ja, ...)
-#
-# Returns:
-#   - Echoes the full language name
-# =============================================
+#!/bin/bash
+# ==================================================
+# File: core_lang.sh
+# Description: Functions to manage system language settings, including converting language codes, 
+#              changing the system language, listing available languages, and retrieving the current language.
+# Functions:
+#   - core_lang_convert: Convert a language code to a human-readable label.
+#       Parameters:
+#           $1 - lang_code: The language code (e.g., en, vi, ja, ...).
+#   - core_lang_change_logic: Change the system language and save it to .config.json.
+#       Parameters:
+#           $1 - lang_code: The language code to set (e.g., en, vi, ja, ...).
+#   - core_lang_change_prompt: Prompt the user to select a language from the available options.
+#       Parameters: None.
+#   - core_lang_list_logic: List all available languages with their codes and labels.
+#       Parameters: None.
+#   - core_lang_get_logic: Retrieve the current language from the configuration.
+#       Parameters: None.
+# ==================================================
+
 core_lang_convert() {
   local lang_code="$1"
   local lang_name
@@ -35,25 +42,6 @@ core_lang_convert() {
   echo "$lang_name"
 }
 
-# =============================================
-# 🔤 core_lang_change_logic – Change system language and save to .config.json
-# =============================================
-# Description:
-#   Updates the language setting in .config.json based on the provided code.
-#   Ensures the code exists in the allowed LANG_LIST before saving.
-#
-# Parameters:
-#   $1 - lang_code (e.g., en, vi, ja, ...)
-#
-# Globals:
-#   LANG_LIST
-#   SUCCESS_LANG_CODE_UPDATED
-#   ERROR_LANG_SET_FAILED
-#
-# Returns:
-#   - Saves the selected language to JSON
-#   - Returns 1 if invalid or missing
-# =============================================
 core_lang_change_logic() {
   local lang_code="$1"
 
@@ -72,7 +60,6 @@ core_lang_change_logic() {
 
   if [[ "$valid" == true ]]; then
     json_set_value '.core.lang' "$lang_code"
-
     print_msg success "$SUCCESS_LANG_CODE_UPDATED: $lang_code"
   else
     print_and_debug error "$ERROR_LANG_SET_FAILED: $lang_code"
@@ -80,22 +67,6 @@ core_lang_change_logic() {
   fi
 }
 
-# =============================================
-# 🌍 core_lang_change_prompt – Prompt user to select a language
-# =============================================
-# Description:
-#   Displays a list of available languages (defined in LANG_LIST)
-#   and allows the user to choose one for the system.
-#
-# Globals:
-#   LANG_LIST
-#   PROMPT_SELECT_LANGUAGE
-#   PROMPT_SELECT_OPTION
-#   ERROR_SELECT_OPTION_INVALID
-#
-# Calls:
-#   - core_lang_change_logic
-# =============================================
 core_lang_change_prompt() {
   echo -e "\n🌐 $PROMPT_SELECT_LANGUAGE"
   PS3="$PROMPT_SELECT_OPTION "
@@ -115,19 +86,6 @@ core_lang_change_prompt() {
   done
 }
 
-# =============================================
-# 📋 core_lang_list_logic – List all available languages
-# =============================================
-# Description:
-#   Iterates over LANG_LIST and displays each language code and label.
-#
-# Globals:
-#   LANG_LIST
-#   ERROR_LANG_LIST_NOT_SET
-#
-# Returns:
-#   - Lists all available languages in formatted output
-# =============================================
 core_lang_list_logic() {
   if [[ ${#LANG_LIST[@]} -eq 0 ]]; then
     print_and_debug error "$ERROR_LANG_LIST_NOT_SET"
@@ -142,19 +100,6 @@ core_lang_list_logic() {
   done
 }
 
-# =============================================
-# 🧾 core_lang_get_logic – Get current language from config
-# =============================================
-# Description:
-#   Retrieves the language code from .config.json and converts it to a human-readable label.
-#
-# Globals:
-#   ERROR_LANG_NOT_SET
-#
-# Returns:
-#   - Displays the language label if set
-#   - Returns 1 if not defined
-# =============================================
 core_lang_get_logic() {
   local lang
   lang="$(json_get_value '.core.lang')"

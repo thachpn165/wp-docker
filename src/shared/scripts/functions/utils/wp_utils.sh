@@ -1,17 +1,42 @@
 #!/bin/bash
+# ==================================================
+# File: wp_utils.sh
+# Description: Utility functions for managing WordPress installations, including:
+#              - Generating wp-config.php with database credentials and HTTPS fixes.
+#              - Installing WordPress core using WP-CLI.
+#              - Updating permalink structure.
+#              - Installing and activating plugins for security and performance.
+#              - Checking and updating WP-CLI to the latest version.
+# Functions:
+#   - wp_set_wpconfig: Generate wp-config.php with DB credentials and HTTPS fix.
+#       Parameters:
+#           $1 - PHP container name.
+#           $2 - DB name.
+#           $3 - DB user.
+#           $4 - DB password.
+#   - wp_install: Install WordPress core using WP-CLI.
+#       Parameters:
+#           $1 - domain.
+#           $2 - site URL.
+#           $3 - site title.
+#           $4 - admin username.
+#           $5 - admin password.
+#           $6 - admin email.
+#   - wp_set_permalinks: Update WordPress permalink structure.
+#       Parameters:
+#           $1 - domain.
+#   - wp_plugin_install_security_plugin: Install and activate a security plugin.
+#       Parameters:
+#           $1 - domain.
+#   - wp_plugin_install_performance_lab: Install and activate a performance plugin.
+#       Parameters:
+#           $1 - domain.
+#   - check_and_update_wp_cli: Check and update WP-CLI to the latest version.
+#       Parameters: None.
+#   - wp_cli_install: Install WP-CLI if not already installed.
+#       Parameters: None.
+# ==================================================
 
-# ==============================
-# WordPress Setup & Utilities
-# ==============================
-
-# =====================================
-# wp_set_wpconfig: Generate wp-config.php with DB credentials and HTTPS fix
-# Parameters:
-#   $1 - PHP container name
-#   $2 - DB name
-#   $3 - DB user
-#   $4 - DB password
-# =====================================
 wp_set_wpconfig() {
   local container_php="$1"
   local db_name="$2"
@@ -21,13 +46,11 @@ wp_set_wpconfig() {
 
   print_msg info "$INFO_WP_CONFIGURING"
 
-  # ✅ Kiểm tra container có đang chạy
   if ! _is_container_running "$container_php"; then
     print_and_debug error "$(printf "$ERROR_DOCKER_CONTAINER_NOT_RUNNING" "$container_php")"
     return 1
   fi
 
-  # ✅ Kiểm tra file wp-config-sample.php có tồn tại không
   if ! docker exec "$container_php" test -f /var/www/html/wp-config-sample.php; then
     print_and_debug error "$MSG_NOT_FOUND: /var/www/html/wp-config-sample.php"
     return 1
@@ -55,16 +78,6 @@ EOF
   fi
 }
 
-# =====================================
-# wp_install: Install WordPress core using WP-CLI
-# Parameters:
-#   $1 - domain
-#   $2 - site URL
-#   $3 - site title
-#   $4 - admin username
-#   $5 - admin password
-#   $6 - admin email
-# =====================================
 wp_install() {
   local domain="$1"
   local site_url="$2"
@@ -72,37 +85,32 @@ wp_install() {
   local admin_user="$4"
   local admin_pass="$5"
   local admin_email="$6"
+
   _is_valid_domain "$domain" || return 1
   _is_valid_email "$admin_email" || return 1
+
   print_msg info "$INFO_WP_INSTALLING"
-  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- core install \
+
+  wordpress_wp_cli_logic "$domain" core install \
     --url="$site_url" --title="$title" \
     --admin_user="$admin_user" --admin_password="$admin_pass" --admin_email="$admin_email" --skip-email >/dev/null 2>&1
+
   exit_if_error "$?" "$ERROR_WP_INSTALL_FAILED"
   print_msg success "$SUCCESS_WP_INSTALLED"
 }
 
-# =====================================
-# wp_set_permalinks: Update WordPress permalink structure
-# Parameters:
-#   $1 - domain
-# =====================================
 wp_set_permalinks() {
   local domain="$1"
+
   if [[ -z "$domain" ]]; then
     print_and_debug error "❌ Missing domain in wp_set_permalinks()"
     return 1
   fi
 
-  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- option update permalink_structure '/%postname%/' >/dev/null 2>&1
+  wordpress_wp_cli_logic "$domain" option update permalink_structure '/%postname%/' >/dev/null 2>&1
   exit_if_error "$?" "$ERROR_WP_PERMALINK_FAILED"
 }
 
-# =====================================
-# wp_plugin_install_security_plugin: Install and activate security plugin
-# Parameters:
-#   $1 - domain
-# =====================================
 wp_plugin_install_security_plugin() {
   local domain="$1"
 
@@ -110,17 +118,13 @@ wp_plugin_install_security_plugin() {
     print_and_debug error "❌ Missing domain in wp_plugin_install_security_plugin()"
     return 1
   fi
+  _is_valid_domain "$domain" || return 1
 
-  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install limit-login-attempts-reloaded --activate >/dev/null 2>&1
+  wordpress_wp_cli_logic "$domain" plugin install limit-login-attempts-reloaded --activate >/dev/null 2>&1
   exit_if_error "$?" "$ERROR_WP_SECURITY_PLUGIN"
   print_msg success "$SUCCESS_WP_SECURITY_PLUGIN"
 }
 
-# =====================================
-# wp_plugin_install_performance_lab: Install and activate performance plugin
-# Parameters:
-#   $1 - domain
-# =====================================
 wp_plugin_install_performance_lab() {
   local domain="$1"
 
@@ -129,15 +133,11 @@ wp_plugin_install_performance_lab() {
     return 1
   fi
 
-  bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="$domain" -- plugin install performance-lab --activate >/dev/null 2>&1
+  wordpress_wp_cli_logic "$domain" plugin install performance-lab --activate >/dev/null 2>&1
   exit_if_error "$?" "$ERROR_WP_PERFORMANCE_PLUGIN"
   print_msg success "$SUCCESS_WP_PERFORMANCE_PLUGIN"
 }
 
-# =====================================
-# check_and_update_wp_cli: Check current WP-CLI version and update if needed
-# Downloads latest version to shared/bin/wp
-# =====================================
 check_and_update_wp_cli() {
   local wp_cli_path="shared/bin/wp"
   local current_version
@@ -166,13 +166,11 @@ wp_cli_install() {
   if [[ ! -f "$wp_cli_path" ]]; then
     echo -e "$WARNING_WPCLI_NOT_FOUND"
 
-    # Tải về thư mục tạm
     curl -fsSL -o "$tmp_cli_path" https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar ||
       exit_if_error 1 "$ERROR_WPCLI_DOWNLOAD_FAILED"
 
     chmod +x "$tmp_cli_path"
 
-    # Đảm bảo thư mục đích tồn tại
     mkdir -p "$(dirname "$wp_cli_path")" ||
       exit_if_error 1 "$(printf "$ERROR_CREATE_DIR_FAILED" "$(dirname "$wp_cli_path")")"
 

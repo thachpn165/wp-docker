@@ -1,12 +1,32 @@
-# ===========================================
-# PROMPTS FOR SSL INSTALLATION
-# ===========================================
+#!/bin/bash
+# ==================================================
+# File: ssl_install.sh
+# Description: Functions to manage SSL installation for WordPress sites, including generating 
+#              self-signed certificates, issuing Let's Encrypt certificates, and managing 
+#              manually provided certificates.
+# Functions:
+#   - ssl_prompt_general: Wrapper function to select a website and call SSL setup logic.
+#       Parameters:
+#           $1 - callback_function: Name of the logic function to call.
+#   - ssl_prompt_letsencrypt: Prompt the user to install Let's Encrypt SSL for a selected site.
+#       Parameters: None.
+#   - ssl_logic_install_selfsigned: Generate a self-signed SSL certificate for a domain.
+#       Parameters:
+#           $1 - domain: Target domain.
+#   - ssl_logic_install_letsencrypt: Issue SSL certificate using Let's Encrypt (certbot).
+#       Parameters:
+#           $1 - domain: Target domain.
+#           $2 - email: Email for registration.
+#           $3 - staging: Staging mode (true/false).
+#   - ssl_logic_install_manual: Use manually provided SSL certificate and key.
+#       Parameters:
+#           $1 - domain: Target domain.
+#           $2 - ssl_dir: Destination directory for SSL files.
+#   - ssl_logic_edit_cert: Replace current SSL certificate with new pasted content.
+#       Parameters:
+#           $1 - domain: Target domain.
+# ==================================================
 
-# =====================================
-# ssl_prompt_general: Wrapper function to select website and call SSL setup logic
-# Parameters:
-#   $1 - callback_function: Name of the logic function to call
-# =====================================
 ssl_prompt_general() {
     local callback_function="$1"
     local domain
@@ -14,71 +34,45 @@ ssl_prompt_general() {
     if ! website_get_selected domain; then
         return 1
     fi
-    # Validate callback function existence
+
     if [[ "$(type -t "$callback_function")" != "function" ]]; then
         print_and_debug error "Error: Function $callback_function does not exist"
         return 1
     fi
 
-    # Call the logic function with selected domain
     "$callback_function" "$domain"
     return $?
 }
 
 ssl_prompt_letsencrypt() {
-    local domain email staging
+    local domain email
     if ! website_get_selected domain; then
         return 1
     fi
 
-    # Prompt for email
     email=$(get_input_or_test_value "$PROMPT_ENTER_EMAIL" "test@local")
     if [[ -z "$email" ]]; then
         print_and_debug error "$ERROR_MISSING_EMAIL"
-        email=$(get_input_or_test_value "$PROMPT_ENTER_EMAIL" "test@local")
+        return 1
     fi
-    # Send command to install SSL
+
     ssl_cli_install_letsencrypt --domain="$domain" --email="$email"
 }
-# ===========================================
-# SSL INSTALLATION LOGIC
-# ===========================================
 
-# =====================================
-# ssl_logic_install_selfsigned: Generate a self-signed SSL certificate for a domain
-# Parameters:
-#   $1 - domain: Target domain
-# =====================================
 ssl_logic_install_selfsigned() {
     local domain="$1"
-
-    local ssl_dir
-    ssl_dir="${TEST_MODE:+/tmp/test_ssl_directory}"
+    local ssl_dir="${TEST_MODE:+/tmp/test_ssl_directory}"
     [[ "$TEST_MODE" != true ]] && ssl_dir="$NGINX_PROXY_DIR/ssl"
 
     local cert_path="$ssl_dir/$domain.crt"
     local key_path="$ssl_dir/$domain.key"
 
-    debug_log "[SSL] Certificate path: $cert_path"
-    debug_log "[SSL] Key path: $key_path"
-
-    # Ensure site exists (if not in test mode)
-    if [[ "$TEST_MODE" != true ]]; then
-        if [[ ! -d "$PROJECT_DIR/sites/$domain" ]]; then
-            print_and_debug error "$(printf "$ERROR_SITE_NOT_EXIST" "$domain")"
-            return 1
-        fi
+    if [[ "$TEST_MODE" != true && ! -d "$PROJECT_DIR/sites/$domain" ]]; then
+        print_and_debug error "$(printf "$ERROR_SITE_NOT_EXIST" "$domain")"
+        return 1
     fi
 
-    # Ensure SSL directory exists
-    _is_directory_exist "$ssl_dir" || {
-        print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
-        mkdir -p "$ssl_dir"
-        debug_log "[SSL] Not found and created: $ssl_dir"
-        return 1
-    }
-
-    print_msg step "$(printf "$STEP_SSL_REGENERATE_SELF_SIGNED" "$domain")"
+    _is_directory_exist "$ssl_dir" || mkdir -p "$ssl_dir"
 
     openssl req -x509 -nodes -days 365 \
         -newkey rsa:2048 \
@@ -87,24 +81,14 @@ ssl_logic_install_selfsigned() {
         -subj "/C=VN/ST=HCM/L=HCM/O=WP-Docker/OU=Dev/CN=$domain"
 
     if [[ $? -eq 0 ]]; then
-        print_msg success "$(printf "$SUCCESS_SSL_SELF_SIGNED_GENERATED" "$domain")"
         nginx_reload || nginx_restart
-        print_msg success "$SUCCESS_NGINX_RELOADED"
-        print_msg info "$(printf "$INFO_SSL_CERT_PATH" "$cert_path")"
-        print_msg info "$(printf "$INFO_SSL_KEY_PATH" "$key_path")"
+        print_msg success "$(printf "$SUCCESS_SSL_SELF_SIGNED_GENERATED" "$domain")"
     else
         print_and_debug error "$ERROR_SSL_SELF_SIGNED_GENERATE_FAILED"
         return 1
     fi
 }
 
-# =====================================
-# ssl_logic_install_letsencrypt: Issue SSL cert using Let's Encrypt (certbot)
-# Parameters:
-#   $1 - domain
-#   $2 - email for registration
-#   $3 - staging mode (true/false)
-# =====================================
 ssl_logic_install_letsencrypt() {
     local domain="$1"
     local email="$2"
@@ -112,8 +96,6 @@ ssl_logic_install_letsencrypt() {
 
     _is_valid_domain "$domain" || return 1
     _is_valid_email "$email" || return 1
-
-    print_msg info "$(printf "$INFO_DOMAIN_SELECTED" "$domain")"
 
     local ssl_dir=${SSL_DIR:-"$NGINX_PROXY_DIR/ssl"}
     local webroot="$SITES_DIR/$domain/wordpress"
@@ -124,11 +106,7 @@ ssl_logic_install_letsencrypt() {
         return 1
     fi
 
-    _is_directory_exist "$ssl_dir" || mkdir -p "$ssl_dir"
-    mkdir -p "$certbot_data"
-
-    print_msg step "$STEP_REQUEST_CERT_WEBROOT"
-    debug_log "[SSL] Running certbot container for domain: $domain with webroot: $webroot"
+    mkdir -p "$ssl_dir" "$certbot_data"
 
     local certbot_args=(
         certonly --webroot -w /var/www/html -d "$domain"
@@ -141,34 +119,21 @@ ssl_logic_install_letsencrypt() {
         -v "$certbot_data:/etc/letsencrypt" \
         certbot/certbot "${certbot_args[@]}"
 
-    local CERT_PATH="$certbot_data/live/$domain/fullchain.pem"
-    local KEY_PATH="$certbot_data/live/$domain/privkey.pem"
+    local cert_path="$certbot_data/live/$domain/fullchain.pem"
+    local key_path="$certbot_data/live/$domain/privkey.pem"
 
-    if [[ ! -f "$CERT_PATH" || ! -f "$KEY_PATH" ]]; then
+    if [[ ! -f "$cert_path" || ! -f "$key_path" ]]; then
         print_and_debug error "$(printf "$ERROR_SSL_CERT_NOT_FOUND" "$domain")"
         return 1
     fi
 
-    print_msg success "$SUCCESS_SSL_LETS_ENCRYPT_ISSUED: $domain"
-    debug_log "[SSL] Copying certificate to directory: $ssl_dir"
+    copy_file "$cert_path" "$ssl_dir/$domain.crt"
+    copy_file "$key_path" "$ssl_dir/$domain.key"
 
-    run_cmd "sudo chown -R $USER:$USER $ssl_dir"
-    copy_file "$CERT_PATH" "$ssl_dir/$domain.crt"
-    copy_file "$KEY_PATH" "$ssl_dir/$domain.key"
-
-    debug_log "[SSL] Certificate copied successfully: $ssl_dir/$domain.crt and $ssl_dir/$domain.key"
-
-    print_msg step "$STEP_NGINX_RELOADING"
     nginx_reload || nginx_restart
     print_msg success "$(printf "$SUCCESS_SSL_INSTALLED" "$domain")"
 }
 
-# =====================================
-# ssl_logic_install_manual: Use manually provided SSL certificate and key
-# Parameters:
-#   $1 - domain
-#   $2 - SSL_DIR (destination)
-# =====================================
 ssl_logic_install_manual() {
     local domain="$1"
     local ssl_dir="$SSL_DIR"
@@ -177,39 +142,22 @@ ssl_logic_install_manual() {
 
     _is_valid_domain "$domain" || return 1
 
-    if ! _is_directory_exist "$ssl_dir"; then
-        print_and_debug error "$MSG_NOT_FOUND: $ssl_dir"
-        mkdir -p "$ssl_dir"
-        debug_log "[SSL] Not found and created: $ssl_dir"
-    fi
+    _is_directory_exist "$ssl_dir" || mkdir -p "$ssl_dir"
 
-    debug_log "[SSL INSTALL MANUAL] Domain: $domain"
-    debug_log "[SSL INSTALL MANUAL] CRT path: $target_crt"
-    debug_log "[SSL INSTALL MANUAL] KEY path: $target_key"
-
-    # ✅ Tạo file rỗng nếu chưa tồn tại
     [[ ! -f "$target_crt" ]] && touch "$target_crt"
     [[ ! -f "$target_key" ]] && touch "$target_key"
 
-    # ✅ Gọi trình chọn editor
     choose_editor || return
 
     "$EDITOR_CMD" "$target_crt"
     "$EDITOR_CMD" "$target_key"
 
-    print_msg success "$SUCCESS_SSL_MANUAL_SAVED"
-
     nginx_restart
-
+    print_msg success "$SUCCESS_SSL_MANUAL_SAVED"
 }
-# =====================================
-# ssl_logic_edit_cert: Replace current SSL certificate with new pasted content
-# Parameters:
-#   $1 - domain
-# =====================================
+
 ssl_logic_edit_cert() {
     local domain="$1"
-
     local target_crt="$SSL_DIR/$domain.crt"
     local target_key="$SSL_DIR/$domain.key"
 
@@ -218,23 +166,12 @@ ssl_logic_edit_cert() {
         return 1
     fi
 
-    print_msg info "$(printf "$INFO_SSL_EDITING_FOR_DOMAIN" "$domain")"
-
-    print_msg question "$(printf "$PROMPT_SSL_ENTER_NEW_CRT" "$domain")"
-    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
     read -r new_cert
-    new_cert=$(get_input_or_test_value "$new_cert" "$PROMPT_SSL_ENTER_NEW_CRT" "$domain")
-
-    print_msg question "$(printf "$PROMPT_SSL_ENTER_NEW_KEY" "$domain")"
-    print_msg tip "$TIPS_SSL_PASTE_INTRODUCE"
-    new_key=$(get_input_or_test_value "$new_key" "$PROMPT_SSL_ENTER_NEW_KEY" "$domain")
+    read -r new_key
 
     echo "$new_cert" >"$target_crt"
     echo "$new_key" >"$target_key"
 
-    print_msg success "$(printf "$SUCCESS_SSL_UPDATED_FOR_DOMAIN" "$domain")"
-
-    print_msg step "$STEP_NGINX_RELOADING"
     nginx_reload || nginx_restart
-    print_msg success "$SUCCESS_NGINX_RELOADED"
+    print_msg success "$(printf "$SUCCESS_SSL_UPDATED_FOR_DOMAIN" "$domain")"
 }

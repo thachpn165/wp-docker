@@ -1,9 +1,20 @@
+#!/bin/bash
+# ==================================================
+# File: setup_rclone.sh
+# Description: Functions to set up Rclone storages, including configuring storage types
+#              (Google Drive, Dropbox, S3), ensuring Rclone is installed, and managing
+#              the Rclone configuration file.
+# Functions:
+#   - setup_storage_type: Configure the storage type for Rclone based on user input.
+#       Parameters: None.
+#   - rclone_setup: Set up Rclone, including installation, configuration, and storage setup.
+#       Parameters: None.
+# ==================================================
+
 setup_storage_type() {
   local config=""
   case "$STORAGE_TYPE" in
   drive)
-    # Hiển thị hướng dẫn cho Google Drive
-    print_msg recommend "$INFO_RCLONE_DRIVE_AUTH_GUIDE" >&2
     AUTH_JSON=$(get_input_or_test_value "🔑 $PROMPT_RCLONE_PASTE_TOKEN")
     if [[ -z "$AUTH_JSON" ]]; then
       print_msg error "$ERROR_RCLONE_TOKEN_CANNOT_EMPTY" >&2
@@ -12,8 +23,6 @@ setup_storage_type() {
     config="token = $AUTH_JSON"
     ;;
   dropbox)
-    # Hiển thị hướng dẫn cho Dropbox
-    print_msg recommend "$INFO_RCLONE_DROPBOX_AUTH_GUIDE" >&2
     AUTH_JSON=$(get_input_or_test_value "🔑 $PROMPT_RCLONE_PASTE_TOKEN")
     if [[ -z "$AUTH_JSON" ]]; then
       print_msg error "$ERROR_RCLONE_TOKEN_CANNOT_EMPTY" >&2
@@ -22,7 +31,6 @@ setup_storage_type() {
     config="token = $AUTH_JSON"
     ;;
   s3)
-    # Thiết lập thông tin cho S3
     ACCESS_KEY=$(get_input_or_test_value "$PROMPT_RCLONE_S3_ACCESS_KEY")
     SECRET_KEY=$(get_input_or_test_value "$PROMPT_RCLONE_S3_SECRET_KEY")
     REGION=$(get_input_or_test_value "$PROMPT_RCLONE_S3_REGION")
@@ -33,7 +41,6 @@ setup_storage_type() {
     config="provider = AWS\naccess_key_id = $ACCESS_KEY\nsecret_access_key = $SECRET_KEY\nregion = $REGION"
     ;;
   *)
-    
     print_msg error "❌ Invalid storage type: $STORAGE_TYPE" >&2
     return 1
     ;;
@@ -44,7 +51,7 @@ setup_storage_type() {
 rclone_setup() {
   _is_directory_exist "$RCLONE_CONFIG_DIR" true
 
-  # === Ensure rclone is installed ===
+  # Ensure Rclone is installed
   if ! command -v rclone &>/dev/null; then
     print_and_debug warning "$WARNING_RCLONE_NOT_INSTALLED"
 
@@ -66,8 +73,8 @@ rclone_setup() {
 
   print_msg run "$INFO_RCLONE_SETUP_START"
 
-  # === Ensure config file exists ===
-if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
+  # Ensure config file exists
+  if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
     print_msg info "$(printf "$INFO_RCLONE_CREATING_CONF" "$RCLONE_CONFIG_FILE")"
     touch "$RCLONE_CONFIG_FILE" || {
       print_and_debug error "$(printf "$ERROR_RCLONE_CREATE_CONF_FAILED" "$RCLONE_CONFIG_FILE")"
@@ -75,7 +82,7 @@ if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
     }
   fi
 
-  # === Prompt for storage name ===
+  # Prompt for storage name
   while true; do
     STORAGE_NAME=$(get_input_or_test_value "📌 $PROMPT_ENTER_STORAGE_NAME")
     STORAGE_NAME=$(echo "$STORAGE_NAME" | tr '[:upper:]' '[:lower:]' | tr -d ' ' | tr -cd '[:alnum:]_-')
@@ -93,7 +100,7 @@ if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
     break
   done
 
-  # === Prompt storage type ===
+  # Prompt storage type
   print_msg info "$INFO_RCLONE_SELECT_STORAGE_TYPE"
   echo -e "  ${GREEN}[1]${NC} Google Drive"
   echo -e "  ${GREEN}[2]${NC} Dropbox"
@@ -126,7 +133,7 @@ if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
 
   print_msg step "$(printf "$STEP_RCLONE_SETTING_UP" "$STORAGE_NAME")"
 
-  # === Build config block ===
+  # Build config block
   local storage_config
   storage_config=$(setup_storage_type) || {
     print_msg error "❌ Failed to configure storage type: $STORAGE_TYPE"
@@ -135,7 +142,7 @@ if ! _is_file_exist "$RCLONE_CONFIG_FILE"; then
 
   local config_block="[$STORAGE_NAME]\ntype = $STORAGE_TYPE\n$storage_config"
 
-  # === Write config ===
+  # Write config
   if ! echo -e "$config_block" >>"$RCLONE_CONFIG_FILE"; then
     print_and_debug error "❌ Failed to write to rclone config file: $RCLONE_CONFIG_FILE"
     return 1

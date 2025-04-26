@@ -1,12 +1,18 @@
+#!/bin/bash
+# ==================================================
+# File: core_init_config.sh
+# Description: Functions to initialize the core configuration, including setting default 
+#              values for release channels, installed versions, and language settings.
+# Functions:
+#   - core_init_config: Initialize core configuration with default values.
+#       Parameters: None.
+# ==================================================
+
 core_init_config() {
-  # =============================================
-  # 🧩 Step 1: Create .config.json if not exists
-  # =============================================
+  # Step 1: Create .config.json if not exists
   json_create_if_not_exists
 
-  # =============================================
-  # 📦 Step 2: Initialize default values for `core` group
-  # =============================================
+  # Step 2: Initialize default values for `core` group
 
   # 2.1 Set core.channel if not set
   if ! json_key_exists '.core.channel'; then
@@ -40,18 +46,14 @@ core_init_config() {
     debug_log "[core_init_config] Initialized core.installed_version = $default_version"
   fi
 
-  # =============================================
-  # 🌐 Step 3: Set default language if not set
-  # =============================================
+  # Step 3: Set default language if not set
   if ! json_key_exists '.core.lang'; then
     core_lang_change_prompt
   else
     debug_log "[core_init_config] Language already set: $(json_get_value '.core.lang')"
   fi
 
-  # =============================================
-  # 📌 Step 4: (Future) Add other default core settings here
-  # =============================================
+  # Step 4: (Future) Add other default core settings here
   # json_set_value '.core.debug_mode' false
   # json_set_value '.core.auto_update' true
 }

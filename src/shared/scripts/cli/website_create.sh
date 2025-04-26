@@ -1,13 +1,15 @@
-#!/usr/bin/env bash
-#shellcheck disable=SC1091
-
-# =====================================
-# 🏗 website_cli_create – CLI to create new website with WordPress
-# Parameters:
-#   --domain=<domain>
-#   --php=<version>
-#   [--auto_generate=true|false]
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: website_create.sh
+# Description: CLI to create a new website with WordPress.
+# Functions:
+#   - website_cli_create: Create a new website with WordPress.
+#       Parameters:
+#           --domain=<domain>: The domain name of the website.
+#           --php=<version>: The PHP version to use.
+#           [--auto_generate=true|false]: Optional flag to auto-generate WordPress setup (default: true).
+#       Returns: None.
+# ==================================================
 
 # === Auto-detect BASE_DIR & load config ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -39,11 +41,4 @@ website_cli_create() {
   # === Execute creation logic ===
   website_logic_create "$domain" "$php_version"
   website_setup_wordpress_logic "$domain" "$auto_generate"
-
-  # === Debug info ===
-  debug_log "[website_cli_create] Domain: $domain"
-  debug_log "[website_cli_create] PHP Version: $php_version"
-  debug_log "[website_cli_create] Auto-generate: $auto_generate"
-  debug_log "[website_cli_create] Website creation completed"
 }
-
