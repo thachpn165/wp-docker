@@ -204,7 +204,7 @@ fastcgi_cache_path /usr/local/openresty/nginx/fastcgi_cache levels=1:2 keys_zone
     fi
 
     if [[ "$cache_type" == "fastcgi-cache" ]]; then
-        redis_start
+        core_redis_start
         if ! grep -q "WP_REDIS_HOST" "$wp_config_file"; then
             sedi "/<?php/a\\
 define('WP_REDIS_HOST', '${REDIS_CONTAINER}');\\

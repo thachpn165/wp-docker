@@ -5,14 +5,14 @@
 # ==========================================================
 
 # =====================================
-# create_docker_network: Create a Docker network if it does not already exist
+# core_create_docker_network: Create a Docker network if it does not already exist
 # Parameters: $1 - network name
 # Behavior: Prints success or info messages accordingly
 # =====================================
-create_docker_network() {
+core_create_docker_network() {
   local network_name="$1"
   if ! _is_docker_network_exists "$network_name"; then
-    print_msg info "$(printf "$INFO_CREATE_DOCKER_NETWORK" "$network_name")"
+    print_msg info "$(printf "$INFO_core_create_docker_network" "$network_name")"
     docker network create "$network_name"
     print_msg success "$(printf "$SUCCESS_DOCKER_NETWORK_CREATED" "$network_name")"
   else

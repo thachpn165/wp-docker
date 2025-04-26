@@ -26,7 +26,7 @@ redis_check_running() {
 }
 
 # ============================================
-# 🔁 redis_start – Start Redis container if not running
+# 🔁 core_redis_start – Start Redis container if not running
 # ============================================
 # Description:
 #   - Starts the Redis container if not already running.
@@ -43,13 +43,13 @@ redis_check_running() {
 #   - print_msg
 #   - sedi
 # ============================================
-redis_start() {
+core_redis_start() {
     if redis_check_running; then
         print_msg success "$SUCCESS_RED_is_container_running: $REDIS_CONTAINER"
         return 0
     fi
 
-    print_msg step "$STEP_REDIS_STARTING_CONTAINER: $REDIS_CONTAINER"
+    print_msg step "$STEP_core_redis_startING_CONTAINER: $REDIS_CONTAINER"
 
     local compose_dir="$CORE_DIR/redis"
     local compose_file="$compose_dir/docker-compose.yml"
@@ -77,5 +77,5 @@ redis_start() {
     fi
 
     docker compose -f "$compose_file" up -d
-    print_msg success "$SUCCESS_REDIS_STARTED" 
+    print_msg success "$SUCCESS_core_redis_startED" 
 }

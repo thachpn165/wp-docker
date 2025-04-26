@@ -57,7 +57,7 @@ core_system_check_required_commands
 # =============================================
 # 🕸 Create Docker network if missing
 # =============================================
-create_docker_network "$DOCKER_NETWORK" >/dev/null 2>&1
+core_create_docker_network "$DOCKER_NETWORK" >/dev/null 2>&1
 
 # =============================================
 # Check docker volumes and create if missing
@@ -72,7 +72,7 @@ core_mysql_start
 # =============================================
 # Start Redis if not running
 # =============================================
-redis_start
+core_redis_start
 
 # =============================================
 # Initialize $SITES_DIR
