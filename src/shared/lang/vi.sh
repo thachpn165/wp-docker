@@ -1004,3 +1004,5 @@ readonly WARNING_PHP_EXTENSION_NOT_MANAGED="Extension '%s' không được quả
 readonly WARNING_PHP_INI_NOT_FOUND="Không thể tìm thấy php.ini cho site này."
 readonly LABEL_MENU_PHP_INSTALL_EXTENSION="Cài đặt extension PHP (Ioncube)"
 readonly INFO_PHP_IONCUBE_LOADER_NOT_FOUND="Không tìm thấy Ioncube Loader. Đang tải về..."
+readonly TIP_RELOAD_SHELL="Để sử dụng lệnh wpdocker, hãy chạy lệnh sau:"
+readonly SUCCESS_ALIAS_CORRECTED_PATH="Lệnh wpdcker đã tồn tại với thiết lập đường dẫn đúng"

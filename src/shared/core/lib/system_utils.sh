@@ -200,8 +200,6 @@ core_system_check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
 
   local cmd
-
-  # ✅ Duyệt toàn bộ key từ JSON
   for cmd in $(echo "$CORE_REQUIRED_COMMANDS" | jq -r 'keys[]'); do
     if ! command -v "$cmd" &>/dev/null; then
       print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
@@ -245,6 +243,32 @@ core_system_check_required_commands() {
     fi
   done
 }
+
+# =============================================
+# 🌐 core_system_uninstall_required_commands
+# ---------------------------------------------
+# Uninstalls system commands based on the JSON
+# variable CORE_REQUIRED_COMMANDS. Only commands
+# marked with `"uninstall": true` will be removed.
+#
+# The function supports package managers:
+# - apt (Debian/Ubuntu)
+# - yum/dnf (RHEL/Alma/CentOS)
+# - brew (macOS)
+#
+# For each command:
+# - If it is marked `"uninstall": true` in the JSON,
+#   and currently installed on the system, the function
+#   attempts to uninstall it.
+# - If the command is not installed, it is skipped.
+#
+# Useful for cleaning up optional CLI tools that are
+# no longer needed in the runtime environment.
+#
+# Dependencies:
+# - jq
+# - Valid JSON structure in $CORE_REQUIRED_COMMANDS
+# =============================================
 
 core_system_uninstall_required_commands() {
   print_msg info "$INFO_UNINSTALLING_COMMANDS"
@@ -290,46 +314,7 @@ core_system_uninstall_required_commands() {
   print_msg success "$SUCCESS_COMMANDS_UNINSTALL_DONE"
 }
 
-# ============================================
-# 🔗 check_and_add_alias – Add wpdocker CLI alias to shell config
-# ============================================
-# Description:
-#   - Adds alias for `wpdocker` to `.bashrc` or `.zshrc`.
-#   - Reloads shell config after writing alias.
-#
-# Globals:
-#   INSTALL_DIR
-#   SHELL
-check_and_add_alias() {
-  local shell_config cli_dir_abs alias_line
 
-  cli_dir_abs=$(realpath "$CLI_DIR/bashly")
-  alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
-
-  if [[ "$SHELL" == *"zsh"* ]]; then
-    shell_config="$HOME/.zshrc"
-  else
-    shell_config="$HOME/.bashrc"
-  fi
-
-  if grep -q "alias wpdocker=" "$shell_config"; then
-    echo "🧹 Removing existing alias from $shell_config..."
-    sed -i.bak '/alias wpdocker=/d' "$shell_config"
-  fi
-
-  echo "$alias_line" >>"$shell_config"
-  echo "✅ Added alias for wpdocker to $shell_config"
-
-  if [[ "$SHELL" == *"zsh"* ]]; then
-    echo "🔄 Reloading .zshrc..."
-    source "$HOME/.zshrc"
-  elif [[ "$SHELL" == *"bash"* ]]; then
-    echo "🔄 Reloading .bashrc..."
-    source "$HOME/.bashrc"
-  else
-    echo "⚠️ Unsupported shell. Please reload shell config manually."
-  fi
-}
 
 
 # ============================================
