@@ -45,11 +45,11 @@ redis_check_running() {
 # ============================================
 core_redis_start() {
     if redis_check_running; then
-        print_msg success "$SUCCESS_RED_is_container_running: $REDIS_CONTAINER"
+        print_msg success "$SUCCESS_REDIS_RUNNING: $REDIS_CONTAINER"
         return 0
     fi
 
-    print_msg step "$STEP_core_redis_startING_CONTAINER: $REDIS_CONTAINER"
+    print_msg step "$SUCCESS_CORE_REDIS_STARTED: $REDIS_CONTAINER"
 
     local compose_dir="$CORE_DIR/redis"
     local compose_file="$compose_dir/docker-compose.yml"
@@ -77,5 +77,5 @@ core_redis_start() {
     fi
 
     docker compose -f "$compose_file" up -d
-    print_msg success "$SUCCESS_core_redis_startED" 
+    print_msg success "$" 
 }

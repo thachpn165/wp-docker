@@ -910,12 +910,12 @@ readonly QUESTION_DB_DELETE_CONFIRM="Bạn có chắc chắn muốn xóa databas
 readonly WARNING_NGINX_CONTAINER_NOT_RUNNING="Container NGINX không hoạt động. Đang cố khởi động..."
 readonly SUCCESS_NGINX_COMPOSE_GENERATED="Đã tạo docker-compose.yml cho NGINX thành công."
 
-readonly SUCCESS_RED_is_container_running="Container Redis đang hoạt động."
+readonly SUCCESS_REDIS_RUNNING="Container Redis đang hoạt động."
 readonly STEP_core_redis_startING_CONTAINER="Đang khởi động container Redis: "
 readonly WARNING_REDIS_DOCKER_COMPOSE_NOT_FOUND="Không tìm thấy docker-compose.yml cho Redis."
 readonly INFO_REDIS_GENERATING_DOCKER_COMPOSE="Đang tạo docker-compose.yml cho Redis..."
 readonly SUCCESS_REDIS_COMPOSE_GENERATED="Đã tạo docker-compose.yml cho Redis thành công."
-readonly SUCCESS_core_redis_startED="Container Redis đã được khởi động thành công."
+readonly SUCCESS_CORE_REDIS_STARTED="Container Redis đã được khởi động thành công."
 
 readonly SUCCESS_WPDOCKER_INSTALLED="Đã cài đặt WP Docker thành công. Mã nguồn lưu trữ tại: "
 readonly IMPORTANT_LOGOUT_AFTER_INSTALL="Hãy logout hoặc reboot hệ thống sau khi cài đặt xong để có thể sử dụng lệnh wpdocker."
