@@ -212,7 +212,6 @@ remove_core_containers
 remove_site_containers
 remove_mysql_container_and_volume
 remove_cronjobs
-remove_symlink
 remove_all_except_backup
 remove_alias
 core_system_uninstall_required_commands
