@@ -1,3 +1,10 @@
+# Registers a cron job to execute the cron_loader.sh script every 5 minutes if it is not already registered.
+# 
+# Prerequisites:
+# - The CORE_DIR environment variable must be set and not empty.
+# - The `crontab` command must be available on the system.
+#
+
 cron_register_loader_if_needed() {
     _is_missing_var "$CORE_DIR" "CORE_DIR" || return 1
     local cron_line="*/5 * * * * bash $CORE_DIR/crons/cron_loader.sh"

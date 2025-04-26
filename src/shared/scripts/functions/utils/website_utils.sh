@@ -1,3 +1,27 @@
+#!/bin/bash
+# ==================================================
+# File: website_utils.sh
+# Description: Utility functions for managing WordPress websites, including:
+#              - Listing available websites.
+#              - Prompting the user to select a website.
+#              - Generating docker-compose.yml for a website.
+#              - Generating a site name from a domain.
+# Functions:
+#   - website_list: List all valid websites based on SITES_DIR and .config.json.
+#       Parameters: None.
+#   - website_prompt_select: Prompt the user to select a website from the list.
+#       Parameters: None.
+#   - website_get_selected: Get the selected website and store it in a variable.
+#       Parameters:
+#           $1 - __result_var: Variable name to store the selected domain.
+#   - website_generate_docker_compose: Generate docker-compose.yml for a website.
+#       Parameters:
+#           $1 - domain: Domain name of the website.
+#   - generate_sitename_from_domain: Generate a site name from a domain.
+#       Parameters:
+#           $1 - domain: Domain name to generate the site name from.
+# ==================================================
+
 website_list() {
     if [[ -z "$SITES_DIR" ]]; then
         print_and_debug error "SITES_DIR is not defined."
@@ -8,7 +32,7 @@ website_list() {
         print_and_debug error "JSON_CONFIG_FILE is not defined or not found: $JSON_CONFIG_FILE"
         return 1
     fi
-
+    _is_file_exist "$JSON_CONFIG_FILE" || return 1
     local site_dirs=()
     local config_sites=()
     local valid_sites=()
@@ -33,7 +57,6 @@ website_list() {
         fi
     done
 
-    # 🟢 Chỉ in ra danh sách hợp lệ (dòng đơn)
     for site in "${valid_sites[@]}"; do
         echo "$site"
     done
@@ -98,7 +121,6 @@ website_get_selected() {
 
     tmp_output="$(mktemp)"
 
-    # 🟡 Gọi và kiểm tra status trả về
     if ! website_prompt_select > >(tee "$tmp_output"); then
         rm -f "$tmp_output"
         return 1
@@ -112,17 +134,11 @@ website_get_selected() {
         return 1
     fi
 
-    eval "$__result_var=\"\$result\""
+    #eval "$__result_var=\"\$result\"" # Not safe. Nếu có lỗi thì gỡ ra hehe 🤔
+    printf -v "$__result_var" "%s" "$result"
     return 0
 }
-# =====================================
-# website_generate_docker_compose: Generate docker-compose.yml for a website
-# Parameters:
-#   $1 - domain
-# Behavior:
-#   - Read site data from .config.json
-#   - Use envsubst to populate a template into the site’s docker-compose.yml
-# =====================================
+
 website_generate_docker_compose() {
     local domain="$1"
 
@@ -133,12 +149,11 @@ website_generate_docker_compose() {
     local docker_compose_template="$TEMPLATES_DIR/docker-compose.yml.template"
     local docker_compose_target="$site_dir/docker-compose.yml"
 
-    if ! _is_file_exist "$docker_compose_template"; then
+    if ! _is_file_exist "$docker_compose_template"; then # _is_file_exist is check file exist, write permission, read permission
         print_msg error "$MSG_NOT_FOUND: $docker_compose_template"
         return 1
     fi
 
-    # Get data from .config.json
     local php_version
     local mysql_root_password
     local mysql_database
@@ -159,7 +174,6 @@ website_generate_docker_compose() {
     debug_log "[website_generate_docker_compose] php_container=$php_container"
     debug_log "[website_generate_docker_compose] db_container=$db_container"
 
-    # Export temporary variables for envsubst
     DOMAIN="$domain" \
         PHP_VERSION="$php_version" \
         MYSQL_ROOT_PASSWORD="$mysql_root_password" \
@@ -178,11 +192,10 @@ generate_sitename_from_domain() {
     local domain="$1"
     _is_missing_param "$domain" "--domain" || return 1
     _is_valid_domain "$domain" || return 1
-    # Cắt domain thành mảng theo dấu chấm
+
     IFS='.' read -ra parts <<<"$domain"
     local count="${#parts[@]}"
 
-    # Loại bỏ phần đuôi cuối cùng (TLD) và đuôi phụ (ccTLD) nếu có
     local sitename_parts=("${parts[@]:0:count-2}")
     [[ ${#sitename_parts[@]} -eq 0 ]] && sitename_parts=("${parts[0]}")
 

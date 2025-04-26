@@ -1,16 +1,41 @@
 # ==================================================
-# 🧠 System & CLI Utilities – Refactored for i18n
+# File: system_utils.sh
+# Description: This script contains utility functions for system and CLI management, 
+#              including resource detection, timezone setup, editor selection, 
+#              package updates, and command management.
+# Functions:
+#   - get_total_ram: Retrieve total RAM in MB.
+#       Parameters: None
+#       Returns: Total RAM (in MB) as an integer.
+#   - get_total_cpu: Retrieve the number of CPU cores.
+#       Parameters: None
+#       Returns: Total number of CPU cores.
+#   - sedi: Cross-platform `sed` wrapper for macOS and Linux.
+#       Parameters: All parameters passed directly to the `sed` command.
+#       Globals: OSTYPE
+#   - setup_timezone: Ensure system timezone is set to Vietnam.
+#       Parameters: None
+#       Globals: OSTYPE, WARNING_TIMEZONE_NOT_VIETNAM, SUCCESS_TIMEZONE_SET
+#   - choose_editor: Prompt user to select a CLI text editor.
+#       Parameters: None
+#       Globals: PROMPT_SELECT_EDITOR, PROMPT_CONFIRM_EDITOR, INFO_CHECKING_EDITORS, 
+#                INFO_AVAILABLE_EDITORS, INFO_EDITOR_USAGE_GUIDE, WARNING_EDITOR_INVALID_SELECT, 
+#                WARNING_EDITOR_CANCELLED, DEBUG_MODE
+#       Returns: 0 if an editor was selected, 1 if canceled or invalid input.
+#   - core_system_update_os_packages: Update system packages based on OS type.
+#       Parameters: None
+#       Behavior: Detects OS type and runs appropriate update commands.
+#   - core_system_check_required_commands: Ensure required commands are installed.
+#       Parameters: None
+#       Globals: CORE_REQUIRED_COMMANDS, OSTYPE
+#   - core_system_uninstall_required_commands: Uninstall system commands based on JSON configuration.
+#       Parameters: None
+#       Globals: CORE_REQUIRED_COMMANDS, OSTYPE
+#   - exit_after_10s: Exit the script after 10 seconds.
+#       Parameters: None
+#       Globals: OSTYPE
 # ==================================================
 
-# ============================================
-# 🧠 get_total_ram – Retrieve total RAM in MB
-# ============================================
-# Description:
-#   - Detects and returns the total RAM available in the system.
-#   - Uses `free -m` on Linux, `sysctl` on macOS.
-#
-# Returns:
-#   - Total RAM (in MB) as integer
 get_total_ram() {
   if command -v free >/dev/null 2>&1; then
     free -m | awk '/^Mem:/{print $2}'
@@ -19,15 +44,6 @@ get_total_ram() {
   fi
 }
 
-# ============================================
-# 🧠 get_total_cpu – Retrieve number of CPU cores
-# ============================================
-# Description:
-#   - Detects and returns total number of CPU cores.
-#   - Uses `nproc` on Linux, `sysctl` on macOS.
-#
-# Returns:
-#   - Total number of CPU cores
 get_total_cpu() {
   if command -v nproc >/dev/null 2>&1; then
     nproc
@@ -36,17 +52,6 @@ get_total_cpu() {
   fi
 }
 
-# ============================================
-# 🛠 sedi – Cross-platform sed wrapper
-# ============================================
-# Description:
-#   - Runs `sed -i` with proper syntax based on OS (macOS/Linux).
-#
-# Parameters:
-#   - All parameters passed directly to sed command
-#
-# Globals:
-#   OSTYPE
 sedi() {
   if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "$@"
@@ -55,16 +60,6 @@ sedi() {
   fi
 }
 
-# ============================================
-# 🌐 setup_timezone – Ensure system timezone is Vietnam
-# ============================================
-# Description:
-#   - On Linux, checks and sets system timezone to Asia/Ho_Chi_Minh if not already.
-#
-# Globals:
-#   OSTYPE
-#   WARNING_TIMEZONE_NOT_VIETNAM
-#   SUCCESS_TIMEZONE_SET
 setup_timezone() {
   if [[ "$OSTYPE" != "darwin"* ]]; then
     current_tz=$(timedatectl | grep "Time zone" | awk '{print $3}')
@@ -76,27 +71,6 @@ setup_timezone() {
   fi
 }
 
-# ============================================
-# 📝 choose_editor – Prompt user to select a CLI text editor
-# ============================================
-# Description:
-#   - Lists available editors (`nano`, `vi`, `vim`, `micro`, `code`)
-#   - Prompts user to select one
-#   - Stores selection in global `EDITOR_CMD`
-#
-# Globals:
-#   PROMPT_SELECT_EDITOR
-#   PROMPT_CONFIRM_EDITOR
-#   INFO_CHECKING_EDITORS
-#   INFO_AVAILABLE_EDITORS
-#   INFO_EDITOR_USAGE_GUIDE
-#   WARNING_EDITOR_INVALID_SELECT
-#   WARNING_EDITOR_CANCELLED
-#   DEBUG_MODE
-#
-# Returns:
-#   - 0 if an editor was selected
-#   - 1 if canceled or invalid input
 choose_editor() {
   print_msg info "$INFO_CHECKING_EDITORS"
 
@@ -137,17 +111,9 @@ choose_editor() {
   return 0
 }
 
-# =====================================
-# core_system_update: Update system packages based on OS type
-# No parameters
-# Behavior:
-#   - Detects OS type and runs appropriate update commands
-#   - Uses --nogpgcheck for CentOS/AlmaLinux 8
-# =====================================
-core_system_update() {
+core_system_update_os_packages() {
   echo "🔄 Updating system packages..."
 
-  # Detect OS
   if [[ -f /etc/os-release ]]; then
     . /etc/os-release
     OS_NAME="${NAME}"
@@ -164,22 +130,16 @@ core_system_update() {
 
   echo "📌 Detected: ${OS_NAME} ${OS_VERSION_ID}"
 
-  # Update based on OS type
   if [[ "$OS_NAME" == "CentOS" && "$OS_VERSION_ID" == "8" ]] ||
     [[ "$OS_NAME" == "AlmaLinux" && "$OS_VERSION_ID" == "8" ]]; then
-    echo "🔄 Running CentOS/AlmaLinux 8 update with --nogpgcheck..."
-    dnf update --nogpgcheck -y
+    dnf update --nogpgcheck -y || yum update --nogpgcheck -y
   elif [[ "$OS_NAME" == "Ubuntu" ]]; then
-    echo "🔄 Running Ubuntu update..."
     apt update -y && apt upgrade -y
   elif command -v apt &>/dev/null; then
-    echo "🔄 Running apt-based update..."
     apt update -y && apt upgrade -y
   elif command -v dnf &>/dev/null; then
-    echo "🔄 Running dnf-based update..."
     dnf update -y
   elif command -v yum &>/dev/null; then
-    echo "🔄 Running yum-based update..."
     yum update -y
   else
     echo "⚠️ Unsupported operating system: ${OS_NAME}"
@@ -190,32 +150,15 @@ core_system_update() {
   return 0
 }
 
-# ============================================
-# 🧪 check_required_commands – Ensure required commands are installed
-# ============================================
-# Description:
-#   - Verifies availability of CLI tools like docker, jq, curl, unzip, etc.
-#   - Installs missing ones depending on OS.
-#
-# Globals:
-#   OSTYPE
-#   WARNING_COMMAND_NOT_FOUND
-#   SUCCESS_COMMAND_AVAILABLE
-#   ERROR_INSTALL_COMMAND_NOT_SUPPORTED
-#   ERROR_OS_NOT_SUPPORTED
-#   WARNING_HOMEBREW_MISSING
-check_required_commands() {
+core_system_check_required_commands() {
   print_msg info "$INFO_CHECKING_COMMANDS"
 
-  # Loại bỏ "docker compose" khỏi danh sách vì sẽ được cài đặt riêng
-  required_cmds=(nano rsync curl tar gzip unzip jq openssl crontab jq dialog)
-
-  for cmd in "${required_cmds[@]}"; do
-    if ! command -v "$(echo "$cmd" | awk '{print $1}')" &>/dev/null; then
+  local cmd
+  for cmd in $(echo "$CORE_REQUIRED_COMMANDS" | jq -r 'keys[]'); do
+    if ! command -v "$cmd" &>/dev/null; then
       print_msg warning "$(printf "$WARNING_COMMAND_NOT_FOUND" "$cmd")"
 
       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        # Xác định phiên bản hệ điều hành
         local is_alma_centos8=false
         if [[ -f /etc/redhat-release ]]; then
           if (grep -q "AlmaLinux" /etc/redhat-release || grep -q "CentOS" /etc/redhat-release) && grep -q "8\." /etc/redhat-release; then
@@ -224,18 +167,18 @@ check_required_commands() {
         fi
 
         if command -v apt &>/dev/null; then
-          apt update -y && apt install -y "$(echo "$cmd" | awk '{print $1}')"
+          apt update -y && apt install -y "$cmd"
         elif command -v dnf &>/dev/null; then
           if [[ "$is_alma_centos8" == "true" ]]; then
-            dnf install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
+            dnf install -y --nogpgcheck "$cmd"
           else
-            dnf install -y "$(echo "$cmd" | awk '{print $1}')"
+            dnf install -y "$cmd"
           fi
         elif command -v yum &>/dev/null; then
           if [[ "$is_alma_centos8" == "true" ]]; then
-            yum install -y --nogpgcheck "$(echo "$cmd" | awk '{print $1}')"
+            yum install -y --nogpgcheck "$cmd"
           else
-            yum install -y "$(echo "$cmd" | awk '{print $1}')"
+            yum install -y "$cmd"
           fi
         else
           print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
@@ -245,102 +188,60 @@ check_required_commands() {
           print_msg warning "$WARNING_HOMEBREW_MISSING"
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         fi
-        brew install "$(echo "$cmd" | awk '{print $1}')"
+        brew install "$cmd"
       else
         print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
       fi
     else
       print_msg success "$SUCCESS_COMMAND_AVAILABLE: $cmd"
-
     fi
   done
-  
 }
 
-uninstall_required_commands() {
-  print_msg info "🧹 Uninstalling required commands..."
+core_system_uninstall_required_commands() {
+  print_msg info "$INFO_UNINSTALLING_COMMANDS"
 
-  required_cmds=(jq dialog)
+  local cmd uninstall_flag
 
-  for cmd in "${required_cmds[@]}"; do
-    cmd_name="$(echo "$cmd" | awk '{print $1}')"
+  for cmd in $(echo "$CORE_REQUIRED_COMMANDS" | jq -r 'keys[]'); do
+    uninstall_flag=$(echo "$CORE_REQUIRED_COMMANDS" | jq -r --arg cmd "$cmd" '.[$cmd].uninstall')
 
-    if ! command -v "$cmd_name" &>/dev/null; then
-      print_msg skip "⏩ Command not installed: $cmd_name"
+    if [[ "$uninstall_flag" != "true" ]]; then
+      debug_log "[UNINSTALL] Skip $cmd (uninstall=false)"
       continue
     fi
 
-    print_msg warning "⚠️ Attempting to uninstall: $cmd_name"
+    if ! command -v "$cmd" &>/dev/null; then
+      print_msg skip "⏩ Command not installed: $cmd"
+      continue
+    fi
+
+    print_msg warning "⚠️ Attempting to uninstall: $cmd"
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
       if command -v apt &>/dev/null; then
-        apt remove -y "$cmd_name"
-      elif command -v yum &>/dev/null; then
-        yum remove -y "$cmd_name"
+        apt remove -y "$cmd"
       elif command -v dnf &>/dev/null; then
-        dnf remove -y "$cmd_name"
+        dnf remove -y "$cmd"
+      elif command -v yum &>/dev/null; then
+        yum remove -y "$cmd"
       else
-        print_msg error "❌ Unsupported package manager for: $cmd_name"
+        print_msg error "$(printf "$ERROR_INSTALL_COMMAND_NOT_SUPPORTED" "$cmd")"
       fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
       if command -v brew &>/dev/null; then
-        brew uninstall "$cmd_name"
+        brew uninstall "$cmd"
       else
-        print_msg error "❌ Homebrew not found. Cannot uninstall: $cmd_name"
+        print_msg error "$ERROR_HOMEBREW_MISSING"
       fi
     else
-      print_msg error "❌ Unsupported OS: $OSTYPE"
+      print_msg error "$(printf "$ERROR_OS_NOT_SUPPORTED" "$cmd")"
     fi
   done
 
-  print_msg success "✅ Uninstall process completed."
+  print_msg success "$SUCCESS_COMMANDS_UNINSTALL_DONE"
 }
 
-# ============================================
-# 🔗 check_and_add_alias – Add wpdocker CLI alias to shell config
-# ============================================
-# Description:
-#   - Adds alias for `wpdocker` to `.bashrc` or `.zshrc`.
-#   - Reloads shell config after writing alias.
-#
-# Globals:
-#   INSTALL_DIR
-#   SHELL
-check_and_add_alias() {
-  local shell_config cli_dir_abs alias_line
-
-  cli_dir_abs=$(realpath "$CLI_DIR/bashly")
-  alias_line="alias wpdocker=\"bash $cli_dir_abs/wpdocker\""
-
-  if [[ "$SHELL" == *"zsh"* ]]; then
-    shell_config="$HOME/.zshrc"
-  else
-    shell_config="$HOME/.bashrc"
-  fi
-
-  if grep -q "alias wpdocker=" "$shell_config"; then
-    echo "🧹 Removing existing alias from $shell_config..."
-    sed -i.bak '/alias wpdocker=/d' "$shell_config"
-  fi
-
-  echo "$alias_line" >>"$shell_config"
-  echo "✅ Added alias for wpdocker to $shell_config"
-
-  if [[ "$SHELL" == *"zsh"* ]]; then
-    echo "🔄 Reloading .zshrc..."
-    source "$HOME/.zshrc"
-  elif [[ "$SHELL" == *"bash"* ]]; then
-    echo "🔄 Reloading .bashrc..."
-    source "$HOME/.bashrc"
-  else
-    echo "⚠️ Unsupported shell. Please reload shell config manually."
-  fi
-}
-
-
-# ============================================
-# 🕒 exit_after_10s – Exit script after 10 second
-# ============================================
 exit_after_10s() {
   local seconds=10
 
@@ -359,7 +260,6 @@ exit_after_10s() {
   if [[ "$OSTYPE" == "darwin"* ]]; then
     exit 0
   else
-    # Nếu là login shell (có thể logout), thì dùng logout
     if shopt -q login_shell; then
       logout
     else

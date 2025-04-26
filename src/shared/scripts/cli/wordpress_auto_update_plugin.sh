@@ -1,4 +1,15 @@
 #!/bin/bash
+# ==================================================
+# File: wordpress_auto_update_plugin.sh
+# Description: CLI wrapper to manage automatic updates for WordPress plugins.
+# Functions:
+#   - wordpress_cli_auto_update_plugin: Enable or disable automatic updates for WordPress plugins.
+#       Parameters:
+#           --domain=<domain>: The domain name of the WordPress site.
+#           --action=<enable|disable>: The action to perform (enable or disable auto-updates).
+#       Returns: None.
+# ==================================================
+
 # ✅ Load configuration from any directory
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 SEARCH_PATH="$SCRIPT_PATH"
@@ -20,7 +31,7 @@ wordpress_cli_auto_update_plugin() {
   action=$(_parse_params "--action" "$@")
 
   _is_missing_param "$domain" "--domain" || return 1
-  _is_missing_param "$action" "action" || return 1
+  _is_missing_param "$action" "--action" || return 1
 
   wordpress_auto_update_plugin_logic "$domain" "$action"
 }

@@ -1,14 +1,19 @@
 #!/bin/bash
-#shellcheck disable=SC2207
+# ==================================================
+# File: website_update_site_template.sh
+# Description: Functions to detect and update outdated site templates for WordPress websites, including:
+#              - Prompting the user to select and update outdated templates.
+#              - Detecting websites with outdated templates by comparing versions.
+# Functions:
+#   - website_prompt_update_template: Prompt user to select and update outdated site templates.
+#       Parameters: None.
+#   - website_logic_update_template: Detect websites with outdated templates.
+#       Parameters: None.
+# ==================================================
 
-# =====================================
-# website_prompt_update_template: Prompt user to select and update outdated site template
-# Behavior:
-#   - Calls logic function to find outdated sites
-#   - Displays list and lets user select one
-#   - Calls CLI updater with selected domain
-# =====================================
 website_prompt_update_template() {
+  # Prompt user to select and update outdated site templates.
+  # Parameters: None.
 
   # Get list of outdated site templates
   outdated_sites=($(website_logic_update_template))
@@ -35,24 +40,16 @@ website_prompt_update_template() {
   # Proceed to update selected site
   echo -e "${GREEN}${CHECKMARK} Updating website '$SELECTED_SITE'...${NC}"
   bash "$SCRIPTS_DIR/cli/website_update_template.sh" --domain="$SELECTED_SITE"
-
 }
 
-# =====================================
-# website_logic_update_template: Detect websites with outdated templates
-# Behavior:
-#   - Compares each site's .template_version with the latest version
-# Returns:
-#   - List of outdated domains (printed to stdout)
-# =====================================
 website_logic_update_template() {
+  # Detect websites with outdated templates.
+  # Parameters: None.
+  # Returns: List of outdated domains (printed to stdout).
+
   TEMPLATE_VERSION_NEW=$(cat "$BASE_DIR/shared/templates/.template_version" 2>/dev/null || echo "unknown")
 
   outdated_sites=()
-  if [[ -z "$domain" ]]; then
-    website_prompt_update_template
-  fi
-
   for site_path in "$SITES_DIR/"*/; do
     [ -d "$site_path" ] || continue
     domain=$(basename "$site_path")

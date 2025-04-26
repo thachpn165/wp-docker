@@ -1,14 +1,17 @@
-# =====================================
-# system_logic_check_resources: Display system and Docker resource usage
-# Detects current OS and prints:
-#   - Docker container CPU and memory usage
-#   - Total system memory usage
-#   - Disk usage
-#   - Uptime
-# Supports:
-#   - Linux (default)
-#   - macOS (custom memory calculation using vm_stat)
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: system_check_resources.sh
+# Description: Displays system and Docker resource usage, including:
+#              - Docker container CPU and memory usage
+#              - Total system memory usage
+#              - Disk usage
+#              - System uptime
+#              Supports Linux and macOS with custom memory calculation for macOS.
+# Functions:
+#   - system_logic_check_resources: Display system and Docker resource usage.
+#       Parameters: None.
+# ==================================================
+
 system_logic_check_resources() {
   local cpu_memory_usage memory_usage disk_usage uptime_info os_type
 

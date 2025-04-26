@@ -1,12 +1,24 @@
 #!/bin/bash
-# =====================================
-# calculate_php_fpm_values: Calculate optimal PHP-FPM process values for WordPress
-# Parameters:
-#   $1 - total RAM in MB
-#   $2 - total CPU cores
-# Returns:
-#   pm pm.max_children pm.start_servers pm.min_spare_servers pm.max_spare_servers
-# =====================================
+# ==================================================
+# File: php_utils.sh
+# Description: Utility functions for managing PHP configurations and containers, including:
+#              - Calculating optimized PHP-FPM values based on system resources.
+#              - Generating PHP-FPM configuration files.
+#              - Retrieving PHP container names for specific domains.
+# Functions:
+#   - calculate_php_fpm_values: Calculate optimal PHP-FPM process values for WordPress.
+#       Parameters:
+#           $1 - total_ram: Total RAM in MB.
+#           $2 - total_cpu: Total CPU cores.
+#       Returns: pm pm.max_children pm.start_servers pm.min_spare_servers pm.max_spare_servers.
+#   - create_optimized_php_fpm_config: Generate PHP-FPM config file with optimized values for WordPress.
+#       Parameters:
+#           $1 - domain: Domain name for which the config is generated.
+#   - php_get_container: Get the PHP container name for a domain from JSON config.
+#       Parameters:
+#           $1 - domain: Domain name to retrieve the container for.
+# ==================================================
+
 calculate_php_fpm_values() {
   local total_ram=$1 # MB
   local total_cpu=$2 # Number of cores
@@ -39,7 +51,7 @@ calculate_php_fpm_values() {
     reserved_ram=512
     avg_process_size=50
     pm_mode="ondemand"
-  elif [[ $is_high_resource == true ]]; then # Thay đổi ở đây
+  elif [[ $is_high_resource == true ]]; then
     reserved_ram=1024
     avg_process_size=60
     pm_mode="dynamic"
@@ -94,14 +106,6 @@ calculate_php_fpm_values() {
   echo "$pm_mode $max_children $start_servers $min_spare_servers $max_spare_servers"
 }
 
-# =====================================
-# create_optimized_php_fpm_config: Generate PHP-FPM config file with optimized values for WordPress
-# Parameters:
-#   $1 - php_fpm_conf_path: path to output config file
-# Behavior:
-#   - Removes directory if exists
-#   - Creates file and writes optimized config based on system RAM/CPU
-# =====================================
 create_optimized_php_fpm_config() {
   local domain="$1"
   local php_fpm_conf_path="$SITES_DIR/$domain/php/php-fpm.conf"
@@ -144,13 +148,6 @@ EOF
   print_msg info "$(printf "PHP-FPM mode: %s" "$pm_mode")"
 }
 
-# =====================================
-# php_get_container: Get the PHP container name for a domain from JSON config
-# Parameters:
-#   $1 - domain
-# Returns:
-#   container name if found, 1 if not found or error
-# =====================================
 php_get_container() {
   local domain="$1"
 
@@ -165,7 +162,6 @@ php_get_container() {
   if [[ -n "$container_name" ]]; then
     echo "$container_name"
   else
-    #print_and_debug error "$ERROR_DOCKER_PHP_CONTAINER_NOT_FOUND: $domain"
     return 1
   fi
 }

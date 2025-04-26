@@ -29,10 +29,10 @@ install_docker_almalinux() {
     os_version="${VERSION_ID%%.*}"
   fi
 
-  print_msg info "Installing Docker on ${os_name} ${os_version}..."
+  print_msg info "$STEP_DOKER_INSTALLING: ${os_name} (${os_version})"
 
   # Step 1: Remove old versions according to Docker documentation
-  print_msg info "Removing old versions..."
+  print_msg info "$INFO_DOCKER_REMOVE_OLD_VERSION"
   dnf remove -y docker \
     docker-client \
     docker-client-latest \
@@ -42,19 +42,19 @@ install_docker_almalinux() {
     docker-logrotate \
     docker-engine \
     podman \
-    runc &>/dev/null || true
+    runc &>/dev/null
 
   # Step 2: Install dnf-plugins-core
-  print_msg info "Installing dnf-plugins-core..."
-  dnf -y install dnf-plugins-core
+  print_msg info "dnf install dnf-plugins-core..."
+  dnf -y install dnf-plugins-core &>/dev/null
 
   # Step 3: Set up Docker repository
   print_msg info "Setting up Docker repository..."
-  dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo &>/dev/null
 
   # Step 4: Install Docker Engine
   print_msg info "Installing Docker Engine..."
-  dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin &>/dev/null
 
   # Step 5: Start Docker
   print_msg info "Starting Docker service..."
@@ -79,11 +79,13 @@ install_docker_almalinux() {
   return 0
 }
 
-# =====================================
-# install_docker: Install Docker, detect operating system and use appropriate method
-# No parameters
-# =====================================
-install_docker() {
+
+# This function installs Docker on a general operating system using the official Docker installation script.
+# It checks if Docker and Docker Compose are already installed, downloads and executes the installation script,
+# verifies the installation, ensures the Docker service is running, and runs a hello-world container to confirm success.
+install_docker_general_os() {
+  local get_docker_url
+  get_docker_url=$(network_check_http "https://get.docker.com")
   print_msg step "$STEP_DOCKER_INSTALL"
 
   # Check if Docker is already installed
@@ -102,32 +104,19 @@ install_docker() {
     fi
   fi
 
-  # Detect operating system
-  local os_name=""
-  local os_version=""
-
-  if [[ -f /etc/os-release ]]; then
-    . /etc/os-release
-    os_name="${ID}"
-    os_version="${VERSION_ID%%.*}"
-  fi
-
-  # Check if it's AlmaLinux/CentOS/RHEL 8, use specific method
-  if [[ "$os_name" == "almalinux" || "$os_name" == "centos" || "$os_name" == "rhel" ]] && [[ "$os_version" == "8" || "$os_version" == "9" ]]; then
-    print_msg info "Detected ${os_name} ${os_version}, using specialized installation method..."
-    install_docker_almalinux
-    return $?
-  fi
-
-  # For other operating systems, use get.docker.com script
-  print_msg info "Installing Docker using official installation script..."
+  print_msg info "$STEP_DOCKER_INSTALLING_USING_OFFICIAL_SCRIPT"
 
   # Create a temporary file to save the script
-  local tmp_script=$(mktemp)
+  local tmp_script
+  tmp_script=$(mktemp)
 
   # Download installation script from Docker
-  if ! curl -fsSL https://get.docker.com -o "$tmp_script"; then
-    print_msg error "Failed to download Docker installation script"
+  if ! curl -fsSL "$get_docker_url" -o "$tmp_script"; then
+    local formatted_error_url_failed
+    formatted_error_url_failed="$(printf "$ERROR_DOCKER_GET_URL_FAILED" "$get_docker_url")"
+
+    print_msg error "$formatted_error_url_failed"
+
     rm -f "$tmp_script"
     return 1
   fi
@@ -136,7 +125,6 @@ install_docker() {
   chmod +x "$tmp_script"
 
   # Run installation script
-  print_msg info "Running Docker installation script..."
   if sh "$tmp_script"; then
     print_msg success "Docker installed successfully"
   else
@@ -180,6 +168,31 @@ install_docker() {
   return 0
 }
 
+# =====================================
+# install_docker: Install Docker, detect operating system and use appropriate method
+# No parameters
+# =====================================
+install_docker() {
+  # Detect operating system
+  local os_name=""
+  local os_version=""
+
+  if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    os_name="${ID}"
+    os_version="${VERSION_ID%%.*}"
+  fi
+
+  # Check if it's AlmaLinux/CentOS/RHEL 8, use specific method
+  if [[ "$os_name" == "almalinux" || "$os_name" == "centos" || "$os_name" == "rhel" ]] && [[ "$os_version" == "8" || "$os_version" == "9" ]]; then
+    install_docker_almalinux # Install Docker using AlmaLinux method
+    return $?
+  fi
+
+  # For other operating systems, use general installation method
+  install_docker_general_os
+}
+
 # ===========================
 # 🌀 Start Docker if it is not running
 # Handles macOS and Linux separately.
@@ -200,24 +213,29 @@ start_docker_if_needed() {
       start_time=$(date +%s)
       local current_time
 
-      echo -n "Waiting for Docker"
+      print_msg step "$STEP_WAITING_DOCKER"
       while ! docker info &>/dev/null; do
         echo -n "."
         sleep 0.5
         current_time=$(date +%s)
         if ((current_time - start_time > timeout)); then
           echo ""
-          print_msg warning "Docker took too long to start, continuing anyway..."
+          print_msg warning "$WARNING_DOCKER_NOT_STARTED_AFTER_WAITING"
           break
         fi
       done
       echo ""
     else
       # Linux: Start Docker service in background
-      systemctl start docker &
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS: Start Docker Desktop in background
+        open --background -a Docker
+      else
+        # Linux: Start Docker service in background
+        systemctl start docker &
+      fi
 
       local counter=0
-      echo -n "Waiting for Docker"
       while ! docker info &>/dev/null && [ $counter -lt 20 ]; do
         echo -n "."
         sleep 0.5
@@ -262,18 +280,12 @@ docker_exec_php() {
   local domain="$1"
   local cmd="$2"
 
-  if [[ -z "$domain" || -z "$cmd" ]]; then
-    print_and_debug error "$ERROR_MISSING_PARAM: --domain or --cmd"
-    return 1
-  fi
+  _is_missing_param "$domain" "--domain" || return 1
+  _is_valid_domain "$domain" || return 1
+  _is_missing_param "$cmd" "--cmd" || return 1
 
   local container_php
   container_php=$(json_get_site_value "$domain" "CONTAINER_PHP")
-
-  if [[ -z "$container_php" ]]; then
-    print_and_debug error "$ERROR_DOCKER_CONTAINER_DB_NOT_DEFINED: $domain"
-    return 1
-  fi
 
   if ! _is_container_running "$container_php"; then
     print_msg error "$ERROR_DOCKER_CONTAINER_NOT_RUNNING: $container_php"
@@ -305,7 +317,7 @@ remove_core_containers() {
 # ===========================
 remove_site_containers() {
   for site in $(get_site_list); do
-    print_msg warning "$(printf "$WARNING_REMOVE_SITE_CONTAINERS" "$site")"
+    print_msg step "$(printf "$STEP_REMOVE_SITE_CONTAINERS" "$site")"
     docker rm -f "$site-php" "$site-mariadb" 2>/dev/null || true
     docker volume rm "${site}_db_data" 2>/dev/null || true
   done
@@ -316,35 +328,18 @@ docker_volume_check_fastcgicache() {
   if docker volume ls --format '{{.Name}}' | grep -q "^${volume_name}$"; then
     debug_log "[Docker] ✅ Volume '$volume_name' already exists."
   else
-    print_msg info "📦 Creating Docker volume: $volume_name"
+    print_msg step "$STEP_DOCKER_VOLUME_CREATING: $volume_name"
     docker volume create "$volume_name" >/dev/null
-    print_msg success "✅ Docker volume '$volume_name' has been created."
+    print_msg success "$SUCCESS_DOCKER_VOLUME_CREATED: $volume_name"
   fi
 }
 
-# This script calculates and displays disk usage statistics for the host system and Docker engine.
-#
-# It performs the following tasks:
-# 1. Determines the operating system type (macOS or Linux) and retrieves disk usage information:
-#    - For macOS: Uses `df -k` and `awk` to extract used and total disk space in kilobytes.
-#    - For Linux: Uses `df -k --output=used,size` to extract used and total disk space in kilobytes.
-# 2. Converts the used and total disk space from kilobytes to bytes.
-# 3. Analyzes Docker disk usage by parsing the output of `docker system df` in JSON format:
-#    - Extracts the size and reclaimable space for Docker resources.
-#    - Converts these values to bytes and calculates the total Docker usage and reclaimable space.
-# 4. Displays a summary of the disk usage:
-#    - Host disk usage (used and total).
-#    - Docker engine disk usage.
-#    - Reclaimable space via Docker.
-#
-# Dependencies:
-# - `docker`: Required to retrieve Docker disk usage information.
-# - `jq`: Used to parse JSON output from `docker system df`.
-# - `awk`: Used for text processing and extracting specific fields.
-#
-# Functions (not included in this snippet but required for execution):
-# - `parse_size_to_bytes`: Converts human-readable size strings (e.g., "10MB") to bytes.
-# - `format_bytes`: Formats byte values into human-readable strings (e.g., "10 MB").
+# ===========================
+# 📊 Check disk usage for host and Docker engine
+# Parameters: None
+# Global variables used: None
+# Result: Displays disk usage summary
+# ===========================
 docker_check_disk_usage() {
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
@@ -361,7 +356,7 @@ docker_check_disk_usage() {
   used_bytes=$((used_kb * 1024))
   total_bytes=$((total_kb * 1024))
 
-  # ======= Phân tích dung lượng Docker bằng JSON =======
+  # Analyze Docker disk usage
   docker_data=$(docker system df --format '{{json .}}')
 
   total_docker_bytes=0
@@ -375,10 +370,52 @@ docker_check_disk_usage() {
     total_reclaimable_bytes=$((total_reclaimable_bytes + $(parse_size_to_bytes "$reclaimable")))
   done <<<"$docker_data"
 
-  # ======= Hiển thị kết quả =======
+  # Display results
   print_msg title "WP Docker Disk Summary"
   echo "💻 Host Disk: Used $(format_bytes "$used_bytes") / Total $(format_bytes "$total_bytes")"
   echo "🐳 Docker Engine Usage: $(format_bytes "$total_docker_bytes")"
   echo "♻️  Reclaimable via Docker: $(format_bytes "$total_reclaimable_bytes")"
+}
 
+docker_check_and_start_container() {
+    local container_name="$1"
+    local domain="$2"
+    local is_running
+
+    _is_missing_param "$container_name" "--container_name" || return 1
+    _is_missing_param "$domain" "--domain" || return 1
+    _is_valid_domain "$domain" || return 1
+    if [[ -z "$container_name" ]]; then
+        print_and_debug warning "⚠️  Skipped empty container for domain: $domain"
+        return
+    fi
+
+    # Do not display anything if the container does not exist
+    if ! docker ps -a --format '{{.Names}}' | grep -q "^${container_name}$"; then
+        return
+    fi
+
+    # Skip if the container is already running
+    if docker ps --format '{{.Names}}' | grep -q "^${container_name}$"; then
+        return
+    fi
+
+    echo ""
+    echo "➡️  Site: $domain"
+    echo "   ⏳ Starting container $container_name..."
+    docker start "$container_name" >/dev/null
+    started_any=true
+
+    for _ in {1..30}; do
+        sleep 1
+        is_running=$(docker ps --format '{{.Names}}' | grep -c "^${container_name}$")
+        if [[ "$is_running" -eq 1 ]]; then
+            echo "   🚀 Container $container_name is now running."
+            return
+        fi
+    done
+
+    echo "   ${CROSSMARK} Container $container_name failed to start after 30s."
+    echo "   📄 Showing last 20 lines of logs for $container_name:"
+    docker logs --tail 20 "$container_name"
 }

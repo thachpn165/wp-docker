@@ -1,4 +1,16 @@
 #!/bin/bash
+# ==================================================
+# File: manage_cron.sh
+# Description: Functions to manage backup schedules via cron, including listing, removing, 
+#              and interacting with scheduled backups.
+# Functions:
+#   - backup_prompt_list_schedule: Display a list of scheduled backups.
+#       Parameters: None.
+#   - schedule_backup_remove: Remove a backup schedule for a specific website.
+#       Parameters: None.
+#   - backup_schedule_menu: Interactive menu for managing backup schedules.
+#       Parameters: None.
+# ==================================================
 
 backup_prompt_list_schedule() {
     print_msg title "$TITLE_BACKUP_SCHEDULE_LIST"
@@ -24,7 +36,6 @@ backup_prompt_list_schedule() {
         if [[ "$enabled" == "true" ]]; then
             has_schedule=true
 
-            # Tính thời gian backup tiếp theo
             local next_ts next_date
             next_ts=$((now_ts + (interval * 86400)))
             next_date=$(date -d "@$next_ts" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || gdate -d "@$next_ts" "+%Y-%m-%d %H:%M:%S")
@@ -46,18 +57,7 @@ backup_prompt_list_schedule() {
         print_msg info "$INFO_BACKUP_NO_WEBSITE_SCHEDULED"
     fi
 }
-# =============================================
-# ❌ schedule_backup_remove – Remove backup cron job for a website
-# =============================================
-# Description:
-#   - Removes backup cron jobs for the selected domain using a filtered crontab.
-#
-# Globals:
-#   BACKUP_RUNNER, domain
-#
-# Returns:
-#   - None
-# =============================================
+
 schedule_backup_remove() {
     print_msg title "$TITLE_BACKUP_REMOVE_SCHEDULE"
 
@@ -73,7 +73,6 @@ schedule_backup_remove() {
         return 1
     fi
 
-    # Hiển thị chi tiết lịch backup hiện tại
     local interval storage rclone_storage
     interval=$(json_get_site_value "$domain" "backup_schedule.interval_days")
     storage=$(json_get_site_value "$domain" "backup_schedule.storage")
@@ -88,7 +87,6 @@ schedule_backup_remove() {
     fi
     echo ""
 
-    # Hỏi xác nhận trước khi xoá
     confirm_action "$QUESTION_BACKUP_CONFIRM_REMOVE_SCHEDULE: $domain"
     if [[ $? -ne 0 ]]; then
         print_msg info "$MSG_BACKUP_REMOVE_CANCELLED"
@@ -99,20 +97,6 @@ schedule_backup_remove() {
     print_msg success "$SUCCESS_BACKUP_SCHEDULE_REMOVED: $domain"
 }
 
-# =============================================
-# 📅 backup_schedule_menu – Interactive cron job management menu
-# =============================================
-# Description:
-#   - Displays a CLI menu for listing or removing scheduled backups via cron.
-#
-# Globals:
-#   TITLE_MENU_BACKUP_SCHEDULE_MANAGEMENT,
-#   LABEL_MENU_BACKUP_SCHEDULE_VIEW, LABEL_MENU_BACKUP_SCHEDULE_REMOVE,
-#   MSG_BACK, PROMPT_SELECT_OPTION, TEST_CHOICE, ERROR_SELECT_OPTION_INVALID
-#
-# Returns:
-#   - None
-# =============================================
 backup_schedule_menu() {
     while true; do
         echo -e "${BLUE}============================${NC}"

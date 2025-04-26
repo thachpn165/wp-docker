@@ -1,19 +1,25 @@
-# =====================================
-# system_prompt_manage_docker: Prompt user to manage a running Docker container
-# Prompts:
-#   - Display running containers
-#   - Ask for container name
-#   - Ask for action (view logs or restart)
-# Calls CLI wrapper: system_cli_manage_docker
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: system_manage_docker.sh
+# Description: Functions to manage Docker containers, including prompting the user to select 
+#              a container and perform actions such as viewing logs or restarting the container.
+# Functions:
+#   - system_prompt_manage_docker: Prompt the user to manage a running Docker container.
+#       Parameters: None.
+#   - system_logic_manage_docker: Perform container actions (view logs or restart).
+#       Parameters:
+#           $1 - container_name: Name of the Docker container.
+#           $2 - container_action: Action number (1=logs, 2=restart).
+# ==================================================
+
 system_prompt_manage_docker() {
   safe_source "$CLI_DIR/system_tools.sh"
 
-  # === Display running Docker containers ===
+  # Display running Docker containers
   print_msg info "$MSG_LIST_RUNNING_CONTAINERS"
   docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"
 
-  # === Prompt user to select container and action ===
+  # Prompt user to select container and action
   print_msg info "$PROMPT_ENTER_CONTAINER_NAME"
   read -r container_name
 
@@ -23,16 +29,10 @@ system_prompt_manage_docker() {
   read -r container_action
   print_msg info "$MSG_SELECT_OPTION (1-2)"
 
-  # === Call the CLI with selected parameters ===
+  # Call the CLI with selected parameters
   system_cli_manage_docker --container_name="$container_name" --action="$container_action"
 }
 
-# =====================================
-# system_logic_manage_docker: Perform container action (view logs or restart)
-# Parameters:
-#   $1 - container_name: Name of the Docker container
-#   $2 - container_action: Action number (1=logs, 2=restart)
-# =====================================
 system_logic_manage_docker() {
   local container_name="$1"
   local container_action="$2"

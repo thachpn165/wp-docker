@@ -1,17 +1,19 @@
-# ========================================================================
-# CLI Parameters Functions
-# Used to parse command line arguments and options
-# ========================================================================
+#!/bin/bash
+# ==================================================
+# File: cli_params.sh
+# Description: Functions to parse command-line arguments and options, including required 
+#              and optional parameters in the form of param=value.
+# Functions:
+#   - _parse_params: Parse required CLI parameter in the form param=value.
+#       Parameters:
+#           $1 - param_name: Name of the required parameter to look for.
+#           $@ - All command-line arguments.
+#   - _parse_optional_params: Parse optional CLI parameter in the form param=value.
+#       Parameters:
+#           $1 - param_name: Name of the optional parameter to look for.
+#           $@ - All command-line arguments.
+# ==================================================
 
-# =====================================
-# _parse_params: Parse required CLI parameter in the form param=value
-# Parameters:
-#   $1 - param_name: Name of the required parameter to look for
-# Usage:
-#   _parse_params "--domain" "$@"
-# Output:
-#   Echoes value if found, errors if not found
-# =====================================
 _parse_params() {
   local param_name="$1"
   local param_value=""
@@ -33,15 +35,6 @@ _parse_params() {
   echo "$param_value"
 }
 
-# =====================================
-# _parse_optional_params: Parse optional CLI parameter in the form param=value
-# Parameters:
-#   $1 - param_name: Name of the optional parameter to look for
-# Usage:
-#   _parse_optional_params "--env" "$@"
-# Output:
-#   Echoes value if found, empty string otherwise
-# =====================================
 _parse_optional_params() {
   local param_name="$1"
   local param_value=""

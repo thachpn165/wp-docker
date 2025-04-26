@@ -1,22 +1,7 @@
 #!/bin/bash
-# =============================================
-# 🕒 System Cron Loader
-# ---------------------------------------------
-# This script is designed to run every 5 minutes
-# and is responsible for managing all scheduled
-# cron jobs in the WP Docker system.
-#
-# Instead of registering multiple cron jobs in OS crontab,
-# this centralized loader checks and executes
-# individual tasks based on their configured intervals.
-#
-# It supports:
-# - SSL certificate renewal
-# - Future backup, cleanup, monitoring tasks
-#
-# Usage (from crontab):
-# */5 * * * * /bin/bash /path/to/project/cli/cron_loader.sh >> /path/to/logs/cron-system.log 2>&1
-# =============================================
+# This script is responsible for loading and running cron jobs for the system.
+# It auto-detects the base directory, loads configuration files, and executes
+# individual cron tasks based on predefined intervals.
 
 # === Auto-detect BASE_DIR & load configuration ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -37,7 +22,6 @@ safe_source "$FUNCTIONS_DIR/php/php_get_version.sh"
 
 mapfile -t sites < <(website_list)
 
-# === Check and run cron job based on time interval (in minutes) ===
 cron_run_general() {
     local last_file="$BASE_DIR/.cron/.$1"
     local interval="$2"
@@ -68,17 +52,14 @@ cron_run_general() {
     return 1
 }
 
-# 🔁 Renew SSL certificates every 12 hours
 if cron_run_general "ssl_renew" 720; then
     cron_letsencrypt_renew
 fi
 
-# 🔁 Run PHP version check every 12 hours
 if cron_run_general "php_get_version" 720; then
     php_get_version
 fi
 
-# 🔁 Run backup
 for site in "${sites[@]}"; do
     cron_run_backup "$site"
 done

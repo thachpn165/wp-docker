@@ -1,4 +1,13 @@
-#!/usr/bin/env bash
+#!/bin/bash
+# ==================================================
+# File: ssl_check_status.sh
+# Description: CLI wrapper to check the SSL certificate status for a specific domain.
+# Functions:
+#   - ssl_cli_check_status: Check SSL certificate status for a domain.
+#       Parameters:
+#           --domain=<domain>: The domain name to check.
+#       Returns: None.
+# ==================================================
 
 # === Auto-detect BASE_DIR & load config ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -12,12 +21,6 @@ done
 
 # === Load SSL logic functions ===
 safe_source "$FUNCTIONS_DIR/ssl_loader.sh"
-
-# =====================================
-# 🔐 ssl_cli_check_status – Check SSL certificate status for a domain
-# Parameters:
-#   --domain=<domain>
-# =====================================
 
 ssl_cli_check_status() {
   local domain

@@ -178,8 +178,8 @@ if [[ -f "$INSTALL_DIR/shared/scripts/setup/setup-system.sh" ]]; then
   bash "$INSTALL_DIR/shared/scripts/setup/setup-system.sh"
 fi
 
-core_system_update
-check_required_commands
+core_system_update_os_packages
+core_system_check_required_commands
 json_create_if_not_exists
 
 # ========================

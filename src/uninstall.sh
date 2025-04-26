@@ -212,10 +212,9 @@ remove_core_containers
 remove_site_containers
 remove_mysql_container_and_volume
 remove_cronjobs
-remove_symlink
 remove_all_except_backup
 remove_alias
-uninstall_required_commands
+core_system_uninstall_required_commands
 print_msg success "$(printf "$SUCCESS_SYSTEM_UNINSTALLED" "$MOVED_BACKUP_DIR")"
 print_msg info "$(printf "$INFO_RESTORE_INSTRUCTION" "$MOVED_BACKUP_DIR")"
 rm -rf "$INSTALL_DIR"

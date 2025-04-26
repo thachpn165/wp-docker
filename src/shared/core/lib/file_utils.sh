@@ -1,10 +1,16 @@
 #!/bin/bash
 
-# =====================================
-# remove_file: Remove a file if it exists
-# Parameters:
-#   $1 - file_path
-# =====================================
+# This script provides utility functions for file and directory operations, 
+# including removing files/directories, copying files, confirming actions, 
+# and running commands in specific directories.
+
+# Functions:
+# - remove_file: Remove a file if it exists.
+# - remove_directory: Remove a directory if it exists.
+# - copy_file: Copy a file from source to destination with validation.
+# - confirm_action: Ask user to confirm a (y/n) prompt.
+# - run_in_dir: Execute a command inside a directory, then return to the original.
+
 remove_file() {
   local file_path="$1"
   if _is_file_exist "$file_path"; then
@@ -13,13 +19,6 @@ remove_file() {
   fi
 }
 
-# =====================================
-# remove_directory: Remove a directory if it exists
-# Parameters:
-#   $1 - dir_path
-# Requires:
-#   _is_directory_exist must be defined
-# =====================================
 remove_directory() {
   local dir_path="$1"
   if _is_directory_exist "$dir_path"; then
@@ -28,13 +27,6 @@ remove_directory() {
   fi
 }
 
-# =====================================
-# copy_file: Copy file from source to destination with validation
-# Parameters:
-#   $1 - src
-#   $2 - dest
-# Fails if source file does not exist
-# =====================================
 copy_file() {
   local src="$1"
   local dest="$2"
@@ -47,14 +39,6 @@ copy_file() {
   fi
 }
 
-
-# =====================================
-# confirm_action: Ask user to confirm a (y/n) prompt
-# Parameters:
-#   $1 - message to show
-# Returns:
-#   0 if user confirms, 1 otherwise
-# =====================================
 confirm_action() {
   local message="$1"
   local answer
@@ -66,14 +50,6 @@ confirm_action() {
   esac
 }
 
-# =====================================
-# run_in_dir: Execute a command inside a directory, then return to original
-# Parameters:
-#   $1 - target_dir
-#   $@ - command to execute
-# Returns:
-#   Exit code of executed command
-# =====================================
 run_in_dir() {
   local target_dir="$1"
   shift

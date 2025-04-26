@@ -1,12 +1,19 @@
+#!/bin/bash
+# ==================================================
+# File: database_import.sh
+# Description: Functions to import WordPress site databases, including prompting the user 
+#              to select a site and importing the database from a specified file.
+# Functions:
+#   - database_prompt_import: Prompt the user to select a site and import its database.
+#       Parameters: None.
+#   - database_import_logic: Import a SQL database into the site’s container.
+#       Parameters:
+#           $1 - domain: The site domain name.
+#           $2 - backup_file: Path to the .sql file to restore.
+# ==================================================
+
 safe_source "$CLI_DIR/database_actions.sh"
 
-# =====================================
-# database_prompt_import: Prompt user to import a database for a selected site
-# Requires:
-#   - select_website to choose domain
-#   - get_input_or_test_value to ask for .sql file path
-#   - Global variable TEST_BACKUP_FILE (optional)
-# =====================================
 database_prompt_import() {
     local domain
     print_msg info "$PROMPT_DATABASE_IMPORT_WEBSITE"
@@ -15,6 +22,7 @@ database_prompt_import() {
         return 1
     fi
     _is_valid_domain "$domain" || return 1
+
     # Prompt user to input the SQL backup file path
     backup_file=$(get_input_or_test_value "$PROMPT_DATABASE_ENTER_SQLFILE" "${TEST_BACKUP_FILE:-backup.sql}")
 
@@ -28,16 +36,6 @@ database_prompt_import() {
     database_cli_import --domain="$domain" --backup_file="$backup_file"
 }
 
-# =====================================
-# database_import_logic: Import a SQL database into the site’s container
-# Parameters:
-#   $1 - domain: The site domain name
-#   $2 - backup_file: Path to the .sql file to restore
-# Requires:
-#   - json_get_site_value for DB info
-#   - is_mariadb_running to check container status
-#   - docker exec and cp to interact with container
-# =====================================
 database_import_logic() {
     local domain="$1"
     local backup_file="$2"
@@ -49,6 +47,7 @@ database_import_logic() {
     fi
 
     _is_valid_domain "$domain" || return 1
+
     # Validate the SQL file existence
     if [[ ! -f "$backup_file" ]]; then
         print_msg error "$MSG_NOT_FOUND: $backup_file"

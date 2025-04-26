@@ -1,10 +1,14 @@
 #!/bin/bash
+# ==================================================
+# File: php_get_version.sh
+# Description: CLI wrapper to retrieve PHP versions from Docker Hub.
+# Functions:
+#   - php_get_version: Retrieve and display available PHP versions.
+#       Parameters: None.
+#       Returns: None.
+# ==================================================
 
-# =====================================
-# 🧪 php_cli_get_version – CLI wrapper to get PHP versions from Docker Hub
-# =====================================
-
-# === Auto-detect BASE_DIR and load config ===
+# Auto-detect BASE_DIR and load config
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 while [[ "$SCRIPT_PATH" != "/" ]]; do
   if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
@@ -16,8 +20,8 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
   SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
 
-# === Load PHP-related logic ===
+# Load PHP-related logic
 safe_source "$FUNCTIONS_DIR/php/php_get_version.sh"
 
-# === Execute main logic ===
+# Execute main logic
 php_get_version

@@ -1,11 +1,26 @@
 #!/bin/bash
-#shellcheck disable=SC1091
+# ==================================================
+# File: database_actions.sh
+# Description: CLI wrapper for database actions, including exporting, importing, 
+#              and resetting WordPress databases.
+# Functions:
+#   - database_cli_export: Export WordPress database to an SQL file.
+#       Parameters:
+#           --domain=<domain>: The domain name of the website.
+#           [--save_location=<path>]: Optional path to save the exported SQL file.
+#       Returns: 0 if successful, 1 otherwise.
+#   - database_cli_import: Import an SQL file into a WordPress database.
+#       Parameters:
+#           --domain=<domain>: The domain name of the website.
+#           --backup_file=<path>: Path to the SQL file to import.
+#       Returns: 0 if successful, 1 otherwise.
+#   - database_cli_reset: Drop and re-create a WordPress database.
+#       Parameters:
+#           --domain=<domain>: The domain name of the website.
+#       Returns: 0 if successful, 1 otherwise.
+# ==================================================
 
-# =====================================
-# 🧠 database_cli.sh – CLI wrapper for database actions: export, import, reset
-# =====================================
-
-# === Auto-detect BASE_DIR & load config ===
+# Auto-detect BASE_DIR & load config
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
 while [[ "$SCRIPT_PATH" != "/" ]]; do
     if [[ -f "$SCRIPT_PATH/shared/config/load_config.sh" ]]; then
@@ -15,14 +30,9 @@ while [[ "$SCRIPT_PATH" != "/" ]]; do
     SCRIPT_PATH="$(dirname "$SCRIPT_PATH")"
 done
 
-# === Load logic functions (optional) ===
+# Load logic functions
 safe_source "$FUNCTIONS_DIR/database_loader.sh"
-# =====================================
-# 📤 database_cli_export – Export WordPress database to SQL file
-# Parameters:
-#   --domain=<domain>
-#   [--save_location=<path>] (optional)
-# =====================================
+
 database_cli_export() {
     local domain save_location
     local timestamp
@@ -42,12 +52,6 @@ database_cli_export() {
     database_export_logic "$domain" "$save_location"
 }
 
-# =====================================
-# 📥 database_cli_import – Import SQL file into WordPress database
-# Parameters:
-#   --domain=<domain>
-#   --backup_file=<path>
-# =====================================
 database_cli_import() {
     local domain backup_file
 
@@ -57,17 +61,10 @@ database_cli_import() {
     _is_missing_param "$domain" "--domain" || return 1
     _is_missing_param "$backup_file" "--backup_file" || return 1
     _is_valid_domain "$domain" || return 1
-    debug_log "Domain: $domain"
-    debug_log "Backup file: $backup_file"
 
     database_import_logic "$domain" "$backup_file"
 }
 
-# =====================================
-# ♻️ database_cli_reset – Drop and re-create WordPress database
-# Parameters:
-#   --domain=<domain>
-# =====================================
 database_cli_reset() {
     local domain
     domain=$(_parse_params "--domain" "$@")

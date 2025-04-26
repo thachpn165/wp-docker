@@ -1,3 +1,15 @@
+#!/bin/bash
+# File: cron_letsencrypt_renew.sh
+# Description: This script handles the automatic renewal of Let's Encrypt SSL certificates for websites.
+#              It checks the expiration date of existing certificates and renews them if they are about to expire.
+#              The script also updates the certificate files and reloads Nginx if necessary.
+# Usage: This script is intended to be run as a cron job to ensure SSL certificates are always up-to-date.
+
+# Function: cron_letsencrypt_renew
+# Description: Main function to check and renew Let's Encrypt SSL certificates for all websites.
+#              It verifies the certificate's expiration date, renews it if necessary, and updates the certificate files.
+# Parameters: None
+# Returns: 0 on success, 1 on failure
 cron_letsencrypt_renew() {
     print_msg title "$TITLE_SSL_LETSCERTIFICATE_RENEWAL"
 

@@ -1,18 +1,26 @@
-# =====================================
-# php_prompt_rebuild_container: Prompt user to rebuild PHP container for selected site
-# Requires:
-#   - select_website to choose domain
-#   - safe_source to include CLI logic
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: php_rebuild_container.sh
+# Description: Functions to rebuild PHP containers for WordPress sites, including prompting 
+#              the user to rebuild and executing the rebuild process using Docker Compose.
+# Functions:
+#   - php_prompt_rebuild_container: Prompt the user to rebuild the PHP container for a selected site.
+#       Parameters: None.
+#   - php_rebuild_container_logic: Logic to rebuild the PHP container for a given domain.
+#       Parameters:
+#           $1 - domain: The domain name of the website to rebuild the PHP container for.
+# ==================================================
+
 php_prompt_rebuild_container() {
   safe_source "$CLI_DIR/php_rebuild_container.sh"
   local domain
+
   if ! website_get_selected domain; then
     return 1
   fi
-
   _is_valid_domain "$domain" || return 1
-  # === Confirm rebuild of PHP container ===
+
+  # Confirm rebuild of PHP container
   echo -e "${YELLOW}🔁 Rebuild the PHP container for site: $domain${NC}"
   read -p "Are you sure you want to rebuild the PHP container for this site? (y/n): " confirm_rebuild
   confirm_rebuild=$(echo "$confirm_rebuild" | tr '[:upper:]' '[:lower:]')
@@ -22,24 +30,16 @@ php_prompt_rebuild_container() {
     exit 1
   fi
 
-  # === Call CLI command to rebuild PHP container ===
+  # Call CLI command to rebuild PHP container
   debug_log "[php_prompt_rebuild_container] Rebuilding PHP container for domain: $domain"
   php_cli_rebuild_container --domain="$domain"
 }
 
-# =====================================
-# php_rebuild_container_logic: Logic to rebuild PHP container from docker-compose
-# Parameters:
-#   $1 - domain: The site domain to rebuild PHP container for
-# Requires:
-#   - json_get_site_value to get container name
-#   - docker commands to stop/remove/rebuild container
-# =====================================
 php_rebuild_container_logic() {
   local domain="$1"
   local compose_file="$SITES_DIR/$domain/docker-compose.yml"
   local php_container
-  
+
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
   print_msg step "$(printf "$STEP_WEBSITE_RESTARTING" "$domain")"
 

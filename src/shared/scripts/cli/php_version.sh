@@ -1,4 +1,14 @@
 #!/bin/bash
+# ==================================================
+# File: php_version.sh
+# Description: CLI wrapper to change the PHP version for a specific site.
+# Functions:
+#   - php_cli_change_version: Change the PHP version for a given domain.
+#       Parameters:
+#           --domain=<domain>: The domain name of the site.
+#           --php_version=<version>: The PHP version to set.
+#       Returns: None.
+# ==================================================
 
 # === Auto-detect BASE_DIR & load config ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -12,13 +22,6 @@ done
 
 # === Load PHP logic ===
 safe_source "$FUNCTIONS_DIR/php_loader.sh"
-
-# =====================================
-# 🌀 php_cli_change_version – CLI wrapper to change PHP version for a site
-# Parameters:
-#   --domain=<domain>
-#   --php_version=<version>
-# =====================================
 
 php_cli_change_version() {
   local domain php_version

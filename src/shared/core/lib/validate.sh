@@ -1,9 +1,54 @@
-# =============================================
-# 🌐 _is_valid_domain – Validate a domain name format
-# ---------------------------------------------
-# Usage:
-#   if ! _is_valid_domain "$domain"; then ...
-# =============================================
+# ==================================================
+# File: validate.sh
+# Description: This script contains utility functions for validation tasks,
+#              such as validating domain names, email addresses, Docker containers,
+#              files, directories, and flags.
+# Functions:
+#   - _is_valid_domain: Validate a domain name format.
+#       Parameters:
+#           $1 - domain: The domain name to validate.
+#       Returns: 0 if valid, 1 otherwise.
+#   - _is_missing_param: Check if a required parameter is missing.
+#       Parameters:
+#           $1 - value: The parameter value to check.
+#           $2 - label: The parameter label for error messages.
+#       Returns: 0 if valid, 1 otherwise.
+#   - _is_valid_email: Validate an email address format.
+#       Parameters:
+#           $1 - email: The email address to validate.
+#       Returns: 0 if valid, 1 otherwise.
+#   - _is_container_running: Check if multiple Docker containers are running.
+#       Parameters:
+#           $@ - List of container names to check.
+#       Returns: 0 if all containers are running, 1 otherwise.
+#   - _is_docker_network_exists: Check if a Docker network exists.
+#       Parameters:
+#           $1 - network_name: The name of the Docker network.
+#       Returns: 0 if exists, 1 otherwise.
+#   - _is_test_mode: Check if the script is running in test mode.
+#       Parameters: None.
+#       Returns: 0 if true, 1 otherwise.
+#   - _is_file_exist: Check if a file exists and has the correct permissions.
+#       Parameters:
+#           $1 - file_path: The path to the file.
+#       Returns: 0 if the file exists, 1 otherwise.
+#   - _is_directory_exist: Check if a directory exists, optionally creating it.
+#       Parameters:
+#           $1 - dir: The directory path.
+#           $2 - create_if_missing: If "true", create the directory if missing.
+#       Returns: 0 if the directory exists or is created, 1 otherwise.
+#   - _is_missing_var: Check if a variable is unset or empty.
+#       Parameters:
+#           $1 - value: The value of the variable to check.
+#           $2 - name: The variable name for error messages.
+#       Returns: 0 if valid, 1 otherwise.
+#   - _has_flag: Check if a specific flag is present in the arguments.
+#       Parameters:
+#           $1 - flag: The flag to check (e.g., "--force").
+#           $@ - Full argument list.
+#       Returns: 0 if the flag is present, 1 otherwise.
+# ==================================================
+
 _is_valid_domain() {
     local domain="$1"
     domain="$(echo "$domain" | xargs)" # Trim whitespace
@@ -34,17 +79,11 @@ _is_valid_domain() {
 
     return 0
 }
-# =============================================
-# 🛡️ _is_missing_param – Check if required param is missing (with escape protection)
-# ---------------------------------------------
-# Usage:
-#   _is_missing_param "$domain" "--domain" || return 1
-# =============================================
+
 _is_missing_param() {
     local value="$1"
     local label="$2"
 
-    # Escape label to avoid injection in error output
     local escaped_label
     escaped_label="$(printf "%q" "$label")"
 
@@ -54,24 +93,16 @@ _is_missing_param() {
     fi
 }
 
-# =============================================
-# 📧 _is_valid_email – Validate email address format
-# ---------------------------------------------
-# Usage:
-#   _is_valid_email "$email" || return 1
-# =============================================
 _is_valid_email() {
     local email="$1"
 
     _is_missing_param "$email" "email" || return 1
 
-    # Kiểm tra độ dài tối đa
     if [[ ${#email} -gt 320 ]]; then
         print_msg error "$ERROR_EMAIL_EXCEEDS_MAX_LENGTH"
         return 1
     fi
 
-    # Kiểm tra định dạng email
     if ! [[ "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
         print_msg error "$ERROR_EMAIL_INVALID_FORMAT: $email"
         return 1
@@ -80,16 +111,7 @@ _is_valid_email() {
     return 0
 }
 
-# ===========================
-# 🔍 Check if multiple containers are running
-# Returns true if all specified containers are running.
-# Parameters:
-#   $@ - List of container names to check
-# Global variables used: None
-# Result: Returns true if all containers are running, false otherwise
-# ===========================
 _is_container_running() {
-    # Check if Docker daemon is running (cross-platform)
     if ! docker info >/dev/null 2>&1; then
         print_msg error "$ERROR_DOCKER_NOT_RUNNING"
         return 1
@@ -108,11 +130,7 @@ _is_container_running() {
 
     [[ "$all_running" == true ]]
 }
-# =====================================
-# _is_docker_network_exists: Check if a Docker network exists
-# Parameters: $1 - network name
-# Returns: 0 if exists, 1 otherwise
-# =====================================
+
 _is_docker_network_exists() {
     local network_name="$1"
     if docker network ls --format '{{.Name}}' | grep -q "^${network_name}$"; then
@@ -124,37 +142,23 @@ _is_docker_network_exists() {
     fi
 }
 
-# =====================================
-# _is_test_mode: Check if running in TEST_MODE
-# Returns: 0 if true
-# =====================================
 _is_test_mode() {
     [[ "$TEST_MODE" == true ]]
 }
 
-# =====================================
-# _is_file_exist: Check if a file exists
-# Parameters:
-#   $1 - file_path
-# Returns:
-#   0 if exists, 1 if not
-# =====================================
 _is_file_exist() {
     local file_path="$1"
 
-    # Kiểm tra nếu file không tồn tại
     if [[ ! -f "$file_path" ]]; then
         print_msg error "$MSG_NOT_FOUND: $file_path"
         return 1
     fi
 
-    # Kiểm tra quyền đọc
     if [[ ! -r "$file_path" ]]; then
         print_msg error "$ERROR_FILE_NOT_READABLE: $(printf "%q" "$file_path")"
         return 1
     fi
 
-    # Kiểm tra quyền ghi
     if [[ ! -w "$file_path" ]]; then
         print_msg warning "$ERROR_FILE_NOT_WRITABLE: $(printf "%q" "$file_path")"
     fi
@@ -162,14 +166,6 @@ _is_file_exist() {
     return 0
 }
 
-# =====================================
-# _is_directory_exist: Check if a directory exists
-# Parameters:
-#   $1 - dir: Directory path
-#   $2 - create_if_missing (optional): If not "false", directory will be created
-# Returns:
-#   0 if directory exists or is created, 1 otherwise
-# =====================================
 _is_directory_exist() {
     local dir="$1"
     local create_if_missing="$2"
@@ -188,16 +184,6 @@ _is_directory_exist() {
     fi
 }
 
-# =============================================
-# 🧪 /is_is_missing_var – Check if a variable is unset or empty
-# ---------------------------------------------
-# Usage:
-#   _is_missing_var "$VAR" "VAR_NAME" || return 1
-#
-# Parameters:
-#   $1 - Giá trị của biến (giá trị cần kiểm tra)
-#   $2 - Tên biến hiển thị để báo lỗi (ví dụ: "DOMAIN")
-# =============================================
 _is_missing_var() {
     local value="$1"
     local name="$2"
@@ -209,21 +195,6 @@ _is_missing_var() {
     return 0
 }
 
-# =============================================
-# 🔍 _has_flag: Check if a flag (e.g. --force) is present in arguments
-# =============================================
-# Usage:
-#   if _has_flag "--force" "$@"; then
-#     echo "Force flag is present!"
-#   fi
-#
-# Arguments:
-#   $1 - Flag name to check (e.g., "--force")
-#   $@ - Full argument list (usually "$@")
-#
-# Returns:
-#   0 (true) if flag is present, 1 (false) otherwise
-# =============================================
 _has_flag() {
     local flag="$1"
     shift
@@ -234,4 +205,20 @@ _has_flag() {
         fi
     done
     return 1
+}
+
+_is_arm() {
+    local arch
+    arch="$(uname -m)"
+
+    debug_log "[CHECK] Architecture detected: $arch"
+
+    case "$arch" in
+    aarch64 | armv7l | arm64)
+        return 0
+        ;;
+    *)
+        return 1
+        ;;
+    esac
 }
