@@ -107,7 +107,8 @@ install_docker_general_os() {
   print_msg info "$STEP_DOCKER_INSTALLING_USING_OFFICIAL_SCRIPT"
 
   # Create a temporary file to save the script
-  local tmp_script=$(mktemp)
+  local tmp_script
+  tmp_script=$(mktemp)
 
   # Download installation script from Docker
   if ! curl -fsSL "$get_docker_url" -o "$tmp_script"; then
