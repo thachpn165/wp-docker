@@ -1,7 +1,9 @@
+**Note**: This version is currently in beta. The stable version will be released later as WP Docker is undergoing a complete refactoring of its codebase to optimize performance and scalability.
+
+---
+
 <h1 align="center">WP Docker</h1>
 <p align="center">Lightweight, Flexibility & Freedom</p>
-
-> Welcome to v1.2.0-beta, the final beta version before the release of our first official stable version, v1.2.0. The launch date for v1.2.0 is May 5, 2025.
 
 [![Version](https://img.shields.io/badge/version-v1.2.0--beta-blue)](https://github.com/thachpn165/wp-docker/releases)
 [![Docker Support](https://img.shields.io/badge/Docker-ready-blue?logo=docker)](https://www.docker.com/)
@@ -179,7 +181,7 @@ After modifying configuration files, restart the affected services through the s
 
 ### ✅ Current Version: `v1.2.0` (Beta)
 
-- Planned release of the first stable version (v1.2.0-stable): 2025-05-05
+The stable version will be released later as WP Docker is undergoing a complete refactoring of its codebase to optimize performance and scalability.
 
 ### Core Features Completed:
 
