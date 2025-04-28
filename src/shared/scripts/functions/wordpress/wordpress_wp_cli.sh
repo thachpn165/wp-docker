@@ -15,10 +15,10 @@ wordpress_wp_cli_logic() {
     shift
     local wp_command="$*"
 
-    if [[ -z "$domain" ]]; then
-        print_and_debug error "❌ Missing domain in wordpress_wp_cli_logic"
-        return 1
-    fi
+    _is_missing_param "$domain" "domain" || return 1
+    _is_missing_param "$wp_command" "wp_command" || return 1
+    _is_valid_domain "$domain" || return 1
+
 
     local php_container
     php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")

@@ -1,10 +1,13 @@
 #!/bin/bash
-
-# =====================================
-# 🚚 wordpress_migration_cli.sh – CLI wrapper to migrate a WordPress website
-# Parameters:
-#   --domain=<domain>
-# =====================================
+# ==================================================
+# File: wordpress_migration.sh
+# Description: CLI wrapper to migrate a WordPress website.
+# Functions:
+#   - wordpress_cli_migration: Migrate a WordPress website to a new environment.
+#       Parameters:
+#           --domain=<domain>: The domain name of the WordPress site to migrate.
+#       Returns: None.
+# ==================================================
 
 # === Auto-detect BASE_DIR & load configuration ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"

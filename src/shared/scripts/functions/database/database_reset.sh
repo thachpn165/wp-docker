@@ -1,45 +1,42 @@
 #!/bin/bash
+# ==================================================
+# File: database_reset.sh
+# Description: Functions to reset WordPress site databases, including prompting the user 
+#              to select a site and resetting the database by dropping and recreating it.
+# Functions:
+#   - database_prompt_reset: Prompt the user to select a site and perform a database reset.
+#       Parameters: None.
+#   - database_logic_reset: Reset the database for a given domain by dropping and recreating it.
+#       Parameters:
+#           $1 - domain: The domain name of the website to reset the database for.
+# ==================================================
+
 safe_source "$CLI_DIR/database_actions.sh"
 
-# =====================================
-# database_prompt_reset: Prompt user to select a website and perform DB reset
-# Requires:
-#   - select_website to choose domain
-#   - Global variable $domain set by user selection
-# =====================================
 database_prompt_reset() {
-    local domain 
+    local domain
     website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_SITE_NOT_SELECTED"
         exit 1
     fi
     _is_valid_domain "$domain" || return 1
+
     # Trigger the reset logic via CLI wrapper
     database_cli_reset --domain="$domain"
 }
 
-# =====================================
-# database_logic_reset: Reset the database for a given domain
-# Parameters:
-#   $1 - domain: The domain name of the website to reset the DB for
-# Requires:
-#   - json_get_site_value to retrieve DB/container credentials
-#   - is_mariadb_running to ensure container is active
-#   - docker exec to drop and recreate DB
-# =====================================
 database_logic_reset() {
     local domain="$1"
 
-
     _is_valid_domain "$domain" || return 1
+
     # Retrieve DB credentials and container info
     local db_name db_user db_password db_container
     db_name="$(json_get_site_value "$domain" "db_name")"
     db_user="$(json_get_site_value "$domain" "db_user")"
     db_password="$(json_get_site_value "$domain" "db_pass")"
     db_container="$MYSQL_CONTAINER_NAME"
-    echo "db_container: $db_container"
     debug_log "[DB RESET] db_name=$db_name, db_user=$db_user"
 
     # Check if the MariaDB container is running

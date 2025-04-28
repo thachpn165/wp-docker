@@ -1,13 +1,23 @@
-# =====================================
-# website_wordpress_print: Display WordPress site admin info
-# Parameters:
-#   $1 - domain
-#   $2 - admin_user
-#   $3 - admin_password
-#   $4 - admin_email
-# Behavior:
-#   - Outputs formatted information about the site and admin login
-# =====================================
+d#!/bin/bash
+# ==================================================
+# File: website_setup_wordpress.sh
+# Description: Functions to set up and install WordPress for a website, including:
+#              - Displaying WordPress admin information.
+#              - Setting up WordPress with wp-cli, configuring wp-config.php, and installing plugins.
+#              - Managing permissions and restarting NGINX.
+# Functions:
+#   - website_wordpress_print: Display WordPress site admin info.
+#       Parameters:
+#           $1 - domain: Domain name of the website.
+#           $2 - admin_user: Admin username.
+#           $3 - admin_password: Admin password.
+#           $4 - admin_email: Admin email address.
+#   - website_setup_wordpress_logic: Setup and install WordPress for a site.
+#       Parameters:
+#           $1 - domain: Domain name of the website.
+#           $2 - auto_generate (optional): Whether to auto-generate admin credentials (default: true).
+# ==================================================
+
 website_wordpress_print() {
   local domain="$1"
   local admin_user="$2"
@@ -23,17 +33,6 @@ website_wordpress_print() {
   print_msg info "$INFO_ADMIN_EMAIL: ${GREEN}$admin_email${NC}"
 }
 
-# =====================================
-# website_setup_wordpress_logic: Setup and install WordPress for a site
-# Parameters:
-#   $1 - domain
-#   $2 - auto_generate (default: true)
-# Behavior:
-#   - Load config, validate container state
-#   - Download WP source if needed
-#   - Prompt for or auto-generate admin credentials
-#   - Run wp-cli install, permalinks, config, permissions
-# =====================================
 website_setup_wordpress_logic() {
   local domain="$1"
   local auto_generate="${2:-true}"
@@ -42,13 +41,13 @@ website_setup_wordpress_logic() {
   _is_valid_domain "$domain" || return 1
   local db_name db_user db_pass php_container
 
-  # 🌍 Load variables from .config.json
+  # Load variables from .config.json
   db_name=$(json_get_site_value "$domain" "db_name")
   db_user=$(json_get_site_value "$domain" "db_user")
   db_pass=$(json_get_site_value "$domain" "db_pass")
   php_container=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
-  # 🔐 Create admin account
+  # Create admin account
   local admin_user admin_password admin_email
   if [[ "$TEST_MODE" == true ]]; then
     admin_user="${admin_user:-admin-test}"
@@ -63,7 +62,7 @@ website_setup_wordpress_logic() {
     admin_password=$(openssl rand -base64 18 | tr -dc 'A-Za-z0-9' | head -c 16)
     admin_email="admin@$domain"
   else
-    # === Username ===
+    # Prompt for admin username
     while true; do
       admin_user=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_USERNAME: " "${TEST_ADMIN_USER:-admin}")
       debug_log "[wordpress] Admin username: $admin_user"
@@ -71,7 +70,7 @@ website_setup_wordpress_logic() {
       print_msg warning "$WARNING_ADMIN_USERNAME_EMPTY"
     done
 
-    # === Password (with confirmation) ===
+    # Prompt for admin password
     while true; do
       echo -ne "$PROMPT_WEBSITE_SETUP_WORDPRESS_PASSWORD: "
       read -rs admin_password
@@ -87,11 +86,11 @@ website_setup_wordpress_logic() {
       print_msg warning "$WARNING_ADMIN_PASSWORD_MISMATCH"
     done
 
-    # === Email ===
+    # Prompt for admin email
     admin_email=$(get_input_or_test_value "$PROMPT_WEBSITE_SETUP_WORDPRESS_EMAIL: " "${TEST_ADMIN_EMAIL:-admin@$domain}")
   fi
 
-  # 🐳 Check if PHP container is running
+  # Check if PHP container is running
   local php_ready_ok=false
   if _is_container_running "$php_container"; then
     php_ready_ok=true
@@ -101,58 +100,51 @@ website_setup_wordpress_logic() {
     return 1
   fi
 
-  # ✨ Install WordPress
-  print_msg info "$INFO_START_WP_INSTALL $domain"
-  print_msg progress "$INFO_WAITING_PHP_CONTAINER $php_container"
-
-  stop_loading
-
-  # 📆 Download WordPress if not already present
+  # Install WordPress
+  print_msg step "$INFO_DOWNLOADING_WP"
   if [[ ! -f "$site_dir/wordpress/index.php" ]]; then
     local wp_url="https://wordpress.org/latest.tar.gz"
     if ! network_check_http "$wp_url"; then
       print_msg error "$ERROR_WP_SOURCE_URL_NOT_REACHABLE: $wp_url"
       return 1
     fi
-    print_msg step "$INFO_DOWNLOADING_WP"
+
     docker_exec_php "$domain" "chown -R nobody:nogroup /var/www/"
-    debug_log "\n➤ chown -R nobody:nogroup /var/www/: domain=$domain"
     local wp_download_cmd
     wp_download_cmd="curl -o /var/www/html/wordpress.tar.gz -L $wp_url && \
   tar -xzf /var/www/html/wordpress.tar.gz --strip-components=1 -C /var/www/html && \
   rm /var/www/html/wordpress.tar.gz"
 
-    docker_exec_php "$domain" "$wp_download_cmd"
+    docker_exec_php "$domain" "$wp_download_cmd" >/dev/null 2>&1
     exit_if_error $? "failed to download WordPress"
     print_msg success "$SUCCESS_WP_SOURCE_DOWNLOADED"
   else
     print_msg success "$SUCCESS_WP_SOURCE_EXISTS"
   fi
 
-  debug_log "[wp_setup] domain=$domain"
-  debug_log "[wp_setup] container=$(php_get_container "$domain")"
+  # Configure wp-config
+  wp_set_wpconfig "$php_container" "$db_name" "$db_user" "$db_pass" >/dev/null 2>&1
 
-  # ⚙️ Configure wp-config
-  print_msg step "$STEP_WEBSITE_SETUP_WORDPRESS: $domain"
-  wp_set_wpconfig "$php_container" "$db_name" "$db_user" "$db_pass"
-  wp_install "$domain" "https://$domain" "$domain" "$admin_user" "$admin_password" "$admin_email"
+  # Run WordPress installation
+  wp_install "$domain" "https://$domain" "$domain" "$admin_user" "$admin_password" "$admin_email" >/dev/null 2>&1
 
+  # Set permissions
   print_msg step "$MSG_WEBSITE_PERMISSIONS: $domain"
   if [[ "$php_ready_ok" == true ]]; then
-    #docker_exec_php "$domain" "chown -R nobody:nogroup /var/www/"
     run_cmd "docker exec -u root -i $php_container chown -R nobody:nogroup /var/www/"
   else
     print_msg warning "$WARNING_SKIP_CHOWN"
   fi
 
-  # 🔁 Configure permalinks
-  print_msg step "$STEP_WEBSITE_SETUP_ESSENTIALS: $domain"
+  # Configure permalinks
   wp_set_permalinks "$domain"
   website_wordpress_print "$domain" "$admin_user" "$admin_password" "$admin_email"
+  wp_plugin_install_security_plugin "$domain"
   print_msg completed "$SUCCESS_WP_INSTALL_DONE"
 
-  # set .site.$domain.cache value to `no-cache`
+  # Set cache value to `no-cache`
   json_set_site_value "$domain" "cache" "no-cache"
-  # 🐳 Restart NGINX to apply new configuration
+
+  # Restart NGINX
   nginx_restart
 }

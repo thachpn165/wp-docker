@@ -80,41 +80,18 @@ src/logs/
 src/core/webserver/nginx/access.log
 src/core/webserver/nginx/error.log
 
-# ⚙️ MAC & LINUX SYSTEM FILES ⚙️
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-*.swp
-*.swo
-__MACOSX
-
-# ⛔ NODE & DEPENDENCIES ⛔
-node_modules/
-npm-debug.log
-yarn.lock
-
-# ${SAVE} GIT TRACKING FILES ${SAVE}
-#.gitignore
-
-# 📦 MISC
-*.crt
-*.key
-*.pem
-.wp-login-auth-*
+# ========================================
+# 🚀 Build Artifacts
+# ========================================
+dist/*
+wp-docker-lemp/
 tmp/
 latest_version.txt
 .cursorignore
-tests.yml.bak
 
-# ☁️ RCLONE CONFIG
-src/shared/config/rclone/rclone.conf
-
-# 🌐 NGINX GLOBAL CONFIG - không commit theo site
-src/shared/core/webserver/nginx/globals/wp-login*
-src/shared/core/webserver/nginx/conf.d/*.conf
-
-# 🧩 WP CLI binary (tự động tải lại)
+# ========================================
+# 🧩 WP-CLI Binary (auto-downloaded)
+# ========================================
 src/shared/bin/wp
 src/shared/bin/wp-cli.phar
 

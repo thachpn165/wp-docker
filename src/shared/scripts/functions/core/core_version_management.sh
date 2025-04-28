@@ -1,19 +1,39 @@
-# =====================================
-# 🧠 core_version_management.sh – Version Utilities (Refactored to use .config.json)
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: core_version_management.sh
+# Description: Functions to manage WP Docker versions, including retrieving the current version, 
+#              fetching the latest version, comparing versions, downloading updates, and displaying version info.
+# Functions:
+#   - core_channel_get: Get the current update channel from the configuration.
+#       Parameters: None.
+#   - core_version_get_current: Retrieve the currently installed version from the configuration.
+#       Parameters: None.
+#   - core_version_get_latest: Fetch the latest version from the remote repository based on the update channel.
+#       Parameters: None.
+#   - core_version_compare: Compare two version strings.
+#       Parameters:
+#           $1 - v1: The first version string.
+#           $2 - v2: The second version string.
+#   - core_get_download_url: Get the download URL for the latest version based on the update channel.
+#       Parameters: None.
+#   - core_version_update_latest: Update WP Docker to the latest version.
+#       Parameters:
+#           --force (optional): Force the update even if the current version is the latest.
+#   - core_version_display: Display the current and latest version information.
+#       Parameters: None.
+#   - core_version_download_latest: Download the latest version zip file.
+#       Parameters: None.
+# ==================================================
 
-# === Get core channel from config JSON
 core_channel_get() {
   json_get_value '.core.channel'
 }
 
-# === Get current version from config JSON
 core_version_get_current() {
   local channel
   channel="$(core_channel_get)"
 
   if [[ "$channel" == "dev" ]]; then
-    debug_log "[core_version_get_current] Channel is dev → version=dev"
     core_set_installed_version "dev"
     echo "dev"
     return
@@ -28,20 +48,18 @@ core_version_get_current() {
   else
     print_msg warning "$WARNING_VERSION_NOT_FOUND"
     local latest_version
-    latest_version="$(core_version_get_latest 2>/dev/null)" # tránh lỗi màu hóa
+    latest_version="$(core_version_get_latest 2>/dev/null)"
     if [[ -n "$latest_version" ]]; then
       core_set_installed_version "$latest_version"
       print_msg info "$INFO_VERSION_FILE_RESTORED"
       echo "$latest_version"
     else
       print_msg error "$ERROR_FETCH_LATEST_VERSION_FAILED"
-      debug_log
       echo "0.0.0"
     fi
   fi
 }
 
-# === Get latest version from remote GitHub (main/dev based on channel)
 core_version_get_latest() {
   local channel version_url latest_version
 
@@ -73,11 +91,9 @@ core_version_compare() {
   local v1="${1#v}"
   local v2="${2#v}"
 
-  # Strip build metadata
   v1="${v1%%+*}"
   v2="${v2%%+*}"
 
-  # Detect pre-release (contains -), add "-stable" if missing
   [[ "$v1" != *-* ]] && v1="${v1}-stable"
   [[ "$v2" != *-* ]] && v2="${v2}-stable"
 
@@ -90,15 +106,14 @@ core_version_compare() {
   sorted=$(printf "%s\n%s" "$v1" "$v2" | sort -V | head -n1)
 
   if [[ "$sorted" == "$v1" ]]; then
-    echo "older" # nghĩa là $v1 < $v2
+    echo "older"
   else
-    echo "newer" # nghĩa là $v1 > $v2
+    echo "newer"
   fi
 
   return 0
 }
 
-# === Get download URL based on channel (main/dev)
 core_get_download_url() {
   local channel repo_tag zip_name zip_url
 
@@ -122,20 +137,6 @@ core_get_download_url() {
   echo "$zip_url"
 }
 
-# =============================================
-# 🚀 core_version_update_latest: Update WP Docker to the latest version
-# =============================================
-# Behavior:
-#   - Check for a new version (except when --force is passed)
-#   - Prompt user to confirm update
-#   - Download and extract the latest release
-#   - Sync updated files (excluding: sites/, archives/, logs/)
-#   - Execute upgrade script if exists
-#   - Show success message after update
-#
-# Usage:
-#   core_version_update_latest [--force]
-# =============================================
 core_version_update_latest() {
   local latest_version installed_version channel upgrade_script
   local force force_update
@@ -147,10 +148,7 @@ core_version_update_latest() {
     force_update="false"
   fi
 
-  # Get current release channel
   channel="$(core_channel_get)"
-
-  # Get latest and current installed version
   latest_version=$(core_version_get_latest)
   installed_version=$(core_version_get_current)
 
@@ -165,7 +163,6 @@ core_version_update_latest() {
     return 0
   fi
 
-  # Prompt user to confirm update
   print_msg step "$INFO_UPDATE_PROMPT: $latest_version"
   local confirm_update
   confirm_update=$(get_input_or_test_value "$PROMPT_UPDATE_CONFIRMATION ($latest_version) (yes/no): " "no")
@@ -175,19 +172,16 @@ core_version_update_latest() {
     return 0
   fi
 
-  # Download the latest release zip file
   core_version_download_latest
 
   local temp_zip="/tmp/wp-docker.zip"
   local temp_dir="/tmp/wp-docker"
 
-  # Verify zip exists
   if [[ ! -f "$temp_zip" ]]; then
     print_msg error "$MSG_NOT_FOUND : $temp_zip"
     return 1
   fi
 
-  # Extract the zip file
   mkdir -p "$temp_dir"
   print_msg step "$INFO_UNPACKING_ZIP"
   unzip -q "$temp_zip" -d "$temp_dir" || {
@@ -195,7 +189,6 @@ core_version_update_latest() {
     return 1
   }
 
-  # Sync source to INSTALL_DIR
   print_msg step "$STEP_EXTRACT_AND_UPDATE"
   rsync -a --exclude='sites/' --exclude='archives/' --exclude='logs/' "$temp_dir/" "$INSTALL_DIR/"
   if [[ $? -ne 0 ]]; then
@@ -203,14 +196,11 @@ core_version_update_latest() {
     return 1
   fi
 
-  # Clean up temp files
   remove_directory "$temp_dir"
   remove_file "$temp_zip"
 
-  # Save new installed version
   core_set_installed_version "$latest_version"
 
-  # Run upgrade script if available
   if [[ "$channel" == "dev" ]]; then
     upgrade_script="$BASE_DIR/upgrade/dev-upgrade.sh"
   else
@@ -224,25 +214,17 @@ core_version_update_latest() {
     debug_log "No upgrade script found for version: $latest_version"
   fi
 
-  # Final message
   print_msg success "$SUCCESS_CORE_UPDATED"
-
 }
 
-# ============================================
-# 🧠 core_version_display – Display version info
-# ============================================
-
 core_version_display() {
-  # Lấy phiên bản hiện tại từ .config.json
   local version_local
   version_local=$(core_version_get_current)
 
-  # Lấy phiên bản mới nhất từ GitHub
   local version_remote
   version_remote=$(core_version_get_latest)
   echo ""
-  # Hiển thị phiên bản hiện tại và mới nhất
+
   print_msg sub-label "$INFO_CORE_VERSION_CURRENT: $version_local"
   print_msg sub-label "$INFO_CORE_VERSION_LATEST: $version_remote"
   echo ""
@@ -259,7 +241,6 @@ core_version_download_latest() {
   local channel
   channel="$(core_channel_get)"
 
-  # Xác định tag cho từng channel
   local repo_tag
   if [[ "$channel" == "official" ]]; then
     repo_tag="$OFFICIAL_REPO_TAG"
@@ -278,7 +259,6 @@ core_version_download_latest() {
   zip_url=$(core_get_download_url "$channel")
   debug_log "[core_version_download_latest] Download URL: $zip_url"
 
-  # Tải về file zip tương ứng với channel vào thư mục /tmp/
   local temp_zip="/tmp/wp-docker.zip"
   if ! network_check_http "$zip_url"; then
     print_msg error "$ERROR_CORE_ZIP_URL_NOT_REACHABLE: $zip_url"

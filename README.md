@@ -16,7 +16,7 @@
 ![Terminal Menu Interface](https://raw.githubusercontent.com/thachpn165/wp-docker/refs/heads/main/menu-screenshot.png)
 
 
-- 📝 [**Documentation**](https://wpdocker.vn) (*Coming soon: Support for Vietnamese and English languages*)
+- 📝 [**Documentation**](https://wpdocker.vn)
 - 🦠 [**Report a bug**](https://github.com/thachpn165/wp-docker/issues/new?labels=bug)
 - 💡 [**Feature request**](https://github.com/thachpn165/wp-docker/issues/new?labels=bug)
 

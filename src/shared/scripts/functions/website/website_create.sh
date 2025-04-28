@@ -1,17 +1,25 @@
-# shellcheck disable=SC2317
-safe_source "$FUNCTIONS_DIR/ssl_loader.sh"
-# =====================================
-# website_prompt_create: Prompt user for domain and PHP version, then call website_cli_create
-# Behavior:
-#   - Asks for domain name
-#   - Prompts for PHP version
-#   - Allows auto-generate admin info or manual
-#   - Calls CLI wrapper with parameters
-# =====================================
+#!/bin/bash
+#shellcheck disable=SC2317
+# ==================================================
+# File: website_create.sh
+# Description: Functions to create and configure a new WordPress website, including:
+#              - Prompting the user for domain and PHP version.
+#              - Setting up site directories, nginx, SSL, and Docker containers.
+#              - Applying permissions and reloading nginx.
+# Functions:
+#   - website_prompt_create: Prompt user for domain and PHP version, then call website_cli_create.
+#       Parameters: None.
+#   - website_logic_create: Main logic to create and configure a new WordPress website.
+#       Parameters:
+#           $1 - domain: Domain name of the website.
+#           $2 - php_version: PHP version to use for the website.
+# ==================================================
+
 website_prompt_create() {
-    #echo -e "${BLUE}===== CREATE NEW WORDPRESS WEBSITE =====${NC}"
+    # Prompt user for domain and PHP version, then call website_cli_create.
+    # Parameters: None.
+
     print_msg title "$TITLE_CREATE_NEW_WORDPRESS_WEBSITE"
-    # Get domain from user
     read -p "$PROMPT_ENTER_DOMAIN: " domain
     _is_valid_domain "$domain" || return 1
     php_prompt_choose_version || return 1
@@ -19,7 +27,6 @@ website_prompt_create() {
 
     echo ""
     choice=$(get_input_or_test_value "$PROMPT_WEBSITE_CREATE_RANDOM_ADMIN" "${TEST_WEBSITE_CREATE_RANDOM_ADMIN:-y}")
-    echo "🔍 Prompt text: $PROMPT_WEBSITE_CREATE_RANDOM_ADMIN"
     choice="$(echo "$choice" | tr '[:upper:]' '[:lower:]')"
 
     auto_generate=true
@@ -34,18 +41,12 @@ website_prompt_create() {
         --auto_generate="$auto_generate" || return 1
 }
 
-# =====================================
-# website_logic_create: Main logic to create and configure a new WordPress website
-# Parameters:
-#   $1 - domain
-#   $2 - php_version
-# Behavior:
-#   - Create site directory and structure
-#   - Setup nginx, config files, SSL, docker-compose
-#   - Start containers and verify
-#   - Apply folder permissions and reload nginx
-# =====================================
 website_logic_create() {
+    # Main logic to create and configure a new WordPress website.
+    # Parameters:
+    #   $1 - domain: Domain name of the website.
+    #   $2 - php_version: PHP version to use for the website.
+
     local domain="$1"
     local php_version="$2"
     export domain php_version
@@ -54,7 +55,7 @@ website_logic_create() {
     website_set_config "$domain" "$php_version"
     CONTAINER_PHP=$(json_get_site_value "$domain" "CONTAINER_PHP")
 
-    # Cleanup function
+    # Cleanup function to handle errors and rollback changes.
     cleanup() {
         print_msg cancel "$MSG_CLEANING_UP"
 
@@ -62,7 +63,6 @@ website_logic_create() {
             docker rm -f "$CONTAINER_PHP" &>/dev/null
             print_and_debug success "$SUCCESS_CONTAINER_STOP: $CONTAINER_PHP"
         fi
-
 
         if [[ -d "$SITE_DIR" ]]; then
             rm -rf "$SITE_DIR"
@@ -81,7 +81,6 @@ website_logic_create() {
             rm -f "$SSL_DIR/$domain.key"
         fi
 
-        # Remove site config from .config.json
         json_delete_site_key "$domain"
         print_msg info "🔁 Rollback complete."
     }
@@ -135,11 +134,9 @@ website_logic_create() {
     debug_log "  ➤ CONTAINER_PHP: $CONTAINER_PHP"
 
     if ! _is_container_running "$CONTAINER_PHP"; then
-
         print_msg error "$ERROR_CONTAINER_NOT_READY_AFTER_30S"
         return 1
     fi
-
 
     print_msg success "$MSG_CONTAINER_READY"
 

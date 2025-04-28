@@ -1,8 +1,31 @@
-#!/usr/bin/env bash
-
-# =====================================
-# 🌐 website_cli.sh – CLI wrappers for website management
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: website_manage.sh
+# Description: CLI wrappers for website management, including restarting websites, 
+#              showing website info, listing websites, viewing logs, and deleting websites.
+# Functions:
+#   - website_cli_restart: Restart a website.
+#       Parameters:
+#           --domain=<domain>: The domain name of the website.
+#       Returns: None.
+#   - website_cli_info: Show information about a website.
+#       Parameters:
+#           --domain=<domain>: The domain name of the website.
+#       Returns: None.
+#   - website_cli_list: List all websites.
+#       Parameters: None.
+#       Returns: None.
+#   - website_cli_logs: View logs for a website.
+#       Parameters:
+#           --domain=<domain>: The domain name of the website.
+#           --log_type=<type>: The type of log to view (e.g., access, error).
+#       Returns: None.
+#   - website_cli_delete: Delete a website.
+#       Parameters:
+#           --domain=<domain>: The domain name of the website.
+#           --backup_enabled=true|false: Whether to enable backup before deletion.
+#       Returns: None.
+# ==================================================
 
 # === Load config from any directory ===
 SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]:-$0}")"
@@ -19,10 +42,6 @@ done
 # === Load website logic functions ===
 safe_source "$FUNCTIONS_DIR/website_loader.sh"
 
-# =====================================
-# 🔁 website_cli_restart – Restart a website
-# Params: --domain
-# =====================================
 website_cli_restart() {
   local domain
   domain=$(_parse_params "--domain" "$@")
@@ -32,10 +51,6 @@ website_cli_restart() {
   website_logic_restart "$domain"
 }
 
-# =====================================
-# ℹ️ website_cli_info – Show website info
-# Params: --domain
-# =====================================
 website_cli_info() {
   local domain
   domain=$(_parse_params "--domain" "$@")
@@ -45,17 +60,10 @@ website_cli_info() {
   website_logic_info "$domain"
 }
 
-# =====================================
-# 📃 website_cli_list – List all websites
-# =====================================
 website_cli_list() {
   website_logic_list
 }
 
-# =====================================
-# 📜 website_cli_logs – View site logs
-# Params: --domain, --log_type
-# =====================================
 website_cli_logs() {
   local domain log_type
   domain=$(_parse_params "--domain" "$@")
@@ -68,10 +76,6 @@ website_cli_logs() {
   website_logic_logs "$domain" "$log_type"
 }
 
-# =====================================
-# ❌ website_cli_delete – Delete a website
-# Params: --domain, --backup_enabled=true|false
-# =====================================
 website_cli_delete() {
   local domain backup_enabled
   domain=$(_parse_params "--domain" "$@")

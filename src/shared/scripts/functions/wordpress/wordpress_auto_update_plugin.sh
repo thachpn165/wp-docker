@@ -42,12 +42,12 @@ wordpress_auto_update_plugin_logic() {
     # **Handle enabling/disabling automatic plugin updates**
     if [[ "$2" == "enable" ]]; then
         print_msg info "$LABEL_ENABLE_AUTO_UPDATE_PLUGIN"
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin auto-updates enable --all
+        wordpress_wp_cli_logic "$domain" plugin auto-updates enable --all
         exit_if_error "$?" "Unable to enable automatic updates for plugins on '$domain'."
         print_msg success "$(printf "$SUCCESS_PLUGIN_AUTO_UPDATE_ENABLED" "$domain")"
     elif [[ "$2" == "disable" ]]; then
         print_msg info "$LABEL_DISABLE_AUTO_UPDATE_PLUGIN"
-        bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin auto-updates disable --all
+        wordpress_wp_cli_logic "$domain" plugin auto-updates disable --all
         exit_if_error "$?" "Unable to disable automatic updates for plugins on '$domain'."
         print_msg success "$(printf "$SUCCESS_PLUGIN_AUTO_UPDATE_DISABLED" "$domain")"
     else
@@ -56,5 +56,5 @@ wordpress_auto_update_plugin_logic() {
     fi
 
     print_msg info "$(printf "$INFO_PLUGIN_STATUS" "$domain")"
-    bash "$CLI_DIR/wordpress_wp_cli.sh" --domain="${domain}" -- plugin list --fields=name,status,auto_update --format=table
+    wordpress_wp_cli_logic "$domain" plugin list --fields=name,status,auto_update --format=table
 }

@@ -1,11 +1,20 @@
-# =====================================
-# php_prompt_choose_version: Prompt user to choose a PHP version from cached list
-# Requires:
-#   - php_versions.txt must exist
-#   - TEST_MODE and TEST_PHP_VERSION for testing scenarios
-# Outputs:
-#   - Sets global variable SELECTED_PHP
-# =====================================
+#!/bin/bash
+# ==================================================
+# File: php_version.sh
+# Description: Functions to manage PHP versions for WordPress sites, including prompting
+#              the user to select a PHP version, changing the PHP version for a site,
+#              and updating the PHP version in the site's configuration and Docker Compose file.
+# Functions:
+#   - php_prompt_choose_version: Prompt the user to choose a PHP version from a cached list.
+#       Parameters: None.
+#   - php_prompt_change_version: Prompt the user to change the PHP version of a selected site.
+#       Parameters: None.
+#   - php_logic_change_version: Core logic to update the PHP version for a website.
+#       Parameters:
+#           $1 - domain: The website domain.
+#           $2 - php_version: The new PHP version to set.
+# ==================================================
+
 php_prompt_choose_version() {
   local PHP_VERSION_FILE="$BASE_DIR/php_versions.txt"
   local doc_url="https://hub.docker.com/r/bitnami/php-fpm/tags"
@@ -39,14 +48,14 @@ EOF
   fi
 
   echo ""
-  # Warnings
   print_msg recommend "$TIPS_PHP_RECOMMEND_VERSION"
-  print_msg warning "$WARNING_PHP_ARM_TITLE"
-  print_msg sub-label "$WARNING_PHP_ARM_LINE1"
-  print_msg sub-label "$WARNING_PHP_ARM_LINE2"
-  print_msg sub-label "$WARNING_PHP_ARM_LINE3"
-  print_msg sub-label "$WARNING_PHP_ARM_LINE4"
-  print_msg sub-label "$WARNING_PHP_ARM_LINE5"
+  if _is_arm; then
+    print_msg warning "$WARNING_PHP_ARM_TITLE"
+
+    for i in {1..5}; do
+      print_msg sub-label "$(eval echo "\$WARNING_PHP_ARM_LINE$i")"
+    done
+  fi
 
   echo ""
   # Display version list
@@ -85,18 +94,12 @@ EOF
 
   SELECTED_PHP="${PHP_VERSIONS[$php_index]}"
 }
-# =====================================
-# php_prompt_change_version: Prompt user to change PHP version of a selected site
-# Requires:
-#   - select_website to choose domain
-#   - php_prompt_choose_version to select version
-# Calls CLI to perform actual change
-# =====================================
+
 php_prompt_change_version() {
   local php_version
   local domain
 
-  # === Chọn website ===
+  # Select website
   if ! website_get_selected domain; then
     return 1
   fi
@@ -115,18 +118,7 @@ php_prompt_change_version() {
   php_cli_change_version --domain="$domain" --php_version="$php_version"
 }
 
-# ====================================
-# php_logic_change_version: Core logic to update PHP version for a website
-# Parameters:
-#   $1 - domain: The website domain
-#   $2 - php_version: The new PHP version to set
-# Requires:
-#   - json_set_site_value to update config
-#   - docker-compose.yml must exist for the site
-#   - sed or sedi to update image tag
-# =====================================
 php_logic_change_version() {
-
   local domain="$1"
   local php_version="$2"
 
@@ -171,5 +163,4 @@ php_logic_change_version() {
   print_msg success "$(printf "$SUCCESS_PHP_CHANGED" "$domain" "$php_version")"
   php_restore_enabled_extensions "$domain"
   docker_exec_php "$domain" "php -v"
-
 }

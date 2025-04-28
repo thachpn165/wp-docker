@@ -1,6 +1,26 @@
+#!/bin/bash
+# ==================================================
+# File: wordpress_protect_wp_login.sh
+# Description: Functions to enable or disable basic authentication for wp-login.php, including:
+#              - Prompting the user to select a website and action (enable/disable).
+#              - Generating or removing authentication files and NGINX configurations.
+#              - Reloading NGINX to apply changes.
+# Functions:
+#   - wordpress_prompt_protect_wplogin: Prompt user to select a website and action for wp-login.php protection.
+#       Parameters: None.
+#   - wordpress_protect_wp_login_logic: Enable or disable basic auth protection for wp-login.php.
+#       Parameters:
+#           $1 - domain: Domain name of the website.
+#           $2 - action: Action to perform ("enable" or "disable").
+# ==================================================
+
 wordpress_prompt_protect_wplogin() {
-    local domain 
-    # 📋 Select website
+    # Prompt user to select a website and action for wp-login.php protection.
+    # Parameters: None.
+
+    local domain
+
+    # Select website
     website_get_selected domain
     if [[ -z "$domain" ]]; then
         print_msg error "$ERROR_NO_WEBSITE_SELECTED"
@@ -8,7 +28,7 @@ wordpress_prompt_protect_wplogin() {
     fi
     _is_valid_domain "$domain" || return 1
 
-    # 📋 Choose action
+    # Choose action
     echo ""
     print_msg question "$(printf "$QUESTION_PROTECT_WPLOGIN_ACTION" "$domain")"
     echo "1) $LABEL_PROTECT_WPLOGIN_ENABLE"
@@ -25,21 +45,16 @@ wordpress_prompt_protect_wplogin() {
         exit 1
     fi
 
-    # ▶️ Run CLI
+    # Run CLI
     wordpress_cli_protect_wplogin --domain="$domain" --action="$action"
-
 }
-# =====================================
-# wordpress_protect_wp_login_logic: Enable or disable basic auth protection for wp-login.php
-# Parameters:
-#   $1 - domain
-#   $2 - action ("enable" or "disable")
-# Behavior:
-#   - Generates .htpasswd and include config file if enabled
-#   - Removes config and auth file if disabled
-#   - Modifies NGINX config and reloads nginx
-# =====================================
+
 wordpress_protect_wp_login_logic() {
+    # Enable or disable basic auth protection for wp-login.php.
+    # Parameters:
+    #   $1 - domain: Domain name of the website.
+    #   $2 - action: Action to perform ("enable" or "disable").
+
     local domain="$1"
     local action="$2"
     local NGINX_CONF_FILE="$NGINX_PROXY_DIR/conf.d/${domain}.conf"
@@ -77,7 +92,7 @@ wordpress_protect_wp_login_logic() {
         print_msg step "$STEP_WORDPRESS_PROTECT_WP_INCLUDE_NGINX"
         if ! grep -q "include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"; then
             sedi "/include \/etc\/nginx\/globals\/cloudflare.conf;/a\\
-            include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"
+      include /etc/nginx/globals/wp-login-$domain.conf;" "$NGINX_CONF_FILE"
 
             print_msg important "$IMPORTANT_WORDPRESS_PROTECT_WP_LOGIN_INSTALLED:"
             echo -e "  ${GREEN}Username:${NC} $USERNAME"
@@ -104,7 +119,5 @@ wordpress_protect_wp_login_logic() {
         exit 1
     fi
 
-    # 🔄 Reload NGINX
-    print_msg step "Reloading NGINX"
     nginx_reload
 }

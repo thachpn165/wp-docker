@@ -1,10 +1,13 @@
 #!/bin/bash
-
-# =====================================
-# 🔁 php_cli_rebuild_container – CLI wrapper to rebuild PHP container for a site
-# Parameters:
-#   --domain=<domain>
-# =====================================
+# ==================================================
+# File: php_rebuild_container.sh
+# Description: CLI wrapper to rebuild the PHP container for a specific site.
+# Functions:
+#   - php_cli_rebuild_container: Rebuild the PHP container for a given domain.
+#       Parameters:
+#           --domain=<domain>: The domain name of the site.
+#       Returns: None.
+# ==================================================
 
 # === Load logic (uncomment if needed) ===
 # safe_source "$FUNCTIONS_DIR/php_loader.sh"

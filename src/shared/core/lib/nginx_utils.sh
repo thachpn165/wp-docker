@@ -1,7 +1,35 @@
 # =============================================
-# 🔧 Function: nginx_init_docker_compose
-# Description: Generate docker-compose.yml from template if not exists
+# File: nginx_utils.sh
+# Description: This script contains utility functions for managing NGINX in a Docker environment.
+# Functions:
+#   - nginx_init_docker_compose: Generate docker-compose.yml from a template if it doesn't exist.
+#       Parameters:
+#           None
+#   - nginx_init: Initialize and ensure NGINX proxy is correctly set up.
+#       Parameters:
+#           None
+#   - nginx_add_mount_docker: Add volume mount to docker-compose.override.yml for a domain.
+#       Parameters:
+#           $1 - domain name
+#   - nginx_remove_mount_docker: Remove volume mounts from override file.
+#       Parameters:
+#           $1 - override_file path
+#           $2 - mount entry path
+#           $3 - mount logs path
+#   - nginx_restart: Restart the NGINX proxy container using Docker Compose.
+#       Parameters:
+#           None
+#   - nginx_reload: Reload NGINX configuration inside the proxy container.
+#       Parameters:
+#           None
+#   - wait_for_nginx_container: Wait for the NGINX container to start.
+#       Parameters:
+#           None
+#   - nginx_remove_orphaned_site_conf: Remove orphaned NGINX site configs.
+#       Parameters:
+#           None
 # =============================================
+
 nginx_init_docker_compose() {
     local compose_file="$NGINX_PROXY_DIR/docker-compose.yml"
     local template_file="$TEMPLATES_DIR/nginx-docker-compose.yml.template"
@@ -21,10 +49,6 @@ nginx_init_docker_compose() {
     print_msg success "$SUCCESS_NGINX_COMPOSE_GENERATED: $compose_file"
 }
 
-# =============================================
-# 🚀 Function: nginx_init
-# Description: Initialize and ensure NGINX proxy is correctly set up
-# =============================================
 nginx_init() {
     _is_directory_exist "$NGINX_PROXY_DIR" true
 
@@ -48,19 +72,10 @@ nginx_init() {
     print_msg success "$MSG_CONTAINER_READY: $NGINX_PROXY_CONTAINER"
 }
 
-# =====================================
-# nginx_add_mount_docker: Add volume mount to docker-compose.override.yml for a domain
-# Parameters:
-#   $1 - domain name
-# Behavior:
-#   - Creates override file if not exists
-#   - Appends mount paths for WordPress source and logs
-# =====================================
 nginx_add_mount_docker() {
     local domain="$1"
     local OVERRIDE_FILE="$NGINX_PROXY_DIR/docker-compose.override.yml"
 
-    # If in TEST_MODE, use mock file
     if [[ "$TEST_MODE" == true ]]; then
         OVERRIDE_FILE="/tmp/mock-docker-compose.override.yml"
     fi
@@ -81,7 +96,6 @@ EOF
         return
     fi
 
-    # Check and add MOUNT_ENTRY if needed
     if ! grep -Fxq "$MOUNT_ENTRY" "$OVERRIDE_FILE"; then
         if ! echo "$MOUNT_ENTRY" | tee -a "$OVERRIDE_FILE" >/dev/null; then
             print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
@@ -89,12 +103,10 @@ EOF
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_ENTRY"
-        nginx_restart
     else
         print_msg skip "$SKIP_DOCKER_NGINX_MOUNT_VOLUME_EXIST: $MOUNT_ENTRY"
     fi
 
-    # Check and add MOUNT_LOGS if needed
     if ! grep -Fxq "$MOUNT_LOGS" "$OVERRIDE_FILE"; then
         if ! echo "$MOUNT_LOGS" | tee -a "$OVERRIDE_FILE" >/dev/null; then
             print_msg error "$ERROR_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
@@ -102,21 +114,13 @@ EOF
             return 1
         fi
         print_msg success "$SUCCESS_DOCKER_NGINX_MOUNT_VOLUME: $MOUNT_LOGS"
-        nginx_restart
+
     else
         print_msg skip "$SKIP_DOCKER_NGINX_MOUNT_VOLUME_EXIST: $MOUNT_LOGS"
     fi
+    nginx_restart >/dev/null 2>&1
 }
 
-# =====================================
-# nginx_remove_mount_docker: Remove volume mounts from override file
-# Parameters:
-#   $1 - override_file path
-#   $2 - mount entry path
-#   $3 - mount logs path
-# Behavior:
-#   - Deletes mount entries from file if present
-# =====================================
 nginx_remove_mount_docker() {
     local override_file="$1"
     local mount_entry="$2"
@@ -144,12 +148,6 @@ nginx_remove_mount_docker() {
     fi
 }
 
-# =====================================
-# nginx_restart: Restart the NGINX proxy container using Docker Compose
-# Behavior:
-#   - Runs 'docker compose down' and 'up --force-recreate'
-#   - Displays loading and status messages
-# =====================================
 nginx_restart() {
     print_msg step "$INFO_DOCKER_NGINX_STARTING"
     debug_log "NGINX_PROXY_DIR: $NGINX_PROXY_DIR"
@@ -187,31 +185,23 @@ nginx_restart() {
     print_msg success "$SUCCESS_DOCKER_NGINX_RESTART"
 }
 
-# =====================================
-# nginx_reload: Reload NGINX configuration inside the proxy container
-# Behavior:
-#   - Uses 'nginx -s reload' via docker exec
-#   - Shows success or error message
-# =====================================
 nginx_reload() {
     print_msg step "$INFO_DOCKER_NGINX_RELOADING"
 
-    docker exec "$NGINX_PROXY_CONTAINER" nginx -t
+    run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -t"
     exit_if_error $? "$ERROR_DOCKER_NGINX_TEST_FAILED"
     run_cmd "docker exec ""$NGINX_PROXY_CONTAINER"" nginx -s reload"
     if [[ $? -ne 0 ]]; then
         print_msg error "$ERROR_DOCKER_NGINX_RELOAD : $NGINX_PROXY_CONTAINER"
         run_cmd "docker ps logs $NGINX_PROXY_CONTAINER"
-        stop_loading
         return 1
     fi
-    stop_loading
     print_msg success "$SUCCESS_DOCKER_NGINX_RELOAD"
 }
 
 wait_for_nginx_container() {
-    local timeout=30 # số giây tối đa chờ
-    local interval=1 # thời gian giữa mỗi lần kiểm tra
+    local timeout=30
+    local interval=1
     local waited=0
 
     print_msg info "⏳ Waiting for container '$NGINX_PROXY_CONTAINER' to start..."
@@ -229,14 +219,6 @@ wait_for_nginx_container() {
     return 0
 }
 
-# =============================================
-# 🧹 nginx_remove_orphaned_site_conf – Remove orphaned NGINX site configs
-# ---------------------------------------------
-# Description:
-#   - Scan $PROXY_CONF_DIR for *.conf files.
-#   - Extract domain name from each filename.
-#   - If domain does not exist in .site[], delete the config file.
-# =============================================
 nginx_remove_orphaned_site_conf() {
     _is_missing_var "$PROXY_CONF_DIR" "PROXY_CONF_DIR" || return 1
     _is_missing_var "$JSON_CONFIG_FILE" "JSON_CONFIG_FILE" || return 1
@@ -249,7 +231,7 @@ nginx_remove_orphaned_site_conf() {
         domain=$(basename "$conf_file" .conf)
 
         if ! json_key_exists ".site[\"$domain\"]" "$JSON_CONFIG_FILE"; then
-            print_msg warning "⚠️ Orphaned config found: $conf_file → removing"
+            print_and_debug warning "⚠️ Orphaned config found: $conf_file → removing"
             remove_file "$conf_file"
             ((deleted_count++))
         fi
@@ -257,8 +239,8 @@ nginx_remove_orphaned_site_conf() {
     shopt -u nullglob
 
     if ((deleted_count == 0)); then
-        print_msg success "✅ No orphaned NGINX site configs found."
+        print_msg success "No orphaned NGINX site configs found." >/dev/null 2>&1
     else
-        print_msg success "🧹 Removed $deleted_count broken NGINX config(s)."
+        print_msg success "Removed $deleted_count broken NGINX config(s)."
     fi
 }

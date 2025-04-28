@@ -1,9 +1,23 @@
-# ============================================
-# 📦 PHP Extension Registry
-# --------------------------------------------
-# JSON list of available PHP extensions
-# Each key is the internal name; title is for UI; function_name maps to the install function
-# ============================================
+#!/bin/bash
+# ==================================================
+# File: php_install_extensions.sh
+# Description: Functions to manage PHP extensions, including displaying available extensions, 
+#              installing selected extensions, and restoring previously enabled extensions.
+# Functions:
+#   - php_prompt_install_extension: Display a list of available extensions for user selection and install the chosen extension.
+#       Parameters: None.
+#   - php_logic_install_extension: Wrapper to dynamically call the install function for a given extension.
+#       Parameters:
+#           $1 - domain: The domain name of the website.
+#           $2 - extension: The internal name of the PHP extension to install.
+#   - php_install_extension_ioncube_loader: Install Ioncube Loader for a PHP container.
+#       Parameters:
+#           $1 - domain: The domain name of the website.
+#   - php_restore_enabled_extensions: Restore previously enabled PHP extensions for a given domain.
+#       Parameters:
+#           $1 - domain: The domain name of the website.
+# ==================================================
+
 readonly PHP_LIST_AVAILABLE_EXTENSIONS='{
   "ioncube_loader": {
     "title": "Ioncube Loader",
@@ -11,12 +25,6 @@ readonly PHP_LIST_AVAILABLE_EXTENSIONS='{
   }
 }'
 
-# ============================================
-# 📋 php_prompt_install_extension
-# --------------------------------------------
-# Display a list of available extensions for user to choose
-# Then calls the install logic for the selected extension
-# ============================================
 php_prompt_install_extension() {
     local domain
     if ! website_get_selected domain; then
@@ -51,11 +59,6 @@ php_prompt_install_extension() {
     php_logic_install_extension "$domain" "$selected_key"
 }
 
-# ============================================
-# 🧠 php_logic_install_extension
-# --------------------------------------------
-# Wrapper to dynamically call the install function for a given extension
-# ============================================
 php_logic_install_extension() {
     local domain="$1"
     local extension="$2"
@@ -73,12 +76,6 @@ php_logic_install_extension() {
     "$install_fn" "$domain"
 }
 
-# ============================================
-# 🔐 php_install_extension_ioncube_loader
-# --------------------------------------------
-# Install Ioncube Loader for a PHP container, if compatible
-# Checks architecture, PHP version, thread safety, and loader existence
-# ============================================
 php_install_extension_ioncube_loader() {
     local domain="$1"
     local php_container php_version loader_file loader_path site_php_ini zts_suffix arch
@@ -86,7 +83,7 @@ php_install_extension_ioncube_loader() {
     php_version=$(docker exec -i "$php_container" php -r 'echo PHP_VERSION;' | cut -d. -f1,2)
     site_php_ini="$SITES_DIR/$domain/php/php.ini"
 
-    # ✅ Check container architecture
+    # Check container architecture
     arch=$(docker exec -i "$php_container" uname -m | tr -d '\r')
     if [[ "$arch" != "x86_64" ]]; then
         local formatted_error_arch
@@ -95,7 +92,7 @@ php_install_extension_ioncube_loader() {
         return 0
     fi
 
-    # ✅ Check if PHP uses Thread Safety (ZTS)
+    # Check if PHP uses Thread Safety (ZTS)
     if docker exec -i "$php_container" php -i | grep -q 'Thread Safety => enabled'; then
         zts_suffix="_ts"
         print_msg info "$INFO_PHP_CONTAINER_USE_ZTS"
@@ -111,7 +108,7 @@ php_install_extension_ioncube_loader() {
     formatted_check_compatible=$(printf "$STEP_PHP_IONCUBE_CHECK_COMPATIBILITY" "$loader_file")
     print_msg step "$formatted_check_compatible"
 
-    # ✅ Check if loader file exists
+    # Check if loader file exists
     if ! docker exec -i "$php_container" test -f "$loader_path"; then
         print_msg info "$INFO_PHP_IONCUBE_LOADER_NOT_FOUND"
 
@@ -122,7 +119,7 @@ php_install_extension_ioncube_loader() {
           tar -tzf /tmp/ioncube.tar.gz > /tmp/ioncube/filelist.txt
         "
 
-        # ✅ Validate loader exists in archive
+        # Validate loader exists in archive
         if ! docker exec -i "$php_container" grep -q "ioncube/${loader_file}" /tmp/ioncube/filelist.txt; then
             local formatted_error_loader_not_found
             formatted_error_loader_not_found=$(printf "$WARNING_PHP_IONCUBE_NOT_COMPATIBLE" "$loader_file" "$php_version" "$zts_suffix")
@@ -140,7 +137,7 @@ php_install_extension_ioncube_loader() {
         print_msg info "✅ Ioncube loader already exists: $loader_path"
     fi
 
-    # ✅ Confirm loader file really exists
+    # Confirm loader file really exists
     if ! docker exec -i "$php_container" test -f "$loader_path"; then
         local formatted_error_loader_not_found
         formatted_error_loader_not_found=$(printf "$ERROR_PHP_IONCUBE_LODER_NOT_FOUND" "$loader_path")
@@ -148,21 +145,21 @@ php_install_extension_ioncube_loader() {
         return 1
     fi
 
-    # ✅ Append to php.ini if not present
+    # Validate php.ini exists
     if [[ ! -f "$site_php_ini" ]]; then
         print_and_debug error "$MSG_NOT_FOUND: $site_php_ini"
         return 1
     fi
 
-    if ! grep -q "$loader_file" "$site_php_ini"; then
-        printf "\nzend_extension=%s\n" "$loader_path" >>"$site_php_ini"
-        print_msg success "$SUCCESS_PHP_IONCUBE_INI"
-    else
-        print_msg info "$WARNING_PHP_IONCUBE_ALREADY_INI"
-    fi
+    # Remove any old ioncube loader line
+    sedi '/^zend_extension=.*ioncube_loader_lin.*$/d' "$site_php_ini"
 
-    # ✅ Restart container
-    docker restart "$php_container" >/dev/null
+    # Add correct loader
+    printf "\nzend_extension=%s\n" "$loader_path" >>"$site_php_ini"
+    print_msg success "$SUCCESS_PHP_IONCUBE_INI"
+
+    # Restart container
+    docker restart "$php_container"
     local formatted_success_restart
     formatted_success_restart=$(printf "$SUCCESS_CONTAINER_RESTARTED" "$php_container")
     print_msg success "$formatted_success_restart"
